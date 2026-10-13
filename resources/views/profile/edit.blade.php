@@ -77,6 +77,19 @@
             </div>
             @endif
 
+            {{-- Klucze dostępu (passkeys) --}}
+            @if ($siteSettings->passkeyLoginEnabled() && Route::has('passkeys.store'))
+            <div id="klucze-dostepu" class="grid gap-8 scroll-mt-6 py-8 md:grid-cols-[220px_1fr]">
+                <div>
+                    <h2 class="text-base font-bold text-ink">Klucze dostępu</h2>
+                    <p class="mt-1 text-sm text-muted">Logowanie bez hasła: YubiKey, odcisk palca, Windows Hello albo telefon.</p>
+                </div>
+                <div class="rounded-lg border border-gray-200 bg-white p-6">
+                    @include('profile.partials.passkeys-form')
+                </div>
+            </div>
+            @endif
+
             {{-- Powiadomienia --}}
             <div id="powiadomienia" class="grid gap-8 scroll-mt-6 py-8 md:grid-cols-[220px_1fr]">
                 <div>

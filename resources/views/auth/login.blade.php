@@ -11,8 +11,11 @@
     --}}
     @php
         $msOnly = $siteSettings->microsoftOnlyLogin();
+        $ssoOnly = $siteSettings->ssoOnlyLogin();
+        $ssoOn = $siteSettings->ssoLoginEnabled() && Route::has('auth.sso.redirect');
+        $passkeyOn = $siteSettings->passkeyLoginEnabled() && Route::has('passkey.login');
         $emergency = $emergency ?? false;
-        $showLocalForm = ! $msOnly || $emergency;
+        $showLocalForm = (! $msOnly && ! $ssoOnly) || $emergency;
         $field = 'w-full rounded-md border border-gray-500 bg-white py-2.5 pl-10 text-ink focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-dark';
         $primary = 'flex w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-5 py-3 text-base font-bold text-white transition hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 disabled:cursor-not-allowed';
         $secondary = 'flex w-full items-center justify-center gap-2.5 rounded-md bg-brand-light px-5 py-3 text-base font-bold text-ink transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2';
@@ -42,7 +45,14 @@
         </div>
     @endif
 
-    @if ($msOnly && ! $emergency)
+    @if ($ssoOnly && ! $emergency)
+        {{-- Tryb „tylko SSO”: przycisk dostawcy tożsamości organizacji --}}
+        <p class="mb-6 text-ink">Zaloguj się kontem organizacji.</p>
+        <a href="{{ route('auth.sso.redirect') }}" class="{{ $primary }}">
+            <i class="fa-solid fa-building-shield" aria-hidden="true"></i>
+            {{ $siteSettings->ssoButtonLabel() }}
+        </a>
+    @elseif ($msOnly && ! $emergency)
         {{-- Tryb „tylko Microsoft": wyłącznie przycisk Microsoft 365 --}}
         <p class="mb-6 text-ink">Zaloguj się kontem organizacji — tymi samymi danymi, co do poczty elektronicznej.</p>
         <a href="{{ route('auth.microsoft.redirect') }}" class="{{ $primary }}">
@@ -108,7 +118,7 @@
             </button>
         </form>
 
-        @if (! $msOnly && ($siteSettings->microsoftLoginEnabled() || $siteSettings->googleLoginEnabled()))
+        @if (! $msOnly && ($siteSettings->microsoftLoginEnabled() || $siteSettings->googleLoginEnabled() || $ssoOn))
             <p class="my-6 flex items-center gap-3 text-sm font-bold text-muted">
                 <span class="h-px flex-1 bg-gray-200" aria-hidden="true"></span>
                 albo
@@ -120,6 +130,13 @@
                     <a href="{{ route('auth.microsoft.redirect') }}" class="{{ $secondary }}">
                         @include('auth.partials.microsoft-logo')
                         Zaloguj się przez Microsoft 365
+                    </a>
+                @endif
+
+                @if ($ssoOn && ! $ssoOnly)
+                    <a href="{{ route('auth.sso.redirect') }}" class="{{ $secondary }}">
+                        <i class="fa-solid fa-building-shield" aria-hidden="true"></i>
+                        {{ $siteSettings->ssoButtonLabel() }}
                     </a>
                 @endif
 
@@ -139,5 +156,33 @@
                 <p class="mt-3 text-sm text-ink">Konto Microsoft 365 to te same dane, co do poczty organizacji.</p>
             @endif
         @endif
+    @endif
+
+    @if ($passkeyOn)
+        {{-- Logowanie bez hasła kluczem dostępu — w każdym trybie (także „tylko Microsoft” / „tylko SSO”). --}}
+        <div class="mt-6 border-t border-gray-100 pt-6" x-data="{
+                busy: false, error: '', supported: true,
+                async run() {
+                    this.error = ''; this.busy = true;
+                    try {
+                        const w = window.feerWebAuthn;
+                        const opts = await w.post(@js(route('passkey.login.options')));
+                        opts.challenge = w.b64ToBuf(opts.challenge);
+                        const cred = await navigator.credentials.get({ publicKey: opts });
+                        const res = await w.post(@js(route('passkey.login')), { credential: w.credentialToJson(cred) });
+                        window.location.href = res.redirect;
+                    } catch (e) { this.error = window.feerWebAuthn.message(e); this.busy = false; }
+                }
+            }" x-init="supported = window.feerWebAuthn.supported()">
+            <button type="button" x-show="supported" @click="run()" :disabled="busy" class="{{ $secondary }}">
+                <i class="fa-solid" :class="busy ? 'fa-circle-notch fa-spin' : 'fa-key'" aria-hidden="true"></i>
+                <span x-text="busy ? 'Potwierdź na urządzeniu…' : 'Zaloguj się kluczem dostępu'">Zaloguj się kluczem dostępu</span>
+            </button>
+            <p x-show="supported" class="mt-2 text-sm text-ink">YubiKey, odcisk palca, Windows Hello albo telefon — jeśli dodano je w profilu.</p>
+            <p x-show="error" x-cloak class="mt-3 flex items-start gap-2 text-sm font-bold text-ink" role="alert">
+                <i class="fa-solid fa-circle-exclamation mt-0.5 text-brand-dark" aria-hidden="true"></i><span x-text="error"></span>
+            </p>
+        </div>
+        @include('auth.partials.webauthn-js')
     @endif
 </x-guest-layout>

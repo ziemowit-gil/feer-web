@@ -151,6 +151,14 @@ class SiteSettingController extends Controller
             'google_client_id' => ['nullable', 'string', 'max:255'],
             'google_client_secret' => ['nullable', 'string', 'max:1000'],
             'member_login_enabled' => ['sometimes', 'boolean'],
+            'passkey_login_enabled' => ['sometimes', 'boolean'],
+            'sso_enabled' => ['sometimes', 'boolean'],
+            'sso_only_login' => ['sometimes', 'boolean'],
+            'sso_name' => ['nullable', 'string', 'max:120'],
+            'sso_issuer' => ['nullable', 'url:https', 'max:255', 'required_if:sso_enabled,1'],
+            'sso_client_id' => ['nullable', 'string', 'max:255', 'required_if:sso_enabled,1'],
+            'sso_client_secret' => ['nullable', 'string', 'max:1000'],
+            'sso_scopes' => ['nullable', 'string', 'max:255'],
             'member_allowed_domains' => ['nullable', 'string', 'max:500'],
             'szo_api_url' => ['nullable', 'url', 'max:255'],
             'cleantalk_enabled' => ['sometimes', 'boolean'],
@@ -448,6 +456,19 @@ class SiteSettingController extends Controller
             unset($data['cleantalk_access_key']);
         }
         $data['cleantalk_enabled'] = $request->boolean('cleantalk_enabled');
+        // Logowanie: klucze dostępu i SSO (OIDC). Do czasu migracji kolumn nie ma — pomijamy.
+        if (Schema::hasColumn('site_settings', 'sso_enabled')) {
+            foreach (['passkey_login_enabled', 'sso_enabled', 'sso_only_login'] as $flag) {
+                if ($request->has($flag)) {
+                    $data[$flag] = $request->boolean($flag);
+                }
+            }
+            if (blank($data['sso_client_secret'] ?? null)) {
+                unset($data['sso_client_secret']); // pusty sekret = zostaw zapisany
+            }
+        } else {
+            unset($data['passkey_login_enabled'], $data['sso_enabled'], $data['sso_only_login'], $data['sso_name'], $data['sso_issuer'], $data['sso_client_id'], $data['sso_client_secret'], $data['sso_scopes']);
+        }
         // Pusty token SZO = zostaw zapisany (jak sekret Microsoft).
         if (blank($data['szo_token'] ?? null)) {
             unset($data['szo_token']);

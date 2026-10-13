@@ -2803,6 +2803,80 @@
                 </div>
             </div>
 
+            {{-- ===================== Klucze dostępu (passkeys) ===================== --}}
+            <div class="border-t border-gray-200 pt-6">
+                <h2 class="text-base font-bold text-ink">Klucze dostępu (passkey, YubiKey)</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Logowanie bez hasła kluczem sprzętowym (YubiKey i inne klucze FIDO2), odciskiem palca, Windows Hello albo telefonem.
+                    Każdy użytkownik dodaje swoje klucze w profilu (Profil → Klucze dostępu). Klucz zastępuje hasło i drugi składnik naraz.
+                </p>
+                <label class="mt-4 flex items-center gap-2 text-sm font-medium">
+                    <input type="hidden" name="passkey_login_enabled" value="0">
+                    <input type="checkbox" name="passkey_login_enabled" value="1"
+                        {{ old('passkey_login_enabled', $settings->passkey_login_enabled ?? true) ? 'checked' : '' }}
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    Pozwól logować się kluczem dostępu
+                </label>
+            </div>
+
+            {{-- ===================== SSO (OpenID Connect) ===================== --}}
+            <div class="border-t border-gray-200 pt-6" x-data="{ ssoEnabled: {{ old('sso_enabled', $settings->sso_enabled ?? false) ? 'true' : 'false' }} }">
+                <h2 class="text-base font-bold text-ink">Logowanie SSO (OpenID Connect)</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Dla organizacji z własnym dostawcą tożsamości: Keycloak, Okta, Microsoft Entra ID, Google Workspace, Authentik i inne zgodne z OpenID Connect.
+                    Dostęp mają wyłącznie konta istniejące w „Użytkownicy” (dopasowanie po e-mailu przy pierwszym logowaniu). U dostawcy zarejestruj aplikację z adresem powrotu:
+                </p>
+                <code class="mt-2 block break-all rounded bg-gray-50 px-3 py-2 text-xs text-ink">{{ url('/auth/sso/callback') }}</code>
+
+                <label class="mt-4 flex items-center gap-2 text-sm font-medium">
+                    <input type="hidden" name="sso_enabled" value="0">
+                    <input type="checkbox" name="sso_enabled" value="1" x-model="ssoEnabled"
+                        {{ old('sso_enabled', $settings->sso_enabled ?? false) ? 'checked' : '' }}
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    Włącz logowanie SSO
+                </label>
+
+                <div class="mt-4 space-y-5" x-show="ssoEnabled" x-cloak>
+                    <div>
+                        <label for="sso_name" class="mb-1 block text-sm font-bold">Nazwa dostawcy na przycisku</label>
+                        <input type="text" id="sso_name" name="sso_name" maxlength="120" value="{{ old('sso_name', $settings->sso_name) }}" placeholder="np. Keycloak Fundacji"
+                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Przycisk: „Zaloguj się przez …”. Puste = „SSO organizacji”.</p>
+                    </div>
+                    <div>
+                        <label for="sso_issuer" class="mb-1 block text-sm font-bold">Adres dostawcy (issuer)</label>
+                        <input type="url" id="sso_issuer" name="sso_issuer" value="{{ old('sso_issuer', $settings->sso_issuer) }}" placeholder="https://sso.przyklad.pl/realms/organizacja"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Konfigurację pobieramy z <code>/.well-known/openid-configuration</code> pod tym adresem.</p>
+                        @error('sso_issuer') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="sso_client_id" class="mb-1 block text-sm font-bold">Client ID</label>
+                            <input type="text" id="sso_client_id" name="sso_client_id" autocomplete="off" value="{{ old('sso_client_id', $settings->sso_client_id) }}"
+                                class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        </div>
+                        <div>
+                            <label for="sso_client_secret" class="mb-1 block text-sm font-bold">Client Secret</label>
+                            <input type="password" id="sso_client_secret" name="sso_client_secret" autocomplete="new-password"
+                                placeholder="{{ $settings->sso_client_secret ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
+                                class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="sso_scopes" class="mb-1 block text-sm font-bold">Zakresy <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <input type="text" id="sso_scopes" name="sso_scopes" value="{{ old('sso_scopes', $settings->sso_scopes) }}" placeholder="openid email profile"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                    </div>
+                    <label class="flex items-start gap-2 text-sm">
+                        <input type="hidden" name="sso_only_login" value="0">
+                        <input type="checkbox" name="sso_only_login" value="1" {{ old('sso_only_login', $settings->sso_only_login ?? false) ? 'checked' : '' }}
+                            class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                        <span><span class="font-bold">Tylko SSO</span> — na stronie logowania wyłącznie przycisk dostawcy (i klucze dostępu). Logowanie hasłem zostaje pod adresem dostępu awaryjnego.</span>
+                    </label>
+                </div>
+            </div>
+
             {{-- ===================== Strefa wewnętrzna (współpracownicy) ===================== --}}
             <div class="border-t border-gray-200 pt-6" x-data="{ memberEnabled: {{ old('member_login_enabled', $settings->member_login_enabled) ? 'true' : 'false' }} }">
                 <h2 class="text-base font-bold text-ink">Logowanie do stron wewnętrznych (strefa współpracownika)</h2>

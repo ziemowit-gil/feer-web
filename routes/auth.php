@@ -12,6 +12,8 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\SuperAdminController;
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\Auth\TwoFactorSettingController;
+use App\Http\Controllers\Auth\PasskeyController;
+use App\Http\Controllers\Auth\OidcAuthController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,6 +46,14 @@ Route::middleware('guest')->group(function () {
 
     Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])
         ->name('auth.google.callback');
+
+    // Logowanie bez hasła kluczem dostępu (passkey / YubiKey / biometria).
+    Route::post('auth/passkey/options', [PasskeyController::class, 'loginOptions'])->name('passkey.login.options')->middleware('throttle:20,1');
+    Route::post('auth/passkey', [PasskeyController::class, 'login'])->name('passkey.login')->middleware('throttle:10,1');
+
+    // SSO przez OpenID Connect (Keycloak, Okta, Entra ID, Google Workspace…).
+    Route::get('auth/sso/redirect', [OidcAuthController::class, 'redirect'])->name('auth.sso.redirect');
+    Route::get('auth/sso/callback', [OidcAuthController::class, 'callback'])->name('auth.sso.callback');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
@@ -91,6 +101,11 @@ Route::middleware('auth')->group(function () {
     Route::post('two-factor/recovery-codes', [TwoFactorSettingController::class, 'regenerateRecovery'])->name('two-factor.recovery');
     Route::post('two-factor/yubikey', [TwoFactorSettingController::class, 'addYubikey'])->name('two-factor.yubikey.add');
     Route::delete('two-factor/yubikey', [TwoFactorSettingController::class, 'removeYubikey'])->name('two-factor.yubikey.remove');
+
+    // Klucze dostępu w profilu.
+    Route::post('passkeys/options', [PasskeyController::class, 'options'])->name('passkeys.options');
+    Route::post('passkeys', [PasskeyController::class, 'store'])->name('passkeys.store');
+    Route::delete('passkeys/{credential}', [PasskeyController::class, 'destroy'])->name('passkeys.destroy');
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');

@@ -81,6 +81,12 @@ class User extends Authenticatable implements Subscribable
     }
 
     /** Czy jakakolwiek metoda 2FA jest aktywna. */
+    /** Klucze dostępu (passkey / WebAuthn) — logowanie bez hasła. */
+    public function webauthnCredentials(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(WebauthnCredential::class)->latest('id');
+    }
+
     public function hasTwoFactorEnabled(): bool
     {
         return $this->hasTotpEnabled() || $this->hasYubikey();

@@ -373,7 +373,7 @@ class SiteSetting extends Model implements HasMedia
         'site_url', 'maintenance_mode', 'maintenance_message',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'google_login_enabled', 'google_client_id', 'google_client_secret',
-        'member_login_enabled', 'member_allowed_domains', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'cleantalk_enabled', 'cleantalk_access_key', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
+        'member_login_enabled', 'member_allowed_domains', 'sso_enabled', 'sso_only_login', 'passkey_login_enabled', 'sso_name', 'sso_issuer', 'sso_client_id', 'sso_client_secret', 'sso_scopes', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'cleantalk_enabled', 'cleantalk_access_key', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
         'przelewy24_sandbox', 'przelewy24_merchant_id', 'przelewy24_pos_id', 'przelewy24_crc', 'przelewy24_api_key',
         'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
@@ -585,6 +585,10 @@ class SiteSetting extends Model implements HasMedia
         'cleantalk_enabled' => 'boolean',
         'cleantalk_access_key' => 'encrypted',
         'szo_enabled' => 'boolean',
+        'sso_enabled' => 'boolean',
+        'sso_only_login' => 'boolean',
+        'passkey_login_enabled' => 'boolean',
+        'sso_client_secret' => 'encrypted',
         'szo_token' => 'encrypted',
         'newsletter_ses_key' => 'encrypted', 'newsletter_ses_secret' => 'encrypted', 'newsletter_mailgun_secret' => 'encrypted', 'newsletter_postmark_token' => 'encrypted',
         'newsletter_smtp_password' => 'encrypted', 'newsletter_webhook_secret' => 'encrypted', 'newsletter_sms_token' => 'encrypted', 'newsletter_turnstile_secret' => 'encrypted',
@@ -1460,6 +1464,30 @@ class SiteSetting extends Model implements HasMedia
         }
 
         return $overrides;
+    }
+
+    /** Logowanie kluczem dostępu (passkey / WebAuthn) — domyślnie włączone; przed migracją kolumny brak = wyłączone. */
+    public function passkeyLoginEnabled(): bool
+    {
+        return array_key_exists('passkey_login_enabled', $this->getAttributes()) && (bool) $this->passkey_login_enabled;
+    }
+
+    /** SSO przez OpenID Connect: włączone i skonfigurowane (adres dostawcy, klient, sekret). */
+    public function ssoLoginEnabled(): bool
+    {
+        return (bool) ($this->sso_enabled ?? false) && filled($this->sso_issuer) && filled($this->sso_client_id) && filled($this->sso_client_secret);
+    }
+
+    /** Tryb „tylko SSO”: na stronie logowania wyłącznie przycisk dostawcy tożsamości (i klucze dostępu). */
+    public function ssoOnlyLogin(): bool
+    {
+        return $this->ssoLoginEnabled() && (bool) ($this->sso_only_login ?? false);
+    }
+
+    /** Napis na przycisku SSO, np. „Zaloguj się przez Keycloak”. */
+    public function ssoButtonLabel(): string
+    {
+        return 'Zaloguj się przez '.(trim((string) $this->sso_name) ?: 'SSO organizacji');
     }
 
     /** Czy skonfigurowano adres systemu SZO (integracja komunikatów strefy). */
