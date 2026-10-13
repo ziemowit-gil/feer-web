@@ -719,6 +719,8 @@ Alpine.data('sectionTabs', (ids = [], initial = null) => ({
 // Selektory ikon/kolorów w panelu — osobny chunk, ładowany tylko w adminie.
 if (document.body.dataset.adminPickers !== undefined) {
     import('./admin-pickers.js');
+    // Niezapisane zmiany i Ctrl/⌘+S we wszystkich formularzach panelu.
+    import('./admin-forms.js');
 }
 
 Alpine.start();

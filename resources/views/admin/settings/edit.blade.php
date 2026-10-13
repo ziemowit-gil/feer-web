@@ -124,7 +124,7 @@
     {{-- novalidate: przy walidacji przeglądarki puste pole wymagane w ukrytej
          zakładce blokuje wysyłkę bez żadnego komunikatu („klikam i nic się nie
          dzieje"). Walidację robi serwer, a błędy pokazuje lista powyżej. --}}
-    <form id="settings-form" method="POST" action="{{ route('admin.ustawienia.update') }}" enctype="multipart/form-data" novalidate
+    <form id="settings-form" data-no-dirty method="POST" action="{{ route('admin.ustawienia.update') }}" enctype="multipart/form-data" novalidate
         @input="dirty = true" @change="dirty = true" @submit="dirty = false"
         class="rounded-md bg-white p-6 sm:p-8">
         @csrf

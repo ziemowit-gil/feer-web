@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    <form method="POST"
+    <form method="POST" data-no-dirty
         action="{{ $form->exists ? route('admin.formularze.update', $form) : route('admin.formularze.store') }}"
         class="space-y-5"
         x-data="formBuilder({{ Js::from($form->fields ?? []) }}, @js($errors->keys() && collect($errors->keys())->contains(fn ($k) => ! str_starts_with($k, 'fields')) ? 'settings' : 'fields'))"
