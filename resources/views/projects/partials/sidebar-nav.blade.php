@@ -50,8 +50,12 @@
         <div class="mt-5 rounded-md bg-white p-4">
             <p class="text-base font-bold text-ink">Masz pytania? Chętnie odpowiemy</p>
             <div class="mt-3 flex items-start gap-3">
-                {{-- Inicjały koordynatora; bez imienia (ogólny adres fundacji) — ikona koperty. --}}
-                <span class="flex h-11 w-11 flex-none items-center justify-center rounded-md bg-brand-light text-sm font-extrabold text-brand-dark" aria-hidden="true">@if (filled($project->coordinator_name)){{ $coordInitials }}@else<i class="fa-solid fa-envelope text-base"></i>@endif</span>
+                {{-- Zdjęcie koordynatora (ze strony osoby w zespole); bez zdjęcia — avatar z inicjałami; bez imienia — ikona koperty. --}}
+                @if ($coordPhoto = $project->coordinatorPhoto())
+                    <img src="{{ $coordPhoto }}" alt="" loading="lazy" class="h-11 w-11 flex-none rounded-md object-cover">
+                @else
+                    <span class="flex h-11 w-11 flex-none items-center justify-center rounded-md bg-brand-light text-sm font-extrabold text-brand-dark" aria-hidden="true">@if (filled($project->coordinator_name)){{ $coordInitials }}@else<i class="fa-solid fa-envelope text-base"></i>@endif</span>
+                @endif
                 <div class="min-w-0 text-sm text-ink">
                     @if ($project->coordinator_name)<p class="font-bold">{{ $project->coordinator_name }}</p>@endif
                     <p><a href="mailto:{{ $project->contactEmail() }}" class="break-all font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->contactEmail() }}</a></p>

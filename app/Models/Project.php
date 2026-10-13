@@ -85,6 +85,30 @@ class Project extends Model implements HasMedia
         };
     }
 
+    /**
+     * Zdjęcie koordynatora z jego strony w zespole (osoba „O organizacji”): dopasowanie po e-mailu,
+     * a gdy go brak — po imieniu i nazwisku. Null, gdy nie ma osoby ze zdjęciem (wtedy avatar z inicjałami).
+     */
+    public function coordinatorPhoto(): ?string
+    {
+        $email = mb_strtolower(trim((string) $this->coordinator_email));
+        $name = trim((string) $this->coordinator_name);
+        if ($email === '' && $name === '') {
+            return null;
+        }
+
+        return once(function () use ($email, $name) {
+            $person = Page::query()->forCurrentSite()->where('type', 'about_person')->where('is_published', true)
+                ->whereNotNull('content_image')->where('content_image', '!=', '')
+                ->where(fn ($q) => $q
+                    ->when($email !== '', fn ($w) => $w->orWhereRaw('lower(person_email) = ?', [$email]))
+                    ->when($name !== '', fn ($w) => $w->orWhere('title', $name)))
+                ->first();
+
+            return $person?->content_image;
+        });
+    }
+
     /** Klucz „Strony działań” w liście typów metryczki (obok typów stron). */
     public const METKA_TYPE = '__projects';
 

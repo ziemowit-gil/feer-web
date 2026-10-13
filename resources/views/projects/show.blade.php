@@ -635,7 +635,15 @@
                         </h2>
                         <div class="space-y-1.5 text-ink">
                             @if ($project->coordinator_name)
-                                <p class="font-bold">{{ $project->coordinator_name }}</p>
+                                @php
+                                    $asidePhoto = $project->coordinatorPhoto();
+                                    $asideInitials = \Illuminate\Support\Str::of((string) $project->coordinator_name)->explode(' ')->filter()->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->take(2)->implode('');
+                                @endphp
+                                <p class="flex items-center gap-3 font-bold">
+                                    @if ($asidePhoto)<img src="{{ $asidePhoto }}" alt="" loading="lazy" class="h-11 w-11 flex-none rounded-md object-cover">
+                                    @else<span class="flex h-11 w-11 flex-none items-center justify-center rounded-md bg-white text-sm font-extrabold text-brand-dark" aria-hidden="true">{{ $asideInitials }}</span>@endif
+                                    <span>{{ $project->coordinator_name }}</span>
+                                </p>
                             @endif
                             <p>
                                 <a href="mailto:{{ $project->contactEmail() }}" class="proj-link break-all">{{ $project->contactEmail() }}</a>

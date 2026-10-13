@@ -53,4 +53,15 @@ class ProjectPageImprovementsTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         $this->get(route('projects.show', $p))->assertOk()->assertSee('Pokaż metkę')->assertSee('Data publikacji');
     }
+
+    public function test_coordinator_photo_from_team_person_page(): void
+    {
+        $p = $this->project();
+        Page::create(['title' => 'Jan Kowalski', 'slug' => 'jan-kowalski', 'type' => 'about_person', 'is_published' => true,
+            'content_image' => 'https://example.test/jan.jpg', 'person_email' => 'JAN@example.org']);
+
+        $html = $this->get(route('projects.show', $p))->assertOk()->getContent();
+        $nav = substr($html, strpos($html, 'aria-label="Sekcje działania"'));
+        $this->assertStringContainsString('src="https://example.test/jan.jpg"', substr($nav, 0, strpos($nav, '</nav>')));
+    }
 }
