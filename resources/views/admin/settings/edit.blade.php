@@ -2209,6 +2209,14 @@
                         class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                     <span class="text-sm font-bold">Misja jako slajd <span class="font-normal text-muted">(dodaje slajd z misją organizacji na początku slidera)</span></span>
                 </label>
+                @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'hero_single'))
+                    <input type="hidden" name="hero_single" value="0">
+                    <label class="mt-3 flex items-start gap-2 rounded-lg border border-gray-200 bg-white p-3">
+                        <input type="checkbox" name="hero_single" value="1" @checked(old('hero_single', $settings->hero_single ?? true))
+                            class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                        <span class="text-sm font-bold">Jeden przekaz zamiast karuzeli <span class="block font-normal text-muted">Pokazuje tylko pierwszy slajd: hasło, jedno zdanie i jeden przycisk (bez przełączania). Slajd bez przycisku dostaje „Zobacz, jak pomagamy” prowadzące do działań. Szablon FEER.</span></span>
+                    </label>
+                @endif
                 </div>
             </details>
 

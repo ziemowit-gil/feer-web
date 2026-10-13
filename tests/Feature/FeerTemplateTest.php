@@ -242,7 +242,7 @@ class FeerTemplateTest extends TestCase
     public function test_slajder_feer_nie_wywala_sie_na_slajdzie_z_misja(): void
     {
         \App\Models\HeroSlide::create(['title' => 'Zwykły slajd', 'order' => 1]);
-        SiteSetting::current()->update(['site_template' => 'feer', 'hero_mission_slide' => true, 'tagline' => 'Razem bez barier', 'hero_mission_order' => 2]);
+        SiteSetting::current()->update(['site_template' => 'feer', 'hero_mission_slide' => true, 'tagline' => 'Razem bez barier', 'hero_mission_order' => 2, 'hero_single' => false]);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
         $this->get('/')->assertOk()->assertSee('Zwykły slajd')->assertSee('Nasza misja')->assertSee('Razem bez barier');
@@ -1011,8 +1011,10 @@ class FeerTemplateTest extends TestCase
     public function test_strona_glowna_feer_ma_mozaike_zdjec_z_galerii(): void
     {
         $this->useFeer();
-        $img = \App\Models\GalleryImage::create(['caption' => 'Warsztaty w terenie', 'order' => 1]);
-        $img->addMedia(\Illuminate\Http\UploadedFile::fake()->image('a.jpg', 800, 600))->toMediaCollection('image');
+        foreach (['Warsztaty w terenie', 'Szkolenie', 'Spotkanie'] as $i => $caption) { // galeria pokazuje się od 3 zdjęć
+            $img = \App\Models\GalleryImage::create(['caption' => $caption, 'order' => $i + 1]);
+            $img->addMedia(\Illuminate\Http\UploadedFile::fake()->image('a'.$i.'.jpg', 800, 600))->toMediaCollection('image');
+        }
 
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertStringContainsString('W obiektywie', $html);

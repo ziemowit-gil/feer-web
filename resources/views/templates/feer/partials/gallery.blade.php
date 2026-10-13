@@ -3,7 +3,7 @@
     Płasko, bez ramek; podpis jako alt. Pokazuje się, gdy moduł galerii ma zdjęcia i sekcja „Galeria" nie jest ukryta.
 --}}
 @php $shots = ($gallery ?? collect())->filter(fn ($p) => filled($p->image_url))->values()->take(5); @endphp
-@if ($shots->isNotEmpty())
+@if ($shots->count() >= 3) {{-- mniej niż 3 zdjęcia nie tworzą galerii — sekcję pomijamy --}}
 <section id="galeria" class="py-12" aria-labelledby="feer-gallery-heading">
     <div class="mx-auto max-w-6xl px-4">
         <h2 id="feer-gallery-heading" class="text-2xl font-bold text-ink md:text-3xl">W obiektywie</h2>

@@ -321,6 +321,7 @@ class SiteSettingController extends Controller
             'wide_mission_nav_align' => ['nullable', 'in:left,center'],
             'wide_mission_search_in_nav' => ['sometimes', 'boolean'],
             'hero_mission_slide' => ['sometimes', 'boolean'],
+            'hero_single' => ['sometimes', 'boolean'],
             'quick_actions_panel_negative' => ['sometimes', 'boolean'],
             'wide_mission_sidebar' => ['sometimes', 'boolean'],
             'wide_mission_sidebar_style' => ['nullable', 'in:mission,colored,cards'],
@@ -467,6 +468,11 @@ class SiteSettingController extends Controller
             unset($data['metka_mode'], $data['metka_types'], $data['metka_entity'], $data['metka_shared_accounts']);
         } elseif ($request->has('metka_types')) {
             $data['metka_types'] = array_values(array_filter((array) $request->input('metka_types')));
+        }
+        if (! Schema::hasColumn('site_settings', 'hero_single')) {
+            unset($data['hero_single']);
+        } elseif ($request->has('hero_single')) {
+            $data['hero_single'] = $request->boolean('hero_single');
         }
         if (! Schema::hasColumn('site_settings', 'metka_show_entity')) {
             unset($data['metka_show_entity']);

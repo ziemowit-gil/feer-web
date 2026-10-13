@@ -2,6 +2,8 @@
     Szablon dedykowany Fundacji FEER (Brand book 2024): rozbudowana strona główna
     w klasycznej oprawie — górny pasek, nagłówek i stopka z domyślnych partiali.
     Wygląd (Montserrat, paleta, płaskie powierzchnie) daje partials/theme-feer.
+    Mniej sekcji naraz: każda sekcja pokazuje się tylko wtedy, gdy ma treść (puste i nieaktywne — np. ankieta,
+    nabory, galeria z mniej niż 3 zdjęciami — znikają), hero ma jeden przekaz (Ustawienia → Strona główna).
 --}}
 @extends('layouts.site')
 
@@ -41,6 +43,8 @@
     @endif
     @include('templates.feer.partials.support-cta')
     @include('templates.feer.partials.bands-slot', ['slot' => 'end'])
+    {{-- Newsletter na samym dole: zapis na miejscu. --}}
+    @include('templates.feer.partials.newsletter')
 
     {{-- Administrator: lewitujący przycisk do edycji strony głównej (Ustawienia → Strona główna), jak „Edytuj" na podstronach. --}}
     @if (auth()->check() && auth()->user()->isAdmin())

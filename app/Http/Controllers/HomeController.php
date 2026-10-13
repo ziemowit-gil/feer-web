@@ -226,7 +226,18 @@ class HomeController extends Controller
         }
 
         if ($template === 'feer') {
-            return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home', $quickLinks)->with('gallery', $gallery);
+            // Jeden przekaz: tylko pierwszy slajd (bez karuzeli), gdy włączono w Ustawienia → Strona główna.
+            $heroSingle = (bool) ($settings->hero_single ?? false);
+            if ($heroSingle) {
+                $slides = $slides->take(1)->values();
+            }
+            // Aktualności: jedna wyróżniona + trzy mniejsze.
+            $feerNews = $settings->isModuleEnabled('news')
+                ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(4)->get()
+                : collect();
+
+            return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home', $quickLinks)
+                ->with('gallery', $gallery)->with('heroSingle', $heroSingle)->with('newsItems', $feerNews);
         }
         if ($template === 'federation') {
             return $this->ngoHome($settings, $slides, $partners, 'templates.federation.home');

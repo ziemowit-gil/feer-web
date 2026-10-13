@@ -43,6 +43,13 @@
                             <p class="mb-6 max-w-2xl text-base leading-relaxed text-ink md:text-lg">{{ $sText }}</p>
                         @endif
                         <div class="flex flex-wrap items-center gap-3">
+                            @php
+                                // Jeden przekaz: slajd bez własnego przycisku dostaje jeden główny — do działań.
+                                if (($heroSingle ?? false) && ! ($sBtnUrl && $sBtnLabel) && \Illuminate\Support\Facades\Route::has('projects.index')) {
+                                    $sBtnUrl = route('projects.index');
+                                    $sBtnLabel = 'Zobacz, jak pomagamy';
+                                }
+                            @endphp
                             @if ($sBtnUrl && $sBtnLabel)
                                 <a href="{{ $sBtnUrl }}"
                                    class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-6 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
