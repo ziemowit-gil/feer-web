@@ -16,19 +16,21 @@
         </div>
 
         @php
-            // Tła kafli na zmianę: [tło + hover, kolor tekstu, kolor numeru/strzałki, kolor zajawki].
+            // Tła kafli na zmianę: [tło + hover, kolor tekstu, kolor numeru/strzałki, kolor zajawki, kolor ikony w tle].
+            // Ikona w tle to ozdobnik (aria-hidden) w pełnym, jasnym kolorze — bez przezroczystości, nie zasłania tekstu.
             $tileThemes = [
-                ['bg-gray-100 hover:bg-brand-light', 'text-ink', 'text-brand-dark', 'text-muted'],
-                ['bg-brand-light hover:bg-white', 'text-ink', 'text-brand-dark', 'text-ink'],
-                ['bg-ink hover:bg-brand-dark', 'text-white', 'text-white', 'text-white'],
+                ['bg-gray-100 hover:bg-brand-light', 'text-ink', 'text-brand-dark', 'text-muted', 'text-gray-200 group-hover:text-white'],
+                ['bg-brand-light hover:bg-white', 'text-ink', 'text-brand-dark', 'text-ink', 'text-white group-hover:text-brand-light'],
+                ['bg-ink hover:bg-brand-dark', 'text-white', 'text-white', 'text-white', 'text-[#33332f] group-hover:text-[#2f63c9]'],
             ];
         @endphp
         <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
             @foreach ($projects as $project)
-                @php [$tileBg, $tileText, $tileAccent, $tileTeaser] = $tileThemes[$loop->index % 3]; @endphp
+                @php [$tileBg, $tileText, $tileAccent, $tileTeaser, $tileIcon] = $tileThemes[$loop->index % 3]; @endphp
                 <li class="flex">
                     <a href="{{ route('projects.show', $project) }}"
-                       class="group flex w-full flex-col rounded-md p-6 transition-colors motion-reduce:transition-none {{ $tileBg }} {{ $tileText }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                       class="group relative isolate flex w-full flex-col overflow-hidden rounded-md p-6 transition-colors motion-reduce:transition-none {{ $tileBg }} {{ $tileText }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                        <span class="pointer-events-none absolute -bottom-6 -right-4 -z-10 select-none text-[8.5rem] leading-none transition-colors motion-reduce:transition-none {{ $tileIcon }}" aria-hidden="true">{!! icon_html($project->category?->iconValue() ?? 'bi-grid') !!}</span>
                         <span class="text-3xl font-bold leading-none {{ $tileAccent }}" aria-hidden="true">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
                         <span class="mt-5 block text-xs font-bold uppercase tracking-widest">{{ $project->category->name ?? 'Działanie' }}</span>
                         <span class="mt-1 block text-xl font-bold leading-snug group-hover:underline group-hover:underline-offset-4">{{ $project->title }}</span>
