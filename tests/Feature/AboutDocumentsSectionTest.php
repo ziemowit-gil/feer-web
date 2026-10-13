@@ -35,6 +35,17 @@ class AboutDocumentsSectionTest extends TestCase
         $this->assertStringContainsString('Archiwum sprawozdań', $section);
     }
 
+    public function test_reports_word_links_to_reports_when_module_enabled(): void
+    {
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $page = Page::create(['title' => 'O nas', 'slug' => 'o-nas-test', 'type' => 'about', 'is_published' => true,
+            'about_documents_intro' => 'Publikujemy dokumenty.']);
+
+        $section = $this->section($this->get($page->publicUrl())->assertOk()->getContent());
+        $this->assertStringContainsString('href="'.route('reports.index').'"', $section);
+        $this->assertMatchesRegularExpression('#<a href="[^"]+"[^>]*>sprawozdania</a>#', $section);
+    }
+
     private function section(string $html): string
     {
         $start = strpos($html, 'id="sekcja-documents"');

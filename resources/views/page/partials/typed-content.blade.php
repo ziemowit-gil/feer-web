@@ -579,7 +579,14 @@
             <section id="sekcja-documents" class="mx-auto max-w-6xl px-4 py-16" aria-labelledby="sekcja-documents-h">
                 <div class="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
                     <div>
-                        <h2 id="sekcja-documents-h" class="text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('documents_title') }}</h2>
+                        @php
+                            // Moduł „Sprawozdania” włączony — słowo „sprawozdania” w nagłówku prowadzi do ich listy.
+                            $docTitle = e($page->aboutLabel('documents_title'));
+                            if ($siteSettings->isModuleEnabled('reports') && \Illuminate\Support\Facades\Route::has('reports.index')) {
+                                $docTitle = preg_replace('/(sprawozdani\p{L}*)/iu', '<a href="'.e(route('reports.index')).'" class="text-brand-dark underline decoration-2 underline-offset-4 hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">$1</a>', $docTitle, 1);
+                            }
+                        @endphp
+                        <h2 id="sekcja-documents-h" class="text-2xl font-extrabold text-ink md:text-3xl">{!! $docTitle !!}</h2>
                         @if (filled($page->about_documents_intro))
                             <div class="mt-4 leading-relaxed text-ink">{!! nl2br(e($page->about_documents_intro)) !!}</div>
                         @endif
