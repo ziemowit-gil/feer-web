@@ -645,11 +645,11 @@
                                 </p>
                             @endif
                             <p>
-                                <a href="mailto:{{ $project->contactEmail() }}" class="proj-link break-all">{{ $project->contactEmail() }}</a>
+                                <span class="font-bold">E-mail:</span> <a href="mailto:{{ $project->contactEmail() }}" class="proj-link break-all">{{ $project->contactEmail() }}</a>
                             </p>
                             @if ($project->coordinator_phone)
                                 <p>
-                                    <a href="tel:{{ preg_replace('/[^0-9+]/', '', $project->coordinator_phone) }}" class="proj-link">{{ $project->coordinator_phone }}</a>
+                                    <span class="font-bold">Tel.:</span> <a href="tel:{{ preg_replace('/[^0-9+]/', '', $project->coordinator_phone) }}" class="proj-link">{{ $project->coordinator_phone }}</a>
                                 </p>
                                 @if (filled($project->coordinator_phone_hours))
                                     <p class="text-sm">Telefon czynny {{ $project->coordinator_phone_hours }}</p>

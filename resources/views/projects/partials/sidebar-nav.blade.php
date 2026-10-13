@@ -54,9 +54,9 @@
                 @endif
                 <div class="min-w-0 text-sm text-ink">
                     @if ($project->coordinator_name)<p class="font-bold">{{ $project->coordinator_name }}</p>@endif
-                    <p><a href="mailto:{{ $project->contactEmail() }}" class="break-all font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->contactEmail() }}</a></p>
+                    <p><span class="font-bold">E-mail:</span> <a href="mailto:{{ $project->contactEmail() }}" class="break-all font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->contactEmail() }}</a></p>
                     @if ($project->coordinator_phone)
-                        <p><a href="tel:{{ preg_replace('/[^0-9+]/', '', $project->coordinator_phone) }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->coordinator_phone }}</a></p>
+                        <p><span class="font-bold">Tel.:</span> <a href="tel:{{ preg_replace('/[^0-9+]/', '', $project->coordinator_phone) }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->coordinator_phone }}</a></p>
                         @if (filled($project->coordinator_phone_hours))<p class="text-xs">Telefon czynny {{ $project->coordinator_phone_hours }}</p>@endif
                     @endif
                 </div>
