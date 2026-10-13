@@ -33,6 +33,67 @@ function loadMaterial() {
     return materialPromise;
 }
 
+// Polecane ikony (Bootstrap Icons) — pokazywane na początku, zanim ktoś zacznie szukać.
+const RECOMMENDED = [
+    'house-door', 'info-circle', 'people', 'person', 'envelope', 'telephone', 'geo-alt', 'calendar-event',
+    'newspaper', 'journal-text', 'file-earmark-text', 'folder2-open', 'book', 'mortarboard', 'briefcase', 'heart',
+    'hand-thumbs-up', 'gift', 'cart', 'question-circle', 'chat-dots', 'megaphone', 'universal-access', 'eye',
+    'ear', 'building', 'bank', 'globe', 'camera', 'play-circle', 'mic', 'download', 'shield-check', 'star',
+    'lightbulb', 'tree', 'hand-index', 'search', 'gear', 'box-arrow-in-right',
+];
+
+// Szukanie po polsku: polskie słowo → fragmenty angielskich nazw ikon.
+const PL_KEYWORDS = {
+    dom: ['house', 'home'], start: ['house', 'home'], glowna: ['house', 'home'], 'o nas': ['info', 'people'], info: ['info'], informacja: ['info'],
+    ludzie: ['people', 'person', 'group'], osoba: ['person'], zespol: ['people', 'group'], uzytkownik: ['person'], konto: ['person', 'account'],
+    poczta: ['envelope', 'mail'], mail: ['envelope', 'mail'], koperta: ['envelope', 'mail'], kontakt: ['envelope', 'telephone', 'phone', 'contact'],
+    telefon: ['telephone', 'phone'], adres: ['geo', 'pin', 'location'], mapa: ['map', 'geo'], miejsce: ['geo', 'pin', 'location'],
+    kalendarz: ['calendar'], wydarzenie: ['calendar', 'event'], wydarzenia: ['calendar', 'event'], szkolenie: ['mortarboard', 'school', 'easel'], szkolenia: ['mortarboard', 'school', 'easel'],
+    aktualnosci: ['newspaper', 'news'], wiadomosci: ['newspaper', 'chat', 'news'], blog: ['journal', 'pen', 'article'], artykul: ['journal', 'article', 'file'],
+    dokument: ['file', 'description', 'article'], dokumenty: ['file', 'folder', 'description'], plik: ['file'], pliki: ['file', 'folder'], folder: ['folder'], pobierz: ['download'],
+    ksiazka: ['book'], edukacja: ['mortarboard', 'book', 'school'], nauka: ['mortarboard', 'book', 'school'], praca: ['briefcase', 'work'], oferta: ['briefcase', 'tag'],
+    serce: ['heart', 'favorite'], wsparcie: ['heart', 'hand', 'volunteer'], darowizna: ['heart', 'gift', 'cash', 'volunteer'], pomoc: ['question', 'help', 'life-preserver', 'support'],
+    wolontariat: ['hand', 'heart', 'volunteer'], prezent: ['gift'], sklep: ['cart', 'bag', 'shop', 'store'], koszyk: ['cart', 'shopping'],
+    pytanie: ['question', 'help'], faq: ['question', 'help'], czat: ['chat'], rozmowa: ['chat', 'forum'], ogloszenie: ['megaphone', 'campaign'],
+    dostepnosc: ['universal-access', 'accessibility', 'eye', 'ear'], wzrok: ['eye', 'visibility'], sluch: ['ear', 'hearing'], niewidomi: ['eye', 'braille'], gluchy: ['ear', 'hearing', 'sign'],
+    budynek: ['building', 'bank', 'business'], urzad: ['bank', 'building'], bip: ['bank', 'building', 'account_balance'], swiat: ['globe', 'public', 'language'], jezyk: ['translate', 'globe', 'language'],
+    zdjecie: ['camera', 'image', 'photo'], galeria: ['images', 'image', 'photo'], film: ['play', 'film', 'video', 'camera-video'], wideo: ['play', 'film', 'video', 'camera-video'], podcast: ['mic', 'headphones', 'podcast'],
+    bezpieczenstwo: ['shield', 'lock', 'security'], rodo: ['shield', 'lock', 'privacy'], gwiazda: ['star'], pomysl: ['lightbulb'], projekt: ['kanban', 'diagram', 'lightbulb'], dzialania: ['kanban', 'diagram', 'grid'],
+    natura: ['tree', 'flower', 'park'], szukaj: ['search'], ustawienia: ['gear', 'settings'], logowanie: ['box-arrow-in', 'login', 'person'], partner: ['handshake', 'people'], wspolpraca: ['handshake', 'people'],
+};
+
+function normalizePl(s) {
+    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').trim();
+}
+
+// Fragmenty nazw do szukania: wpisane słowo oraz jego angielskie odpowiedniki.
+function searchTerms(q) {
+    const n = normalizePl(q);
+    const terms = new Set([n]);
+    for (const [pl, en] of Object.entries(PL_KEYWORDS)) {
+        if (n.length >= 2 && (pl.startsWith(n) || n.startsWith(pl))) en.forEach((t) => terms.add(t));
+    }
+    return [...terms].filter(Boolean);
+}
+
+// Dopasowanie po słowach nazwy („ear” nie trafia w „heart”); najpierw nazwy zaczynające się od frazy.
+function matchIcons(icons, q) {
+    const terms = searchTerms(q);
+    const score = (n) => {
+        const parts = n.split(/[-_]/);
+        let best = 99;
+        for (const t of terms) {
+            if (n === t) return 0;
+            if (n.startsWith(t)) best = Math.min(best, 1);
+            else if (parts.some((p) => p.startsWith(t))) best = Math.min(best, 2);
+            else if (t.includes('-') && n.includes(t)) best = Math.min(best, 3);
+        }
+        return best;
+    };
+    return icons.map((n) => [n, score(n)]).filter(([, sc]) => sc < 99)
+        .sort((a, b) => a[1] - b[1] || a[0].length - b[0].length).map(([n]) => n);
+}
+
 function brandColors() {
     try { return JSON.parse(document.querySelector('meta[name="admin-brand-colors"]')?.content || '[]'); }
     catch (e) { return []; }
@@ -142,8 +203,8 @@ function enhanceIcon(input) {
 
     const wrap = wrapInput(input);
     const preview = el('span', { class: 'picker-preview', 'aria-hidden': 'true' });
-    const button = el('button', { type: 'button', class: 'picker-button', 'aria-haspopup': 'dialog', 'aria-expanded': 'false', title: 'Wybierz ikonę z biblioteki Bootstrap Icons' },
-        [el('i', { class: 'bi bi-grid-3x3-gap', 'aria-hidden': 'true' }), ' ', el('span', { class: 'sr-only', text: 'Wybierz ikonę' })]);
+    const button = el('button', { type: 'button', class: 'picker-button picker-button-text', 'aria-haspopup': 'dialog', 'aria-expanded': 'false', title: 'Wybierz ikonę z listy' },
+        [el('i', { class: 'bi bi-grid-3x3-gap', 'aria-hidden': 'true' }), el('span', { text: 'Wybierz' }), el('span', { class: 'sr-only', text: ' ikonę' })]);
     wrap.prepend(preview);
     wrap.appendChild(button);
 
@@ -160,7 +221,16 @@ function enhanceIcon(input) {
 
     const render = () => {
         const q = search.value.trim().toLowerCase().replace(/^(bi|mi)[ -]/, '');
-        const found = q ? icons.filter((n) => n.includes(q)) : icons;
+        let found;
+        if (q) {
+            found = matchIcons(icons, q);
+        } else if (source === 'bi') {
+            // Bez frazy: najpierw polecane, potem reszta.
+            const rec = RECOMMENDED.filter((n) => icons.includes(n));
+            found = rec.concat(icons.filter((n) => ! rec.includes(n)));
+        } else {
+            found = icons;
+        }
         const shown = found.slice(0, 160);
         grid.innerHTML = '';
         for (const name of shown) {
@@ -196,7 +266,7 @@ function enhanceIcon(input) {
 
     const build = () => {
         pop = createPopover(button, 'Wybierz ikonę');
-        search = el('input', { type: 'search', class: 'picker-search', placeholder: 'Szukaj ikony, np. house, envelope…', 'aria-label': 'Szukaj ikony', autocomplete: 'off' });
+        search = el('input', { type: 'search', class: 'picker-search', placeholder: 'Szukaj po polsku lub angielsku, np. dom, koperta, telefon…', 'aria-label': 'Szukaj ikony', autocomplete: 'off' });
         hint = el('p', { class: 'picker-hint', 'aria-live': 'polite' });
         grid = el('div', { class: 'picker-grid', role: 'group', 'aria-label': 'Ikony' });
         const clear = el('button', { type: 'button', class: 'picker-clear', text: 'Bez ikony' });

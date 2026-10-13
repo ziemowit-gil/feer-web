@@ -63,7 +63,7 @@
     <label for="nav-icon" class="mb-1 block text-sm font-bold">Ikona <span class="font-normal text-muted">(opcjonalnie — używana w stylu nav „Ikony + etykiety")</span></label>
     <input type="text" id="nav-icon" name="icon" x-model="form.icon" placeholder="np. bi-house-door" data-icon-picker data-icon-format="name"
         class="w-full rounded border-gray-500 font-mono text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-    <p class="mt-1 text-xs text-muted">Klasa Bootstrap Icons bez prefiksu <code>bi</code> — np. <code>bi-people</code>, <code>bi-envelope</code>. Pełna lista: <a href="https://icons.getbootstrap.com/" target="_blank" rel="noopener" class="text-brand-dark underline">icons.getbootstrap.com</a></p>
+    <p class="mt-1 text-xs text-muted">Kliknij „Wybierz” i wybierz ikonę z listy — możesz szukać po polsku (dom, koperta, telefon). Możesz też wpisać nazwę, np. <code>bi-people</code>.</p>
     @error('icon') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
