@@ -10,7 +10,8 @@
     $projNavIdle = 'text-ink hover:bg-white hover:text-brand-dark';
     $projNavCurrent = 'bg-white font-bold text-brand-dark';
 @endphp
-<nav aria-label="Sekcje działania" class="proj-nav rounded-md bg-gray-50 p-5">
+<div class="proj-nav space-y-4">
+<nav aria-label="Sekcje działania" class="rounded-md bg-gray-50 p-5">
     @php $navHeading = $project->nav_title ?: $project->title; @endphp
     {{-- Krótka nazwa z pola „Krótka nazwa (menu boczne)”; długi pełny tytuł mniejszą czcionką. --}}
     <p @class(['font-bold leading-snug text-ink', 'text-base' => mb_strlen($navHeading) <= 40, 'text-[0.9375rem]' => mb_strlen($navHeading) > 40])>{{ $navHeading }}</p>
@@ -40,10 +41,22 @@
         @endforeach
     </ul>
 
-    {{-- Kontakt z koordynatorem: mała karta z inicjałami, imieniem, e-mailem i telefonem. --}}
+
+    @include('projects.partials.sidebar-extras', ['project' => $project])
+
+    {{-- Powrót: do kategorii i do wszystkich działań. --}}
+    <ul role="list" class="mt-5 space-y-1 text-sm">
+        @if ($project->category)
+            <li><a href="{{ route('categories.show', $project->category) }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> {{ $project->category->name }}</a></li>
+        @endif
+        <li><a href="{{ route('projects.index') }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> Wszystkie działania</a></li>
+    </ul>
+</nav>
+
+    {{-- Kontakt z koordynatorem — osobny blok pod menu (poza jego szarym polem): zdjęcie/avatar, imię, e-mail i telefon. --}}
     @if (! $project->is_completed && $project->showsCoordinator())
-        <div class="mt-5 rounded-md bg-white p-4">
-            <p class="text-base font-bold text-ink">Masz pytania? Chętnie odpowiemy</p>
+        <section class="rounded-md bg-gray-50 p-5" aria-labelledby="proj-contact-h">
+            <h2 id="proj-contact-h" class="text-base font-bold text-ink">Masz pytania? Chętnie odpowiemy</h2>
             <div class="mt-3 flex items-start gap-3">
                 {{-- Zdjęcie koordynatora (ze strony osoby w zespole); bez zdjęcia — avatar z ludzikiem; bez imienia — ikona koperty. --}}
                 @if ($coordPhoto = $project->coordinatorPhoto())
@@ -60,16 +73,6 @@
                     @endif
                 </div>
             </div>
-        </div>
+        </section>
     @endif
-
-    @include('projects.partials.sidebar-extras', ['project' => $project])
-
-    {{-- Powrót: do kategorii i do wszystkich działań. --}}
-    <ul role="list" class="mt-5 space-y-1 text-sm">
-        @if ($project->category)
-            <li><a href="{{ route('categories.show', $project->category) }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> {{ $project->category->name }}</a></li>
-        @endif
-        <li><a href="{{ route('projects.index') }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> Wszystkie działania</a></li>
-    </ul>
-</nav>
+</div>

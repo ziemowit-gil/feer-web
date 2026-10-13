@@ -36,9 +36,11 @@ class ProjectPageImprovementsTest extends TestCase
         $this->assertStringContainsString('Nauczyciele', $html);
 
         $nav = substr($html, strpos($html, 'aria-label="Sekcje działania"'));
+        $after = substr($nav, strpos($nav, '</nav>'), 3000);
         $nav = substr($nav, 0, strpos($nav, '</nav>'));
-        $this->assertStringContainsString('Masz pytania? Chętnie odpowiemy', $nav);
-        $this->assertStringContainsString('fa-user', $nav);
+        // Kontakt jako osobny blok pod menu (poza <nav>).
+        $this->assertStringContainsString('Masz pytania? Chętnie odpowiemy', $after);
+        $this->assertStringContainsString('fa-user', $after);
         $this->assertStringContainsString('Wszystkie działania', $nav);
         $this->assertStringContainsString(route('categories.show', $p->category), $nav);
         $this->assertSame(1, substr_count($html, 'Masz pytania? Chętnie odpowiemy'), 'Kontakt tylko raz (w menu bocznym).');
@@ -61,8 +63,7 @@ class ProjectPageImprovementsTest extends TestCase
             'content_image' => 'https://example.test/jan.jpg', 'person_email' => 'JAN@example.org']);
 
         $html = $this->get(route('projects.show', $p))->assertOk()->getContent();
-        $nav = substr($html, strpos($html, 'aria-label="Sekcje działania"'));
-        $this->assertStringContainsString('src="https://example.test/jan.jpg"', substr($nav, 0, strpos($nav, '</nav>')));
+        $this->assertStringContainsString('src="https://example.test/jan.jpg"', $html);
     }
 
     public function test_child_project_uses_parent_coordinator_when_own_empty(): void
