@@ -410,14 +410,14 @@
                     <div>
                         <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                             <label class="block text-sm font-bold">Opis działania</label>
-                            @if ($project->exists)
+                            @if ($project->exists && \App\Models\SiteSetting::current()->isModuleEnabled('block_editor'))
                                 <a href="{{ route('admin.edytor-blokowy.edit', ['project', $project->id]) }}"
                                     class="inline-flex items-center gap-1.5 rounded border border-brand-dark px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                     <i class="fa-solid fa-cubes" aria-hidden="true"></i> Otwórz w edytorze blokowym
                                 </a>
                             @endif
                         </div>
-                        @if ($project->exists && is_array($project->blocks))
+                        @if ($project->exists && is_array($project->blocks) && \App\Models\SiteSetting::current()->isModuleEnabled('block_editor'))
                             <p class="mb-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900" role="note">
                                 <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
                                 Treść tego działania jest edytowana w edytorze blokowym. Zmiana treści tutaj zastąpi bloki zwykłym HTML-em —

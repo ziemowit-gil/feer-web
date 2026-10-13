@@ -53,7 +53,9 @@
             @php
                 $blockEditorUrl = null;
                 $blockEditorUser = auth('web')->user();
-                if (isset($page) && $page instanceof \App\Models\Page && $page->exists && $blockEditorUser?->canAccessModule('pages')) {
+                if (! \App\Models\SiteSetting::current()->isModuleEnabled('block_editor')) {
+                    // Edytor blokowy wyłączony w Ustawienia → Moduły.
+                } elseif (isset($page) && $page instanceof \App\Models\Page && $page->exists && $blockEditorUser?->canAccessModule('pages')) {
                     $blockEditorUrl = route('admin.podstrony.bloki.edit', $page);
                     $blockEditorNoun = 'tę stronę';
                 } elseif (isset($project) && $project instanceof \App\Models\Project && $project->exists && $blockEditorUser?->canAccessModule('projects')) {

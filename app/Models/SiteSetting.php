@@ -48,6 +48,7 @@ class SiteSetting extends Model implements HasMedia
         'timeline' => 'Oś czasu (historia organizacji)',
         'cooperation' => 'Zgłoszenia współpracy (formularz + skrzynka)',
         'help_map' => 'Mapa pomocy (punkty wsparcia na mapie)',
+        'block_editor' => 'Edytor blokowy',
     ];
 
     /**
@@ -91,6 +92,7 @@ class SiteSetting extends Model implements HasMedia
         'materials' => ['group' => 'support', 'icon' => 'fa-book-open', 'desc' => 'Materiały edukacyjne do pobrania lub zakupu.'],
         'forms' => ['group' => 'tools', 'icon' => 'fa-list-check', 'desc' => 'Własne formularze z polami do wyboru i listą zgłoszeń.'],
         'landing' => ['group' => 'tools', 'icon' => 'fa-rocket', 'desc' => 'Kreator stron docelowych, np. zapisów na webinar.'],
+        'block_editor' => ['group' => 'tools', 'icon' => 'fa-cubes', 'desc' => 'Pełnoekranowy edytor z blokami dla stron, aktualności i działań. Wyłączony — treść edytujesz tylko zwykłym edytorem.'],
         'quick_actions' => ['group' => 'tools', 'icon' => 'fa-bolt', 'desc' => 'Skróty do najważniejszych akcji na stronie głównej.'],
     ];
 

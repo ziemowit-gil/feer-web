@@ -237,6 +237,7 @@ class BlockEditorController extends Controller
 
     private function editRecord(string $type, Model $record)
     {
+        abort_unless(SiteSetting::current()->isModuleEnabled('block_editor'), 404); // wyłączony w Ustawienia → Moduły
         $target = $this->authorizeRecord($type, $record);
 
         // Treść bez bloków (np. edytowana dotąd klasycznie) startuje z jednym blokiem HTML.
@@ -281,6 +282,7 @@ class BlockEditorController extends Controller
 
     private function updateRecord(Request $request, string $type, Model $record): JsonResponse
     {
+        abort_unless(SiteSetting::current()->isModuleEnabled('block_editor'), 404); // wyłączony w Ustawienia → Moduły
         $this->authorizeRecord($type, $record);
 
         $data = $this->validateJson($request, [

@@ -54,9 +54,11 @@
                 <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj pozycję
             </button>
             @if ($canEditPage)
+                @if (\App\Models\SiteSetting::current()->isModuleEnabled('block_editor'))
                 <a href="{{ route('admin.podstrony.bloki.edit', $page) }}" class="{{ $btn }}" style="{{ $btnStyle }}">
                     <i class="fa-solid fa-cubes" aria-hidden="true"></i> Edytuj w edytorze blokowym<span class="sr-only"> — strona „{{ $page->title }}”</span>
                 </a>
+                @endif
                 <a href="{{ route('admin.podstrony.edit', $page) }}" class="{{ $btn }}" style="{{ $btnStyle }}">
                     <i class="fa-solid fa-file-pen" aria-hidden="true"></i> Ustawienia strony<span class="sr-only"> „{{ $page->title }}”</span>
                 </a>
@@ -161,7 +163,7 @@
                                 <span class="block truncate font-mono text-xs font-normal text-muted">{{ $child->url }}</span>
                             </a>
                             @php $childPage = auth()->user()->canAccessModule('pages') ? $child->editablePage() : null; @endphp
-                            @if ($childPage)
+                            @if ($childPage && \App\Models\SiteSetting::current()->isModuleEnabled('block_editor'))
                                 <a href="{{ route('admin.podstrony.bloki.edit', $childPage) }}" class="{{ $btn }}" style="{{ $btnStyle }}" title="Edytuj stronę w edytorze blokowym">
                                     <i class="fa-solid fa-cubes" aria-hidden="true"></i> Edytor blokowy<span class="sr-only"> — strona „{{ $childPage->title }}”</span>
                                 </a>

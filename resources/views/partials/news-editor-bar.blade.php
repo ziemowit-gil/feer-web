@@ -71,6 +71,7 @@
                     <i class="fa-solid fa-gauge mr-1" aria-hidden="true"></i>Panel
                 </a>
 
+                @if (\App\Models\SiteSetting::current()->isModuleEnabled('block_editor'))
                 {{-- Edytor blokowy aktualności (pełnoekranowy). --}}
                 <a
                     x-show="!editMode"
@@ -79,6 +80,7 @@
                 >
                     <i class="fa-solid fa-cubes mr-1" aria-hidden="true"></i>Bloki<span class="sr-only"> — edytuj aktualność w edytorze blokowym</span>
                 </a>
+                @endif
 
                 <button
                     x-show="editMode"
