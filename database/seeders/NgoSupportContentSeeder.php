@@ -162,9 +162,10 @@ class NgoSupportContentSeeder extends Seeder
             .'.prose .ngo-card h3,.prose .ngo-step h3{margin:.75rem 0 .35rem;font-size:1.1rem;line-height:1.3;color:#1d1d1a}'
             .'.prose .ngo-card p,.prose .ngo-step p{margin:0;font-size:.975rem;line-height:1.6;color:#1d1d1a}'
             .'.prose .ngo-card a{color:#1752bf;font-weight:700;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}'
-            .'.ngo-step{display:flex;gap:1rem;align-items:flex-start}'
-            .'.ngo-num{flex:none;display:inline-flex;width:2.5rem;height:2.5rem;align-items:center;justify-content:center;border-radius:9999px;background:#1752bf;color:#fff;font-weight:800;font-size:1.05rem}'
-            .'.prose .ngo-step h3{margin-top:.3rem}'
+            .'.ngo-step{display:flex;gap:1.1rem;align-items:flex-start;padding:1.1rem 1.25rem}'
+            .'.ngo-num{flex:none;display:inline-flex;width:2.75rem;height:2.75rem;align-items:center;justify-content:center;border-radius:.6rem;background:#e8f0ff;color:#1752bf;font-weight:800;font-size:1.25rem}'
+            .'.ngo-steps{gap:.5rem}'
+            .'.prose .ngo-step h3{margin:.15rem 0 .3rem}'
             .'</style>';
 
         // Kontakt: wyłącznie dane tego działania (osoba kontaktowa z ustawień działania), nie ogólne dane fundacji.
