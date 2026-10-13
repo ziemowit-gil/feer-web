@@ -23,16 +23,7 @@
         <div class="bg-white" role="region" aria-label="Partnerzy i systemy powiązane">
             {{-- Odstępy stylem w znaczniku — nie zależą od tego, czy klasy trafiły do zbudowanego CSS. --}}
             <div class="mx-auto max-w-6xl px-4" style="padding-top: 1.75rem; padding-bottom: 1.75rem">
-                @php
-                    // „Wszyscy partnerzy” — sekcja partnerów na stronie „O organizacji” (gdy ją ma).
-                    $allPartnersPage = \App\Models\Page::query()->forCurrentSite()->where('type', 'about')->where('is_published', true)->whereNotNull('about_partner_ids')->first();
-                @endphp
-                <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1" style="margin-bottom: 1.25rem">
-                    <h2 class="text-sm font-bold uppercase tracking-wide text-ink">Współpracujemy</h2>
-                    @if ($allPartnersPage)
-                        <a href="{{ $allPartnersPage->publicUrl() }}#sekcja-partners" class="text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Wszyscy partnerzy →</a>
-                    @endif
-                </div>
+                <h2 class="text-center text-sm font-bold uppercase tracking-wide text-ink" style="margin-bottom: 1.25rem">Współpracujemy</h2>
                 {{-- Jeden rząd logotypów; na wąskich ekranach przewijany w poziomie. --}}
                 <ul class="mx-auto flex max-w-5xl items-center justify-start overflow-x-auto pb-1 lg:justify-center" style="column-gap: 2.5rem; scrollbar-width: thin" role="list">
                     @foreach ($partners as $partner)
