@@ -395,6 +395,9 @@
                 @if ($project->content)
                     <h2 class="proj-h2">Opis działania</h2>
                     <div class="prose proj-prose max-w-none" @if ($canInlineEdit) data-inline-field="content" data-inline-kind="rich" @endif>{!! $projectContentHtml !!}</div>
+                @elseif (! $project->why && ! $project->outcomes && ! $project->excerpt)
+                    {{-- Brak opisu: krótka wskazówka zamiast pustego miejsca (widoczna dla redakcji i odwiedzających). --}}
+                    <p class="proj-note"><span>Opis tego działania jest w przygotowaniu.@if (\Illuminate\Support\Facades\Route::has('projects.ask')) Masz pytanie? <a href="{{ route('projects.ask', ['project' => $project->slug]) }}" class="font-bold underline underline-offset-2">Zadaj pytanie</a>.@endif</span></p>
                 @endif
 
                 @if ($project->why)
@@ -612,7 +615,7 @@
                 @include('projects.partials.sidebar-nav', ['sectionTabs' => $sectionTabs, 'tabPages' => $tabPages, 'tabLinks' => $tabLinks])
             @endif
             @if ($hasAside)
-            <aside class="proj-aside space-y-5" aria-label="Informacje o projekcie">
+            <aside class="proj-aside space-y-7" aria-label="Informacje o projekcie">
         {{-- Główne wezwanie do działania (np. „Zapisz się”) — w kolumnie bocznej, nie w nagłówku. --}}
         @if ($hasMainCta)
             <a href="{{ $mainCta['url'] }}" class="proj-cta w-full justify-center">{{ $mainCta['label'] }} <span aria-hidden="true">→</span></a>

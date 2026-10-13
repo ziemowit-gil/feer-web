@@ -16,6 +16,14 @@
     {{-- Krótka nazwa z pola „Krótka nazwa (menu boczne)”; długi pełny tytuł mniejszą czcionką. --}}
     <p @class(['font-bold leading-snug text-ink', 'text-base' => mb_strlen($navHeading) <= 40, 'text-[0.9375rem]' => mb_strlen($navHeading) > 40])>{{ $navHeading }}</p>
     <span class="mb-3 mt-2 block h-1 w-10 bg-brand" aria-hidden="true"></span>
+    {{-- Powrót: do kategorii i do wszystkich działań. --}}
+    <ul role="list" class="mb-3 space-y-1 text-sm">
+        @if ($project->category)
+            <li><a href="{{ route('categories.show', $project->category) }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> {{ $project->category->name }}</a></li>
+        @endif
+        <li><a href="{{ route('projects.index') }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> Wszystkie działania</a></li>
+    </ul>
+
     <ul role="list" class="space-y-0.5">
         <li>
             <button type="button" @click="tab = 'opis'; node = null; $event.detail && $el.blur()" :aria-current="tab === 'opis' ? 'page' : null"
@@ -44,13 +52,6 @@
 
     @include('projects.partials.sidebar-extras', ['project' => $project])
 
-    {{-- Powrót: do kategorii i do wszystkich działań. --}}
-    <ul role="list" class="mt-5 space-y-1 text-sm">
-        @if ($project->category)
-            <li><a href="{{ route('categories.show', $project->category) }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> {{ $project->category->name }}</a></li>
-        @endif
-        <li><a href="{{ route('projects.index') }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> Wszystkie działania</a></li>
-    </ul>
 </nav>
 
     {{-- Kontakt z koordynatorem — osobny blok pod menu (poza jego szarym polem): zdjęcie (jeśli jest), imię, e-mail i telefon. --}}

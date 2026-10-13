@@ -45,7 +45,7 @@ class ProjectQuestionController extends Controller
             Log::warning('Zablokowano pytanie o działanie jako spam', ['powód' => $spam['reason'], 'ip' => $request->ip()]);
 
             return $spam['silent']
-                ? redirect()->route('projects.show', $project)->with('status', 'Pytanie zostało wysłane. Odpowiemy najszybciej, jak to możliwe.')
+                ? redirect()->route('projects.show', $project)->with('status', 'Dziękujemy! Pytanie zostało wysłane do osoby odpowiadającej za to działanie. Odpowiemy najszybciej, jak to możliwe.')
                 : back()->withErrors(['spam' => $spam['message']])->withInput();
         }
 
@@ -71,6 +71,6 @@ class ProjectQuestionController extends Controller
         }
 
         return redirect()->route('projects.show', $project)
-            ->with('status', 'Pytanie zostało wysłane. Odpowiemy najszybciej, jak to możliwe.');
+            ->with('status', 'Dziękujemy! Pytanie zostało wysłane do osoby odpowiadającej za to działanie. Odpowiemy najszybciej, jak to możliwe.');
     }
 }

@@ -32,7 +32,7 @@
 @endphp
 @if ($keyFacts)
     {{-- Najważniejsze informacje: jeden spokojny wiersz tekstu z ikonami (bez tła i ramek), zawija się na wąskich ekranach. --}}
-    <dl class="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-base text-ink" aria-label="Najważniejsze informacje">
+    <dl class="mt-6 flex flex-wrap gap-x-6 gap-y-2.5 text-base text-ink" aria-label="Najważniejsze informacje">
         @foreach ($keyFacts as $f)
             <div class="flex items-baseline gap-2">
                 <i class="fa-solid {{ $f['icon'] }} w-4 flex-none text-center text-brand-dark" aria-hidden="true"></i>

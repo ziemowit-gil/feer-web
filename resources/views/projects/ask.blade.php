@@ -63,7 +63,7 @@
                 <input type="checkbox" name="rodo_consent" value="1" required aria-required="true" @checked(old('rodo_consent')) class="mt-0.5 h-5 w-5 flex-none rounded text-brand-dark focus:ring-brand-dark">
                 <span>Wyrażam zgodę na kontakt w sprawie pytania i przetwarzanie moich danych w tym celu.@if (\App\Models\SiteSetting::current()->privacy_url ?? null) <a href="{{ \App\Models\SiteSetting::current()->privacy_url }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline">Jak przetwarzamy dane</a>.@endif</span>
             </label>
-            <button type="submit" class="inline-flex min-h-12 items-center gap-2 rounded-md bg-brand-dark px-6 font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+            <button type="submit" class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-6 font-bold text-white sm:w-auto hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 Wyślij pytanie <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
             </button>
         </form>
