@@ -570,7 +570,7 @@ html.no-animations *::after {
     }
     .admin-sidebar.is-collapsed .nav-brand { padding-left: 0; padding-right: 0; flex-direction: column; justify-content: center; gap: .25rem; height: auto; padding-top: .5rem; padding-bottom: .5rem; }
     .admin-sidebar.is-collapsed .nav-brand > a { flex: none; }
-    .admin-sidebar.is-collapsed .nav-site button { justify-content: center; padding-left: 0; padding-right: 0; }
+    .admin-sidebar.is-collapsed .nav-site > button { justify-content: center; padding-left: 0; padding-right: 0; }
     .admin-sidebar.is-collapsed .nav-link { justify-content: center; padding-left: .5rem; padding-right: .5rem; }
     .admin-sidebar.is-collapsed .nav-link > a { flex: none; }
     .admin-sidebar.is-collapsed .nav-marker { left: -.75rem; }

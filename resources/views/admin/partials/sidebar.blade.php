@@ -35,7 +35,7 @@
     <script>try { if (localStorage.getItem('admin-sidebar') === '1') document.getElementById('admin-sidebar').classList.add('is-collapsed'); } catch (e) {}</script>
 
     {{-- ── Marka + przełączniki ─────────────────────────────────── --}}
-    <div class="nav-brand flex h-16 flex-none items-center gap-3 border-b border-gray-200 px-4">
+    <div class="nav-brand flex h-14 flex-none items-center gap-2 border-b border-gray-200 px-3">
         <a href="{{ route('admin.dashboard') }}" class="flex min-w-0 flex-1 items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" title="Dashboard">
             @if ($siteSettings->logoUrl())
                 <img src="{{ $siteSettings->logoUrl() }}" alt="" class="h-9 w-9 flex-none rounded-lg object-contain">
@@ -49,6 +49,44 @@
                 <span class="block truncate text-[11px] text-muted">{{ $siteSettings->site_name }}</span>
             </span>
         </a>
+
+        {{-- Przełącznik witryny (multisite, tylko admin) — ikonka; nazwa bieżącej witryny jest pod logo. --}}
+        @if ($adminSites->count() > 1)
+            <div class="nav-site relative flex-none" x-data="{ open: false }">
+                <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-haspopup="true"
+                        class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+                        :class="open && 'bg-gray-100 text-ink'"
+                        aria-label="Zmień witrynę (bieżąca: {{ $siteSettings->site_name }})" title="Witryna: {{ $siteSettings->site_name }}">
+                    <i class="fa-solid fa-sitemap text-xs" aria-hidden="true"></i>
+                </button>
+                <div x-show="open" x-cloak @click.outside="open = false" @keydown.escape.stop="open = false"
+                 class="absolute right-0 top-full z-50 mt-1 w-64 in-[.is-collapsed]:left-0 in-[.is-collapsed]:right-auto overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-xl"
+                 role="menu" aria-label="Wybierz witrynę">
+                @foreach ($adminSites as $adminSite)
+                    <form method="POST" action="{{ route('admin.witryny.przelacz', $adminSite) }}">
+                        @csrf
+                        <button type="submit" role="menuitem"
+                                class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none {{ $adminSite->is($siteSettings) ? 'font-bold text-brand-dark' : 'text-ink' }}">
+                            @if ($adminSite->parent_site_id)
+                                <i class="fa-solid fa-arrow-turn-up fa-rotate-90 ml-2 text-[0.65rem] text-gray-300" aria-hidden="true"></i>
+                            @else
+                                <i class="fa-solid fa-sitemap text-[0.7rem] text-gray-300" aria-hidden="true"></i>
+                            @endif
+                            <span class="truncate">{{ $adminSite->site_name }}</span>
+                            @if ($adminSite->is($siteSettings))
+                                <i class="fa-solid fa-check ml-auto text-xs" aria-hidden="true"></i>
+                                <span class="sr-only">(bieżąca)</span>
+                            @endif
+                        </button>
+                    </form>
+                @endforeach
+                <a href="{{ route('admin.witryny.index') }}" role="menuitem"
+                   class="mt-1 flex items-center gap-2 border-t border-gray-100 px-3 py-2 text-sm text-muted hover:bg-gray-50 hover:text-brand-dark">
+                    <i class="fa-solid fa-gear text-[0.7rem]" aria-hidden="true"></i> Zarządzaj witrynami
+                </a>
+            </div>
+            </div>
+        @endif
 
         {{-- Zwiń/rozwiń (desktop) --}}
         <button type="button" @click="$store.adminNav.toggleCollapsed()"
@@ -67,65 +105,19 @@
         </button>
     </div>
 
-    {{-- ── Przełącznik witryny (multisite, tylko admin) ─────────── --}}
-    @if ($adminSites->count() > 1)
-        <div class="nav-site flex-none border-b border-gray-200 px-3 py-2" x-data="{ open: false }">
-            <div class="relative">
-                <button type="button" @click="open = ! open" :aria-expanded="open.toString()"
-                        class="nav-link flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
-                        title="Witryna: {{ $siteSettings->site_name }}">
-                    <span class="flex h-7 w-7 flex-none items-center justify-center rounded-md bg-gray-100 text-xs text-gray-600" aria-hidden="true">
-                        <i class="fa-solid fa-sitemap"></i>
-                    </span>
-                    <span class="nav-label min-w-0 flex-1 leading-tight">
-                        <span class="block text-[10px] font-semibold uppercase tracking-wider text-muted">Witryna</span>
-                        <span class="block truncate text-sm font-semibold text-ink">{{ $siteSettings->site_name }}</span>
-                    </span>
-                    <i class="nav-label fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform" :class="{ 'rotate-180': open }" aria-hidden="true"></i>
-                </button>
-                <div x-show="open" x-cloak @click.outside="open = false" @keydown.escape.stop="open = false"
-                     class="absolute left-0 top-full z-50 mt-1 w-64 overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-xl"
-                     role="menu" aria-label="Wybierz witrynę">
-                    @foreach ($adminSites as $adminSite)
-                        <form method="POST" action="{{ route('admin.witryny.przelacz', $adminSite) }}">
-                            @csrf
-                            <button type="submit" role="menuitem"
-                                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none {{ $adminSite->is($siteSettings) ? 'font-bold text-brand-dark' : 'text-ink' }}">
-                                @if ($adminSite->parent_site_id)
-                                    <i class="fa-solid fa-arrow-turn-up fa-rotate-90 ml-2 text-[0.65rem] text-gray-300" aria-hidden="true"></i>
-                                @else
-                                    <i class="fa-solid fa-sitemap text-[0.7rem] text-gray-300" aria-hidden="true"></i>
-                                @endif
-                                <span class="truncate">{{ $adminSite->site_name }}</span>
-                                @if ($adminSite->is($siteSettings))
-                                    <i class="fa-solid fa-check ml-auto text-xs" aria-hidden="true"></i>
-                                    <span class="sr-only">(bieżąca)</span>
-                                @endif
-                            </button>
-                        </form>
-                    @endforeach
-                    <a href="{{ route('admin.witryny.index') }}" role="menuitem"
-                       class="mt-1 flex items-center gap-2 border-t border-gray-100 px-3 py-2 text-sm text-muted hover:bg-gray-50 hover:text-brand-dark">
-                        <i class="fa-solid fa-gear text-[0.7rem]" aria-hidden="true"></i> Zarządzaj witrynami
-                    </a>
-                </div>
-            </div>
-        </div>
-    @endif
-
     {{-- ── Nawigacja: moduły jak w TYPO3 — najwyżej sześć grup głównych ──────────────
          Grupy rozwijają się pojedynczo (akordeon); aktywna grupa jest otwarta od razu. W zwężonej szynie
          widać tylko ikony grup, a lista pozycji wysuwa się po najechaniu lub fokusie. Przycisk grupy
          w szynie rozwija całe menu — to dostęp z klawiatury i dotyku. --}}
     <style>
-        .tm-head { display: flex; width: 100%; align-items: center; gap: .75rem; min-height: 2.75rem; padding: .375rem .625rem; border-radius: .375rem; text-align: left; font-weight: 700; font-size: .875rem; color: #1f2937; transition: background-color .15s; }
+        .tm-head { display: flex; width: 100%; align-items: center; gap: .625rem; min-height: 2.25rem; padding: .25rem .5rem; border-radius: .375rem; text-align: left; font-weight: 700; font-size: .875rem; color: #1f2937; transition: background-color .15s; }
         .tm-head:hover { background: #f3f4f6; }
         .tm-head:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 1px; }
-        .tm-icon { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: .375rem; background: #f3f4f6; color: #6b7280; font-size: .9rem; transition: background-color .15s, color .15s; }
+        .tm-icon { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: .375rem; background: #f3f4f6; color: #6b7280; font-size: .9rem; transition: background-color .15s, color .15s; }
         .tm-group.is-active > .tm-head, .tm-group.is-active .tm-head { color: var(--color-brand-dark); }
         .tm-group.is-active .tm-icon { background: var(--color-brand-dark); color: #fff; }
-        .tm-panel { margin: .25rem 0 .5rem 1.05rem; padding-left: .75rem; border-left: 2px solid #e5e7eb; }
-        .tm-sub { margin: .625rem .5rem .25rem; font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #4b5563; }
+        .tm-panel { margin: .125rem 0 .25rem .9rem; padding-left: .625rem; border-left: 2px solid #e5e7eb; }
+        .tm-sub { margin: .5rem .5rem .125rem; font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #4b5563; }
         .tm-sub:first-child { margin-top: .25rem; }
         .admin-sidebar.is-collapsed .tm-panel, .admin-sidebar.is-collapsed .nav-search { display: none !important; }
         .admin-sidebar.is-collapsed .tm-head { justify-content: center; padding-left: .25rem; padding-right: .25rem; }
@@ -148,7 +140,7 @@
             }
         }
     @endphp
-    <div class="nav-search flex-none border-b border-gray-200 px-3 py-2"
+    <div class="nav-search flex-none border-b border-gray-200 px-3 py-1.5"
          x-data="{
             q: '',
             entries: @js($menuEntries),
@@ -189,9 +181,9 @@
         </div>
     </div>
 
-    <nav class="nav-scroll flex-1 overflow-y-auto overscroll-contain px-3 py-3 text-sm" aria-label="Menu panelu" x-show="! $store.adminNav.searching"
+    <nav class="nav-scroll flex-1 overflow-y-auto overscroll-contain px-2 py-2 text-sm" aria-label="Menu panelu" x-show="! $store.adminNav.searching"
          x-data="navAccordion(@js(collect($menu)->firstWhere('active', true)['key'] ?? ''), @js($menu[0]['key'] ?? ''))">
-        <ul class="space-y-1" role="list">
+        <ul class="space-y-0.5" role="list">
             @foreach ($menu as $group)
                 @php
                     $gid = 'tm-panel-' . $group['key'];
@@ -219,8 +211,8 @@
                                 @foreach ($block['items'] as $item)
                                     @php $hasChildren = $item['children'] !== []; $childrenId = 'nav-children-' . $item['key']; @endphp
                                     <li x-data="{ open: {{ $hasChildren && $item['active'] ? 'true' : 'false' }} }">
-                                        <div class="relative flex items-center gap-2 rounded-lg px-2 {{ $item['active'] ? 'bg-brand-light text-brand-dark' : 'text-ink hover:bg-gray-100 hover:text-ink' }}" style="min-height: 2.25rem">
-                                            <a href="{{ $item['url'] }}" class="flex min-w-0 flex-1 items-center gap-2.5 py-1.5 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-1 rounded"
+                                        <div class="relative flex items-center gap-2 rounded-lg px-2 {{ $item['active'] ? 'bg-brand-light text-brand-dark' : 'text-ink hover:bg-gray-100 hover:text-ink' }}" style="min-height: 2rem">
+                                            <a href="{{ $item['url'] }}" class="flex min-w-0 flex-1 items-center gap-2.5 py-1 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-1 rounded"
                                                @if ($item['active'] && ! $hasChildren) aria-current="page" @endif>
                                                 <i class="fa-solid {{ $item['icon'] }} w-4 flex-none text-center text-[0.8rem] {{ $item['active'] ? 'text-brand-dark' : 'text-gray-400' }}" aria-hidden="true"></i>
                                                 <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
