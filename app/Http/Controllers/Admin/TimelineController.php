@@ -73,7 +73,8 @@ class TimelineController extends Controller
             foreach (self::ROW_KEYS as $key) {
                 $clean[$key] = trim((string) ($row[$key] ?? ''));
             }
-            if (implode('', $clean) !== '') {
+            // Sam kolor (pole zawsze ma wartość) nie czyni wpisu niepustym.
+            if (implode('', array_diff_key($clean, ['color' => true])) !== '') {
                 $out[] = $clean;
             }
         }
