@@ -4,21 +4,20 @@
     Requires x-data="{ etr: false }" on a parent element (injected by the including view).
 --}}
 @if ($etr && $etr->is_enabled && ($etr->etr_summary || $etr->etr_content))
-    <div class="mb-6 flex items-center justify-between gap-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
-        <div class="flex items-center gap-2 text-sm">
-            <span class="text-xl" aria-hidden="true">📖</span>
-            <span class="font-bold text-sky-800">Ta strona ma wersję łatwą do czytania.</span>
-        </div>
-        <div class="flex items-center gap-3">
+    {{-- Płasko: tło marki bez ramki, ikona zamiast emoji, ciemny przycisk; na telefonie przyciski zawijają się pod tekst. --}}
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3 rounded-lg bg-brand-light px-4 py-3">
+        <p class="flex items-center gap-2.5 text-sm font-bold text-ink">
+            <i class="fa-solid fa-book-open text-base text-brand-dark" aria-hidden="true"></i>
+            Ta strona ma wersję łatwą do czytania.
+        </p>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
             <button type="button"
                 @click="etr = !etr"
                 :aria-pressed="etr.toString()"
-                class="rounded-lg border border-sky-600 px-4 py-1.5 text-sm font-bold text-sky-700 transition hover:bg-sky-600 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
-                x-text="etr ? 'Wróć do normalnej wersji' : 'Włącz wersję ETR'">
-            </button>
+                class="inline-flex min-h-11 items-center rounded-md bg-ink px-4 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                x-text="etr ? 'Wróć do normalnej wersji' : 'Włącz wersję ETR'">Włącz wersję ETR</button>
             <a href="{{ route('etr.about') }}"
-                class="text-sm text-sky-700 underline hover:text-sky-900 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
-                aria-label="Co to jest ETR? (otwiera stronę informacyjną)">
+                class="inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-2 hover:text-ink focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
                 Co to jest ETR?
             </a>
         </div>
@@ -27,18 +26,18 @@
     {{-- ETR view --}}
     <div x-show="etr" x-cloak
         aria-live="polite"
-        class="rounded-2xl border-2 border-sky-300 bg-sky-50 p-6 sm:p-8">
-        <div class="mb-4 flex items-center gap-3">
-            <span class="text-2xl" aria-hidden="true">📖</span>
-            <span class="rounded-full bg-sky-200 px-3 py-1 text-xs font-bold uppercase tracking-wide text-sky-900">Wersja łatwa do czytania (ETR)</span>
-        </div>
+        class="rounded-lg bg-brand-light p-6 sm:p-8">
+        <p class="mb-4 flex items-center gap-2.5 text-sm font-bold text-brand-dark">
+            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+            Wersja łatwa do czytania (ETR)
+        </p>
 
         <h2 class="mb-5 text-2xl font-bold leading-snug text-ink">
             {{ $etr->etr_title ?: $title }}
         </h2>
 
         @if ($etr->etr_summary)
-            <div class="mb-5 rounded-xl bg-white/80 p-4 text-lg leading-relaxed text-ink">
+            <div class="mb-5 rounded-md bg-white p-4 text-lg leading-relaxed text-ink">
                 {{ $etr->etr_summary }}
             </div>
         @endif
@@ -53,8 +52,8 @@
             </div>
         @endif
 
-        <p class="mt-6 text-sm text-muted">
-            <a href="{{ route('etr.about') }}" class="underline hover:text-brand">Dowiedz się więcej o standardzie ETR →</a>
+        <p class="mt-6 text-sm">
+            <a href="{{ route('etr.about') }}" class="font-bold text-brand-dark underline underline-offset-2 hover:text-ink">Dowiedz się więcej o standardzie ETR <span aria-hidden="true">→</span></a>
         </p>
     </div>
 @endif
