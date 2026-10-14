@@ -99,7 +99,7 @@
          :style="twoCols ? 'grid-template-columns:' + width + 'px 0.75rem minmax(0,1fr);column-gap:0' : ''">
 
         {{-- ═════════ Lewy panel: drzewo stron ═════════ --}}
-        <nav aria-label="Drzewo stron" id="page-tree" x-show="open" :class="[full && 'tree-full', opts.hideDrafts && 'opt-hide-drafts', opts.menuOnly && 'opt-menu-only', opts.hideProjects && 'opt-hide-projects', opts.noChips && 'opt-no-chips', opts.noCounts && 'opt-no-counts']" class="min-w-0 rounded-md bg-white" :style="twoCols ? 'position:sticky;top:1rem;align-self:start' : ''"
+        <nav aria-label="Drzewo stron" id="page-tree" x-show="open" :class="{ 'tree-full': full, 'opt-hide-drafts': opts.hideDrafts, 'opt-menu-only': opts.menuOnly, 'opt-hide-projects': opts.hideProjects, 'opt-no-chips': opts.noChips, 'opt-no-counts': opts.noCounts }" class="min-w-0 rounded-md bg-white" :style="twoCols ? 'position:sticky;top:1rem;align-self:start' : ''"
             x-data="{
                 q: '',
                 filter() {
@@ -217,7 +217,7 @@
                     <ul role="list" class="space-y-1">
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-folder" aria-hidden="true"></i></span> Strona z podstronami</li>
                         <li class="{{ $legendRow }}"><span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-muted" aria-hidden="true">3</span> Liczba podstron</li>
-                        <li class="{{ $legendRow }}"><span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm bg-[#166534] text-[10px] font-bold text-white" aria-hidden="true">D</span> Podstrona działania</li>
+                        <li class="{{ $legendRow }}"><span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm text-[10px] font-bold" style="background:#166534;color:#fff" aria-hidden="true">D</span> Podstrona działania</li>
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-amber-500"><i class="fa-solid fa-star" aria-hidden="true"></i></span> Wyróżniona</li>
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-key" aria-hidden="true"></i></span> Dostęp ograniczony (np. tylko po zalogowaniu)</li>
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-lock" aria-hidden="true"></i></span> Strona systemowa — nie można jej usunąć</li>
@@ -230,7 +230,7 @@
                             @endforeach
                         </ul>
                     @endif
-                    <p class="mt-3 text-muted">Przeciągnij stronę na środek innej, aby zrobić z niej podstronę; w układzie „Kolejność” także na górną lub dolną krawędź, aby zmienić kolejność. Z klawiatury: Alt+Shift+strzałki.</p>
+                    <p class="mt-3 text-muted">Przeciągnij stronę na środek innej, aby zrobić z niej podstronę; w układzie „Kolejność” także na górną lub dolną krawędź, aby zmienić kolejność. Z klawiatury: Alt+Shift+strzałki. Prawy przycisk myszy, „⋯” albo Shift+F10 otwiera menu akcji strony.</p>
                 </div>
 
                 <fieldset id="tree-opts" x-show="panel === 'opts'" x-cloak class="space-y-1.5 rounded bg-gray-50 p-3 text-xs text-ink">
@@ -249,6 +249,7 @@
                 Przeciągnij stronę: na górną lub dolną krawędź innej — zmienia kolejność (tylko w układzie „Kolejność”), na środek — wkłada ją jako podstronę.
                 Z klawiatury: zaznacz stronę i użyj Alt+Shift+strzałek
                 (góra/dół — kolejność, w prawo — w głąb poprzedniej, w lewo — poziom wyżej).
+                Shift+F10 lub klawisz Menu na stronie otwiera menu jej akcji.
             </p>
             <div id="tree-dnd-status" role="status" aria-live="polite" class="sr-only"></div>
             <div class="overflow-y-auto p-2" :style="full ? '' : 'max-height:calc(100vh - 16rem)'" style="max-height:calc(100vh - 16rem)" id="tree-scroll"
@@ -267,7 +268,7 @@
                                     <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $g['open'] ? 'true' : 'false' }}" aria-controls="tree-proj-{{ $g['id'] }}"
                                         class="flex min-h-7 w-full items-center gap-2 rounded py-0.5 pr-1.5 text-left text-sm font-semibold text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                         <span class="flex w-6 flex-none justify-center text-[11px] text-muted"><i class="fa-solid fa-chevron-right transition-transform" :class="open ? 'rotate-90' : ''" aria-hidden="true"></i></span>
-                                        <span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm bg-[#166534] text-[10px] font-bold leading-none text-white" aria-hidden="true">D</span>
+                                        <span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm text-[10px] font-bold leading-none" style="background:#166534;color:#fff" aria-hidden="true">D</span>
                                         <span class="min-w-0 flex-1 truncate"><span class="sr-only">Działanie: </span>{{ $g['title'] }}</span>
                                         <span class="rounded-full bg-gray-100 px-1.5 text-[10px] font-bold text-muted"><span class="sr-only">podstron: </span>{{ $g['pages']->count() }}</span>
                                     </button>
@@ -501,6 +502,13 @@
         #page-tree.opt-no-chips [data-tree-chip],
         #page-tree.opt-no-counts [data-tree-count] { display: none !important; }
         #page-tree .tree-sep { margin: .375rem .5rem; border-top: 1px solid #e5e7eb; }
+        /* Menu kontekstowe drzewa: przycisk „⋯” widać po najechaniu na wiersz, a na ekranach dotykowych zawsze. */
+        @media (hover: none) { #page-tree [data-tree-menu-btn] { opacity: 1; } }
+        #page-tree [data-tree-row].tree-ctx-on [data-tree-menu-btn] { opacity: 1; }
+        #tree-ctx:focus { outline: none; }
+        #tree-ctx [role="menuitem"]:focus-visible { outline: 2px solid var(--color-brand-dark, #1752bf); outline-offset: -2px; }
+        #tree-ctx [role="menuitem"][aria-disabled="true"] { color: #6b7280; cursor: default; }
+        #tree-ctx [role="menuitem"][aria-disabled="true"]:hover { background: transparent; }
         #bulk-dialog::backdrop { background: rgba(17, 24, 39, .55); }
         #bulk-dialog { margin: auto; }
     </style>
@@ -650,6 +658,29 @@
     </script>
     </div>
 
+    {{-- ═════════ Menu kontekstowe drzewa ═════════
+         Jedno menu dla wszystkich wierszy: prawy przycisk myszy, przycisk „⋯” albo Shift+F10 / klawisz Menu na linku strony.
+         WAI-ARIA menu: strzałki, Home/End i pierwsza litera przenoszą fokus, Escape i Tab zamykają i oddają fokus wierszowi. --}}
+    <div id="tree-ctx" role="menu" aria-label="Akcje strony" hidden tabindex="-1"
+        class="rounded-lg border border-gray-200 bg-white py-1.5 shadow-xl"
+        style="position:fixed;z-index:60;min-width:15rem;max-width:calc(100vw - 1rem)">
+        <p data-ctx-title class="truncate px-3 pb-1.5 pt-0.5 text-xs font-bold text-muted" aria-hidden="true"></p>
+        <button type="button" role="menuitem" tabindex="-1" data-act="edit" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-pen w-4 text-center text-gray-500" aria-hidden="true"></i> Edytuj</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="view" class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-eye w-4 text-center text-gray-500" aria-hidden="true"></i> <span data-ctx-view>Zobacz na stronie</span><span class="sr-only"> (nowa karta)</span></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="add" class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-plus w-4 text-center text-gray-500" aria-hidden="true"></i> Dodaj podstronę</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="clone" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-clone w-4 text-center text-gray-500" aria-hidden="true"></i> Duplikuj</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="publish" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-eye-slash w-4 text-center text-gray-500" aria-hidden="true" data-ctx-publish-icon></i> <span data-ctx-publish>Cofnij publikację</span></button>
+        <div role="separator" class="my-1 border-t border-gray-100"></div>
+        <button type="button" role="menuitem" tabindex="-1" data-act="up" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-arrow-up w-4 text-center text-gray-500" aria-hidden="true"></i> Przenieś wyżej</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="down" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-arrow-down w-4 text-center text-gray-500" aria-hidden="true"></i> Przenieś niżej</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="move" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-arrows-up-down-left-right w-4 text-center text-gray-500" aria-hidden="true"></i> Przenieś do…</button>
+        <div role="separator" class="my-1 border-t border-gray-100"></div>
+        <button type="button" role="menuitem" tabindex="-1" data-act="copy-url" class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-link w-4 text-center text-gray-500" aria-hidden="true"></i> Kopiuj adres strony</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="copy-id" class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-hashtag w-4 text-center text-gray-500" aria-hidden="true"></i> Kopiuj ID</button>
+        <div role="separator" data-ctx-del-sep class="my-1 border-t border-gray-100"></div>
+        <button type="button" role="menuitem" tabindex="-1" data-act="delete" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-red-800 hover:bg-red-50 focus-visible:outline-none"><i class="fa-solid fa-trash w-4 text-center" aria-hidden="true"></i> Usuń</button>
+    </div>
+
     <script>
         // Przeciąganie stron w drzewie. Upuszczenie na górną/dolną czwartą część wiersza
         // ustawia stronę przed/za nią (to samo rodzeństwo), na środek — jako ostatnią podstronę.
@@ -770,6 +801,138 @@
                     send(id, parentIdOf(li), idx);
                 }
             });
+
+            // ── Menu kontekstowe ────────────────────────────────────────────────
+            const ctx = document.getElementById('tree-ctx');
+            const ctxItems = () => [...ctx.querySelectorAll('[role=menuitem]')].filter(b => ! b.hidden);
+            const routes = {
+                edit: @js(route('admin.podstrony.edit', '__ID__')),
+                add: @js(route('admin.podstrony.create', ['parent_id' => '__ID__'])),
+                clone: @js(route('admin.podstrony.clone', '__ID__')),
+                publish: @js(route('admin.podstrony.widocznosc', '__ID__')),
+                destroy: @js(route('admin.podstrony.destroy', '__ID__')),
+                select: @js(route('admin.podstrony.index', ['wybrana' => '__ID__'])),
+            };
+            const urlFor = (name, id) => routes[name].replace('__ID__', id);
+            let ctxLi = null;
+
+            // Pozycja wśród rodzeństwa w zapisanej kolejności (niezależnie od układu A–Z na ekranie).
+            const savedSiblings = li => siblingsOf(li, 0).sort((a, b) => a.dataset.pos - b.dataset.pos);
+
+            function openCtx(li, x, y, focusFirst) {
+                ctxLi = li;
+                const d = li.dataset, canEdit = d.canEdit === '1', sibs = savedSiblings(li), idx = sibs.indexOf(li);
+                ctx.querySelector('[data-ctx-title]').textContent = d.label;
+                ctx.setAttribute('aria-label', 'Akcje strony: ' + d.label);
+                ctx.querySelector('[data-ctx-view]').textContent = d.viewUrl === d.publicUrl ? 'Zobacz na stronie' : 'Podgląd roboczy';
+                ctx.querySelector('[data-ctx-publish]').textContent = d.published === '1' ? 'Cofnij publikację' : 'Opublikuj';
+                ctx.querySelector('[data-ctx-publish-icon]').className = 'fa-solid w-4 text-center text-gray-500 ' + (d.published === '1' ? 'fa-eye-slash' : 'fa-eye');
+                ctx.querySelectorAll('[data-needs-edit]').forEach(b => { b.hidden = ! canEdit; });
+                const del = ctx.querySelector('[data-act=delete]');
+                del.hidden = ! canEdit || d.system === '1';
+                ctx.querySelector('[data-ctx-del-sep]').hidden = del.hidden;
+                ctx.querySelector('[data-act=up]').setAttribute('aria-disabled', String(idx <= 0));
+                ctx.querySelector('[data-act=down]').setAttribute('aria-disabled', String(idx >= sibs.length - 1));
+
+                tree.querySelectorAll('.tree-ctx-on').forEach(r => r.classList.remove('tree-ctx-on'));
+                li.querySelector('[data-tree-row]').classList.add('tree-ctx-on');
+                ctx.hidden = false;
+                const w = ctx.offsetWidth, h = ctx.offsetHeight;
+                ctx.style.left = Math.max(8, Math.min(x, window.innerWidth - w - 8)) + 'px';
+                ctx.style.top = Math.max(8, Math.min(y, window.innerHeight - h - 8)) + 'px';
+                const items = ctxItems();
+                (focusFirst ? items[0] : ctx).focus({ preventScroll: true });
+            }
+
+            function closeCtx(returnFocus) {
+                if (ctx.hidden) return;
+                ctx.hidden = true;
+                tree.querySelectorAll('.tree-ctx-on').forEach(r => r.classList.remove('tree-ctx-on'));
+                if (returnFocus && ctxLi) ctxLi.querySelector('[data-tree-row] > a')?.focus();
+            }
+
+            // Formularz POST/PATCH/DELETE z tokenem; data-confirm obsługuje wspólne okno potwierdzenia (app.js).
+            function submitForm(action, method, confirmText) {
+                const f = document.createElement('form');
+                f.method = 'POST'; f.action = action; f.hidden = true;
+                f.innerHTML = '<input type="hidden" name="_token"><input type="hidden" name="_method"><input type="hidden" name="wybrana">';
+                f.elements._token.value = csrf;
+                f.elements._method.value = method;
+                f.elements.wybrana.value = selectedId || ctxLi.dataset.pageId;
+                if (confirmText) f.dataset.confirm = confirmText;
+                document.body.appendChild(f);
+                f.requestSubmit();
+            }
+
+            async function copy(text, what) {
+                try { await navigator.clipboard.writeText(text); announce('Skopiowano ' + what + '.'); }
+                catch (e) { window.prompt('Skopiuj ' + what + ':', text); }
+            }
+
+            function run(act) {
+                const li = ctxLi, d = li.dataset, id = d.pageId;
+                const btn = ctx.querySelector('[data-act="' + act + '"]');
+                if (btn?.getAttribute('aria-disabled') === 'true') return;
+                closeCtx(! ['edit', 'add', 'move', 'view'].includes(act));
+                if (act === 'edit') location.href = urlFor('edit', id);
+                else if (act === 'view') window.open(d.viewUrl, '_blank', 'noopener');
+                else if (act === 'add') location.href = urlFor('add', id);
+                else if (act === 'clone') submitForm(urlFor('clone', id), 'POST', 'Zduplikować stronę „' + d.label + '”? Kopia zostanie zapisana jako szkic.');
+                else if (act === 'publish') submitForm(urlFor('publish', id), 'PATCH');
+                else if (act === 'delete') submitForm(urlFor('destroy', id), 'DELETE', 'Usunąć stronę „' + d.label + '”? Trafi do kosza.');
+                else if (act === 'up' || act === 'down') {
+                    const sibs = savedSiblings(li), idx = sibs.indexOf(li);
+                    send(idOf(li), parentIdOf(li), act === 'up' ? idx - 1 : idx + 1);
+                }
+                // „Przenieś do…”: panel szczegółów strony ma listę stron nadrzędnych (z wyłączoną nią samą i jej podstronami).
+                else if (act === 'move') location.href = urlFor('select', id) + '#move-parent';
+                else if (act === 'copy-url') copy(d.publicUrl, 'adres strony');
+                else if (act === 'copy-id') copy(id, 'ID strony');
+            }
+
+            tree.addEventListener('contextmenu', e => {
+                const row = e.target.closest ? rowOf(e.target) : null;
+                if (! row) return;
+                e.preventDefault();
+                openCtx(liOf(row), e.clientX, e.clientY, false);
+            });
+            tree.addEventListener('click', e => {
+                const btn = e.target.closest('[data-tree-menu-btn]');
+                if (! btn) return;
+                e.preventDefault();
+                const r = btn.getBoundingClientRect();
+                openCtx(liOf(btn), r.left, r.bottom + 4, false);
+            });
+            tree.addEventListener('keydown', e => {
+                if (! (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10'))) return;
+                const row = e.target.closest ? rowOf(e.target) : null;
+                if (! row) return;
+                e.preventDefault();
+                const r = row.getBoundingClientRect();
+                openCtx(liOf(row), r.left + 32, r.bottom + 2, true);
+            });
+
+            ctx.addEventListener('click', e => { const b = e.target.closest('[role=menuitem]'); if (b) run(b.dataset.act); });
+            ctx.addEventListener('keydown', e => {
+                const items = ctxItems(), i = items.indexOf(document.activeElement);
+                if (e.key === 'Escape') { e.preventDefault(); closeCtx(true); }
+                else if (e.key === 'Tab') { e.preventDefault(); closeCtx(true); }
+                else if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+                else if (e.key === 'Home') { e.preventDefault(); items[0].focus(); }
+                else if (e.key === 'End') { e.preventDefault(); items[items.length - 1].focus(); }
+                else if (e.key.length === 1 && /\S/.test(e.key)) {
+                    const k = e.key.toLowerCase();
+                    const next = [...items.slice(i + 1), ...items.slice(0, i + 1)].find(b => b.textContent.trim().toLowerCase().startsWith(k));
+                    if (next) { e.preventDefault(); next.focus(); }
+                }
+            });
+            document.addEventListener('pointerdown', e => { if (! ctx.hidden && ! ctx.contains(e.target) && ! e.target.closest('[data-tree-menu-btn]')) closeCtx(false); });
+            window.addEventListener('scroll', () => closeCtx(false), true);
+            window.addEventListener('resize', () => closeCtx(false));
+
+            // Po „Przenieś do…” fokus od razu na liście stron nadrzędnych.
+            if (location.hash === '#move-parent') document.getElementById('move-parent')?.focus();
 
             // Klawiatura: Alt+Shift+strzałki na linku strony w drzewie.
             tree.addEventListener('keydown', e => {
