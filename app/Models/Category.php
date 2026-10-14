@@ -8,21 +8,63 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Category extends Model
 {
     protected $fillable = ['name', 'slug', 'order', 'icon',
-        'portal_slug', 'portal_title', 'portal_intro', 'portal_slider_id', 'portal_rss_url', 'portal_widgets'];
+        'portal_slug', 'portal_title', 'portal_intro', 'portal_slider_id', 'portal_rss_url', 'portal_widgets', 'portal_options'];
 
     protected $casts = [
         'portal_widgets' => 'array',
+        'portal_options' => 'array',
     ];
 
     /** Widżety portalu kategorii (klucz => etykieta w panelu), w domyślnej kolejności. */
     public const PORTAL_WIDGETS = [
         'projects' => 'Działania z kategorii (kafelki)',
         'news'     => 'Aktualności z działań kategorii',
+        'contact'  => 'Kontakt — do obszaru i koordynatorzy działań',
         'events'   => 'Najbliższe szkolenia i wydarzenia',
         'rss'      => 'Zewnętrzny kanał RSS',
-        'contact'  => 'Kontakt — koordynatorzy działań',
         'stats'    => 'Liczby (działania, aktualności, wydarzenia)',
     ];
+
+    /** Domyślne nagłówki widżetów portalu (w panelu można je nadpisać, puste pole = domyślny). */
+    public const PORTAL_WIDGET_TITLES = [
+        'projects' => 'Działania',
+        'news'     => 'Aktualności',
+        'contact'  => 'Kontakt',
+        'events'   => 'Najbliższe szkolenia i wydarzenia',
+        'rss'      => 'Z innych serwisów',
+        'stats'    => 'W liczbach',
+    ];
+
+    /**
+     * Ustawienie portalu z kolumny portal_options: notice, notice_link_label, notice_link_url,
+     * shortcuts (lista [label, url]), contact_text, contact_email, contact_phone (kontakt do obszaru),
+     * stay_enabled, stay_title, stay_text, titles (klucz widżetu => nagłówek).
+     */
+    public function portalOption(string $key, mixed $default = null): mixed
+    {
+        $options = is_array($this->portal_options ?? null) ? $this->portal_options : [];
+        $value = data_get($options, $key);
+
+        return ($value === null || $value === '' || $value === []) ? $default : $value;
+    }
+
+    /**
+     * „Na skróty” z panelu: wiersze „Etykieta | adres” zapisane jako lista [label, url].
+     *
+     * @return array<int, array{0: string, 1: string}>
+     */
+    public function portalShortcuts(): array
+    {
+        return collect($this->portalOption('shortcuts', []))
+            ->filter(fn ($s) => is_array($s) && filled($s['label'] ?? null) && filled($s['url'] ?? null))
+            ->map(fn ($s) => [(string) $s['label'], (string) $s['url']])->values()->all();
+    }
+
+    /** Nagłówek widżetu portalu — własny z panelu albo domyślny. */
+    public function portalWidgetTitle(string $widget): string
+    {
+        return (string) $this->portalOption("titles.$widget", self::PORTAL_WIDGET_TITLES[$widget] ?? '');
+    }
 
     /**
      * Subdomeny, których nie wolno zająć portalem (inne serwisy i usługi na feer.org.pl).
@@ -30,11 +72,20 @@ class Category extends Model
      */
     public const RESERVED_PORTAL_SLUGS = ['www', 'mail', 'poczta', 'ftp', 'cms', 'cms2', 'cmslicense', 'wiem', 'admin', 'api', 'bip', 'panel', 'webmail', 'smtp', 'imap', 'pop', 'autodiscover', 'portal'];
 
-    /** Włączone widżety portalu w ustawionej kolejności (domyślnie wszystkie poza RSS, który wymaga adresu kanału). */
+    /**
+     * Widżety włączone, dopóki w panelu nie zapisano własnego wyboru: portal ma przede wszystkim informować
+     * o obszarze działalności (wstęp, działania, kontakt), więc bez liczb i bez RSS, który wymaga adresu kanału.
+     */
+    public static function defaultPortalWidgets(): array
+    {
+        return array_values(array_diff(array_keys(self::PORTAL_WIDGETS), ['rss', 'stats']));
+    }
+
+    /** Włączone widżety portalu w ustawionej kolejności. */
     public function portalWidgets(): array
     {
         $saved = is_array($this->portal_widgets ?? null) ? $this->portal_widgets : null;
-        $keys = $saved ?? array_values(array_diff(array_keys(self::PORTAL_WIDGETS), ['rss']));
+        $keys = $saved ?? self::defaultPortalWidgets();
 
         return array_values(array_filter($keys, fn ($k) => isset(self::PORTAL_WIDGETS[$k])
             && ($k !== 'rss' || filled($this->portal_rss_url ?? null))));

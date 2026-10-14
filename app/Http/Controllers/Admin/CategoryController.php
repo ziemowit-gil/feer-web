@@ -66,6 +66,61 @@ class CategoryController extends Controller
         return redirect()->route('admin.kategorie.index')->with('status', 'Kategoria została usunięta.');
     }
 
+    /**
+     * Edytowalne elementy portalu (komunikat, „Na skróty”, kontakt do obszaru, „Pozostańmy w kontakcie”,
+     * nagłówki widżetów). Puste pola nie są zapisywane — portal pokazuje wtedy domyślną treść albo nic.
+     */
+    private function portalOptions(Request $request): array
+    {
+        $titleRules = collect(Category::PORTAL_WIDGET_TITLES)->keys()
+            ->mapWithKeys(fn ($k) => ["portal_options.titles.$k" => ['nullable', 'string', 'max:120']])->all();
+        $v = $request->validate([
+            'portal_options' => ['array'],
+            'portal_options.notice' => ['nullable', 'string', 'max:500'],
+            'portal_options.notice_link_label' => ['nullable', 'string', 'max:80'],
+            'portal_options.notice_link_url' => ['nullable', 'string', 'max:500', 'regex:#^(https?://|/)#i'],
+            'portal_options.shortcuts' => ['nullable', 'string', 'max:3000'],
+            'portal_options.contact_text' => ['nullable', 'string', 'max:1000'],
+            'portal_options.contact_email' => ['nullable', 'email', 'max:255'],
+            'portal_options.contact_phone' => ['nullable', 'string', 'max:40'],
+            'portal_options.stay_enabled' => ['nullable', 'boolean'],
+            'portal_options.stay_title' => ['nullable', 'string', 'max:120'],
+            'portal_options.stay_text' => ['nullable', 'string', 'max:500'],
+        ] + $titleRules, [
+            'portal_options.notice_link_url.regex' => 'Adres linku w komunikacie musi zaczynać się od https://, http:// albo / (strona w serwisie).',
+            'portal_options.contact_email.email' => 'Podaj poprawny adres e-mail do kontaktu.',
+        ])['portal_options'] ?? [];
+
+        // „Na skróty”: jeden wiersz = „Etykieta | adres”.
+        $shortcuts = [];
+        foreach (preg_split('/\R/', (string) ($v['shortcuts'] ?? '')) as $n => $line) {
+            if (trim($line) === '') {
+                continue;
+            }
+            [$label, $url] = array_map('trim', explode('|', $line, 2)) + [1 => ''];
+            if ($label === '' || ! preg_match('#^(https?://|/)\S*$#i', $url)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'portal_options.shortcuts' => 'Na skróty, wiersz '.($n + 1).': wpisz „Etykieta | adres”, a adres zacznij od https://, http:// albo /.',
+                ]);
+            }
+            $shortcuts[] = ['label' => Str::limit($label, 120, ''), 'url' => $url];
+        }
+
+        return array_filter([
+            'notice' => trim((string) ($v['notice'] ?? '')),
+            'notice_link_label' => trim((string) ($v['notice_link_label'] ?? '')),
+            'notice_link_url' => trim((string) ($v['notice_link_url'] ?? '')),
+            'shortcuts' => array_slice($shortcuts, 0, 12),
+            'contact_text' => trim((string) ($v['contact_text'] ?? '')),
+            'contact_email' => trim((string) ($v['contact_email'] ?? '')),
+            'contact_phone' => trim((string) ($v['contact_phone'] ?? '')),
+            'stay_enabled' => $request->boolean('portal_options.stay_enabled'),
+            'stay_title' => trim((string) ($v['stay_title'] ?? '')),
+            'stay_text' => trim((string) ($v['stay_text'] ?? '')),
+            'titles' => array_filter(array_map(fn ($t) => trim((string) $t), $v['titles'] ?? []), fn ($t) => $t !== ''),
+        ], fn ($x) => $x !== '' && $x !== []);
+    }
+
     private function validated(Request $request): array
     {
         $data = $request->validate([
@@ -106,6 +161,10 @@ class CategoryController extends Controller
                 : null;
             unset($portal['portal_widgets_order']);
             $data += $portal;
+        }
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('categories', 'portal_options') && $request->has('portal_options')) {
+            $data['portal_options'] = $this->portalOptions($request);
         }
 
         $data['slug'] = trim($data['slug'] ?? '');

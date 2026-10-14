@@ -1,7 +1,7 @@
 {{-- Widżet portalu: działania kategorii jako płaskie wiersze (jak lista kategorii w szablonie FEER), miniatura tylko gdy jest zdjęcie. $cols: klasy siatki (domyślnie dwie kolumny). --}}
 @if ($projects->isNotEmpty())
     <section aria-labelledby="portal-w-projects">
-        <h2 id="portal-w-projects" class="text-xl font-bold leading-tight text-ink md:text-2xl">Działania</h2>
+        <h2 id="portal-w-projects" class="text-xl font-bold leading-tight text-ink md:text-2xl">{{ $category->portalWidgetTitle('projects') }}</h2>
         <span class="mt-2 block h-1 w-12 bg-brand" aria-hidden="true"></span>
         <ul role="list" class="mt-6 grid gap-2 {{ $cols ?? 'md:grid-cols-2' }}">
             @foreach ($projects as $project)

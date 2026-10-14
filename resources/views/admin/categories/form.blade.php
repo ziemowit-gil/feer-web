@@ -42,7 +42,7 @@
         @if (\Illuminate\Support\Facades\Schema::hasColumn('categories', 'portal_slug'))
             @php
                 $widgetOrder = array_values(array_unique([...($category->portal_widgets ?? []), ...array_keys(\App\Models\Category::PORTAL_WIDGETS)]));
-                $widgetOn = $category->portal_widgets ?? array_values(array_diff(array_keys(\App\Models\Category::PORTAL_WIDGETS), ['rss']));
+                $widgetOn = $category->portal_widgets ?? \App\Models\Category::defaultPortalWidgets();
                 $sliders = \Illuminate\Support\Facades\Schema::hasTable('sliders') ? \App\Models\Slider::query()->forCurrentSite()->orderBy('name')->get(['id', 'name']) : collect();
                 $baseHost = preg_replace('/^www\./', '', (string) parse_url((string) config('app.url'), PHP_URL_HOST));
             @endphp
@@ -72,7 +72,8 @@
 
                 <div>
                     <label for="portal_intro" class="mb-1 block text-sm font-bold">Wstęp</label>
-                    <textarea id="portal_intro" name="portal_intro" rows="4" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('portal_intro', $category->portal_intro) }}</textarea>
+                    <textarea id="portal_intro" name="portal_intro" rows="6" aria-describedby="portal_intro_help" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('portal_intro', $category->portal_intro) }}</textarea>
+                    <p id="portal_intro_help" class="mt-1 text-xs text-muted">Czym fundacja zajmuje się w tym obszarze i dla kogo. Akapity oddzielaj pustą linią.</p>
                     @error('portal_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
@@ -112,6 +113,91 @@
                         </template>
                     </ul>
                 </div>
+
+                @if (\Illuminate\Support\Facades\Schema::hasColumn('categories', 'portal_options'))
+                    @php
+                        $opt = fn (string $k, $d = '') => old('portal_options.'.$k, $category->portalOption($k, $d));
+                        $shortcutsText = old('portal_options.shortcuts', collect($category->portalShortcuts())->map(fn ($s) => $s[0].' | '.$s[1])->implode("\n"));
+                        $input = 'w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark';
+                    @endphp
+
+                    <fieldset class="space-y-4">
+                        <legend class="mb-1 text-sm font-bold">Komunikat nad portalem <span class="font-normal text-muted">(opcjonalnie, np. zapisy, zmiana terminu)</span></legend>
+                        <div>
+                            <label for="portal_notice" class="mb-1 block text-sm">Treść komunikatu</label>
+                            <textarea id="portal_notice" name="portal_options[notice]" rows="2" maxlength="500" class="{{ $input }}">{{ $opt('notice') }}</textarea>
+                            @error('portal_options.notice') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label for="portal_notice_link_label" class="mb-1 block text-sm">Tekst linku</label>
+                                <input type="text" id="portal_notice_link_label" name="portal_options[notice_link_label]" value="{{ $opt('notice_link_label') }}" placeholder="np. Zapisz się" class="{{ $input }}">
+                            </div>
+                            <div>
+                                <label for="portal_notice_link_url" class="mb-1 block text-sm">Adres linku</label>
+                                <input type="text" id="portal_notice_link_url" name="portal_options[notice_link_url]" value="{{ $opt('notice_link_url') }}" placeholder="https://… albo /strona" class="{{ $input }} font-mono text-sm">
+                                @error('portal_options.notice_link_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="space-y-4">
+                        <legend class="mb-1 text-sm font-bold">Kontakt do obszaru <span class="font-normal text-muted">(widżet „Kontakt”, obok koordynatorów działań)</span></legend>
+                        <div>
+                            <label for="portal_contact_text" class="mb-1 block text-sm">Kilka słów zachęty</label>
+                            <textarea id="portal_contact_text" name="portal_options[contact_text]" rows="2" maxlength="1000" placeholder="np. Masz pytanie o szkolenia? Napisz albo zadzwoń." class="{{ $input }}">{{ $opt('contact_text') }}</textarea>
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label for="portal_contact_email" class="mb-1 block text-sm">E-mail</label>
+                                <input type="email" id="portal_contact_email" name="portal_options[contact_email]" value="{{ $opt('contact_email') }}" autocomplete="off" class="{{ $input }}">
+                                @error('portal_options.contact_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="portal_contact_phone" class="mb-1 block text-sm">Telefon</label>
+                                <input type="text" id="portal_contact_phone" name="portal_options[contact_phone]" value="{{ $opt('contact_phone') }}" autocomplete="off" class="{{ $input }}">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div>
+                        <label for="portal_shortcuts" class="mb-1 block text-sm font-bold">Na skróty <span class="font-normal text-muted">(puste = lista domyślna)</span></label>
+                        <textarea id="portal_shortcuts" name="portal_options[shortcuts]" rows="4" aria-describedby="portal_shortcuts_help" placeholder="Zapisy na szkolenia | /formularz-zapisow" class="{{ $input }} font-mono text-sm">{{ $shortcutsText }}</textarea>
+                        <p id="portal_shortcuts_help" class="mt-1 text-xs text-muted">Jeden link w wierszu: <span class="font-mono">Etykieta | adres</span>. Adres zaczyna się od https:// albo / (strona w serwisie). Najwyżej 12 linków.</p>
+                        @error('portal_options.shortcuts') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <fieldset class="space-y-4">
+                        <legend class="mb-1 text-sm font-bold">Sekcja „Pozostańmy w kontakcie” na końcu portalu</legend>
+                        <input type="hidden" name="portal_options[stay_enabled]" value="0">
+                        <label class="flex min-h-8 items-center gap-2 text-sm">
+                            <input type="checkbox" name="portal_options[stay_enabled]" value="1" @checked((bool) old('portal_options.stay_enabled', $category->portalOption('stay_enabled', true))) class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            Pokazuj sekcję
+                        </label>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label for="portal_stay_title" class="mb-1 block text-sm">Nagłówek</label>
+                                <input type="text" id="portal_stay_title" name="portal_options[stay_title]" value="{{ $opt('stay_title') }}" placeholder="Pozostańmy w kontakcie" class="{{ $input }}">
+                            </div>
+                            <div>
+                                <label for="portal_stay_text" class="mb-1 block text-sm">Krótki opis <span class="text-muted">(opcjonalnie)</span></label>
+                                <input type="text" id="portal_stay_text" name="portal_options[stay_text]" value="{{ $opt('stay_text') }}" class="{{ $input }}">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend class="mb-1 text-sm font-bold">Nagłówki widżetów <span class="font-normal text-muted">(puste = domyślny)</span></legend>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            @foreach (\App\Models\Category::PORTAL_WIDGET_TITLES as $wKey => $wDefault)
+                                <div>
+                                    <label for="portal_title_{{ $wKey }}" class="mb-1 block text-xs text-muted">{{ \App\Models\Category::PORTAL_WIDGETS[$wKey] }}</label>
+                                    <input type="text" id="portal_title_{{ $wKey }}" name="portal_options[titles][{{ $wKey }}]" value="{{ old('portal_options.titles.'.$wKey, $category->portalOption('titles.'.$wKey)) }}" placeholder="{{ $wDefault }}" class="{{ $input }} text-sm">
+                                </div>
+                            @endforeach
+                        </div>
+                    </fieldset>
+                @endif
             </fieldset>
         @endif
 

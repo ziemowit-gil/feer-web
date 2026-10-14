@@ -1,7 +1,7 @@
 {{-- Widżet portalu: najbliższe szkolenia i wydarzenia. --}}
 @if ($events->isNotEmpty())
     <section aria-labelledby="portal-w-events">
-        <h2 id="portal-w-events" class="text-xl font-bold leading-tight text-ink md:text-2xl">Najbliższe szkolenia i wydarzenia</h2>
+        <h2 id="portal-w-events" class="text-xl font-bold leading-tight text-ink md:text-2xl">{{ $category->portalWidgetTitle('events') }}</h2>
         <span class="mt-2 block h-1 w-12 bg-brand" aria-hidden="true"></span>
         <ul role="list" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             @foreach ($events as $event)

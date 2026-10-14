@@ -46,7 +46,7 @@
     </div>
 
     @if ($count > 1)
-        <div class="flex items-center gap-2 border-t border-gray-200 px-5 py-2.5 md:px-6">
+        <div class="flex items-center gap-2 px-5 pb-3 md:px-6">
             <button type="button" @click="paused = ! paused" :aria-pressed="paused.toString()" class="inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-bold text-ink hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid" :class="paused ? 'fa-play' : 'fa-pause'" aria-hidden="true"></i><span x-text="paused ? 'Wznów' : 'Zatrzymaj'">Zatrzymaj</span>
             </button>
