@@ -438,6 +438,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('slidery/{slider}', [\App\Http\Controllers\Admin\SliderController::class, 'show'])->name('slidery.show');
         Route::put('slidery/{slider}', [\App\Http\Controllers\Admin\SliderController::class, 'update'])->name('slidery.update');
         Route::delete('slidery/{slider}', [\App\Http\Controllers\Admin\SliderController::class, 'destroy'])->name('slidery.destroy');
+        Route::post('slidery/{slider}/kopiuj', [\App\Http\Controllers\Admin\SliderController::class, 'copy'])->name('slidery.kopiuj');
         Route::post('slidery/{slider}/slajdy/{heroSlide}/przesun', [\App\Http\Controllers\Admin\SliderController::class, 'move'])->name('slidery.move');
     });
 

@@ -3,7 +3,7 @@
 @section('title', 'Slidery')
 
 @section('content')
-    @php $btn = 'inline-flex min-h-10 items-center gap-2 rounded-md px-4 text-sm font-bold'; @endphp
+    @php $btn = 'inline-flex min-h-11 items-center gap-2 rounded-md px-4 text-sm font-bold'; @endphp
 
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div class="max-w-3xl">
@@ -45,8 +45,13 @@
                         <h2 class="text-lg font-bold text-ink">{{ $slider->name }}</h2>
                         <p class="text-sm text-ink">{{ $slider->slides->count() }} {{ trans_choice('slajd|slajdy|slajdów', $slider->slides->count()) }}</p>
                         <p class="mt-1 text-sm text-ink"><i class="fa-solid fa-location-dot mr-1 text-brand-dark" aria-hidden="true"></i>{{ $slider->placementLabel() }}</p>
-                        <div class="mt-auto pt-4">
+                        <div class="mt-auto flex flex-wrap gap-2 pt-4">
                             <a href="{{ route('admin.slidery.show', $slider) }}" class="{{ $btn }} bg-brand-dark text-white hover:bg-ink">Zarządzaj<span class="sr-only"> sliderem {{ $slider->name }}</span></a>
+                            <form method="POST" action="{{ route('admin.slidery.kopiuj', $slider) }}"
+                                data-confirm="Skopiować slider „{{ $slider->name }}” razem ze wszystkimi slajdami i zdjęciami? Kopia nie będzie nigdzie wyświetlana, dopóki jej nie przypiszesz.">
+                                @csrf
+                                <button type="submit" class="{{ $btn }} border-2 border-brand-dark bg-white text-brand-dark hover:bg-gray-100"><i class="fa-solid fa-copy" aria-hidden="true"></i> Kopiuj<span class="sr-only"> slider {{ $slider->name }}</span></button>
+                            </form>
                         </div>
                     </div>
                 </li>

@@ -72,4 +72,50 @@ class SlidersTest extends TestCase
 
         $this->actingAs($this->admin())->get(route('admin.slidery.show', $slider))->assertSee('Szkolenia');
     }
+
+    public function test_copy_slider_duplicates_slides_and_media_without_placement(): void
+    {
+        $admin = $this->admin();
+        $slider = Slider::create(['name' => 'Główny', 'is_home' => true, 'show_on_blog' => true, 'duration' => 8]);
+        foreach (['Pierwszy', 'Drugi'] as $n => $title) {
+            $slide = HeroSlide::create(['slider_id' => $slider->id, 'title' => $title, 'text' => "Tekst {$n}", 'button_label' => "Przycisk {$n}", 'button_url' => "/a{$n}", 'order' => $n]);
+            $slide->addMedia(UploadedFile::fake()->image("s{$n}.jpg"))->toMediaCollection('image');
+        }
+        Page::create(['title' => 'Szkolenia', 'slug' => 'szkolenia-k', 'type' => 'standard', 'is_published' => true, 'content' => '<p>x</p>',
+            'layout_data' => ['hero_slider_id' => $slider->id]]);
+
+        $this->actingAs($admin)->get(route('admin.hero.index'))->assertOk()
+            ->assertSee(route('admin.slidery.kopiuj', $slider))->assertSee('data-confirm', false)->assertSee('Kopiuj');
+
+        $response = $this->actingAs($admin)->post(route('admin.slidery.kopiuj', $slider));
+        $copy = Slider::where('name', 'Główny (kopia)')->firstOrFail();
+        $response->assertRedirect(route('admin.slidery.show', $copy))->assertSessionHas('status');
+
+        $this->assertFalse($copy->is_home);
+        $this->assertFalse($copy->show_on_blog);
+        $this->assertTrue($copy->pages()->isEmpty());
+        $this->assertSame('Nigdzie (nieprzypisany)', $copy->placementLabel());
+        $this->assertSame(8, $copy->duration);
+        $this->assertTrue($slider->fresh()->is_home, 'Oryginał zachowuje swoje miejsca.');
+
+        $original = $slider->slides()->get();
+        $copied = $copy->slides()->get();
+        $this->assertCount(2, $copied);
+        foreach ($copied as $i => $slide) {
+            $this->assertSame(
+                $original[$i]->only(['title', 'text', 'button_label', 'button_url', 'order']),
+                $slide->only(['title', 'text', 'button_label', 'button_url', 'order']),
+            );
+            $media = $slide->getFirstMedia('image');
+            $this->assertNotNull($media);
+            $this->assertNotSame($original[$i]->getFirstMedia('image')->id, $media->id, 'Zdjęcie skopiowane, a nie współdzielone.');
+            Storage::disk('public')->assertExists($media->getPathRelativeToRoot());
+        }
+
+        // Usunięcie kopii nie rusza zdjęć oryginału.
+        $this->actingAs($admin)->delete(route('admin.slidery.destroy', $copy))->assertRedirect();
+        foreach ($slider->slides()->get() as $slide) {
+            Storage::disk('public')->assertExists($slide->getFirstMedia('image')->getPathRelativeToRoot());
+        }
+    }
 }

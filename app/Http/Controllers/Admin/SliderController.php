@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
  * Panel admin: slidery — zestawy slajdów dla strony głównej, bloga i wybranych stron.
  * Slajdy edytuje HeroSlideController (z ?slider=ID); tu lista, ustawienia, kolejność i usuwanie.
  *
- * Metody: index(), store(), show(), update(), destroy(), move().
+ * Metody: index(), store(), show(), update(), copy(), destroy(), move().
  */
 class SliderController extends Controller
 {
@@ -56,6 +56,29 @@ class SliderController extends Controller
         $slider->update($data);
 
         return back()->with('status', 'Ustawienia slidera zapisane.');
+    }
+
+    /**
+     * Kopiuje slider razem ze slajdami (tytuł, tekst, przycisk, kolejność) i własnymi kopiami zdjęć.
+     * Kopia nie ma przypisanego miejsca (strona główna, blog, strony), więc nie pojawia się od razu na froncie.
+     */
+    public function copy(Slider $slider)
+    {
+        $copy = \Illuminate\Support\Facades\DB::transaction(function () use ($slider) {
+            $copy = $slider->replicate(['is_home', 'show_on_blog']);
+            $copy->fill(['name' => \Illuminate\Support\Str::limit($slider->name, 110, '').' (kopia)', 'is_home' => false, 'show_on_blog' => false])->save();
+
+            foreach ($slider->slides()->with('media')->get() as $slide) {
+                $newSlide = $slide->replicate();
+                $newSlide->slider_id = $copy->id;
+                $newSlide->save();
+                $slide->getMedia('image')->each(fn ($media) => $media->copy($newSlide, 'image'));
+            }
+
+            return $copy;
+        });
+
+        return redirect()->route('admin.slidery.show', $copy)->with('status', 'Slider „'.$slider->name.'” skopiowany jako „'.$copy->name.'”. Kopia nie jest nigdzie wyświetlana — przypisz ją w ustawieniach.');
     }
 
     public function destroy(Slider $slider)
