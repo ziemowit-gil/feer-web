@@ -1,5 +1,5 @@
 @php
-    $wideMission = $siteSettings->header_layout === 'wide_mission';
+    $wideMission = $siteSettings->headerLayoutValue() === 'wide_mission';
     $sidebarStyle = $siteSettings->wide_mission_sidebar_style ?? 'colored';
     $sidebarEnabled = $wideMission && ($siteSettings->wide_mission_sidebar ?? false);
 

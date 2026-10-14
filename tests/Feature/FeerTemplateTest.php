@@ -98,30 +98,42 @@ class FeerTemplateTest extends TestCase
         }
     }
 
-    public function test_menu_w_szablonie_feer_to_bialy_pasek_z_pigulkami(): void
+    public function test_szablon_feer_ma_staly_naglowek_niezaleznie_od_ukladu(): void
     {
-        SiteSetting::current()->update(['site_template' => 'feer', 'header_layout' => 'wide_mission']);
-        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        foreach (['wide_mission', 'office_bar', 'institutional', 'brand_bar', 'classic'] as $layout) {
+            SiteSetting::current()->update(['site_template' => 'feer', 'header_layout' => $layout, 'facebook_url' => 'https://facebook.com/feer']);
+            \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+            \Illuminate\Support\Facades\Cache::flush();
 
-        $html = $this->get('/')->assertOk()->getContent();
-        $this->assertStringContainsString('nav-pills', $html);
-        $this->assertStringContainsString('border-b border-gray-200', $html);
-        $this->assertStringNotContainsString('border-y border-gray-200', $html);
-        $this->assertStringNotContainsString('relative hidden bg-brand shadow-sm', $html);
+            $html = $this->get('/')->assertOk()->getContent();
+            $start = strpos($html, '<header');
+            $header = substr($html, $start, strpos($html, '<main') - $start);
+            // Dwa rzędy: logo + social + „Materiały edukacyjne”, pod spodem menu na białym pasku.
+            $this->assertStringContainsString('site-topbar-feer', $header, $layout);
+            $this->assertStringContainsString('border-y border-gray-100', $header, $layout);
+            $this->assertStringContainsString('Materiały edukacyjne', $header, $layout);
+            $this->assertStringContainsString('hover:bg-brand-light hover:text-brand-dark', $header, $layout);
+            foreach (['site-header-wide', 'header-inst-nav', 'Pasek informacyjny i dostępność', 'relative hidden bg-brand lg:block'] as $other) {
+                $this->assertStringNotContainsString($other, $header, $layout.': '.$other);
+            }
+        }
 
-        SiteSetting::current()->update(['site_template' => 'ngo_mix']);
+        // Inne szablony nadal słuchają ustawienia.
+        SiteSetting::current()->update(['site_template' => 'ngo_mix', 'header_layout' => 'wide_mission']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         $this->get('/')->assertOk()->assertSee('relative hidden bg-brand shadow-sm', false);
     }
 
-    private function hubPage(): void
+    public function test_panel_nie_pozwala_zmienic_ukladu_naglowka_w_szablonie_feer(): void
     {
-        \App\Models\Page::create([
-            'title' => 'Dołącz', 'slug' => 'dolacz-hub-test', 'type' => 'links_hub', 'is_published' => true, 'hub_intro' => 'Zostań z nami',
-            'hub_links' => [['label' => 'Wolontariat', 'url' => '/wolontariat', 'icon' => 'fa-solid fa-hand', 'color' => 'green', 'description' => 'Pomagaj']],
-        ]);
-    }
+        SiteSetting::current()->update(['site_template' => 'feer', 'header_layout' => 'wide_mission']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
+        $this->actingAs(\App\Models\User::factory()->create(['role' => \App\Models\User::ROLE_ADMIN]));
+        $html = $this->get(route('admin.ustawienia.edit', ['tab' => 'header']))->assertOk()->getContent();
+        $this->assertStringContainsString('<input type="hidden" name="header_layout" value="classic">', $html);
+        $this->assertStringNotContainsString('type="radio" name="header_layout"', $html);
+    }
     public function test_strona_hub_w_szablonie_feer_ma_plaskie_karty_bez_kolorowych_naglowkow(): void
     {
         $this->hubPage();
@@ -514,20 +526,6 @@ class FeerTemplateTest extends TestCase
         $this->get('/')->assertOk()->assertDontSee('body::before', false);
     }
 
-    public function test_naglowek_ma_drugi_przycisk_obok_pierwszego_i_w_menu_mobilnym(): void
-    {
-        SiteSetting::current()->update([
-            'site_template' => 'feer', 'header_layout' => 'wide_mission',
-            'wide_mission_cta_label' => 'Materiały', 'wide_mission_cta_url' => '/materialy',
-            'wide_mission_cta2_label' => 'Wolontariat', 'wide_mission_cta2_url' => '/wolontariat',
-        ]);
-        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
-
-        $html = $this->get('/')->assertOk()->getContent();
-        $this->assertSame(2, substr_count($html, '>Wolontariat</a>'), 'pasek nagłówka + panel mobilny');
-        $this->assertStringContainsString('!border-brand', $html);
-    }
-
     public function test_zdjecie_wpisu_feer_slucha_ustawienia_ukladu_a_ikonki_sa_na_dole(): void
     {
         SiteSetting::current()->update(['site_template' => 'feer']);
@@ -588,25 +586,6 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         \Illuminate\Support\Facades\Cache::flush();
         $this->get('/dzialania')->assertOk()->assertDontSee('min-h-40', false);
-    }
-
-    public function test_naglowek_feer_ma_plaskie_skroty_social_i_przycisk_akcji(): void
-    {
-        SiteSetting::current()->update([
-            'site_template' => 'feer', 'header_layout' => 'wide_mission', 'facebook_url' => 'https://facebook.com/feer',
-            'wide_mission_social_1' => 'facebook', 'wide_mission_cta_label' => 'Materiały', 'wide_mission_cta_url' => '/materialy',
-        ]);
-        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
-
-        $html = $this->get('/')->assertOk()->getContent();
-        $start = strpos($html, '<header');
-        $header = substr($html, $start, strpos($html, '<main') - $start);
-        $footer = substr($html, strpos($html, '<footer'));
-        $this->assertStringContainsString('>Materiały</a>', $header);
-        // jedyny zestaw ikon to ten z paska górnego — w samym nagłówku ich nie ma
-        $this->assertStringContainsString('rounded-md text-ink hover:bg-brand-light', $header);
-        $this->assertStringNotContainsString('rounded-full text-muted hover:bg-gray-100', $header);
-        $this->assertStringContainsString('Facebook — otwiera się w nowej karcie', $footer);
     }
 
     public function test_naglowek_feer_ma_przycisk_materialow_edukacyjnych(): void

@@ -1,5 +1,5 @@
 @php
-    $sidebarActive = $siteSettings->header_layout === 'wide_mission' && ($siteSettings->wide_mission_sidebar ?? false);
+    $sidebarActive = $siteSettings->headerLayoutValue() === 'wide_mission' && ($siteSettings->wide_mission_sidebar ?? false);
     $quickLinksHere = ($sidebarActive && $quickLinks->isNotEmpty()) ? collect() : $quickLinks;
 @endphp
 @if ($poll || $quickLinksHere->isNotEmpty())

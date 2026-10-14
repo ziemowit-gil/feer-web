@@ -16,7 +16,7 @@
     $bipHref       = $siteSettings->bipHref();
     $showBip       = $siteSettings->show_topbar_bip && filled($bipHref);
     $topSocials    = $siteSettings->show_topbar_social ? $siteSettings->socialLinks() : [];
-    $searchInNav   = $siteSettings->header_layout === 'wide_mission' && ($siteSettings->wide_mission_search_in_nav ?? false);
+    $searchInNav   = $siteSettings->headerLayoutValue() === 'wide_mission' && ($siteSettings->wide_mission_search_in_nav ?? false);
 
     $topLink = 'inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-sm font-semibold text-ink transition hover:text-brand '
         . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1';

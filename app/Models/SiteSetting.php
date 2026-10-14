@@ -857,9 +857,20 @@ class SiteSetting extends Model implements HasMedia
      */
     public function headerLayoutValue(): string
     {
+        // Szablon FEER ma własny, niezmienny nagłówek (dwa rzędy: logo + przycisk, pod spodem menu) — budowany w gałęzi „classic”.
+        if ($this->hasFixedHeader()) {
+            return 'classic';
+        }
+
         return array_key_exists((string) $this->header_layout, self::HEADER_LAYOUTS)
             ? $this->header_layout
             : 'classic';
+    }
+
+    /** Szablon z dedykowanym nagłówkiem, którego układu nie można zmienić w ustawieniach (FEER). */
+    public function hasFixedHeader(): bool
+    {
+        return ($this->site_template ?? 'default') === 'feer';
     }
 
     /**

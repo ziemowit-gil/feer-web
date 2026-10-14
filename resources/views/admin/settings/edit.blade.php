@@ -269,6 +269,14 @@
                 <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Układ nagłówka strony</summary>
                 <div class="border-t border-gray-200 p-5">
                 @php $isFeer = str_contains(request()->getHost(), 'feer.org.pl') || in_array(request()->getHost(), ['localhost', '127.0.0.1'], true); @endphp
+                @if ($settings->hasFixedHeader())
+                {{-- Szablon FEER: dedykowany nagłówek, bez wyboru układu (ukryte pole utrzymuje wymaganą wartość). --}}
+                <input type="hidden" name="header_layout" value="{{ $settings->headerLayoutValue() }}">
+                <p class="text-sm text-ink">
+                    Szablon FEER ma własny, stały nagłówek: logo, ikony social i przycisk „Materiały edukacyjne” u góry,
+                    pod spodem menu na pełną szerokość. Aby wybrać inny układ, zmień szablon strony.
+                </p>
+                @else
                 <div class="grid gap-3 sm:grid-cols-2">
                     @foreach (\App\Models\SiteSetting::HEADER_LAYOUTS as $layoutValue => $layoutLabel)
                     @continue($settings->isOptionBlocked('header_layouts', $layoutValue) && old('header_layout', $settings->headerLayoutValue()) !== $layoutValue)
@@ -303,6 +311,7 @@
                 </p>
                 @enderror
                 @error('header_layout') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                @endif
                 </div>
             </details>
 
