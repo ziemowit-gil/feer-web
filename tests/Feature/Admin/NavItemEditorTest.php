@@ -99,4 +99,25 @@ class NavItemEditorTest extends TestCase
             ->assertRedirect(route('admin.pozycje-menu.index', ['location' => 'main', 'pozycja' => $parent->id]));
         $this->assertNull(NavItem::find($created->id));
     }
+
+    public function test_zapis_z_okna_edycji_zachowuje_wyroznienie_i_kolor_pozycji(): void
+    {
+        $item = $this->item('Kontakt', ['url' => '/kontakt']);
+
+        // Dokładnie to, co wysyła okno „Edytuj pozycję menu” (highlight jako ukryte 0 + zaznaczone 1).
+        $this->actingAs($this->admin())->put(route('admin.pozycje-menu.update', $item), [
+            'editing_id' => $item->id, 'location' => 'main', 'label' => 'Kontakt', 'icon' => '', 'type' => 'link',
+            'url' => '/kontakt', 'parent_id' => '', 'module' => '', 'is_active' => '1', 'button_color' => '',
+            'highlight' => '1', 'accent_color' => '#8b0d20', 'description' => '', 'mega_extra_title' => '',
+            'mega_size' => 'md', 'mega_side_title' => '', 'mega_image_url' => '', 'mega_image_alt' => '',
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        $item->refresh();
+        $this->assertTrue($item->highlight);
+        $this->assertSame('#8b0d20', $item->accent_color);
+
+        // Panel szczegółów pokazuje, co zapisano.
+        $this->get(route('admin.pozycje-menu.index', ['location' => 'main', 'pozycja' => $item->id]))
+            ->assertOk()->assertSee('Wyróżniona')->assertSee('Kolor pozycji')->assertSee('#8b0d20');
+    }
 }

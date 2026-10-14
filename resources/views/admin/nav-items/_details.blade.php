@@ -36,6 +36,7 @@
                 @if ($item->is_button)<span class="font-bold text-brand-dark">Przycisk (CTA)</span>@endif
                 @if ($item->is_column_heading)<span class="font-bold text-ink"><i class="fa-solid fa-table-columns" aria-hidden="true"></i> Nagłówek kolumny</span>@endif
                 @if ($item->is_mega && ! $parent)<span class="font-bold text-ink">Mega menu</span>@endif
+                @if ($item->highlight)<span class="inline-flex items-center gap-1 font-bold text-ink"><i class="fa-solid fa-star" aria-hidden="true"></i> Wyróżniona</span>@endif
                 @if ($canEditPage)
                     <span class="inline-flex items-center gap-1 text-ink"><i class="fa-solid fa-file-lines text-brand-dark" aria-hidden="true"></i> strona „{{ $page->title }}”@unless ($page->is_published) (nieopublikowana)@endunless</span>
                 @endif
@@ -81,6 +82,11 @@
             <dd class="mt-0.5">@if ($parent)<a href="{{ route('admin.pozycje-menu.index', ['location' => $location, 'pozycja' => $parent->id]) }}" class="text-brand-dark hover:underline">{{ $parent->label }}</a>@else<span class="text-muted">— pasek menu</span>@endif</dd></div>
         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Kolejność</dt><dd class="mt-0.5">{{ $pos !== false ? $pos + 1 : '—' }} z {{ $siblings->count() }}</dd></div>
         @if ($item->module)<div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Widoczna gdy moduł włączony</dt><dd class="mt-0.5">{{ \App\Models\SiteSetting::MODULES[$item->module] ?? $item->module }}</dd></div>@endif
+        @php $__c = $item->is_button ? $item->button_color : $item->accent_color; @endphp
+        @if (\App\Support\Color::isValid($__c))
+            <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">{{ $item->is_button ? 'Kolor przycisku' : 'Kolor pozycji' }}</dt>
+                <dd class="mt-0.5 inline-flex items-center gap-2"><span class="inline-block h-4 w-4 rounded-sm border border-gray-300" style="background: {{ $__c }}" aria-hidden="true"></span><span class="font-mono text-xs">{{ $__c }}</span></dd></div>
+        @endif
         @if ($item->icon)<div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Ikona</dt><dd class="mt-0.5">{!! icon_html($item->icon, '') !!} <span class="font-mono text-xs">{{ $item->icon }}</span></dd></div>@endif
         @if ($item->description)<div style="grid-column: 1 / -1"><dt class="text-xs font-bold uppercase tracking-wide text-muted">Opis w mega menu</dt><dd class="mt-0.5">{{ $item->description }}</dd></div>@endif
         @if ($item->is_mega && ! $parent)<div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Wielkość pozycji</dt><dd class="mt-0.5">{{ \App\Models\NavItem::MEGA_SIZES[$item->megaSize()] ?? $item->megaSize() }}</dd></div>@endif
