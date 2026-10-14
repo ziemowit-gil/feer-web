@@ -9,7 +9,7 @@
         <div class="max-w-3xl">
             <h1 class="text-2xl font-bold text-ink">Mapa zależności stron</h1>
             <p class="mt-1 text-sm text-ink">
-                Jak strony łączą się ze sobą: strona nadrzędna → podstrona, linki w treści między stronami i podpięcie pod działania.
+                Jak strony łączą się ze sobą: menu główne → strony główne, strona nadrzędna → podstrona, linki w treści między stronami i podpięcie pod działania.
                 Pomaga zobaczyć, co się zmieni po przeniesieniu lub usunięciu strony, i znaleźć strony, do których nie da się dojść.
                 Wersja tekstowa jest w <a href="#tabela-zaleznosci" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline">tabeli pod wykresem</a>.
             </p>
@@ -71,6 +71,7 @@
             </fieldset>
             <fieldset class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-ink">
                 <legend class="mb-1 w-full text-sm font-bold text-ink">Pokaż</legend>
+                <label class="flex items-center gap-2"><input type="checkbox" x-model="show.menu" @change="applyFilters()" class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Menu</label>
                 <label class="flex items-center gap-2"><input type="checkbox" x-model="show.parent" @change="applyFilters()" class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Strony nadrzędne</label>
                 <label class="flex items-center gap-2"><input type="checkbox" x-model="show.link" @change="applyFilters()" class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Linki w treści</label>
                 <label class="flex items-center gap-2"><input type="checkbox" x-model="show.project" @change="applyFilters()" class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Działania</label>
@@ -89,10 +90,13 @@
                         <p class="mt-1 text-muted">albo wybierz ją z listy powyżej, aby zobaczyć jej powiązania.</p>
                         <h3 class="mt-5 text-xs font-bold uppercase tracking-widest text-muted">Legenda</h3>
                         <ul class="mt-2 space-y-2" role="list">
+                            <li class="flex items-center gap-2"><span class="inline-block h-4 w-6 rounded bg-brand-dark" aria-hidden="true"></span> Menu główne</li>
+                            <li class="flex items-center gap-2"><span class="inline-block h-5 w-5 rounded-full border-[3px] border-ink bg-brand-dark" aria-hidden="true"></span> Strona główna (w menu)</li>
                             <li class="flex items-center gap-2"><span class="inline-block h-4 w-4 rounded-full bg-brand-dark" aria-hidden="true"></span> Strona opublikowana</li>
                             <li class="flex items-center gap-2"><span class="inline-block h-4 w-4 rounded-full border-2 border-gray-500 bg-white" aria-hidden="true"></span> Szkic</li>
                             <li class="flex items-center gap-2"><span class="inline-block h-4 w-4 rounded-full border-[3px] border-ink bg-[#EA8F00]" aria-hidden="true"></span> Strona bez wejścia</li>
                             <li class="flex items-center gap-2"><span class="inline-block h-4 w-4 rotate-45 bg-ink" aria-hidden="true"></span> Działanie</li>
+                            <li class="flex items-center gap-2"><span class="inline-block h-[3px] w-6 bg-brand-dark" aria-hidden="true"></span> Menu → strona główna</li>
                             <li class="flex items-center gap-2"><span class="inline-block h-0.5 w-6 bg-gray-500" aria-hidden="true"></span> Strona nadrzędna → podstrona</li>
                             <li class="flex items-center gap-2"><span class="inline-block w-6 border-t-2 border-dashed border-brand-dark" aria-hidden="true"></span> Link w treści</li>
                             <li class="flex items-center gap-2"><span class="inline-block w-6 border-t-2 border-dotted border-ink" aria-hidden="true"></span> Podpięta pod działanie</li>
@@ -104,7 +108,7 @@
                         <div>
                             <p class="text-xs font-bold uppercase tracking-widest text-muted" x-text="info.type"></p>
                             <h3 class="text-base font-bold" x-text="info.label"></h3>
-                            <p x-show="info.kind === 'page'" x-text="(info.published ? 'Opublikowana' : 'Szkic') + (info.menu ? ' · w menu' : '') + (info.orphan ? ' · bez wejścia' : '')"></p>
+                            <p x-show="info.kind === 'page'" x-text="(info.published ? 'Opublikowana' : 'Szkic') + (info.main ? ' · strona główna (w menu)' : (info.menu ? ' · w menu' : '')) + (info.orphan ? ' · bez wejścia' : '')"></p>
                         </div>
                         <div x-show="info.parents.length"><p class="font-bold">Nadrzędna</p><p x-text="info.parents.join(', ')"></p></div>
                         <div x-show="info.children.length"><p class="font-bold">Podstrony (<span x-text="info.children.length"></span>)</p><p x-text="info.children.join(', ')"></p></div>
@@ -161,7 +165,7 @@
     window.pageGraph = function (data) {
         return {
             cy: null, layout: 'tree', selected: '', info: null,
-            show: { parent: true, link: true, project: true, drafts: true },
+            show: { menu: true, parent: true, link: true, project: true, drafts: true },
             init() {
                 if (! window.cytoscape) { this.$refs.canvas.textContent = 'Nie udało się wczytać wykresu — skorzystaj z tabeli poniżej.'; return; }
                 this.cy = window.cytoscape({
@@ -172,8 +176,11 @@
                         { selector: 'node', style: { 'label': 'data(label)', 'font-size': 11, 'font-family': 'Montserrat, sans-serif', 'color': '#1d1d1a', 'text-wrap': 'ellipsis', 'text-max-width': 140, 'text-valign': 'bottom', 'text-margin-y': 4, 'width': 18, 'height': 18, 'background-color': '#1752bf' } },
                         { selector: 'node[!published]', style: { 'background-color': '#ffffff', 'border-width': 2, 'border-color': '#6b7280' } },
                         { selector: 'node[?orphan]', style: { 'background-color': '#EA8F00', 'border-width': 3, 'border-color': '#1d1d1a' } },
+                        { selector: 'node[?main]', style: { 'width': 28, 'height': 28, 'border-width': 3, 'border-color': '#1d1d1a', 'font-size': 13, 'font-weight': 'bold', 'text-max-width': 170 } },
+                        { selector: 'node[kind = "menu"]', style: { 'shape': 'round-rectangle', 'width': 'label', 'height': 30, 'padding': 10, 'background-color': '#1752bf', 'color': '#ffffff', 'text-valign': 'center', 'text-margin-y': 0, 'font-size': 13, 'font-weight': 'bold', 'text-max-width': 200 } },
                         { selector: 'node[kind = "project"]', style: { 'shape': 'diamond', 'background-color': '#1d1d1a', 'width': 22, 'height': 22, 'font-weight': 'bold' } },
                         { selector: 'edge', style: { 'width': 1.5, 'curve-style': 'bezier', 'target-arrow-shape': 'triangle', 'arrow-scale': 0.8, 'line-color': '#6b7280', 'target-arrow-color': '#6b7280' } },
+                        { selector: 'edge[kind = "menu"]', style: { 'width': 3, 'line-color': '#1752bf', 'target-arrow-color': '#1752bf' } },
                         { selector: 'edge[kind = "link"]', style: { 'line-style': 'dashed', 'line-color': '#1752bf', 'target-arrow-color': '#1752bf' } },
                         { selector: 'edge[kind = "project"]', style: { 'line-style': 'dotted', 'line-color': '#1d1d1a', 'target-arrow-color': '#1d1d1a' } },
                         { selector: '.faded', style: { 'opacity': 0.15 } },
@@ -186,7 +193,9 @@
             },
             runLayout() {
                 const opts = this.layout === 'tree'
-                    ? { name: 'breadthfirst', directed: true, spacingFactor: 1.15, padding: 20, animate: false }
+                    // Hierarchia od „Menu główne” (strony z menu to strony główne), a bez menu — od stron najwyższego poziomu.
+                    ? Object.assign({ name: 'breadthfirst', directed: true, spacingFactor: 1.15, padding: 20, animate: false },
+                        this.show.menu && this.cy.getElementById('menu').length ? { roots: '#menu' } : {})
                     : { name: 'cose', padding: 20, animate: false, nodeRepulsion: 8000, idealEdgeLength: 80 };
                 this.cy.elements(':visible').layout(opts).run();
             },
@@ -198,6 +207,7 @@
                     this.cy.edges().forEach((e) => e.style('display', this.show[e.data('kind')] ? 'element' : 'none'));
                     this.cy.nodes('[kind = "page"]').forEach((n) => n.style('display', (n.data('published') || this.show.drafts) ? 'element' : 'none'));
                     this.cy.nodes('[kind = "project"]').forEach((n) => n.style('display', this.show.project ? 'element' : 'none'));
+                    this.cy.nodes('[kind = "menu"]').forEach((n) => n.style('display', this.show.menu ? 'element' : 'none'));
                 });
                 this.runLayout();
             },
@@ -214,8 +224,8 @@
                 this.cy.animate({ fit: { eles: hood, padding: 60 }, duration: 250 });
                 const kindEdges = (kind, dir) => node.connectedEdges('[kind = "' + kind + '"]').filter((e) => (dir === 'out' ? e.source() : e.target()).id() === id).map((e) => dir === 'out' ? e.target() : e.source());
                 this.info = Object.assign({}, node.data(), {
-                    parents: this.names(kindEdges('parent', 'in').concat(kindEdges('project', 'in'))),
-                    children: this.names(kindEdges('parent', 'out').concat(kindEdges('project', 'out'))),
+                    parents: this.names(kindEdges('parent', 'in').concat(kindEdges('project', 'in'), kindEdges('menu', 'in'))),
+                    children: this.names(kindEdges('parent', 'out').concat(kindEdges('project', 'out'), kindEdges('menu', 'out'))),
                     linksOut: this.names(kindEdges('link', 'out')),
                     linksIn: this.names(kindEdges('link', 'in')),
                 });

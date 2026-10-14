@@ -2,6 +2,7 @@
 
 namespace App\Services\Content;
 
+use App\Models\NavItem;
 use App\Models\Page;
 use App\Models\Project;
 use Illuminate\Support\Collection;
@@ -11,6 +12,9 @@ use Throwable;
 /**
  * Graf zależności stron: kto jest czyim rodzicem, które strony linkują do których
  * (linki w treści) i które są podpięte pod działania.
+ *
+ * Strony z menu głównego (pozycje w Menu nawigacji albo „pokaż w menu”) są stronami głównymi:
+ * w grafie wychodzą od wspólnego węzła „Menu główne”, który w hierarchii stoi na samej górze.
  *
  * Do tego wnioski dla redakcji: strony bez żadnego wejścia (ani w menu, ani rodzica,
  * ani linku z innej strony) oraz opublikowane strony linkujące do szkiców
@@ -45,6 +49,25 @@ class PageGraph
         $edges = [];
         $out = [];
         $in = [];
+
+        // Strony główne: wskazane przez pozycje menu głównego (pozycje najwyższego poziomu przed podpozycjami) i „pokaż w menu”.
+        $menuIds = [];
+        $navItems = NavItem::query()->forCurrentSite()->where('location', 'main')->where('is_active', true)
+            ->orderByRaw('parent_id is not null')->orderBy('order')->get(['url', 'parent_id']);
+        foreach ($navItems as $nav) {
+            $path = $nav->url && $nav->url !== '#' ? $this->path($nav->url) : null;
+            if ($path !== null && isset($byPath[$path])) {
+                $menuIds[$byPath[$path]] = true;
+            }
+        }
+        foreach ($pages as $page) {
+            if ($page->show_in_menu && ! $page->parent_id) {
+                $menuIds[$page->id] = true;
+            }
+        }
+        foreach (array_keys($menuIds) as $id) {
+            $edges[] = ['source' => 'menu', 'target' => 'p'.$id, 'kind' => 'menu'];
+        }
         foreach ($pages as $page) {
             if ($page->parent_id && $pages->contains('id', $page->parent_id)) {
                 $edges[] = ['source' => 'p'.$page->parent_id, 'target' => 'p'.$page->id, 'kind' => 'parent'];
@@ -76,7 +99,8 @@ class PageGraph
         foreach ($pages as $page) {
             $linksOut = array_values(array_unique($out[$page->id] ?? []));
             $linksIn = array_values(array_unique($in[$page->id] ?? []));
-            $orphan = ! $page->parent_id && ! $page->show_in_menu && ! $page->project_id && ! $linksIn && $page->slug !== 'strona-glowna';
+            $inMenu = $page->show_in_menu || isset($menuIds[$page->id]);
+            $orphan = ! $page->parent_id && ! $inMenu && ! $page->project_id && ! $linksIn && $page->slug !== 'strona-glowna';
             if ($orphan && $page->is_published) {
                 $warnings['orphans'][] = $page->id;
             }
@@ -95,7 +119,8 @@ class PageGraph
                 'kind' => 'page',
                 'type' => $typeLabel,
                 'published' => (bool) $page->is_published,
-                'menu' => (bool) $page->show_in_menu,
+                'menu' => $inMenu,
+                'main' => isset($menuIds[$page->id]),
                 'orphan' => $orphan,
                 'url' => $urls[$page->id],
                 'edit' => route('admin.podstrony.edit', $page->id),
@@ -108,7 +133,7 @@ class PageGraph
                 'title' => $page->title,
                 'type' => $typeLabel,
                 'published' => (bool) $page->is_published,
-                'menu' => (bool) $page->show_in_menu,
+                'menu' => $inMenu,
                 'parent' => $page->parent_id ? ($titles[$page->parent_id] ?? null) : null,
                 'project' => $page->project_id ? $projects->firstWhere('id', $page->project_id)?->title : null,
                 'links_out' => array_map(fn ($id) => ['id' => $id, 'title' => $titles[$id] ?? '?'], $linksOut),
@@ -127,6 +152,11 @@ class PageGraph
                 'published' => true,
                 'edit' => Route::has('admin.projekty.edit') ? route('admin.projekty.edit', $project) : null,
             ]];
+        }
+
+        if ($menuIds) {
+            $nodes[] = ['data' => ['id' => 'menu', 'label' => 'Menu główne', 'kind' => 'menu', 'type' => 'Menu', 'published' => true,
+                'edit' => Route::has('admin.pozycje-menu.index') ? route('admin.pozycje-menu.index') : null]];
         }
 
         // Ta sama para stron może łączyć się kilkoma linkami — w grafie wystarczy jedna krawędź danego rodzaju.
