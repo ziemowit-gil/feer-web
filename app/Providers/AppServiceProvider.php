@@ -46,6 +46,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Krótkie adresy portali kategorii: {adres}.feer.org.pl → /portal/{adres} (przed resztą grupy „web”).
+        $this->app['router']->prependMiddlewareToGroup('web', \App\Http\Middleware\RedirectPortalSubdomain::class);
+
         Blade::directive('shortcodes', fn ($expr) => "<?php echo \\App\\Support\\ShortcodeParser::render($expr); ?>");
 
         Banner::observe(BannerObserver::class);

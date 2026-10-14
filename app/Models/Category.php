@@ -7,7 +7,60 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
-    protected $fillable = ['name', 'slug', 'order', 'icon'];
+    protected $fillable = ['name', 'slug', 'order', 'icon',
+        'portal_slug', 'portal_title', 'portal_intro', 'portal_slider_id', 'portal_rss_url', 'portal_widgets'];
+
+    protected $casts = [
+        'portal_widgets' => 'array',
+    ];
+
+    /** Widżety portalu kategorii (klucz => etykieta w panelu), w domyślnej kolejności. */
+    public const PORTAL_WIDGETS = [
+        'projects' => 'Działania z kategorii (kafelki)',
+        'news'     => 'Aktualności z działań kategorii',
+        'events'   => 'Najbliższe szkolenia i wydarzenia',
+        'rss'      => 'Zewnętrzny kanał RSS',
+        'contact'  => 'Kontakt — koordynatorzy działań',
+        'stats'    => 'Liczby (działania, aktualności, wydarzenia)',
+    ];
+
+    /**
+     * Subdomeny, których nie wolno zająć portalem (inne serwisy i usługi na feer.org.pl).
+     * Przekierowanie subdomeny działa i tak tylko dla adresów przypisanych do kategorii.
+     */
+    public const RESERVED_PORTAL_SLUGS = ['www', 'mail', 'poczta', 'ftp', 'cms', 'cms2', 'cmslicense', 'wiem', 'admin', 'api', 'bip', 'panel', 'webmail', 'smtp', 'imap', 'pop', 'autodiscover', 'portal'];
+
+    /** Włączone widżety portalu w ustawionej kolejności (domyślnie wszystkie poza RSS, który wymaga adresu kanału). */
+    public function portalWidgets(): array
+    {
+        $saved = is_array($this->portal_widgets ?? null) ? $this->portal_widgets : null;
+        $keys = $saved ?? array_values(array_diff(array_keys(self::PORTAL_WIDGETS), ['rss']));
+
+        return array_values(array_filter($keys, fn ($k) => isset(self::PORTAL_WIDGETS[$k])
+            && ($k !== 'rss' || filled($this->portal_rss_url ?? null))));
+    }
+
+    public function hasPortal(): bool
+    {
+        return filled($this->portal_slug ?? null);
+    }
+
+    /** Adres portalu na głównej domenie (/portal/{slug}). */
+    public function portalUrl(): ?string
+    {
+        return $this->hasPortal() ? route('portal.show', $this->portal_slug) : null;
+    }
+
+    /** Krótki adres w subdomenie ({slug}.feer.org.pl), wyliczany z APP_URL. */
+    public function portalSubdomainUrl(): ?string
+    {
+        $host = parse_url((string) config('app.url'), PHP_URL_HOST);
+        if (! $this->hasPortal() || ! $host) {
+            return null;
+        }
+
+        return (parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https').'://'.$this->portal_slug.'.'.preg_replace('/^www\./', '', $host);
+    }
 
     /** Ikona dobierana po nazwie, gdy nie wybrano własnej (fragment nazwy => ikona Bootstrap Icons). */
     private const ICON_GUESS = [

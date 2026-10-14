@@ -78,6 +78,36 @@ class CategoryController extends Controller
             unset($data['icon']); // do czasu migracji
         }
 
+        // Portal kategorii (/portal/{adres}, subdomena {adres}.feer.org.pl) — po migracji.
+        if (\Illuminate\Support\Facades\Schema::hasColumn('categories', 'portal_slug')) {
+            $category = $request->route('category');
+            $portal = $request->validate([
+                'portal_slug' => ['nullable', 'string', 'max:63', 'regex:/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/',
+                    \Illuminate\Validation\Rule::notIn(Category::RESERVED_PORTAL_SLUGS),
+                    \Illuminate\Validation\Rule::unique('categories', 'portal_slug')->ignore($category?->id)],
+                'portal_title' => ['nullable', 'string', 'max:255'],
+                'portal_intro' => ['nullable', 'string', 'max:5000'],
+                'portal_slider_id' => ['nullable', 'integer'],
+                'portal_rss_url' => ['nullable', 'url:http,https', 'max:500'],
+                'portal_widgets' => ['nullable', 'array'],
+                'portal_widgets.*' => [\Illuminate\Validation\Rule::in(array_keys(Category::PORTAL_WIDGETS))],
+                'portal_widgets_order' => ['nullable', 'string', 'max:200'],
+            ], [
+                'portal_slug.regex' => 'Adres portalu: same małe litery bez polskich znaków, cyfry i myślniki (np. szkolenia).',
+                'portal_slug.not_in' => 'Ten adres jest zarezerwowany dla innej usługi — wybierz inny.',
+                'portal_slug.unique' => 'Ten adres ma już portal innej kategorii.',
+            ]);
+            $portal['portal_slug'] = ($portal['portal_slug'] ?? null) ?: null;
+            // Kolejność widżetów z ukrytego pola (przyciski „w górę / w dół”), zaznaczone pola decydują o włączeniu.
+            $order = array_values(array_filter(explode(',', (string) ($portal['portal_widgets_order'] ?? '')), fn ($k) => isset(Category::PORTAL_WIDGETS[$k])));
+            $enabled = $portal['portal_widgets'] ?? [];
+            $portal['portal_widgets'] = $request->has('portal_widgets_order')
+                ? array_values(array_filter(array_unique([...$order, ...array_keys(Category::PORTAL_WIDGETS)]), fn ($k) => in_array($k, $enabled, true)))
+                : null;
+            unset($portal['portal_widgets_order']);
+            $data += $portal;
+        }
+
         $data['slug'] = trim($data['slug'] ?? '');
         $data['order'] = $data['order'] ?? 0;
 

@@ -144,6 +144,9 @@ Route::middleware('module:projects')->group(function () {
     Route::get('/projekty/archiwum', fn () => redirect()->to(url('/dzialania/archiwum'), 301));
     Route::get('/projekty/{slug}', fn (string $slug) => redirect()->to(url('/dzialania/'.$slug), 301))->where('slug', '[A-Za-z0-9\-]+');
     Route::get('/kategoria/{category:slug}', [ProjectController::class, 'category'])->name('categories.show');
+    // Portal kategorii (subdomena {adres}.feer.org.pl przekierowuje tutaj — RedirectPortalSubdomain).
+    Route::get('/portal/{portal}/rss.xml', [\App\Http\Controllers\PortalController::class, 'feed'])->name('portal.feed')->where('portal', '[a-z0-9-]+');
+    Route::get('/portal/{portal}', [\App\Http\Controllers\PortalController::class, 'show'])->name('portal.show')->where('portal', '[a-z0-9-]+');
 });
 
 Route::get('/organizacje-czlonkowskie', [FederationController::class, 'organizations'])->name('federation.organizations');
