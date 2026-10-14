@@ -28,7 +28,7 @@ class Category extends Model
 
     /** Domyślne nagłówki widżetów portalu (w panelu można je nadpisać, puste pole = domyślny). */
     public const PORTAL_WIDGET_TITLES = [
-        'projects' => 'Działania',
+        'projects' => 'W tym obszarze',
         'news'     => 'Aktualności',
         'contact'  => 'Kontakt',
         'events'   => 'Najbliższe szkolenia i wydarzenia',
@@ -142,6 +142,26 @@ class Category extends Model
             'subs' => $pages->isEmpty() ? 'none' : $subs,
             'pages' => $pages,
         ]);
+    }
+
+    /**
+     * Nazwy i krótkie teksty na portalu (klucz => [opis w panelu, domyślna treść]). Portal mówi o obszarze
+     * działalności, nie o „działaniach”, więc domyślne treści są neutralne, a każdą można zmienić w panelu.
+     */
+    public const PORTAL_LABELS = [
+        'overview'     => ['Pierwszy link w rozwiniętym podmenu', 'Informacje ogólne'],
+        'slide_button' => ['Przycisk na slajdach tworzonych automatycznie', 'Dowiedz się więcej'],
+        'all_link'     => ['Domyślny skrót do pełnej listy', 'Zobacz wszystko w tym obszarze'],
+        'nav_empty'    => ['Gdy menu jest puste', 'Wkrótce pojawią się tu nowe informacje.'],
+        'stay_ask'     => ['„Napisz do nas” w sekcji na końcu', 'Masz pytanie? Odpowiemy tak szybko, jak to możliwe.'],
+        'stay_rss'     => ['„RSS” w sekcji na końcu', 'Śledź nowości z tego portalu w czytniku RSS.'],
+        'stats_items'  => ['Podpis liczby pozycji w widżecie „Liczby”', 'Pozycje w portalu'],
+    ];
+
+    /** Nazwa lub tekst na portalu — własny z panelu albo domyślny (PORTAL_LABELS). */
+    public function portalLabel(string $key): string
+    {
+        return (string) $this->portalOption("labels.$key", self::PORTAL_LABELS[$key][1] ?? '');
     }
 
     /** Nagłówek widżetu portalu — własny z panelu albo domyślny. */

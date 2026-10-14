@@ -79,13 +79,13 @@ class PortalController extends Controller
             'url' => route('projects.show', $p),
             'date' => $p->created_at,
             'summary' => (string) $p->teaser(300),
-            'category' => 'Działania',
+            'category' => $category->portalWidgetTitle('projects'),
         ])))->filter(fn ($i) => $i->date)->sortByDesc(fn ($i) => $i->date->getTimestamp())->take(30)->values();
 
         $xml = view('portal.rss', [
             'settings' => $settings,
             'title' => $settings->site_name.' — '.$title,
-            'description' => $category->portal_intro ? Str::limit(strip_tags($category->portal_intro), 300) : "Aktualności i działania: {$title}.",
+            'description' => $category->portal_intro ? Str::limit(strip_tags($category->portal_intro), 300) : "Aktualności i nowości: {$title}.",
             'siteUrl' => route('portal.show', $category->portal_slug),
             'selfUrl' => route('portal.feed', $category->portal_slug),
             'items' => $items,
@@ -160,7 +160,7 @@ class PortalController extends Controller
             'text' => $p->teaser(160),
             'image_url' => $p->image_url,
             'image_alt' => $p->image_alt ?: '',
-            'button_label' => 'Zobacz działanie',
+            'button_label' => $category->portalLabel('slide_button'),
             'button_url' => route('projects.show', $p),
         ]))->values();
     }

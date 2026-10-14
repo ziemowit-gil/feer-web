@@ -186,4 +186,29 @@ class PortalOptionsTest extends TestCase
     {
         $this->actingAs($this->admin())->get(route('admin.ustawienia.edit'))->assertOk()->assertSee('Portale kategorii');
     }
+
+    public function test_portal_nie_mowi_o_dzialaniach_a_nazwy_sa_edytowalne(): void
+    {
+        $category = $this->portal(['portal_widgets' => ['projects', 'stats']]);
+        Project::create(['title' => 'Kurs z podstronami', 'slug' => 'kurs-podstrony-opcje', 'is_published' => true, 'category_id' => $category->id]);
+
+        $html = $this->get('/portal/opcjetest')->assertOk()->getContent();
+        preg_match('#<main.*</main>#s', $html, $main);
+        $text = mb_strtolower(strip_tags($main[0] ?? ''));
+        $this->assertStringNotContainsString('działa', $text);
+        $this->assertStringContainsString('w tym obszarze', $text);
+
+        $this->actingAs($this->admin())->put(route('admin.kategorie.update', $category), [
+            'name' => 'Szkolenia i warsztaty', 'slug' => 'szkolenia-opcje-test', 'portal_slug' => 'opcjetest',
+            'portal_options' => [
+                'titles' => ['projects' => 'Nasze szkolenia'],
+                'labels' => ['all_link' => 'Pełna oferta szkoleń', 'stay_ask' => 'Pytania o szkolenia? Napisz.', 'nieznany' => 'x'],
+            ],
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame(['all_link' => 'Pełna oferta szkoleń', 'stay_ask' => 'Pytania o szkolenia? Napisz.'], $category->fresh()->portal_options['labels']);
+        $this->get('/portal/opcjetest')->assertOk()
+            ->assertSee('Nasze szkolenia')->assertSee('Pełna oferta szkoleń')->assertSee('Pytania o szkolenia? Napisz.')
+            ->assertDontSee('Zobacz wszystko w tym obszarze');
+    }
 }

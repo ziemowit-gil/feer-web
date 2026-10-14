@@ -338,12 +338,19 @@
                     </fieldset>
 
                     <fieldset>
-                        <legend class="mb-1 text-sm font-bold">Nagłówki widżetów <span class="font-normal text-muted">(puste = domyślny)</span></legend>
+                        <legend class="mb-1 text-sm font-bold">Nagłówki i nazwy na portalu <span class="font-normal text-muted">(puste = domyślne)</span></legend>
+                        <p class="mb-2 text-xs text-muted">Portal opowiada o obszarze działalności — nazwij sekcje tak, jak mówią o nich odbiorcy (np. „Nasze szkolenia”, „Materiały”).</p>
                         <div class="grid gap-3 sm:grid-cols-2">
                             @foreach (\App\Models\Category::PORTAL_WIDGET_TITLES as $wKey => $wDefault)
                                 <div>
-                                    <label for="portal_title_{{ $wKey }}" class="mb-1 block text-xs text-muted">{{ \App\Models\Category::PORTAL_WIDGETS[$wKey] }}</label>
+                                    <label for="portal_title_{{ $wKey }}" class="mb-1 block text-xs text-muted">Nagłówek: {{ \App\Models\Category::PORTAL_WIDGETS[$wKey] }}</label>
                                     <input type="text" id="portal_title_{{ $wKey }}" name="portal_options[titles][{{ $wKey }}]" value="{{ old('portal_options.titles.'.$wKey, $category->portalOption('titles.'.$wKey)) }}" placeholder="{{ $wDefault }}" class="{{ $input }} text-sm">
+                                </div>
+                            @endforeach
+                            @foreach (\App\Models\Category::PORTAL_LABELS as $lKey => [$lLabel, $lDefault])
+                                <div>
+                                    <label for="portal_label_{{ $lKey }}" class="mb-1 block text-xs text-muted">{{ $lLabel }}</label>
+                                    <input type="text" id="portal_label_{{ $lKey }}" name="portal_options[labels][{{ $lKey }}]" value="{{ old('portal_options.labels.'.$lKey, $category->portalOption('labels.'.$lKey)) }}" placeholder="{{ $lDefault }}" maxlength="200" class="{{ $input }} text-sm">
                                 </div>
                             @endforeach
                         </div>

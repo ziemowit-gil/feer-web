@@ -35,7 +35,7 @@
         // Menu jak na stronie działania (projects/partials/sidebar-nav): pozycje na całą szerokość ze strzałką.
         $navItem = 'proj-nav-item flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-[0.9375rem] text-ink transition hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
         $shortcuts = $category->portalShortcuts() ?: array_values(array_filter([
-            ['Wszystkie działania w kategorii', route('categories.show', $category), ''],
+            [$category->portalLabel('all_link'), route('categories.show', $category), ''],
             Route::has('events.index') ? ['Kalendarz szkoleń i wydarzeń', route('events.index'), 'fa-regular fa-calendar'] : null,
             Route::has('newsletter.show') ? ['Zapisz się do newslettera', route('newsletter.show'), 'fa-regular fa-envelope'] : null,
             Route::has('contact.show') ? ['Kontakt z fundacją', route('contact.show'), 'fa-regular fa-address-card'] : null,
@@ -158,13 +158,13 @@
                     @if (Route::has('contact.show'))
                         <div>
                             <h3 class="font-bold text-ink">Napisz do nas</h3>
-                            <p class="mt-1 text-ink">Masz pytanie o działania z tego portalu? Odpowiemy tak szybko, jak to możliwe.</p>
+                            <p class="mt-1 text-ink">{{ $category->portalLabel('stay_ask') }}</p>
                             <p class="mt-2"><a href="{{ route('contact.show') }}" class="{{ $more }}">Formularz kontaktowy <span aria-hidden="true">→</span></a></p>
                         </div>
                     @endif
                     <div>
                         <h3 class="font-bold text-ink">RSS</h3>
-                        <p class="mt-1 text-ink">Śledź aktualności i nowe działania tego portalu w czytniku RSS.</p>
+                        <p class="mt-1 text-ink">{{ $category->portalLabel('stay_rss') }}</p>
                         <p class="mt-2"><a href="{{ route('portal.feed', $category->portal_slug) }}" class="{{ $more }}"><i class="fa-solid fa-rss" aria-hidden="true"></i> Kanał RSS</a></p>
                     </div>
                 </div>

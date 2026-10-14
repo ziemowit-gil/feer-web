@@ -73,7 +73,9 @@ class CategoryController extends Controller
     private function portalOptions(Request $request): array
     {
         $titleRules = collect(Category::PORTAL_WIDGET_TITLES)->keys()
-            ->mapWithKeys(fn ($k) => ["portal_options.titles.$k" => ['nullable', 'string', 'max:120']])->all();
+            ->mapWithKeys(fn ($k) => ["portal_options.titles.$k" => ['nullable', 'string', 'max:120']])->all()
+            + collect(Category::PORTAL_LABELS)->keys()
+                ->mapWithKeys(fn ($k) => ["portal_options.labels.$k" => ['nullable', 'string', 'max:200']])->all();
         $v = $request->validate([
             'portal_options' => ['array'],
             'portal_options.notice' => ['nullable', 'string', 'max:500'],
@@ -127,10 +129,11 @@ class CategoryController extends Controller
             'contact_text' => trim((string) ($v['contact_text'] ?? '')),
             'contact_email' => trim((string) ($v['contact_email'] ?? '')),
             'contact_phone' => trim((string) ($v['contact_phone'] ?? '')),
-            'stay_enabled' => $request->boolean('portal_options.stay_enabled'),
+            'stay_enabled' => $request->boolean('portal_options.stay_enabled', true),
             'stay_title' => trim((string) ($v['stay_title'] ?? '')),
             'stay_text' => trim((string) ($v['stay_text'] ?? '')),
             'titles' => array_filter(array_map(fn ($t) => trim((string) $t), $v['titles'] ?? []), fn ($t) => $t !== ''),
+            'labels' => array_filter(array_map(fn ($t) => trim((string) $t), array_intersect_key($v['labels'] ?? [], Category::PORTAL_LABELS)), fn ($t) => $t !== ''),
             'shortcuts_enabled' => $request->boolean('portal_options.shortcuts_enabled', true),
             'shortcuts_title' => trim((string) ($v['shortcuts_title'] ?? '')),
             'nav' => array_filter([

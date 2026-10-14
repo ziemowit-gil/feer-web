@@ -7,7 +7,7 @@
         <p id="portal-nav" class="text-base font-bold leading-snug text-ink">{{ $navTitle }}</p>
         <span class="mb-3 mt-2 block h-1 w-10 bg-brand" aria-hidden="true"></span>
         @if ($navItems->isEmpty())
-            <p class="px-3 text-sm text-ink">Brak opublikowanych działań.</p>
+            <p class="px-3 text-sm text-ink">{{ $category->portalLabel('nav_empty') }}</p>
         @else
             <ul role="list" class="space-y-0.5">
                 @foreach ($navItems as $item)
@@ -23,7 +23,7 @@
                                 <i class="fa-solid fa-chevron-right flex-none text-xs transition-transform motion-reduce:transition-none {{ $open ? 'rotate-90' : '' }}" :class="open ? 'rotate-90' : ''" aria-hidden="true"></i>
                             </button>
                             <ul id="{{ $subId }}" role="list" class="side-sub mt-0.5 space-y-0.5" x-show="open" @unless ($open) x-cloak @endunless>
-                                <li><a href="{{ route('projects.show', $item->project) }}" class="{{ $navItem }} font-bold"><span class="min-w-0">O działaniu</span><i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i></a></li>
+                                <li><a href="{{ route('projects.show', $item->project) }}" class="{{ $navItem }} font-bold"><span class="min-w-0">{{ $category->portalLabel('overview') }}</span><i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i></a></li>
                                 @foreach ($item->pages as $sub)
                                     <li><a href="{{ $sub->publicUrl() }}" class="{{ $navItem }}"><span class="min-w-0">{{ $sub->title }}</span><i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i></a></li>
                                 @endforeach
