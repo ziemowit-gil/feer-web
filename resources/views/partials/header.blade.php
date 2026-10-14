@@ -16,6 +16,9 @@
 @if ($officeBar)
 @include('partials.header-office')
 
+@elseif ($headerLayout === 'institutional')
+@include('partials.header-institutional')
+
 @elseif ($wideMission)
 {{-- ─── Layout: Szeroka belka (logo | misja | social + CTA) ───────────────
      Landmark <header> jest w layouts/site.blade.php (obejmuje też pasek górny).

@@ -133,7 +133,10 @@
     @else
         {{-- Jeden landmark „banner": pasek górny (ułatwienia, szukajka, BIP, social) + belka z logo i menu. --}}
         <header class="site-header relative z-30">
-            @include($siteSettings->headerLayoutValue() === 'office_bar' ? 'partials.topbar-info' : 'partials.topbar')
+            {{-- „Instytucjonalny" ma dostępność, szukajkę i BIP w rzędzie menu — bez osobnego paska górnego. --}}
+            @if ($siteSettings->headerLayoutValue() !== 'institutional')
+                @include($siteSettings->headerLayoutValue() === 'office_bar' ? 'partials.topbar-info' : 'partials.topbar')
+            @endif
             @include('partials.header')
         </header>
     @endif

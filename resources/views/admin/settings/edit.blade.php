@@ -431,6 +431,46 @@
                 </div>
             </details>
 
+            {{-- Układ „Instytucjonalny": logotypy partnerów / źródeł finansowania po prawej stronie górnego rzędu --}}
+            <details open x-show="wm_layout === 'institutional'" x-cloak class="rounded-md bg-gray-50">
+                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Logotypy partnerów w nagłówku</summary>
+                <div class="space-y-4 border-t border-gray-200 p-5">
+                    <p class="text-xs text-muted">
+                        Np. herb lub znak samorządu, „Dofinansowane przez Unię Europejską". Pokazują się po prawej stronie,
+                        w jednym rzędzie z logo (od szerokości tabletu). Maks. 6 plików po 2 MB. BIP w rzędzie menu
+                        pokazuje się, gdy w zakładce „Media i BIP" zaznaczono „Pokaż link BIP w górnym pasku".
+                    </p>
+                    @php $headerPartners = $settings->headerPartnerLogos(); @endphp
+                    @if ($headerPartners)
+                        <ul class="space-y-3" role="list">
+                            @foreach ($headerPartners as $partner)
+                                <li class="flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-white p-3">
+                                    <img src="{{ $partner['url'] }}" alt="" class="h-12 w-auto max-w-[10rem] object-contain">
+                                    <div class="min-w-[12rem] flex-1">
+                                        <label for="header_partners_alt_{{ $partner['id'] }}" class="mb-1 block text-xs font-bold">Tekst alternatywny (co przedstawia logo)</label>
+                                        <input type="text" id="header_partners_alt_{{ $partner['id'] }}" name="header_partners_alt[{{ $partner['id'] }}]" maxlength="255"
+                                            value="{{ old('header_partners_alt.'.$partner['id'], $partner['alt']) }}" placeholder="np. Dofinansowane przez Unię Europejską"
+                                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                                    </div>
+                                    <label class="flex items-center gap-2 text-sm text-muted">
+                                        <input type="checkbox" name="remove_header_partners[]" value="{{ $partner['id'] }}" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                        Usuń
+                                    </label>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                    <div>
+                        <label for="header_partners" class="mb-1 block text-sm font-bold">Dodaj logotypy</label>
+                        <input type="file" id="header_partners" name="header_partners[]" accept="image/*" multiple
+                            class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Po wgraniu uzupełnij tekst alternatywny każdego logo.</p>
+                        @error('header_partners') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        @error('header_partners.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </details>
+
             <details open x-show="wm_layout === 'wide_mission'" x-cloak
                 class="rounded-md bg-gray-50">
                 <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Ustawienia nagłówka WOŚP</summary>

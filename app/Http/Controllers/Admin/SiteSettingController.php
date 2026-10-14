@@ -291,6 +291,12 @@ class SiteSettingController extends Controller
             'support_fundraiser_cta_label' => ['nullable', 'string', 'max:60'],
             'support_image' => ['nullable', 'image', 'max:4096'],
             'remove_support_image' => ['sometimes', 'boolean'],
+            'header_partners' => ['nullable', 'array', 'max:6'],
+            'header_partners.*' => ['image', 'max:2048'],
+            'remove_header_partners' => ['nullable', 'array'],
+            'remove_header_partners.*' => ['integer'],
+            'header_partners_alt' => ['nullable', 'array'],
+            'header_partners_alt.*' => ['nullable', 'string', 'max:255'],
             'support_gallery' => ['nullable', 'array'],
             'support_gallery.*' => ['image', 'max:4096'],
             'remove_support_gallery' => ['nullable', 'array'],
@@ -673,6 +679,7 @@ class SiteSettingController extends Controller
             ->values()
             ->all() ?: null;
 
+        unset($data['header_partners'], $data['remove_header_partners'], $data['header_partners_alt']);
         unset($data['vm_header_badge'], $data['remove_vm_header_badge'], $data['vm_knowledge_image'], $data['remove_vm_knowledge_image']);
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['homepage_sections_enabled']);
 
@@ -751,6 +758,23 @@ class SiteSettingController extends Controller
         }
         foreach ($this->inSection($only, 'support_gallery') ? (array) $request->file('support_gallery', []) : [] as $file) {
             $settings->addMedia($file)->toMediaCollection('support_gallery');
+        }
+
+        // Logotypy partnerów w nagłówku „Instytucjonalnym": usunięcie zaznaczonych, opisy (alt) istniejących, nowe pliki na końcu.
+        if ($this->inSection($only, 'header_partners')) {
+            $partners = $settings->media()->where('collection_name', 'header_partners')->get()->keyBy('id');
+            foreach ((array) $request->input('remove_header_partners', []) as $mediaId) {
+                $partners->pull((int) $mediaId)?->delete();
+            }
+            foreach ((array) $request->input('header_partners_alt', []) as $mediaId => $alt) {
+                if (($media = $partners->get((int) $mediaId)) && $media->name !== trim((string) $alt)) {
+                    $media->name = trim((string) $alt);
+                    $media->save();
+                }
+            }
+            foreach ((array) $request->file('header_partners', []) as $file) {
+                $settings->addMedia($file)->usingName('')->toMediaCollection('header_partners');
+            }
         }
 
         $sectionLabel = SiteSetting::SETTINGS_TABS[$request->input('_redirect_tab')] ?? null;

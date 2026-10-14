@@ -264,6 +264,7 @@ class SiteSetting extends Model implements HasMedia
         'brand_bar_inline' => 'Pasek w kolorze marki (menu w jednym rzędzie z logo)',
         'wide_mission' => 'Wide (logo | misja | 3×social + CTA) — menu na pasku poniżej',
         'office_bar' => 'Urzędowy (logo | nr konta | BIP + social + szukajka z boku) — menu na pasku poniżej',
+        'institutional' => 'Instytucjonalny (logo | logotypy partnerów — pod linią menu z ciemnymi panelami, BIP, dostępność i szukaj)',
     ];
 
     /**
@@ -1154,6 +1155,19 @@ class SiteSetting extends Model implements HasMedia
     }
 
     /** Logo partnera / programu (np. znak finansowania) obok logo w nagłówku szablonu "vm". */
+    /**
+     * Logotypy partnerów / źródeł finansowania w nagłówku „Instytucjonalnym"
+     * (kolekcja wielu plików, kolejność wgrania; tekst alternatywny trzymany w polu `name` mediów).
+     *
+     * @return array<int, array{id: int, url: string, alt: string}>
+     */
+    public function headerPartnerLogos(): array
+    {
+        return $this->getMedia('header_partners')
+            ->map(fn ($m) => ['id' => $m->id, 'url' => $m->getUrl(), 'alt' => (string) $m->name])
+            ->all();
+    }
+
     public function vmHeaderBadgeUrl(): ?string
     {
         return $this->getFirstMediaUrl('vm_header_badge') ?: null;
@@ -1837,6 +1851,7 @@ class SiteSetting extends Model implements HasMedia
         // Osobna galeria dla strony „Wesprzyj nas" (wiele zdjęć, niezależna od
         // głównej galerii strony) — kolaż „działamy" jako dowód aktywności.
         $this->addMediaCollection('support_gallery');
+        $this->addMediaCollection('header_partners');
     }
 
     /** Zdjęcie biura (wejścia do budynku) albo null, gdy nie wgrano. */
