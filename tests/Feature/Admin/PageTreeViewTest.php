@@ -274,4 +274,26 @@ class PageTreeViewTest extends TestCase
         $this->actingAs($this->admin())->patch(route('admin.podstrony.wylacz', $root), ['wybrana' => $root->id])
             ->assertSessionHas('status', 'Strona „Dział” została wyłączona wraz z podstronami (2).');
     }
+
+    public function test_drzewo_ma_menu_kontekstowe_z_akcjami_wiersza(): void
+    {
+        $root = $this->page('Dział');
+        $system = $this->page('Systemowa', ['is_system' => true]);
+        $locked = $this->page('Zablokowana', ['is_locked' => true]);
+
+        $html = $this->actingAs($this->admin())->get(route('admin.podstrony.index', ['wybrana' => $root->id]))->assertOk()->getContent();
+        $this->assertStringContainsString('id="tree-ctx" role="menu"', $html);
+        foreach (['edit', 'view', 'add', 'clone', 'publish', 'up', 'down', 'move', 'copy-url', 'copy-id', 'delete'] as $act) {
+            $this->assertStringContainsString('data-act="'.$act.'"', $html, $act);
+        }
+        $this->assertStringContainsString('data-page-id="'.$system->id.'"', $html);
+        $this->assertMatchesRegularExpression('/data-page-id="'.$system->id.'"[^>]*data-system="1"/s', $html);
+        $this->assertStringContainsString('data-public-url="'.$root->publicUrl().'"', $html);
+        $this->assertStringContainsString('Shift+F10', $html);
+
+        // Redaktor nie edytuje zablokowanej strony — menu dostaje data-can-edit="0".
+        $editor = User::factory()->create(['role' => User::ROLE_CONTENT_EDITOR]);
+        $html = $this->actingAs($editor)->get(route('admin.podstrony.index'))->getContent();
+        $this->assertMatchesRegularExpression('/data-page-id="'.$locked->id.'"[^>]*data-can-edit="0"/s', $html);
+    }
 }
