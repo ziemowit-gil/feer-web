@@ -14,8 +14,8 @@
 @endpush
 
 @section('breadcrumbs')
+    {{-- Portal to samodzielna sekcja: Strona główna › portal (bez pośredniego „Działania”). --}}
     @include('partials.breadcrumbs', ['items' => [
-        ['label' => 'Działania', 'url' => route('projects.index')],
         ['label' => $title, 'url' => null],
     ]])
 @endsection
@@ -27,12 +27,14 @@
         $more = 'inline-flex min-h-11 items-center gap-2 text-sm font-bold text-brand-dark underline underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
         $lead = in_array('news', $widgets, true) ? $news->first() : null;
         $rest = $news->slice(1);
-        // Bez slidera i bez aktualności kafelki działań przechodzą do głównej kolumny (obok menu), żeby nie stała pusta.
-        $projectsInMain = $slides->isEmpty() && ! $lead && $projects->isNotEmpty() && in_array('projects', $widgets, true);
+        // Bez slidera kafelki (wiersze) działań stają obok menu, żeby główna kolumna nie była pusta.
+        $projectsInMain = $slides->isEmpty() && $projects->isNotEmpty() && in_array('projects', $widgets, true);
+        // Menu jak na stronie działania (projects/partials/sidebar-nav): pozycje na całą szerokość ze strzałką.
+        $navItem = 'proj-nav-item flex min-h-10 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-[0.9375rem] text-ink transition hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
     @endphp
 
     <div class="mx-auto max-w-6xl px-4 pb-14 pt-6">
-        <header class="mb-6">
+        <header class="mb-8">
             <p class="text-xs font-bold uppercase tracking-widest text-muted">Portal</p>
             <h1 class="mt-1 text-3xl font-bold leading-tight text-ink md:text-4xl">{{ $title }}</h1>
             <span class="{{ $bar }}" aria-hidden="true"></span>
@@ -41,85 +43,42 @@
             @endif
         </header>
 
-        <div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
-            {{-- ═════ Lewa kolumna: slider i aktualności ═════ --}}
-            <div class="min-w-0 space-y-12">
+        <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
+            {{-- ═════ Lewa kolumna: slider (albo działania) ═════ --}}
+            <div class="min-w-0">
                 @if ($slides->isNotEmpty())
-                    <div class="portal-slider -mx-4 overflow-hidden rounded-md bg-white sm:mx-0">
-                        @include('templates.feer.partials.hero', ['slides' => $slides, 'sliderLabel' => 'Slider: ' . $title, 'sliderDuration' => $sliderDuration])
-                    </div>
-                @endif
-
-                @if ($lead)
-                    <section aria-labelledby="portal-news">
-                        <h2 id="portal-news" class="{{ $h2 }}">Aktualności</h2>
-                        <span class="{{ $bar }}" aria-hidden="true"></span>
-
-                        <article class="mt-6 grid gap-5 md:grid-cols-2">
-                            @if ($img = $lead->imageUrlOrDefault())
-                                <img src="{{ $img }}" alt="{{ $lead->image_alt ?? '' }}" class="aspect-[16/10] w-full rounded-md object-cover" loading="lazy">
-                            @endif
-                            <div>
-                                <p class="text-sm text-muted"><time datetime="{{ $lead->published_at->toDateString() }}">{{ $lead->published_at->translatedFormat('j F Y') }}</time></p>
-                                <h3 class="mt-1 text-2xl font-bold leading-snug text-ink">
-                                    <a href="{{ route('news.show', $lead) }}" class="hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $lead->title }}</a>
-                                </h3>
-                                @if ($excerpt = trim(strip_tags((string) ($lead->excerpt ?: \Illuminate\Support\Str::limit(strip_tags((string) $lead->content), 320)))))
-                                    <p class="mt-3 leading-relaxed text-ink">{{ $excerpt }}</p>
-                                @endif
-                                <p class="mt-3"><a href="{{ route('news.show', $lead) }}" class="{{ $more }}">Pełna treść<span class="sr-only">: {{ $lead->title }}</span> <span aria-hidden="true">→</span></a></p>
-                            </div>
-                        </article>
-
-                        @if ($rest->isNotEmpty())
-                            <ul role="list" class="mt-6 grid gap-x-8 sm:grid-cols-2">
-                                @foreach ($rest as $item)
-                                    <li class="border-t border-gray-200 py-3">
-                                        <a href="{{ route('news.show', $item) }}" class="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                            <span class="block text-xs text-muted"><time datetime="{{ $item->published_at->toDateString() }}">{{ $item->published_at->translatedFormat('j F Y') }}</time></span>
-                                            <span class="mt-0.5 block font-bold leading-snug text-ink group-hover:text-brand-dark group-hover:underline group-hover:underline-offset-4">{{ $item->title }}</span>
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
-                        @if (Route::has('news.index'))
-                            <p class="mt-4"><a href="{{ route('news.index') }}" class="{{ $more }}">Wszystkie aktualności <span aria-hidden="true">→</span></a></p>
-                        @endif
-                    </section>
-                @endif
-
-                @if ($projectsInMain)
-                    @include('portal.widgets.projects', ['cols' => 'sm:grid-cols-2'])
+                    @include('portal.partials.slider', ['slides' => $slides, 'label' => 'Slider: ' . $title, 'duration' => $sliderDuration])
+                @elseif ($projectsInMain)
+                    @include('portal.widgets.projects', ['cols' => ''])
                 @endif
             </div>
 
-            {{-- ═════ Prawa kolumna: menu działań i „Na skróty” ═════ --}}
-            <aside class="space-y-6 lg:sticky lg:top-4">
+            {{-- ═════ Prawa kolumna: menu działań i „Na skróty” (wygląd menu bocznego działania) ═════ --}}
+            <div class="space-y-4 lg:sticky lg:top-4">
                 <nav aria-labelledby="portal-nav" class="rounded-md bg-gray-50 p-5">
-                    <h2 id="portal-nav" class="font-bold leading-snug text-ink">{{ $title }}</h2>
+                    <p id="portal-nav" class="text-base font-bold leading-snug text-ink">{{ $title }}</p>
                     <span class="mb-3 mt-2 block h-1 w-10 bg-brand" aria-hidden="true"></span>
                     @if ($projects->isEmpty())
-                        <p class="text-sm text-muted">Brak opublikowanych działań.</p>
+                        <p class="px-3 text-sm text-ink">Brak opublikowanych działań.</p>
                     @else
                         <ul role="list" class="space-y-0.5">
                             @foreach ($projects as $project)
                                 @php $subs = $project->publishedPages; @endphp
                                 <li @if ($subs->isNotEmpty()) x-data="{ open: false }" @endif>
-                                    <div class="flex items-stretch">
-                                        <a href="{{ route('projects.show', $project) }}" class="flex min-h-10 min-w-0 flex-1 items-center rounded-md px-3 py-2 text-[0.9375rem] text-ink hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $project->nav_title ?: $project->title }}</a>
-                                        @if ($subs->isNotEmpty())
-                                            <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="false" aria-controls="portal-sub-{{ $project->id }}"
-                                                class="flex w-10 flex-none items-center justify-center rounded-md text-xs text-ink hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                                <i class="fa-solid fa-chevron-down transition-transform motion-reduce:transition-none" :class="open && 'rotate-180'" aria-hidden="true"></i>
-                                                <span class="sr-only">Rozwiń: {{ $project->title }}</span>
-                                            </button>
-                                        @endif
-                                    </div>
-                                    @if ($subs->isNotEmpty())
-                                        <ul id="portal-sub-{{ $project->id }}" role="list" class="side-sub mb-1 space-y-0.5" x-show="open" x-cloak>
+                                    @if ($subs->isEmpty())
+                                        <a href="{{ route('projects.show', $project) }}" class="{{ $navItem }}">
+                                            <span class="min-w-0">{{ $project->nav_title ?: $project->title }}</span>
+                                            <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
+                                        </a>
+                                    @else
+                                        <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="false" aria-controls="portal-sub-{{ $project->id }}" class="{{ $navItem }}">
+                                            <span class="min-w-0">{{ $project->nav_title ?: $project->title }}</span>
+                                            <i class="fa-solid fa-chevron-right flex-none text-xs transition-transform motion-reduce:transition-none" :class="open && 'rotate-90'" aria-hidden="true"></i>
+                                        </button>
+                                        <ul id="portal-sub-{{ $project->id }}" role="list" class="side-sub mt-0.5 space-y-0.5" x-show="open" x-cloak>
+                                            <li><a href="{{ route('projects.show', $project) }}" class="{{ $navItem }} font-bold"><span class="min-w-0">O działaniu</span><i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i></a></li>
                                             @foreach ($subs as $sub)
-                                                <li><a href="{{ $sub->publicUrl() }}" class="flex min-h-9 items-center rounded-md px-3 py-1.5 text-sm text-ink hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $sub->title }}</a></li>
+                                                <li><a href="{{ $sub->publicUrl() }}" class="{{ $navItem }}"><span class="min-w-0">{{ $sub->title }}</span><i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i></a></li>
                                             @endforeach
                                         </ul>
                                     @endif
@@ -130,26 +89,69 @@
                 </nav>
 
                 <nav aria-labelledby="portal-shortcuts" class="rounded-md bg-gray-50 p-5">
-                    <h2 id="portal-shortcuts" class="font-bold text-ink">Na skróty</h2>
+                    <p id="portal-shortcuts" class="text-base font-bold text-ink">Na skróty</p>
                     <span class="mb-3 mt-2 block h-1 w-10 bg-brand" aria-hidden="true"></span>
-                    <ul role="list" class="space-y-0.5 text-[0.9375rem]">
-                        @php
-                            $shortcuts = array_filter([
-                                ['Wszystkie działania w kategorii', route('categories.show', $category)],
-                                Route::has('events.index') ? ['Kalendarz szkoleń i wydarzeń', route('events.index')] : null,
-                                Route::has('newsletter.show') ? ['Zapisz się do newslettera', route('newsletter.show')] : null,
-                                Route::has('contact.show') ? ['Kontakt z fundacją', route('contact.show')] : null,
-                                ['Kanał RSS portalu', route('portal.feed', $category->portal_slug)],
-                            ]);
-                        @endphp
+                    @php
+                        $shortcuts = array_filter([
+                            ['Wszystkie działania w kategorii', route('categories.show', $category)],
+                            Route::has('events.index') ? ['Kalendarz szkoleń i wydarzeń', route('events.index')] : null,
+                            Route::has('newsletter.show') ? ['Zapisz się do newslettera', route('newsletter.show')] : null,
+                            Route::has('contact.show') ? ['Kontakt z fundacją', route('contact.show')] : null,
+                            ['Kanał RSS portalu', route('portal.feed', $category->portal_slug)],
+                        ]);
+                    @endphp
+                    <ul role="list" class="space-y-0.5">
                         @foreach ($shortcuts as [$label, $url])
-                            <li><a href="{{ $url }}" class="flex min-h-10 items-center justify-between gap-3 rounded-md px-3 py-2 text-ink hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $label }} <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i></a></li>
+                            <li><a href="{{ $url }}" class="{{ $navItem }}"><span class="min-w-0">{{ $label }}</span><i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i></a></li>
                         @endforeach
                     </ul>
                 </nav>
-            </aside>
+            </div>
         </div>
 
+        {{-- ═════ Aktualności: wyróżniona po lewej, pozostałe w kolumnie obok ═════ --}}
+        @if ($lead)
+            <section aria-labelledby="portal-news" class="mt-14">
+                <h2 id="portal-news" class="{{ $h2 }}">Aktualności</h2>
+                <span class="{{ $bar }}" aria-hidden="true"></span>
+                <div class="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                    <article class="grid gap-6 md:grid-cols-2">
+                        @if ($img = $lead->imageUrlOrDefault())
+                            <img src="{{ $img }}" alt="{{ $lead->image_alt ?? '' }}" class="aspect-[4/3] w-full rounded-md object-cover" loading="lazy">
+                        @endif
+                        <div>
+                            <p class="text-sm text-ink"><time datetime="{{ $lead->published_at->toDateString() }}">{{ $lead->published_at->translatedFormat('j F Y') }}</time></p>
+                            <h3 class="mt-1 text-xl font-bold leading-snug text-ink md:text-2xl">
+                                <a href="{{ route('news.show', $lead) }}" class="hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $lead->title }}</a>
+                            </h3>
+                            @php $excerpt = trim(html_entity_decode(strip_tags((string) ($lead->excerpt ?: $lead->content)), ENT_QUOTES | ENT_HTML5)); @endphp
+                            @if ($excerpt !== '')
+                                <p class="mt-3 line-clamp-5 leading-relaxed text-ink">{{ \Illuminate\Support\Str::limit($excerpt, 360) }}</p>
+                            @endif
+                            <p class="mt-3"><a href="{{ route('news.show', $lead) }}" class="{{ $more }}">Pełna treść<span class="sr-only">: {{ $lead->title }}</span> <span aria-hidden="true">→</span></a></p>
+                        </div>
+                    </article>
+
+                    <div>
+                        @if ($rest->isNotEmpty())
+                            <ul role="list">
+                                @foreach ($rest as $item)
+                                    <li class="border-b border-gray-200 py-3 first:pt-0">
+                                        <a href="{{ route('news.show', $item) }}" class="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                            <span class="block text-xs text-ink"><time datetime="{{ $item->published_at->toDateString() }}">{{ $item->published_at->translatedFormat('j F Y') }}</time></span>
+                                            <span class="mt-0.5 block font-bold leading-snug text-ink group-hover:text-brand-dark group-hover:underline group-hover:underline-offset-4">{{ $item->title }}</span>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                        @if (Route::has('news.index'))
+                            <p class="mt-2"><a href="{{ route('news.index') }}" class="{{ $more }}">Wszystkie aktualności <span aria-hidden="true">→</span></a></p>
+                        @endif
+                    </div>
+                </div>
+            </section>
+        @endif
         {{-- ═════ Widżety w kolejności z panelu ═════ --}}
         <div class="mt-14 space-y-14">
             @foreach ($widgets as $widget)

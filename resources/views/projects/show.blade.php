@@ -8,8 +8,7 @@
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => array_values(array_filter([
-        ['label' => 'Działania', 'url' => route('projects.index')],
-        ['label' => $project->category->name, 'url' => route('categories.show', $project->category)],
+        ...($project->category ? $project->category->breadcrumbTrail() : [['label' => 'Działania', 'url' => route('projects.index')]]),
         $project->parent && $project->parent->is_published ? ['label' => $project->parent->title, 'url' => route('projects.show', $project->parent)] : null,
         ['label' => $project->title, 'url' => null],
     ]))])
@@ -611,7 +610,7 @@
     {{-- Powrót: do kategorii i do wszystkich działań (pod treścią działania). --}}
     <ul role="list" class="mt-12 space-y-2 text-sm">
         @if ($project->category)
-            <li><a href="{{ route('categories.show', $project->category) }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> {{ $project->category->name }}</a></li>
+            <li><a href="{{ $project->category->publicUrl() }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> {{ $project->category->publicLabel() }}</a></li>
         @endif
         <li><a href="{{ route('projects.index') }}" class="inline-flex min-h-9 items-center gap-2 font-bold text-ink hover:text-brand-dark hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><span aria-hidden="true">←</span> Wszystkie działania</a></li>
     </ul>

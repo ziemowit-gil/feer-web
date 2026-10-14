@@ -44,7 +44,8 @@
     // Grupy (działania): prosta zasada kategoria → jej projekty.
     $groups = $isProjects ? collect($navCategories ?? [])->filter(fn ($c) => $c->publishedProjects->isNotEmpty())->values() : collect();
     $groupCurrentId = request()->routeIs('projects.show') ? request()->route('project')?->id : null;
-    $catCurrentId   = request()->routeIs('categories.show') ? request()->route('category')?->id : null;
+    $catCurrentId   = request()->routeIs('categories.show') ? request()->route('category')?->id
+        : (request()->routeIs('portal.show', 'portal.feed') ? \App\Models\Category::where('portal_slug', request()->route('portal'))->value('id') : null);
 
     $isCurrent = $item->isCurrent() || collect($entries)->contains(fn ($e) => $e[4])
         || collect($sections)->contains(fn ($s) => $s['heading']['current'] ?? false);
@@ -153,7 +154,7 @@
                         <div class="grid gap-x-8 gap-y-6 sm:grid-cols-2 {{ $colClass }}">
                             @foreach ($groups as $category)
                                 <div>
-                                    <a href="{{ route('categories.show', $category) }}" @if ($catCurrentId === $category->id) aria-current="page" @endif
+                                    <a href="{{ $category->publicUrl() }}" @if ($catCurrentId === $category->id) aria-current="page" @endif
                                        class="mega-cat-h mb-2 block rounded-md border-b-2 border-brand/30 px-2 py-1.5 font-bold {{ $sz['cat'] }} hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $catCurrentId === $category->id ? 'text-brand-dark' : 'text-ink' }}">
                                         {{ $category->name }}
                                     </a>

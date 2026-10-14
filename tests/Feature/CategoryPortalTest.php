@@ -42,11 +42,12 @@ class CategoryPortalTest extends TestCase
 
     public function test_widzety_w_ustawionej_kolejnosci_i_wylaczone_znikaja(): void
     {
-        $this->portal(['portal_widgets' => ['stats', 'news', 'projects']]);
+        $this->portal(['portal_widgets' => ['stats', 'contact']]);
 
         $html = $this->get('/portal/szkoleniatest')->assertOk()->getContent();
-        $this->assertStringNotContainsString('Anna Testowa', $html);          // kontakt wyłączony
-        $this->assertLessThan(strpos($html, 'id="portal-w-projects"'), strpos($html, 'id="portal-w-stats"'));
+        $this->assertStringNotContainsString('Ruszają zapisy na kurs', $html); // aktualności wyłączone
+        $this->assertStringNotContainsString('id="portal-w-projects"', $html); // działania wyłączone
+        $this->assertLessThan(strpos($html, 'id="portal-w-contact"'), strpos($html, 'id="portal-w-stats"'));
     }
 
     public function test_bez_slidera_i_aktualnosci_dzialania_wchodza_do_glownej_kolumny(): void
@@ -107,5 +108,19 @@ class CategoryPortalTest extends TestCase
         $this->assertSame('edukacjatest', $category->portal_slug);
         $this->assertSame(['projects', 'news'], $category->portal_widgets);
         $this->actingAs($admin)->get(route('admin.kategorie.edit', $category))->assertOk()->assertSee('Portal kategorii');
+    }
+
+    public function test_okruszki_i_linki_dzialania_prowadza_do_portalu(): void
+    {
+        $category = $this->portal(['portal_title' => 'Portal szkoleń']);
+        $project = Project::where('slug', 'kurs-wcag-ngo')->first();
+
+        $html = $this->get(route('projects.show', $project))->assertOk()->getContent();
+        $this->assertStringContainsString(route('portal.show', 'szkoleniatest'), $html);
+        $this->assertStringContainsString('Portal szkoleń', $html);
+        $this->assertStringNotContainsString('href="'.route('categories.show', $category).'"', $html);
+
+        // Portal: okruszki bez pośredniego „Działania”.
+        $this->get('/portal/szkoleniatest')->assertOk()->assertDontSee('<a href="'.route('projects.index').'"', false);
     }
 }

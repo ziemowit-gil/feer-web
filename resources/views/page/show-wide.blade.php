@@ -11,8 +11,8 @@
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => array_filter([
-        $page->project ? ['label' => 'Działania', 'url' => route('projects.index')] : null,
-        $page->project && $page->project->category ? ['label' => $page->project->category->name, 'url' => route('categories.show', $page->project->category)] : null,
+        // Działanie z kategorii z portalem: ścieżka przez portal (Category::breadcrumbTrail).
+        ...($page->project ? ($page->project->category ? $page->project->category->breadcrumbTrail() : [['label' => 'Działania', 'url' => route('projects.index')]]) : []),
         $page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)]
             : ($page->parent ? ['label' => $page->parent->title, 'url' => route('page.show', $page->parent)] : null),
         ['label' => $page->title, 'url' => null],

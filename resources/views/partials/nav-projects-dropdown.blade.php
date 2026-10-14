@@ -30,7 +30,7 @@
         ])>
         @forelse (($navCategories ?? collect()) as $category)
             <div class="group/cat relative">
-                <a href="{{ route('categories.show', $category) }}" class="flex items-center justify-between px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
+                <a href="{{ $category->publicUrl() }}" class="flex items-center justify-between px-4 py-2 text-sm font-bold text-ink hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
                     {{ $category->name }}
                     @if (! $mobile && $category->publishedProjects->isNotEmpty())
                         <i class="fa-solid fa-chevron-right text-xs text-muted" aria-hidden="true"></i>

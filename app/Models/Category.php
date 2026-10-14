@@ -51,6 +51,36 @@ class Category extends Model
         return $this->hasPortal() ? route('portal.show', $this->portal_slug) : null;
     }
 
+    /** Gdzie prowadzą linki do kategorii (menu, okruszki, „← kategoria”): portal, jeśli kategoria go ma. */
+    public function publicUrl(): string
+    {
+        return $this->portalUrl() ?? route('categories.show', $this);
+    }
+
+    /** Nazwa w linkach do kategorii — tytuł portalu albo nazwa kategorii. */
+    public function publicLabel(): string
+    {
+        return ($this->hasPortal() ? $this->portal_title : null) ?: $this->name;
+    }
+
+    /**
+     * Okruszki kategorii dla stron działań i ich podstron: z portalem — sam portal
+     * (nawigacja względem portalu), bez portalu — „Działania › kategoria”.
+     *
+     * @return array<int, array{label: string, url: string}>
+     */
+    public function breadcrumbTrail(): array
+    {
+        if ($this->hasPortal()) {
+            return [['label' => $this->publicLabel(), 'url' => $this->portalUrl()]];
+        }
+
+        return [
+            ['label' => 'Działania', 'url' => route('projects.index')],
+            ['label' => $this->name, 'url' => route('categories.show', $this)],
+        ];
+    }
+
     /** Krótki adres w subdomenie ({slug}.feer.org.pl), wyliczany z APP_URL. */
     public function portalSubdomainUrl(): ?string
     {
