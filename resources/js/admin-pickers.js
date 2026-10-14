@@ -336,7 +336,17 @@ function enhanceColor(input) {
         preview.classList.toggle('picker-swatch-empty', ! /^#[0-9a-f]{6}$/i.test(v));
     };
     input.addEventListener('input', refresh);
+    // Alpine (x-model) i inne skrypty ustawiają value bez zdarzenia „input" — podgląd odświeżamy też wtedy.
+    const valueProp = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+    Object.defineProperty(input, 'value', {
+        configurable: true,
+        get() { return valueProp.get.call(this); },
+        set(v) { valueProp.set.call(this, v); refresh(); },
+    });
     refresh();
+    // Klik w próbkę koloru otwiera paletę (przycisk obok zostaje dostępną kontrolką dla klawiatury i czytników).
+    preview.style.cursor = 'pointer';
+    preview.addEventListener('click', () => button.click());
 
     let pop = null;
     const swatchGroup = (title, colors) => {

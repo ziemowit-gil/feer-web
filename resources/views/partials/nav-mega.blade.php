@@ -106,7 +106,7 @@
                @if ($item->isCurrent() && ! $isProjects) aria-current="page" @endif
                class="flex items-center gap-2 pt-2 uppercase transition-colors {{ $hoverTxtCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
                 @if ($navIcons && $item->icon){!! icon_html($item->icon, 'nav-item-icon') !!}@endif
-                <span>{{ $item->label }}</span>
+                <span @if ($item->highlight) class="menu-hl font-bold" @endif>{{ $item->label }}</span>
             </a>
             <button type="button" @click="clearTimeout(timer); open = ! open"
                     :aria-expanded="open.toString()" :aria-controls="$id('mega')" aria-label="Podmenu: {{ $item->label }}"
@@ -118,7 +118,7 @@
                     :aria-expanded="open.toString()" :aria-controls="$id('mega')"
                     class="flex items-center gap-2 pt-2 uppercase transition-colors {{ $hoverTxtCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
                 @if ($navIcons && $item->icon){!! icon_html($item->icon, 'nav-item-icon') !!}@endif
-                <span>{{ $item->label }}</span>
+                <span @if ($item->highlight) class="menu-hl font-bold" @endif>{{ $item->label }}</span>
                 <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
             </button>
         @endif

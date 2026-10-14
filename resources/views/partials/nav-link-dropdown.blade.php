@@ -29,7 +29,7 @@
             @if ($item->isCurrent()) aria-current="page" @endif
             class="flex items-center gap-2 uppercase transition-colors {{ $hoverTxtCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $mobile ? 'py-2' : 'pt-2' }}">
             @if (($iconsNav ?? false) && $item->icon){!! icon_html($item->icon, 'nav-item-icon') !!}@endif
-            <span>{{ $item->label }}</span>
+            <span @if ($item->highlight) class="menu-hl font-bold" @endif>{{ $item->label }}</span>
         </a>
         {{-- Strzałka rozwija/zamyka podmenu (działa też na mobile). --}}
         <button type="button" @click="open = !open" x-ref="linkToggle"

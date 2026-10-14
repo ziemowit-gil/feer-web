@@ -17,7 +17,7 @@
         :aria-expanded="open.toString()" :aria-controls="$id('dropdown')"
         class="flex w-full items-center gap-1 border-b-2 py-2 uppercase transition-colors {{ $hoverCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $staticCls }} {{ $mobile ? 'justify-between' : 'pb-1' }}" :class="open ? '{{ $activeBdr }}' : ''">
         @if (($iconsNav ?? false) && $item->icon){!! icon_html($item->icon, 'nav-item-icon') !!}@endif
-        <span>{{ $item->label }}</span> <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
+        <span @if ($item->highlight) class="menu-hl font-bold" @endif>{{ $item->label }}</span> <i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i>
     </button>
 
     <div :id="$id('dropdown')" x-show="open" x-cloak x-transition

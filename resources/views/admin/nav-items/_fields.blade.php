@@ -176,7 +176,7 @@
     <span class="mb-1 block text-sm font-bold">Kolor przycisku <span class="font-normal text-muted">(opcjonalnie)</span></span>
     <div class="flex items-center gap-3">
         <input type="hidden" name="button_color" :value="form.buttonColorEnabled ? form.buttonColor : ''">
-        <input type="text" x-model="form.buttonColor" :disabled="!form.buttonColorEnabled" aria-label="Kod koloru (hex)" data-color-picker
+        <input type="text" x-model="form.buttonColor" @input="form.buttonColorEnabled = true" :disabled="!form.buttonColorEnabled" aria-label="Kod koloru (hex)" data-color-picker
             placeholder="#2563eb" pattern="#[0-9a-fA-F]{6}"
             class="w-40 rounded border-gray-500 font-mono text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark disabled:bg-gray-100 disabled:text-muted">
         <label class="flex items-center gap-2 text-sm text-muted">
@@ -199,7 +199,7 @@
     <span class="mb-1 block text-sm font-bold">Kolor pozycji <span class="font-normal text-muted">(opcjonalnie)</span></span>
     <div class="flex items-center gap-3">
         <input type="hidden" name="accent_color" :value="form.accentEnabled ? form.accentColor : ''">
-        <input type="text" x-model="form.accentColor" :disabled="!form.accentEnabled" aria-label="Kolor pozycji menu (hex)" data-color-picker
+        <input type="text" x-model="form.accentColor" @input="form.accentEnabled = true" :disabled="!form.accentEnabled" aria-label="Kolor pozycji menu (hex)" data-color-picker
             placeholder="#1e6dff" pattern="#[0-9a-fA-F]{6}"
             class="w-40 rounded border-gray-500 font-mono text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark disabled:bg-gray-100 disabled:text-muted">
         <label class="flex items-center gap-2 text-sm text-muted">

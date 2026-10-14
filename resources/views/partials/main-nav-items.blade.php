@@ -27,7 +27,7 @@
                 : ($item->type === 'pages' ? 'partials.nav-pages'
                 : ($item->type === 'dropdown' ? 'partials.nav-dropdown' : 'partials.nav-item')));
             $__html = $__env->make($__partial, array_merge(
-                \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path', '__html', '__partial', '__accent', '__pal']),
+                \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path', '__html', '__partial', '__accent', '__pal', '__ink']),
                 ['item' => $item, 'mobile' => $mobile],
             ))->render();
 
@@ -36,7 +36,9 @@
             $__accent = (! $mobile && ! $item->parent_id && ! $item->is_button && \App\Support\Color::isValid($item->accent_color)) ? $item->accent_color : null;
             if ($__accent) {
                 $__pal = \App\Support\Color::button($__accent);
-                $__html = preg_replace('/<li\b/', '<li data-nav-accent style="--nav-accent: '.e($__accent).'; --nav-accent-bg: '.e($__pal['bg']).'; --nav-accent-text: '.e($__pal['text']).'"', $__html, 1);
+                // Wyróżniona pozycja z własnym kolorem: tekst w tym kolorze (przyciemnionym do kontrastu ≥ 4,5:1 na białym) zamiast globalnego koloru wyróżnienia.
+                $__ink = $item->highlight ? '; --nav-accent-ink: '.e($siteSettings->contrastSafeColor($__accent)) : '';
+                $__html = preg_replace('/<li\b/', '<li data-nav-accent style="--nav-accent: '.e($__accent).'; --nav-accent-bg: '.e($__pal['bg']).'; --nav-accent-text: '.e($__pal['text']).$__ink.'"', $__html, 1);
             }
         @endphp
         {!! $__html !!}

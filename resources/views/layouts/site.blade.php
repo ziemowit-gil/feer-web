@@ -50,6 +50,8 @@
         /* Wyróżnienie pozycji menu (górne i boczne): aktywna i najechana pozycja w kolorze z panelu (Ustawienia → Kolory). */
         .menu-hl { color: var(--color-menu-highlight) !important; }
         .menu-hl-hover:hover { color: var(--color-menu-highlight) !important; }
+        li[data-nav-accent] .menu-hl { color: var(--nav-accent-ink, var(--color-menu-highlight)) !important; }
+        li[data-nav-accent] > a:hover .menu-hl, li[data-nav-accent] > a[aria-current="page"] .menu-hl, li[data-nav-accent] > button:hover .menu-hl, li[data-nav-accent] > div.border-b-2:hover .menu-hl { color: var(--nav-accent-text) !important; }
     </style>
     @if (($siteSettings->site_template ?? 'default') === 'feer')
         @include('partials.theme-feer')
