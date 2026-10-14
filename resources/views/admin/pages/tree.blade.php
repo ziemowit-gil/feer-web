@@ -110,11 +110,45 @@
                 setAll(open) {
                     this.$root.querySelectorAll('[data-tree-node][x-data]').forEach(li => { Alpine.$data(li).open = open; });
                 },
-            }">
+                // Układ drzewa: „az” — strony z podstronami na górze, w obu grupach alfabetycznie; „order” — zapisana kolejność
+                // (tylko w niej da się przeciąganiem zmieniać kolejność). Wybór zapamiętany w przeglądarce.
+                sort: (() => { try { return localStorage.getItem('pageTreeSort') || 'az'; } catch (e) { return 'az'; } })(),
+                setSort(mode) {
+                    this.sort = mode;
+                    try { localStorage.setItem('pageTreeSort', mode); } catch (e) {}
+                    this.applySort();
+                },
+                applySort() {
+                    const az = this.sort === 'az';
+                    this.$root.dataset.sort = this.sort;
+                    this.$root.querySelectorAll('[data-tree-sep]').forEach(n => n.remove());
+                    this.$root.querySelectorAll('ul[data-tree-list]').forEach(ul => {
+                        const items = [...ul.children].filter(n => n.matches('[data-tree-node]'));
+                        items.sort(az
+                            ? (a, b) => (b.dataset.folder - a.dataset.folder) || a.dataset.title.localeCompare(b.dataset.title, 'pl')
+                            : (a, b) => a.dataset.pos - b.dataset.pos);
+                        items.forEach(li => ul.appendChild(li));
+                        const firstPage = items.find(li => li.dataset.folder === '0');
+                        if (az && firstPage && firstPage !== items[0] && ! ul.classList.contains('tree-sub')) {
+                            const sep = document.createElement('li');
+                            sep.className = 'tree-sep'; sep.setAttribute('aria-hidden', 'true'); sep.dataset.treeSep = '';
+                            ul.insertBefore(sep, firstPage);
+                        }
+                    });
+                },
+            }" x-init="applySort()">
             <div class="space-y-2 border-b border-gray-100 p-3">
                 <div class="flex items-center justify-between gap-2">
                     <h2 class="text-sm font-bold text-ink"><i class="fa-solid fa-sitemap mr-1 text-brand-dark" aria-hidden="true"></i> Struktura serwisu <span class="font-normal text-muted">({{ $total }})</span></h2>
-                    <div class="flex gap-1">
+                    <div class="flex items-center gap-1">
+                        <div role="group" aria-label="Układ drzewa" class="mr-1 flex flex-none whitespace-nowrap rounded bg-gray-100 p-0.5 text-[11px] font-bold">
+                            <button type="button" @click="setSort('az')" :aria-pressed="(sort === 'az').toString()" title="Strony z podstronami na górze, alfabetycznie"
+                                :class="sort === 'az' ? 'bg-white text-ink shadow-sm' : 'text-muted hover:text-ink'"
+                                class="rounded px-1.5 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">A–Z</button>
+                            <button type="button" @click="setSort('order')" :aria-pressed="(sort === 'order').toString()" title="Zapisana kolejność — tylko w niej przeciąganiem zmienisz kolejność"
+                                :class="sort === 'order' ? 'bg-white text-ink shadow-sm' : 'text-muted hover:text-ink'"
+                                class="rounded px-1.5 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Kolejność</button>
+                        </div>
                         <button type="button" @click="setAll(true)" class="rounded p-1.5 text-xs text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" title="Rozwiń wszystko" aria-label="Rozwiń wszystkie gałęzie">
                             <i class="fa-solid fa-angles-down" aria-hidden="true"></i>
                         </button>
@@ -135,7 +169,7 @@
             {{-- Instrukcja przeciągania tylko dla czytników ekranu (wizualnie zbędna — przeciąganie widać po kursorze);
                  skróty klawiszowe muszą zostać dostępne dla osób bez myszy. --}}
             <p id="tree-dnd-help" class="sr-only">
-                Przeciągnij stronę: na górną lub dolną krawędź innej — zmienia kolejność, na środek — wkłada ją jako podstronę.
+                Przeciągnij stronę: na górną lub dolną krawędź innej — zmienia kolejność (tylko w układzie „Kolejność”), na środek — wkłada ją jako podstronę.
                 Z klawiatury: zaznacz stronę i użyj Alt+Shift+strzałek
                 (góra/dół — kolejność, w prawo — w głąb poprzedniej, w lewo — poziom wyżej).
             </p>
@@ -352,6 +386,11 @@
          Natywny <dialog> + showModal(): przeglądarka sama zamyka go klawiszem Escape, ogranicza fokus do
          okna, oznacza tło jako nieaktywne i oddaje fokus przyciskowi, który go otworzył (WCAG 2.1.2, 2.4.3, 4.1.2). --}}
     <style>
+        /* Drzewo stron: podstrony z linią pionową spod strzałki rodzica i krótkim łącznikiem do każdego wiersza. */
+        #page-tree .tree-sub { margin-left: .75rem; padding-left: .625rem; border-left: 2px solid #c4c9d2; }
+        #page-tree .tree-sub > li { position: relative; }
+        #page-tree .tree-sub > li::before { content: ''; position: absolute; left: -.625rem; top: .875rem; width: .5rem; border-top: 2px solid #c4c9d2; }
+        #page-tree .tree-sep { margin: .375rem .5rem; border-top: 1px solid #e5e7eb; }
         #bulk-dialog::backdrop { background: rgba(17, 24, 39, .55); }
         #bulk-dialog { margin: auto; }
     </style>
@@ -549,7 +588,11 @@
                 }
             }
 
+            // W układzie A–Z kolejność na ekranie nie jest zapisaną kolejnością — przeciąganie tylko zmienia rodzica.
+            const azMode = () => tree.dataset.sort === 'az';
+
             function zoneOf(row, e) {
+                if (azMode()) return 'inside';
                 const r = row.getBoundingClientRect();
                 const y = (e.clientY - r.top) / r.height;
                 return y < 0.25 ? 'before' : (y > 0.75 ? 'after' : 'inside');
@@ -626,13 +669,13 @@
                 e.preventDefault();
                 const li = liOf(row), id = idOf(li), parentId = parentIdOf(li);
                 const sibs = siblingsOf(li, 0), idx = sibs.indexOf(li);
+                if (azMode() && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { announce('Kolejność zmienisz w układzie „Kolejność” (przełącznik nad drzewem).'); return; }
                 if (e.key === 'ArrowUp' && idx > 0) send(id, parentId, idx - 1);
                 else if (e.key === 'ArrowDown' && idx < sibs.length - 1) send(id, parentId, idx + 1);
                 else if (e.key === 'ArrowRight' && idx > 0) send(id, idOf(sibs[idx - 1]), 100000);   // w głąb poprzedniej
                 else if (e.key === 'ArrowLeft' && parentId) {                                         // poziom wyżej, tuż za rodzicem
                     const parentLi = li.parentElement.closest('[data-tree-node]');
-                    const uncles = siblingsOf(parentLi, 0);
-                    send(id, parentIdOf(parentLi), uncles.indexOf(parentLi) + 1);
+                    send(id, parentIdOf(parentLi), parseInt(parentLi.dataset.pos, 10) + 1);
                 } else announce('Nie można przesunąć strony w tym kierunku.');
             });
         })();

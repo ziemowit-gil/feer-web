@@ -3,12 +3,12 @@
     Zmienne: $nodes (kolekcja Page), $byParent, $selected, $openIds, $depth.
 
     Nawigacja z listami zagnieżdżonymi (nie widżet ARIA tree): linki + przyciski
-    rozwijania z aria-expanded/aria-controls, cele ≥ 44 px wysokości (2.5.8).
+    rozwijania z aria-expanded/aria-controls, cele ≥ 28 px wysokości (2.5.8 wymaga min. 24 px).
 --}}
 @php
     $typeIcons = \App\Models\Page::typeIcons();
 @endphp
-<ul role="list" data-tree-list class="{{ $depth > 0 ? 'ml-3 border-l border-gray-200 pl-1' : '' }} space-y-0.5">
+<ul role="list" data-tree-list class="{{ $depth > 0 ? 'tree-sub' : '' }}">
     @foreach ($nodes as $node)
         @php
             $kids = $byParent->get($node->id, collect());
@@ -16,21 +16,21 @@
             $isOpen = in_array($node->id, $openIds, true) || $isSel;
             $icon = $kids->isNotEmpty() ? ($isOpen ? 'fa-folder-open' : 'fa-folder') : ($typeIcons[$node->type] ?? 'fa-file-lines');
         @endphp
-        <li data-tree-node data-page-id="{{ $node->id }}" data-title="{{ \Illuminate\Support\Str::lower($node->title) }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
+        <li data-tree-node data-page-id="{{ $node->id }}" data-pos="{{ $loop->index }}" data-folder="{{ $kids->isNotEmpty() ? 1 : 0 }}" data-title="{{ \Illuminate\Support\Str::lower($node->title) }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
             <div class="group flex items-stretch gap-0.5 rounded" data-tree-row @if ($canDrag && (! $node->is_locked || auth()->user()->isAdmin())) draggable="true" data-draggable="1" @endif>
                 @if ($kids->isNotEmpty())
                     <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $isOpen ? 'true' : 'false' }}"
                         aria-controls="tree-branch-{{ $node->id }}"
                         :aria-label="(open ? 'Zwiń' : 'Rozwiń') + ': {{ addslashes($node->title) }}'" aria-label="{{ $isOpen ? 'Zwiń' : 'Rozwiń' }}: {{ $node->title }}"
-                        class="flex min-h-9 w-7 flex-none items-center justify-center rounded text-[11px] text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                        class="flex min-h-7 w-6 flex-none items-center justify-center rounded text-[11px] text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                         <i class="fa-solid fa-chevron-right transition-transform" :class="open ? 'rotate-90' : ''" aria-hidden="true"></i>
                     </button>
                 @else
-                    <span class="w-7 flex-none" aria-hidden="true"></span>
+                    <span class="w-6 flex-none" aria-hidden="true"></span>
                 @endif
 
                 <a href="{{ route('admin.podstrony.index', ['wybrana' => $node->id]) }}" @if ($isSel) aria-current="true" @endif
-                    class="flex min-h-9 min-w-0 flex-1 items-center gap-2 rounded px-2 py-1.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark
+                    class="flex min-h-7 min-w-0 flex-1 items-center gap-2 rounded px-1.5 py-0.5 text-sm transition {{ $depth === 0 ? 'font-semibold' : '' }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark
                         {{ $isSel ? 'bg-brand-dark text-white font-bold' : 'text-ink hover:bg-gray-100' }}">
                     <i class="fa-solid {{ $icon }} w-4 flex-none text-center text-xs {{ $isSel ? 'text-white' : 'text-gray-400' }}" aria-hidden="true"></i>
                     <span class="min-w-0 flex-1 truncate {{ $node->is_published && ! $node->is_disabled && ! isset($inheritedDisabled[$node->id]) ? '' : 'opacity-70' }}">{{ $node->title }}</span>
