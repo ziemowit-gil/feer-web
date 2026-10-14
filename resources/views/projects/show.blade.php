@@ -94,6 +94,14 @@
                 && mb_strtolower($forWhom) !== mb_strtolower(trim(\Illuminate\Support\Str::after($catName, 'Dla ')));
         @endphp
 
+    {{-- Stan zakładek/podstron obejmuje też nagłówek: zajawka i najważniejsze informacje tylko w głównej zakładce „Opis”. --}}
+    <div x-data="{
+            tabs: @js(array_column($tabItems, 'id')),
+            tab: @js($openTab), node: @js($openTab !== 'opis' && $navSidebar ? $openNodeId : null), openIds: [],
+            move(step) { const i = this.tabs.indexOf(this.tab); this.tab = this.tabs[(i + step + this.tabs.length) % this.tabs.length]; this.focusActive(); },
+            jump(id) { this.tab = id; this.focusActive(); },
+            focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
+        }">
     {{-- ══ NAGŁÓWEK (układ portalu): kategoria, tytuł, status i termin zwykłym tekstem, zajawka, zdjęcie — płasko, na białym ══ --}}
     @php
         $imageHero = $project->image_hero && $project->image_url;
@@ -135,13 +143,6 @@
     </section>
     @endunless
 
-    <div x-data="{
-            tabs: @js(array_column($tabItems, 'id')),
-            tab: @js($openTab), node: @js($openTab !== 'opis' && $navSidebar ? $openNodeId : null), openIds: [],
-            move(step) { const i = this.tabs.indexOf(this.tab); this.tab = this.tabs[(i + step + this.tabs.length) % this.tabs.length]; this.focusActive(); },
-            jump(id) { this.tab = id; this.focusActive(); },
-            focusActive() { this.$nextTick(() => document.getElementById('tab-' + this.tab)?.focus()); },
-        }">
     @if ($hasTabs && ! $navSidebar)
         @include('partials.tab-strip', ['tabItems' => $tabItems, 'tabsLabel' => 'Sekcje działania', 'tabLinks' => $tabLinks])
     @endif

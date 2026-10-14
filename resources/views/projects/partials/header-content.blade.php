@@ -1,4 +1,4 @@
-{{-- Nagłówek działania: kategoria (z ikoną), tytuł, status i termin, zajawka, pasek najważniejszych informacji i druk. Bez przycisku — kontakt jest w treści i w kolumnie bocznej. Zmienne ze strony działania. --}}
+{{-- Nagłówek działania: kategoria (z ikoną), tytuł, status i termin, zajawka, pasek najważniejszych informacji (te dwa tylko w zakładce „Opis”) i druk. Bez przycisku — kontakt jest w treści i w kolumnie bocznej. Zmienne ze strony działania. --}}
 <a href="{{ $project->category->publicUrl() }}" class="group inline-flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
     <span class="flex h-8 w-8 items-center justify-center rounded-md bg-brand-light text-base normal-case tracking-normal" aria-hidden="true">{!! icon_html($project->category->iconValue()) !!}</span>
     <span class="group-hover:underline group-hover:underline-offset-4">{{ $project->category->name }}</span>
@@ -11,6 +11,8 @@
         <div><dt>Status:</dt> <dd>{{ \App\Models\Project::STATUSES[$project->status] ?? '' }}</dd></div>
     </dl>
 @endif
+{{-- Zajawka i najważniejsze informacje tylko na stronie głównej działania, nie na każdej podstronie (zakładce). --}}
+<div x-show="tab === 'opis'" @if (($openTab ?? 'opis') !== 'opis') x-cloak @endif>
 @if ($project->excerpt)
     <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">{{ $project->excerpt }}</p>
 @endif
@@ -42,4 +44,5 @@
         @endforeach
     </dl>
 @endif
+</div>
 <p class="mt-4 no-print">@include('partials.print-button')</p>
