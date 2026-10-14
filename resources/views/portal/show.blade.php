@@ -10,6 +10,10 @@
 
 @section('title', $title . ' — ' . $siteSettings->site_name)
 
+@if ($metaLead = $category->portalOption('lead') ?: \Illuminate\Support\Str::limit((string) $category->portal_intro, 160))
+    @section('meta_description', $metaLead)
+@endif
+
 @push('structured_data')
     <link rel="alternate" type="application/rss+xml" title="{{ $title }} — RSS" href="{{ route('portal.feed', $category->portal_slug) }}">
 @endpush

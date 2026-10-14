@@ -212,4 +212,25 @@ class PortalOptionsTest extends TestCase
             ->assertSee('Nasze szkolenia')->assertSee('Pełna oferta szkoleń')->assertSee('Pytania o szkolenia? Napisz.')
             ->assertDontSee('Zobacz pełną listę');
     }
+
+    public function test_lead_portalu_pod_tytulem_i_w_opisie_strony(): void
+    {
+        $category = $this->portal(['portal_intro' => 'Dłuższy wstęp o szkoleniach.']);
+
+        $this->actingAs($this->admin())->put(route('admin.kategorie.update', $category), [
+            'name' => 'Szkolenia i warsztaty', 'slug' => 'szkolenia-opcje-test', 'portal_slug' => 'opcjetest',
+            'portal_options' => ['lead' => 'Bezpłatne szkolenia z dostępności dla osób z niepełnosprawnościami i organizacji.'],
+        ])->assertSessionHasNoErrors();
+
+        $html = $this->get('/portal/opcjetest')->assertOk()
+            ->assertSee('<meta name="description" content="Bezpłatne szkolenia z dostępności dla osób z niepełnosprawnościami i organizacji.">', false)
+            ->getContent();
+        $this->assertLessThan(strpos($html, 'Dłuższy wstęp o szkoleniach.'), strpos($html, '<p class="mt-5 max-w-3xl text-xl font-semibold'));
+        $this->assertLessThan(strpos($html, '<p class="mt-5 max-w-3xl text-xl'), strpos($html, '<h1'));
+
+        $this->actingAs($this->admin())->put(route('admin.kategorie.update', $category), [
+            'name' => 'Szkolenia i warsztaty', 'slug' => 'szkolenia-opcje-test', 'portal_slug' => 'opcjetest',
+            'portal_options' => ['lead' => str_repeat('x', 301)],
+        ])->assertSessionHasErrors('portal_options.lead');
+    }
 }

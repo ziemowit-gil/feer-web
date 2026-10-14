@@ -73,6 +73,15 @@
                         class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
 
+                @if (\Illuminate\Support\Facades\Schema::hasColumn('categories', 'portal_options'))
+                    <div>
+                        <label for="portal_lead" class="mb-1 block text-sm font-bold">Lead <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                        <textarea id="portal_lead" name="portal_options[lead]" rows="2" maxlength="300" aria-describedby="portal_lead_help" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('portal_options.lead', $category->portalOption('lead')) }}</textarea>
+                        <p id="portal_lead_help" class="mt-1 text-xs text-muted">Jedno–dwa zdania wyróżnione pod tytułem: co tu znajdziesz i dla kogo. Trafia też do opisu strony w wyszukiwarkach. Do 300 znaków.</p>
+                        @error('portal_options.lead') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                @endif
+
                 <div>
                     <label for="portal_intro" class="mb-1 block text-sm font-bold">Wstęp</label>
                     <textarea id="portal_intro" name="portal_intro" rows="6" aria-describedby="portal_intro_help" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('portal_intro', $category->portal_intro) }}</textarea>

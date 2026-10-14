@@ -85,7 +85,7 @@ class PortalController extends Controller
         $xml = view('portal.rss', [
             'settings' => $settings,
             'title' => $settings->site_name.' — '.$title,
-            'description' => $category->portal_intro ? Str::limit(strip_tags($category->portal_intro), 300) : "Aktualności i nowości: {$title}.",
+            'description' => $category->portalOption('lead') ?: ($category->portal_intro ? Str::limit(strip_tags($category->portal_intro), 300) : "Aktualności i nowości: {$title}."),
             'siteUrl' => route('portal.show', $category->portal_slug),
             'selfUrl' => route('portal.feed', $category->portal_slug),
             'items' => $items,

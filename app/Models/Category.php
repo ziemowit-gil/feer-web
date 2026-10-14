@@ -37,7 +37,7 @@ class Category extends Model
     ];
 
     /**
-     * Ustawienie portalu z kolumny portal_options: notice, notice_link_label, notice_link_url,
+     * Ustawienie portalu z kolumny portal_options: lead, notice, notice_link_label, notice_link_url,
      * shortcuts (lista [label, url]), contact_text, contact_email, contact_phone (kontakt do zespołu portalu),
      * stay_enabled, stay_title, stay_text, titles (klucz widżetu => nagłówek).
      */

@@ -78,6 +78,7 @@ class CategoryController extends Controller
                 ->mapWithKeys(fn ($k) => ["portal_options.labels.$k" => ['nullable', 'string', 'max:200']])->all();
         $v = $request->validate([
             'portal_options' => ['array'],
+            'portal_options.lead' => ['nullable', 'string', 'max:300'],
             'portal_options.notice' => ['nullable', 'string', 'max:500'],
             'portal_options.notice_link_label' => ['nullable', 'string', 'max:80'],
             'portal_options.notice_link_url' => ['nullable', 'string', 'max:500', 'regex:#^(https?://|/)#i'],
@@ -122,6 +123,7 @@ class CategoryController extends Controller
         }
 
         return array_filter([
+            'lead' => trim((string) ($v['lead'] ?? '')),
             'notice' => trim((string) ($v['notice'] ?? '')),
             'notice_link_label' => trim((string) ($v['notice_link_label'] ?? '')),
             'notice_link_url' => trim((string) ($v['notice_link_url'] ?? '')),
