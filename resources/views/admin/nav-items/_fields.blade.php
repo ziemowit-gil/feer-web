@@ -118,8 +118,88 @@
         </div>
     @endif
 
-    {{-- Wybór strony — tylko gdy lokalizacja to nie "Menu BIP" --}}
-    @if ($pages->isNotEmpty())
+    {{--
+        Wybór strony — tylko gdy lokalizacja to nie „Menu BIP”. Przycisk otwiera okno (natywny <dialog>: fokus w oknie,
+        Esc zamyka) z drzewem stron i podstron: zwijanie gałęzi, wyszukiwanie po tytule i adresie, szkice oznaczone.
+        Wybór wpisuje adres do pola „Link” i — gdy etykieta jest pusta — tytuł strony do etykiety.
+    --}}
+    @if (! empty($pagePicker))
+        <div x-show="form.location !== 'bip'" x-cloak
+            x-data="{
+                nodes: @js($pagePicker),
+                q: '', expanded: {},
+                norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l'); },
+                visible(n) { return this.q.trim() !== '' ? this.norm(n.title + ' ' + n.url).includes(this.norm(this.q)) : n.parents.every(id => this.expanded[id]); },
+                get shown() { return this.nodes.filter(n => this.visible(n)); },
+                get selected() { return this.nodes.find(n => n.url === (form.url || '').replace(/\/$/, '')) || null; },
+                openPicker() {
+                    // Rozwiń gałąź z aktualnie wybraną stroną, żeby była widoczna od razu.
+                    if (this.selected) this.selected.parents.forEach(id => this.expanded[id] = true);
+                    this.$refs.dlg.showModal();
+                    this.$nextTick(() => (this.$refs.dlg.querySelector('[data-current]') || this.$refs.q).focus());
+                },
+                pick(n) {
+                    form.url = n.url;
+                    if (! form.label) form.label = n.title;
+                    this.$refs.dlg.close();
+                    this.$refs.opener.focus();
+                },
+                toggleAll(on) { this.nodes.filter(n => n.kids).forEach(n => this.expanded[n.id] = on); },
+            }">
+            <p class="mb-1 block text-sm font-bold" id="nav-page-picker-label">Wybierz stronę <span class="font-normal text-muted">(opcjonalnie)</span></p>
+            <div class="mb-2 flex flex-wrap items-center gap-3">
+                <button type="button" x-ref="opener" @click="openPicker()" aria-haspopup="dialog" aria-describedby="nav-page-picker-current"
+                    class="inline-flex min-h-10 items-center gap-2 rounded bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                    <i class="fa-solid fa-sitemap" aria-hidden="true"></i> Wybierz z drzewa stron…
+                </button>
+                <span id="nav-page-picker-current" class="min-w-0 text-sm text-ink">
+                    <template x-if="selected"><span>Wybrana: <strong x-text="selected.title"></strong></span></template>
+                    <template x-if="! selected"><span class="text-muted">Strona nie jest wybrana</span></template>
+                </span>
+            </div>
+
+            <dialog x-ref="dlg" aria-labelledby="nav-page-picker-title" @keydown.tab.stop @keydown.escape.stop @close="q = ''"
+                class="m-auto w-[min(40rem,calc(100vw-2rem))] overflow-hidden rounded-md bg-white p-0 text-ink backdrop:bg-black/50">
+                <div class="flex max-h-[85vh] flex-col">
+                    <div class="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
+                        <h2 id="nav-page-picker-title" class="text-lg font-bold">Wybierz stronę</h2>
+                        <button type="button" @click="$refs.dlg.close(); $refs.opener.focus()" class="rounded p-2 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="sr-only">Zamknij bez wyboru</span></button>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 border-b border-gray-100 px-5 py-3">
+                        <label for="nav-page-picker-q" class="sr-only">Szukaj strony po tytule lub adresie</label>
+                        <input id="nav-page-picker-q" x-ref="q" type="search" x-model="q" placeholder="Szukaj strony…" autocomplete="off" class="min-w-0 flex-1 rounded-md border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <button type="button" @click="toggleAll(true)" x-show="q.trim() === ''" class="rounded px-2 py-1.5 text-xs font-bold text-brand-dark hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Rozwiń wszystko</button>
+                        <button type="button" @click="toggleAll(false)" x-show="q.trim() === ''" class="rounded px-2 py-1.5 text-xs font-bold text-brand-dark hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Zwiń</button>
+                    </div>
+                    <p class="sr-only" aria-live="polite" x-text="q.trim() !== '' ? 'Znaleziono: ' + shown.length : ''"></p>
+                    <ul role="list" class="min-h-0 flex-1 overflow-y-auto px-3 py-2" aria-label="Strony">
+                        <template x-for="n in shown" :key="n.id">
+                            <li class="flex items-center gap-1 rounded hover:bg-gray-50" :style="'padding-left:' + (q.trim() === '' ? n.depth * 1.25 : 0) + 'rem'">
+                                <template x-if="n.kids && q.trim() === ''">
+                                    <button type="button" @click="expanded[n.id] = ! expanded[n.id]" :aria-expanded="(!! expanded[n.id]).toString()" :aria-label="(expanded[n.id] ? 'Zwiń podstrony: ' : 'Rozwiń podstrony: ') + n.title"
+                                        class="flex h-9 w-9 flex-none items-center justify-center rounded text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                        <i class="fa-solid fa-chevron-right text-xs transition-transform motion-reduce:transition-none" :class="expanded[n.id] && 'rotate-90'" aria-hidden="true"></i>
+                                    </button>
+                                </template>
+                                <span x-show="! n.kids || q.trim() !== ''" class="h-9 w-9 flex-none" aria-hidden="true"></span>
+                                <button type="button" @click="pick(n)" :data-current="selected && selected.id === n.id ? '' : null" :aria-current="selected && selected.id === n.id ? 'true' : null"
+                                    class="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded px-2 py-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+                                    :class="selected && selected.id === n.id ? 'bg-brand-light' : ''">
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate text-sm font-bold text-ink" x-text="n.title"></span>
+                                        <span class="block truncate font-mono text-xs text-muted" x-text="n.url"></span>
+                                    </span>
+                                    <span x-show="n.draft" class="flex-none text-xs text-ink">szkic</span>
+                                    <span x-show="selected && selected.id === n.id" class="flex-none text-xs font-bold text-ink"><i class="fa-solid fa-check mr-1 text-brand-dark" aria-hidden="true"></i>wybrana</span>
+                                </button>
+                            </li>
+                        </template>
+                        <li x-show="shown.length === 0" class="py-6 text-center text-sm text-ink">Nie znaleziono strony.</li>
+                    </ul>
+                </div>
+            </dialog>
+        </div>
+    @elseif ($pages->isNotEmpty())
         <div x-show="form.location !== 'bip'" x-cloak>
             <label for="nav-page-picker" class="mb-1 block text-sm font-bold">Wybierz stronę <span class="font-normal text-muted">(opcjonalnie)</span></label>
             <select id="nav-page-picker" class="mb-2 w-full rounded border-gray-500 focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark"

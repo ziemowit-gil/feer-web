@@ -46,6 +46,7 @@ class NavItemController extends Controller
             // klienta na podstawie edytowanego identyfikatora.
             'parentOptions' => $this->parentOptions(null, 'main'),
             'pages' => Page::orderBy('title')->get(),
+            'pagePicker' => $this->pagePickerTree(),
             'bipDocuments' => BipDocument::published()->forCurrentSite()->orderBy('title')->get(),
             'pageTree' => $this->pageTree($location),
         ]);
@@ -83,6 +84,46 @@ class NavItemController extends Controller
             if ($page->parent_id && ! $ids->has($page->parent_id)) {
                 $path = rtrim((string) parse_url($page->publicUrl(), PHP_URL_PATH), '/') ?: '/';
                 $out[] = ['id' => $page->id, 'title' => $page->title, 'path' => $path, 'depth' => 0, 'in_menu' => $inMenu->has($path)];
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Drzewo wszystkich stron do okna „Wybierz stronę” w formularzu pozycji (także szkice i podstrony działań),
+     * spłaszczone w kolejności drzewa: id, tytuł, adres, poziom, przodkowie (do zwijania), czy ma dzieci, szkic.
+     */
+    private function pagePickerTree(): array
+    {
+        $pages = Page::query()->forCurrentSite()->where('type', '!=', 'about_person')
+            ->orderBy('order')->orderBy('title')
+            ->get(['id', 'parent_id', 'title', 'slug', 'type', 'is_published']);
+        $byParent = $pages->groupBy(fn ($p) => (int) $p->parent_id);
+        $ids = $pages->pluck('id')->flip();
+        $out = [];
+        $walk = function (int $parent, int $depth, array $parents) use (&$walk, &$out, $byParent) {
+            foreach ($byParent->get($parent, collect()) as $page) {
+                $out[] = [
+                    'id' => $page->id,
+                    'title' => $page->title,
+                    'url' => rtrim((string) parse_url($page->publicUrl(), PHP_URL_PATH), '/') ?: '/',
+                    'depth' => $depth,
+                    'parents' => $parents,
+                    'kids' => $byParent->has($page->id),
+                    'draft' => ! $page->is_published,
+                ];
+                if ($depth < 8) {
+                    $walk($page->id, $depth + 1, [...$parents, $page->id]);
+                }
+            }
+        };
+        $walk(0, 0, []);
+        // Strony, których rodzica nie ma na liście (inna witryna, usunięty) — na końcu, bez wcięcia.
+        foreach ($pages as $page) {
+            if ($page->parent_id && ! $ids->has($page->parent_id)) {
+                $out[] = ['id' => $page->id, 'title' => $page->title, 'url' => rtrim((string) parse_url($page->publicUrl(), PHP_URL_PATH), '/') ?: '/',
+                    'depth' => 0, 'parents' => [], 'kids' => false, 'draft' => ! $page->is_published];
             }
         }
 
@@ -132,6 +173,7 @@ class NavItemController extends Controller
             'navItem' => new NavItem(['location' => $location]),
             'parentOptions' => $this->parentOptions(null, $location),
             'pages' => Page::orderBy('title')->get(),
+            'pagePicker' => $this->pagePickerTree(),
             'bipDocuments' => BipDocument::published()->forCurrentSite()->orderBy('title')->get(),
         ]);
     }
@@ -161,6 +203,7 @@ class NavItemController extends Controller
             'navItem' => $navItem,
             'parentOptions' => $this->parentOptions($navItem, $navItem->location),
             'pages' => Page::orderBy('title')->get(),
+            'pagePicker' => $this->pagePickerTree(),
             'bipDocuments' => BipDocument::published()->forCurrentSite()->orderBy('title')->get(),
         ]);
     }
