@@ -14,9 +14,10 @@
             $kids = $byParent->get($node->id, collect());
             $isSel = $selected && $selected->id === $node->id;
             $isOpen = in_array($node->id, $openIds, true); // domyślnie zwinięte — rozwinięta tylko droga do wybranej strony
+            $state = ($node->is_disabled || isset($inheritedDisabled[$node->id])) ? 'disabled' : ($node->is_published ? 'live' : 'draft');
             $icon = $kids->isNotEmpty() ? ($isOpen ? 'fa-folder-open' : 'fa-folder') : ($typeIcons[$node->type] ?? 'fa-file-lines');
         @endphp
-        <li data-tree-node data-page-id="{{ $node->id }}" data-pos="{{ $loop->index }}" data-folder="{{ $kids->isNotEmpty() ? 1 : 0 }}" data-title="{{ \Illuminate\Support\Str::lower($node->title) }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
+        <li data-tree-node data-page-id="{{ $node->id }}" data-pos="{{ $loop->index }}" data-folder="{{ $kids->isNotEmpty() ? 1 : 0 }}" data-state="{{ $state }}" data-menu="{{ $node->show_in_menu ? 1 : 0 }}" data-title="{{ \Illuminate\Support\Str::lower($node->title) }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
             <div class="group flex items-stretch gap-0.5 rounded" data-tree-row @if ($canDrag && (! $node->is_locked || auth()->user()->isAdmin())) draggable="true" data-draggable="1" @endif>
                 @if ($kids->isNotEmpty())
                     <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $isOpen ? 'true' : 'false' }}"
@@ -29,7 +30,7 @@
                     <span class="w-6 flex-none" aria-hidden="true"></span>
                 @endif
 
-                <a href="{{ route('admin.podstrony.index', ['wybrana' => $node->id]) }}" @if ($isSel) aria-current="true" @endif
+                <a href="{{ route('admin.podstrony.index', ['wybrana' => $node->id]) }}" title="{{ $node->title }}" @if ($isSel) aria-current="true" @endif
                     class="flex min-h-7 min-w-0 flex-1 items-center gap-2 rounded px-1.5 py-0.5 text-sm transition {{ $depth === 0 ? 'font-semibold' : '' }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark
                         {{ $isSel ? 'bg-brand-dark text-white font-bold' : 'text-ink hover:bg-gray-100' }}">
                     <i class="fa-solid {{ $icon }} w-4 flex-none text-center text-xs {{ $isSel ? 'text-white' : 'text-gray-400' }}" aria-hidden="true"></i>
@@ -39,12 +40,12 @@
                     @if ($node->access_level && ! in_array($node->access_level, ['inherit', 'public'], true))<i class="fa-solid fa-key text-[10px] {{ $isSel ? 'text-white' : 'text-gray-500' }}" aria-hidden="true"></i><span class="sr-only">(dostęp ograniczony: {{ \App\Models\Page::ACCESS_LEVELS[$node->access_level] ?? $node->access_level }})</span>@endif
                     @if ($node->is_featured)<i class="fa-solid fa-star text-[10px] {{ $isSel ? 'text-white' : 'text-amber-500' }}" aria-hidden="true"></i><span class="sr-only">(wyróżniona)</span>@endif
                     @unless ($isSel)
-                        @include('admin.pages.partials.status-chip', ['page' => $node, 'compact' => true, 'inherited' => isset($inheritedDisabled[$node->id])])
+                        <span data-tree-chip class="inline-flex">@include('admin.pages.partials.status-chip', ['page' => $node, 'compact' => true, 'inherited' => isset($inheritedDisabled[$node->id])])</span>
                     @else
                         <span class="sr-only">Wybrana strona. </span>
                     @endunless
                     @if ($kids->isNotEmpty())
-                        <span class="rounded-full px-1.5 text-[10px] font-bold {{ $isSel ? 'bg-white/25 text-white' : 'bg-gray-100 text-muted' }}"><span class="sr-only">podstron: </span>{{ $kids->count() }}</span>
+                        <span data-tree-count class="rounded-full px-1.5 text-[10px] font-bold {{ $isSel ? 'bg-white/25 text-white' : 'bg-gray-100 text-muted' }}"><span class="sr-only">podstron: </span>{{ $kids->count() }}</span>
                     @endif
                 </a>
             </div>

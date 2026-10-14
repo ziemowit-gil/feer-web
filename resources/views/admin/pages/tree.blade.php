@@ -99,7 +99,7 @@
          :style="twoCols ? 'grid-template-columns:' + width + 'px 0.75rem minmax(0,1fr);column-gap:0' : ''">
 
         {{-- ═════════ Lewy panel: drzewo stron ═════════ --}}
-        <nav aria-label="Drzewo stron" id="page-tree" x-show="open" :class="full && 'tree-full'" class="min-w-0 rounded-md bg-white" :style="twoCols ? 'position:sticky;top:1rem;align-self:start' : ''"
+        <nav aria-label="Drzewo stron" id="page-tree" x-show="open" :class="[full && 'tree-full', opts.hideDrafts && 'opt-hide-drafts', opts.menuOnly && 'opt-menu-only', opts.hideProjects && 'opt-hide-projects', opts.noChips && 'opt-no-chips', opts.noCounts && 'opt-no-counts']" class="min-w-0 rounded-md bg-white" :style="twoCols ? 'position:sticky;top:1rem;align-self:start' : ''"
             x-data="{
                 q: '',
                 filter() {
@@ -124,6 +124,10 @@
                 setAll(open) {
                     this.$root.querySelectorAll('[data-tree-node][x-data], [data-tree-group]').forEach(li => { Alpine.$data(li).open = open; });
                 },
+                // Opcje widoku drzewa (tylko wygląd, zapamiętane w przeglądarce): panel legendy i opcji.
+                panel: '',
+                opts: (() => { try { return Object.assign({ hideDrafts: false, menuOnly: false, hideProjects: false, noChips: false, noCounts: false }, JSON.parse(localStorage.getItem('pageTreeOpts') || '{}')); } catch (e) { return { hideDrafts: false, menuOnly: false, hideProjects: false, noChips: false, noCounts: false }; } })(),
+                saveOpts() { try { localStorage.setItem('pageTreeOpts', JSON.stringify(this.opts)); } catch (e) {} },
                 // Układ drzewa: „az” — strony z podstronami na górze, w obu grupach alfabetycznie; „order” — zapisana kolejność
                 // (tylko w niej da się przeciąganiem zmieniać kolejność). Wybór zapamiętany w przeglądarce.
                 sort: (() => { try { return localStorage.getItem('pageTreeSort') || 'az'; } catch (e) { return 'az'; } })(),
@@ -179,6 +183,65 @@
                             class="w-full rounded border-gray-500 py-1.5 pl-8 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                 </div>
+                @php
+                    $usedTypes = $byParent->flatten()->pluck('type')->unique();
+                    $typeLabels = \App\Models\Page::types();
+                    $legendIcons = \App\Models\Page::typeIcons();
+                    $legendRow = 'flex items-center gap-2';
+                    $legendIcon = 'inline-flex w-4 flex-none justify-center text-[11px]';
+                    $optBox = 'h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark';
+                    $panelBtn = 'inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
+                @endphp
+                <div class="flex flex-wrap gap-1">
+                    <button type="button" @click="panel = panel === 'legend' ? '' : 'legend'" :aria-expanded="(panel === 'legend').toString()" aria-expanded="false" aria-controls="tree-legend"
+                        :class="panel === 'legend' ? 'bg-brand-light text-ink' : 'text-muted hover:bg-gray-100 hover:text-ink'" class="{{ $panelBtn }}">
+                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i> Legenda
+                    </button>
+                    <button type="button" @click="panel = panel === 'opts' ? '' : 'opts'" :aria-expanded="(panel === 'opts').toString()" aria-expanded="false" aria-controls="tree-opts"
+                        :class="panel === 'opts' ? 'bg-brand-light text-ink' : 'text-muted hover:bg-gray-100 hover:text-ink'" class="{{ $panelBtn }}">
+                        <i class="fa-solid fa-sliders" aria-hidden="true"></i> Opcje
+                        <span x-show="Object.values(opts).some(Boolean)" x-cloak class="rounded-full bg-brand-dark px-1.5 text-[10px] text-white" x-text="Object.values(opts).filter(Boolean).length"></span>
+                    </button>
+                </div>
+
+                <div id="tree-legend" x-show="panel === 'legend'" x-cloak class="rounded bg-gray-50 p-3 text-xs text-ink">
+                    <h3 class="mb-1.5 font-bold">Stan strony</h3>
+                    <ul role="list" class="space-y-1">
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-brand-dark"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span> Opublikowana</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-brand-dark"><i class="fa-solid fa-clock" aria-hidden="true"></i></span> Zaplanowana (opublikuje się w ustawionym terminie)</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-muted"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i></span> Szkic — niewidoczna dla odwiedzających</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-red-700"><i class="fa-solid fa-ban" aria-hidden="true"></i></span> Wyłączona (sama albo przez stronę nadrzędną)</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-muted" aria-hidden="true">Aa</span> Wyszarzony tytuł — strona niewidoczna publicznie</li>
+                    </ul>
+                    <h3 class="mb-1.5 mt-3 font-bold">Oznaczenia</h3>
+                    <ul role="list" class="space-y-1">
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-folder" aria-hidden="true"></i></span> Strona z podstronami</li>
+                        <li class="{{ $legendRow }}"><span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-muted" aria-hidden="true">3</span> Liczba podstron</li>
+                        <li class="{{ $legendRow }}"><span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm bg-[#166534] text-[10px] font-bold text-white" aria-hidden="true">D</span> Podstrona działania</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-amber-500"><i class="fa-solid fa-star" aria-hidden="true"></i></span> Wyróżniona</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-key" aria-hidden="true"></i></span> Dostęp ograniczony (np. tylko po zalogowaniu)</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-lock" aria-hidden="true"></i></span> Strona systemowa — nie można jej usunąć</li>
+                    </ul>
+                    @if ($usedTypes->isNotEmpty())
+                        <h3 class="mb-1.5 mt-3 font-bold">Typy stron</h3>
+                        <ul role="list" class="space-y-1">
+                            @foreach ($usedTypes->sortBy(fn ($t) => $typeLabels[$t] ?? $t) as $t)
+                                <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid {{ $legendIcons[$t] ?? 'fa-file-lines' }}" aria-hidden="true"></i></span> {{ \Illuminate\Support\Str::before($typeLabels[$t] ?? $t, ' (') }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
+                    <p class="mt-3 text-muted">Przeciągnij stronę na środek innej, aby zrobić z niej podstronę; w układzie „Kolejność” także na górną lub dolną krawędź, aby zmienić kolejność. Z klawiatury: Alt+Shift+strzałki.</p>
+                </div>
+
+                <fieldset id="tree-opts" x-show="panel === 'opts'" x-cloak class="space-y-1.5 rounded bg-gray-50 p-3 text-xs text-ink">
+                    <legend class="sr-only">Opcje widoku drzewa</legend>
+                    <label class="flex items-center gap-2"><input type="checkbox" x-model="opts.hideDrafts" @change="saveOpts()" class="{{ $optBox }}"> Ukryj szkice i wyłączone</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" x-model="opts.menuOnly" @change="saveOpts()" class="{{ $optBox }}"> Na najwyższym poziomie tylko strony z menu</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" x-model="opts.hideProjects" @change="saveOpts()" class="{{ $optBox }}"> Ukryj podstrony działań</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" x-model="opts.noChips" @change="saveOpts()" class="{{ $optBox }}"> Bez ikon stanu</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" x-model="opts.noCounts" @change="saveOpts()" class="{{ $optBox }}"> Bez liczby podstron</label>
+                    <p class="pt-1 text-muted">Opcje zmieniają tylko widok drzewa w tej przeglądarce — strony się nie zmieniają.</p>
+                </fieldset>
             </div>
             {{-- Instrukcja przeciągania tylko dla czytników ekranu (wizualnie zbędna — przeciąganie widać po kursorze);
                  skróty klawiszowe muszą zostać dostępne dla osób bez myszy. --}}
@@ -196,6 +259,7 @@
                     @include('admin.pages.partials.tree-node', ['nodes' => $treeRoots, 'depth' => 0, 'canDrag' => true, 'inheritedDisabled' => $inheritedDisabled])
                     @if ($projectGroups->isNotEmpty())
                         {{-- Podstrony działań: każda grupa zwinięta, dopóki nie jest w niej wybrana strona. --}}
+                        <div data-tree-projects>
                         <h3 class="mx-2 mb-1 mt-3 border-t border-gray-200 pt-2 text-[11px] font-bold uppercase tracking-wide text-muted">Podstrony działań</h3>
                         <ul role="list" data-tree-groups>
                             @foreach ($projectGroups as $g)
@@ -213,6 +277,7 @@
                                 </li>
                             @endforeach
                         </ul>
+                        </div>
                     @endif
                 @endif
                 <div data-tree-root-drop class="mt-2 hidden rounded border-2 border-dashed border-brand/50 px-3 py-3 text-center text-xs font-bold text-brand-dark">
@@ -428,6 +493,13 @@
         /* Widok „Drzewo na całą stronę”: gałęzie najwyższego poziomu w kolumnach, bez dzielenia gałęzi między kolumny. */
         #page-tree.tree-full #tree-scroll > ul { columns: 22rem; column-gap: 1.5rem; }
         #page-tree.tree-full #tree-scroll > ul > li { break-inside: avoid; }
+        /* Opcje widoku drzewa (panel „Opcje”). Wybrana strona zostaje zawsze widoczna. */
+        #page-tree.opt-hide-drafts [data-tree-node][data-state="draft"]:not(:has(a[aria-current])),
+        #page-tree.opt-hide-drafts [data-tree-node][data-state="disabled"]:not(:has(a[aria-current])),
+        #page-tree.opt-menu-only #tree-scroll > ul > [data-tree-node][data-menu="0"]:not(:has(a[aria-current])),
+        #page-tree.opt-hide-projects [data-tree-projects],
+        #page-tree.opt-no-chips [data-tree-chip],
+        #page-tree.opt-no-counts [data-tree-count] { display: none !important; }
         #page-tree .tree-sep { margin: .375rem .5rem; border-top: 1px solid #e5e7eb; }
         #bulk-dialog::backdrop { background: rgba(17, 24, 39, .55); }
         #bulk-dialog { margin: auto; }
