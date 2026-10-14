@@ -24,7 +24,9 @@
                 const mq = window.matchMedia('(min-width: 768px)');
                 mq.addEventListener('change', e => { this.wide = e.matches; });
             },
-            get twoCols() { return this.wide && this.open; },
+            full: (() => { try { return localStorage.getItem('pages-tree-full') === '1'; } catch (e) { return false; } })(),
+            get twoCols() { return this.wide && this.open && ! this.full; },
+            setFull(v) { this.full = v; if (v) this.open = true; this.persist('pages-tree-full', v ? '1' : '0'); },
             persist(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
             toggle() { this.open = ! this.open; this.persist('pages-tree-open', this.open ? '1' : '0'); },
             setWidth(w) { this.width = Math.min(560, Math.max(224, Math.round(w))); this.persist('pages-tree-w', this.width); },
@@ -57,6 +59,11 @@
                     class="{{ $seg }}" style="{{ $segStyle }}">
                     <i class="fa-solid" :class="open ? 'fa-table-columns' : 'fa-sitemap'" aria-hidden="true"></i>
                     <span x-text="open ? 'Ukryj drzewo' : 'Pokaż drzewo'">Ukryj drzewo</span>
+                </button>
+                <button type="button" @click="setFull(! full)" :aria-pressed="full.toString()" aria-pressed="false"
+                    class="{{ $seg }}" style="{{ $segStyle }};border-left:1px solid #d1d5db" title="Drzewo na całą szerokość ekranu, w kolumnach (bez panelu szczegółów)">
+                    <i class="fa-solid" :class="full ? 'fa-compress' : 'fa-expand'" aria-hidden="true"></i>
+                    <span x-text="full ? 'Drzewo i szczegóły' : 'Drzewo na całą stronę'">Drzewo na całą stronę</span>
                 </button>
                 <button type="button" @click="$store.adminNav.toggleCollapsed()" :aria-pressed="$store.adminNav.collapsed.toString()" aria-pressed="false"
                     class="{{ $seg }}" style="{{ $segStyle }};border-left:1px solid #d1d5db" title="Zwiń lub rozwiń menu boczne panelu">
@@ -92,14 +99,21 @@
          :style="twoCols ? 'grid-template-columns:' + width + 'px 0.75rem minmax(0,1fr);column-gap:0' : ''">
 
         {{-- ═════════ Lewy panel: drzewo stron ═════════ --}}
-        <nav aria-label="Drzewo stron" id="page-tree" x-show="open" class="min-w-0 rounded-md bg-white" :style="twoCols ? 'position:sticky;top:1rem;align-self:start' : ''"
+        <nav aria-label="Drzewo stron" id="page-tree" x-show="open" :class="full && 'tree-full'" class="min-w-0 rounded-md bg-white" :style="twoCols ? 'position:sticky;top:1rem;align-self:start' : ''"
             x-data="{
                 q: '',
                 filter() {
                     const q = this.q.trim().toLowerCase();
                     const items = this.$root.querySelectorAll('[data-tree-node]');
+                    const groups = this.$root.querySelectorAll('[data-tree-group]');
                     items.forEach(li => { li.hidden = false; });
+                    groups.forEach(g => { g.hidden = false; });
                     if (! q) return;
+                    groups.forEach(g => {
+                        const hit = g.dataset.title.includes(q);
+                        g.hidden = ! hit;
+                        if (hit) Alpine.$data(g).open = true;
+                    });
                     items.forEach(li => {
                         const self = li.dataset.title.includes(q);
                         const sub = [...li.querySelectorAll('[data-tree-node]')].some(d => d.dataset.title.includes(q));
@@ -108,7 +122,7 @@
                     });
                 },
                 setAll(open) {
-                    this.$root.querySelectorAll('[data-tree-node][x-data]').forEach(li => { Alpine.$data(li).open = open; });
+                    this.$root.querySelectorAll('[data-tree-node][x-data], [data-tree-group]').forEach(li => { Alpine.$data(li).open = open; });
                 },
                 // Układ drzewa: „az” — strony z podstronami na górze, w obu grupach alfabetycznie; „order” — zapisana kolejność
                 // (tylko w niej da się przeciąganiem zmieniać kolejność). Wybór zapamiętany w przeglądarce.
@@ -174,11 +188,32 @@
                 (góra/dół — kolejność, w prawo — w głąb poprzedniej, w lewo — poziom wyżej).
             </p>
             <div id="tree-dnd-status" role="status" aria-live="polite" class="sr-only"></div>
-            <div class="overflow-y-auto p-2" style="max-height:calc(100vh - 16rem)" id="tree-scroll">
-                @if ($byParent->get(0, collect())->isEmpty())
+            <div class="overflow-y-auto p-2" :style="full ? '' : 'max-height:calc(100vh - 16rem)'" style="max-height:calc(100vh - 16rem)" id="tree-scroll"
+                @click="if (full && $event.target.closest('a[href]')) setFull(false)">
+                @if ($treeRoots->isEmpty() && $projectGroups->isEmpty())
                     <p class="px-2 py-6 text-center text-sm text-muted">Brak stron. Dodaj pierwszą stronę przyciskiem powyżej.</p>
                 @else
-                    @include('admin.pages.partials.tree-node', ['nodes' => $byParent->get(0), 'depth' => 0, 'canDrag' => true, 'inheritedDisabled' => $inheritedDisabled])
+                    @include('admin.pages.partials.tree-node', ['nodes' => $treeRoots, 'depth' => 0, 'canDrag' => true, 'inheritedDisabled' => $inheritedDisabled])
+                    @if ($projectGroups->isNotEmpty())
+                        {{-- Podstrony działań: każda grupa zwinięta, dopóki nie jest w niej wybrana strona. --}}
+                        <h3 class="mx-2 mb-1 mt-3 border-t border-gray-200 pt-2 text-[11px] font-bold uppercase tracking-wide text-muted">Podstrony działań</h3>
+                        <ul role="list" data-tree-groups>
+                            @foreach ($projectGroups as $g)
+                                <li data-tree-group data-title="{{ \Illuminate\Support\Str::lower($g['title'] . ' ' . $g['pages']->pluck('title')->implode(' ')) }}" x-data="{ open: {{ $g['open'] ? 'true' : 'false' }} }">
+                                    <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $g['open'] ? 'true' : 'false' }}" aria-controls="tree-proj-{{ $g['id'] }}"
+                                        class="flex min-h-7 w-full items-center gap-2 rounded py-0.5 pr-1.5 text-left text-sm font-semibold text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                        <span class="flex w-6 flex-none justify-center text-[11px] text-muted"><i class="fa-solid fa-chevron-right transition-transform" :class="open ? 'rotate-90' : ''" aria-hidden="true"></i></span>
+                                        <span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm bg-[#166534] text-[10px] font-bold leading-none text-white" aria-hidden="true">D</span>
+                                        <span class="min-w-0 flex-1 truncate"><span class="sr-only">Działanie: </span>{{ $g['title'] }}</span>
+                                        <span class="rounded-full bg-gray-100 px-1.5 text-[10px] font-bold text-muted"><span class="sr-only">podstron: </span>{{ $g['pages']->count() }}</span>
+                                    </button>
+                                    <div id="tree-proj-{{ $g['id'] }}" x-show="open" @unless ($g['open']) x-cloak @endunless>
+                                        @include('admin.pages.partials.tree-node', ['nodes' => $g['pages'], 'depth' => 1, 'canDrag' => true, 'inheritedDisabled' => $inheritedDisabled])
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
                 @endif
                 <div data-tree-root-drop class="mt-2 hidden rounded border-2 border-dashed border-brand/50 px-3 py-3 text-center text-xs font-bold text-brand-dark">
                     Upuść tutaj, aby przenieść na poziom główny
@@ -196,7 +231,7 @@
         </div>
 
         {{-- ═════════ Prawy panel: szczegóły wybranej strony ═════════ --}}
-        <section class="min-w-0 space-y-4" aria-labelledby="pane-heading">
+        <section class="min-w-0 space-y-4" aria-labelledby="pane-heading" x-show="! full">
             @if ($selected)
                 {{-- Ścieżka --}}
                 <nav aria-label="Ścieżka strony" class="text-xs text-muted">
@@ -390,6 +425,9 @@
         #page-tree .tree-sub { margin-left: .75rem; padding-left: .625rem; border-left: 2px solid #c4c9d2; }
         #page-tree .tree-sub > li { position: relative; }
         #page-tree .tree-sub > li::before { content: ''; position: absolute; left: -.625rem; top: .875rem; width: .5rem; border-top: 2px solid #c4c9d2; }
+        /* Widok „Drzewo na całą stronę”: gałęzie najwyższego poziomu w kolumnach, bez dzielenia gałęzi między kolumny. */
+        #page-tree.tree-full #tree-scroll > ul { columns: 22rem; column-gap: 1.5rem; }
+        #page-tree.tree-full #tree-scroll > ul > li { break-inside: avoid; }
         #page-tree .tree-sep { margin: .375rem .5rem; border-top: 1px solid #e5e7eb; }
         #bulk-dialog::backdrop { background: rgba(17, 24, 39, .55); }
         #bulk-dialog { margin: auto; }

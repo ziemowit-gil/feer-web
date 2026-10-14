@@ -114,7 +114,19 @@ class PageController extends Controller
             $walk(0, 0);
         }
 
+        // Strony najwyższego poziomu podpięte pod działania — w drzewie zebrane w zwinięte grupy „D” zamiast luzem wśród stron głównych.
+        $roots = $byParent->get(0, collect());
+        $projectTitles = Project::whereIn('id', $roots->pluck('project_id')->filter()->unique())->pluck('title', 'id');
+        $projectGroups = $roots->filter(fn (Page $p) => $p->project_id && isset($projectTitles[$p->project_id]))
+            ->groupBy('project_id')
+            ->map(fn ($pages, $pid) => ['id' => (int) $pid, 'title' => $projectTitles[$pid], 'pages' => $pages->values(),
+                'open' => $selected && $pages->contains(fn ($p) => $p->id === $selected->id || in_array($p->id, $openIds, true))])
+            ->sortBy('title', SORT_NATURAL | SORT_FLAG_CASE)->values();
+        $treeRoots = $roots->reject(fn (Page $p) => $p->project_id && isset($projectTitles[$p->project_id]))->values();
+
         return view('admin.pages.tree', [
+            'treeRoots' => $treeRoots,
+            'projectGroups' => $projectGroups,
             'byParent' => $byParent,
             'total' => $all->count(),
             'selected' => $selected,
