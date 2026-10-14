@@ -52,7 +52,7 @@ class PortalOptionsTest extends TestCase
         $this->assertSame(['news' => 'Co nowego'], $options['titles']);
         $this->assertArrayNotHasKey('stay_title', $options);
 
-        $this->get(route('admin.kategorie.edit', $category))->assertOk()
+        $this->get(route('admin.portale.edit', $category))->assertOk()
             ->assertSee('Komunikat nad portalem')->assertSee('Menu portalu')->assertSee('Układ portalu')->assertSee('Regulamin');
     }
 
@@ -232,5 +232,20 @@ class PortalOptionsTest extends TestCase
             'name' => 'Szkolenia i warsztaty', 'slug' => 'szkolenia-opcje-test', 'portal_slug' => 'opcjetest',
             'portal_options' => ['lead' => str_repeat('x', 301)],
         ])->assertSessionHasErrors('portal_options.lead');
+    }
+
+    public function test_szybkie_akcje_jako_przyciski(): void
+    {
+        $this->portal(['portal_options' => [
+            'shortcuts' => [['label' => 'Zapisz się', 'url' => '/zapisy'], ['label' => 'Regulamin', 'url' => '/regulamin']],
+            'layout' => ['shortcuts' => 'buttons'],
+        ]]);
+
+        $html = $this->get('/portal/opcjetest')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('#<a href="/zapisy" class="[^"]*bg-brand-dark text-white#', $html);
+        $this->assertMatchesRegularExpression('#<a href="/regulamin" class="[^"]*bg-brand-light text-ink#', $html);
+        $this->assertStringContainsString('<h2 id="portal-shortcuts" class="sr-only">', $html);
+        // Przyciski pod wstępem, nie w kolumnie bocznej.
+        $this->assertLessThan(strpos($html, 'id="portal-nav"'), strpos($html, 'href="/zapisy"'));
     }
 }

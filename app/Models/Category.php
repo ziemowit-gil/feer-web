@@ -66,7 +66,7 @@ class Category extends Model
         'sidebar' => ['right' => 'Po prawej', 'left' => 'Po lewej', 'none' => 'Bez kolumny bocznej'],
         'slider'  => ['show' => 'Pokazuj', 'hide' => 'Nie pokazuj (zamiast niego kafelki działań)'],
         'header'  => ['column' => 'W kolumnie z treścią, obok menu', 'full' => 'Na całą szerokość, nad menu'],
-        'shortcuts' => ['sidebar' => 'Lista w kolumnie bocznej', 'tiles' => 'Kafle szybkich akcji pod wstępem'],
+        'shortcuts' => ['sidebar' => 'Lista w kolumnie bocznej', 'tiles' => 'Kafle szybkich akcji pod wstępem', 'buttons' => 'Przyciski pod wstępem (pierwszy wyróżniony)'],
     ];
 
     /** Ikony szybkich akcji (klasa Font Awesome, zarys) => etykieta w panelu. */

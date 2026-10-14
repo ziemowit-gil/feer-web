@@ -56,6 +56,7 @@
         $headerFull = $category->portalLayout('header') === 'full' || $sidebar === 'left';
         $shortcutsInSidebar = $shortcuts && $sidebar !== 'none' && $category->portalLayout('shortcuts') === 'sidebar';
         $shortcutsAsTiles = $shortcuts && ! $shortcutsInSidebar;
+        $shortcutsStyle = $category->portalLayout('shortcuts') === 'buttons' ? 'buttons' : 'tiles';
         $gridCols = match ($sidebar) {
             'left' => 'lg:grid-cols-[20rem_minmax(0,1fr)]',
             'none' => '',

@@ -169,6 +169,9 @@ final class AdminMenu
                         $this->child('Nowe działanie', 'admin.projekty.create', 'admin.projekty.create', icon: 'fa-plus', group: 'Zarządzanie'),
                         $this->child('Kategorie działań', 'admin.kategorie.index', 'admin.kategorie.*', icon: 'fa-tags', group: 'Zarządzanie'),
                     ]) : null,
+                $this->can('projects') && \Illuminate\Support\Facades\Schema::hasColumn('categories', 'portal_slug')
+                    ? $this->item('portals', 'Portale', 'admin.portale.index', 'fa-table-columns', active: 'admin.portale.*')
+                    : null,
                 $this->can('projects') && \Illuminate\Support\Facades\Schema::hasTable('coordinators')
                     ? $this->item('coordinators', 'Koordynatorzy', 'admin.koordynatorzy.index', 'fa-user-tie', active: 'admin.koordynatorzy.*')
                     : null,

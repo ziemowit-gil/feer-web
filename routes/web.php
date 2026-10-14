@@ -448,6 +448,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
     Route::middleware(['module:projects', 'module-access:projects'])->group(function () {
         Route::resource('kategorie', AdminCategoryController::class)->parameters(['kategorie' => 'category'])->except('show');
+        Route::get('portale', [\App\Http\Controllers\Admin\PortalController::class, 'index'])->name('portale.index');
+        Route::get('portale/{category}/edytuj', [\App\Http\Controllers\Admin\PortalController::class, 'edit'])->name('portale.edit');
+        Route::put('portale/{category}', [\App\Http\Controllers\Admin\PortalController::class, 'update'])->name('portale.update');
         Route::resource('projekty', AdminProjectController::class)->parameters(['projekty' => 'project'])->except('show');
         Route::post('projekty/zbiorczo', [AdminProjectController::class, 'bulk'])->name('projekty.bulk');
         Route::post('projekty/{project}/kopiuj', [AdminProjectController::class, 'duplicate'])->name('projekty.kopiuj');
