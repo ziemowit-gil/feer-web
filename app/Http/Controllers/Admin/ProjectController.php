@@ -59,9 +59,9 @@ class ProjectController extends Controller
         $byParent = $all->groupBy(fn ($p) => $all->contains('id', $p->parent_id) ? $p->parent_id : 0);
         $selected = $request->filled('wybrana') ? $all->firstWhere('id', (int) $request->query('wybrana')) : null;
 
-        // Ścieżka od korzenia do wybranego (do rozwinięcia gałęzi) i lista dozwolonych rodziców.
+        // Przodkowie wybranego (do rozwinięcia gałęzi) — sam wybrany zostaje zwinięty, żeby drzewo nie rosło.
         $openIds = [];
-        for ($cur = $selected; $cur; $cur = $cur->parent_id ? $all->firstWhere('id', $cur->parent_id) : null) {
+        for ($cur = $selected?->parent_id ? $all->firstWhere('id', $selected->parent_id) : null; $cur; $cur = $cur->parent_id ? $all->firstWhere('id', $cur->parent_id) : null) {
             $openIds[] = $cur->id;
         }
 

@@ -13,7 +13,7 @@
         @php
             $kids = $byParent->get($node->id, collect());
             $isSel = $selected && $selected->id === $node->id;
-            $isOpen = in_array($node->id, $openIds, true) || $isSel;
+            $isOpen = in_array($node->id, $openIds, true); // domyślnie zwinięte — rozwinięta tylko droga do wybranej strony
             $icon = $kids->isNotEmpty() ? ($isOpen ? 'fa-folder-open' : 'fa-folder') : ($typeIcons[$node->type] ?? 'fa-file-lines');
         @endphp
         <li data-tree-node data-page-id="{{ $node->id }}" data-pos="{{ $loop->index }}" data-folder="{{ $kids->isNotEmpty() ? 1 : 0 }}" data-title="{{ \Illuminate\Support\Str::lower($node->title) }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
