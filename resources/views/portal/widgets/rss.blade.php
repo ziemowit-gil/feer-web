@@ -4,7 +4,7 @@
     <section aria-labelledby="portal-w-rss">
         <h2 id="portal-w-rss" class="text-xl font-bold leading-tight text-ink md:text-2xl">{{ $category->portalWidgetTitle('rss') }}</h2>
         <span class="mt-2 block h-1 w-12 bg-brand" aria-hidden="true"></span>
-        <ul role="list" class="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+        <ul role="list" class="mt-6 grid gap-x-8 gap-y-5 {{ ($compact ?? false) ? '' : 'sm:grid-cols-2' }}">
             @foreach ($rssItems as $item)
                 <li>
                     <a href="{{ $item->url }}" target="_blank" rel="noopener noreferrer" class="group block rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">

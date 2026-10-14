@@ -48,6 +48,9 @@
             @endphp
             <fieldset class="space-y-5 border-t border-gray-100 pt-5">
                 <legend class="text-base font-bold text-ink">Portal kategorii</legend>
+                @unless (\App\Models\Category::portalsEnabled())
+                    <p class="rounded bg-gray-50 px-3 py-2 text-sm text-ink" role="note">Portale są wyłączone w <a href="{{ route('admin.ustawienia.edit') }}" class="font-bold text-brand-dark underline underline-offset-2">ustawieniach witryny</a> — zmiany zapiszą się, ale portal nie będzie widoczny.</p>
+                @endunless
                 <p class="text-sm text-muted">Osobna strona kategorii ze sliderem, działaniami, widżetami i kanałem RSS. Pod krótkim adresem w subdomenie odwiedzający trafią prosto do portalu.</p>
 
                 <div>
@@ -96,9 +99,10 @@
                     @error('portal_rss_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
-                <div x-data="{ order: @js($widgetOrder), labels: @js(\App\Models\Category::PORTAL_WIDGETS),
+                <div x-data="{ order: @js($widgetOrder), labels: @js(\App\Models\Category::PORTAL_WIDGETS), widths: @js((object) ($category->portalOption('layout.widths', []))),
                         move(i, d) { const j = i + d; if (j < 0 || j >= this.order.length) return; [this.order[i], this.order[j]] = [this.order[j], this.order[i]]; } }">
-                    <p class="mb-1 text-sm font-bold" id="portal-widgets-label">Widżety i ich kolejność</p>
+                    <p class="mb-1 text-sm font-bold" id="portal-widgets-label">Widżety, ich kolejność i szerokość</p>
+                    <p class="mb-2 text-xs text-muted">Dwa kolejne widżety „na połowę” stają obok siebie na szerokim ekranie (na telefonie zawsze jeden pod drugim).</p>
                     <input type="hidden" name="portal_widgets_order" :value="order.join(',')">
                     <ul role="list" class="space-y-1" aria-labelledby="portal-widgets-label">
                         <template x-for="(key, i) in order" :key="key">
@@ -107,6 +111,11 @@
                                     <input type="checkbox" name="portal_widgets[]" :value="key" :checked="@js($widgetOn).includes(key)" class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                     <span x-text="labels[key]"></span>
                                 </label>
+                                <label class="sr-only" :for="'portal_width_' + key" x-text="'Szerokość: ' + labels[key]"></label>
+                                <select :id="'portal_width_' + key" :name="'portal_options[layout][widths][' + key + ']'" class="rounded border-gray-500 py-1 text-xs focus:border-brand-dark focus:ring-brand-dark">
+                                    <option value="full">Pełna szerokość</option>
+                                    <option value="half" :selected="widths[key] === 'half'">Połowa (obok następnego)</option>
+                                </select>
                                 <button type="button" @click="move(i, -1)" :disabled="i === 0" class="rounded p-1.5 text-xs text-ink hover:bg-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'W górę: ' + labels[key]"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
                                 <button type="button" @click="move(i, 1)" :disabled="i === order.length - 1" class="rounded p-1.5 text-xs text-ink hover:bg-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'W dół: ' + labels[key]"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
                             </li>
@@ -117,7 +126,6 @@
                 @if (\Illuminate\Support\Facades\Schema::hasColumn('categories', 'portal_options'))
                     @php
                         $opt = fn (string $k, $d = '') => old('portal_options.'.$k, $category->portalOption($k, $d));
-                        $shortcutsText = old('portal_options.shortcuts', collect($category->portalShortcuts())->map(fn ($s) => $s[0].' | '.$s[1])->implode("\n"));
                         $input = 'w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark';
                     @endphp
 
@@ -160,12 +168,155 @@
                         </div>
                     </fieldset>
 
-                    <div>
-                        <label for="portal_shortcuts" class="mb-1 block text-sm font-bold">Na skróty <span class="font-normal text-muted">(puste = lista domyślna)</span></label>
-                        <textarea id="portal_shortcuts" name="portal_options[shortcuts]" rows="4" aria-describedby="portal_shortcuts_help" placeholder="Zapisy na szkolenia | /formularz-zapisow" class="{{ $input }} font-mono text-sm">{{ $shortcutsText }}</textarea>
-                        <p id="portal_shortcuts_help" class="mt-1 text-xs text-muted">Jeden link w wierszu: <span class="font-mono">Etykieta | adres</span>. Adres zaczyna się od https:// albo / (strona w serwisie). Najwyżej 12 linków.</p>
-                        @error('portal_options.shortcuts') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
+                    @php
+                        $icons = \App\Models\Category::PORTAL_SHORTCUT_ICONS;
+                        $shortcutRows = old('portal_options.shortcuts_json') ? json_decode(old('portal_options.shortcuts_json'), true) : collect($category->portalShortcuts())->map(fn ($s) => ['label' => $s[0], 'url' => $s[1], 'icon' => $s[2]])->all();
+                    @endphp
+                    <fieldset x-data="{ rows: @js(array_values($shortcutRows ?: [])),
+                            add() { this.rows.push({ label: '', url: '', icon: '' }); this.$nextTick(() => this.$refs['sc' + (this.rows.length - 1)]?.focus()); },
+                            move(i, d) { const j = i + d; if (j < 0 || j >= this.rows.length) return; [this.rows[i], this.rows[j]] = [this.rows[j], this.rows[i]]; } }">
+                        <legend class="mb-1 text-sm font-bold">Na skróty — szybkie akcje <span class="font-normal text-muted">(pusta lista = linki domyślne)</span></legend>
+                        <p class="mb-2 text-xs text-muted">Np. „Zapisz się na szkolenie”, „Pobierz materiały”. Adres zaczyna się od https:// albo / (strona w serwisie). Najwyżej 12 pozycji.</p>
+                        <input type="hidden" name="portal_options[shortcuts_json]" :value="JSON.stringify(rows)">
+                        <div class="mb-3 grid gap-3 sm:grid-cols-2">
+                            <label class="flex min-h-8 items-center gap-2 text-sm">
+                                <input type="hidden" name="portal_options[shortcuts_enabled]" value="0">
+                                <input type="checkbox" name="portal_options[shortcuts_enabled]" value="1" @checked((bool) old('portal_options.shortcuts_enabled', $category->portalOption('shortcuts_enabled', true))) class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                Pokazuj „Na skróty”
+                            </label>
+                            <div>
+                                <label for="portal_shortcuts_title" class="sr-only">Nagłówek „Na skróty”</label>
+                                <input type="text" id="portal_shortcuts_title" name="portal_options[shortcuts_title]" value="{{ $opt('shortcuts_title') }}" placeholder="Nagłówek: Na skróty" class="{{ $input }} text-sm">
+                            </div>
+                        </div>
+                        <ol role="list" class="space-y-2">
+                            <template x-for="(row, i) in rows" :key="i">
+                                <li class="grid items-center gap-2 rounded bg-gray-50 p-2 sm:grid-cols-[1fr_1fr_10rem_auto]">
+                                    <label class="sr-only" :for="'sc_label_' + i" x-text="'Nazwa, pozycja ' + (i + 1)"></label>
+                                    <input type="text" :id="'sc_label_' + i" :x-ref="'sc' + i" x-model="row.label" maxlength="120" placeholder="Nazwa, np. Zapisz się" class="{{ $input }} text-sm">
+                                    <label class="sr-only" :for="'sc_url_' + i" x-text="'Adres, pozycja ' + (i + 1)"></label>
+                                    <input type="text" :id="'sc_url_' + i" x-model="row.url" maxlength="500" placeholder="https://… albo /strona" class="{{ $input }} font-mono text-sm">
+                                    <label class="sr-only" :for="'sc_icon_' + i" x-text="'Ikona, pozycja ' + (i + 1)"></label>
+                                    <select :id="'sc_icon_' + i" x-model="row.icon" class="{{ $input }} text-sm">
+                                        @foreach ($icons as $iconClass => $iconLabel)
+                                            <option value="{{ $iconClass }}">{{ $iconLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="flex items-center">
+                                        <button type="button" @click="move(i, -1)" :disabled="i === 0" class="rounded p-2 text-xs text-ink hover:bg-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'W górę: ' + (row.label || 'pozycja ' + (i + 1))"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                        <button type="button" @click="move(i, 1)" :disabled="i === rows.length - 1" class="rounded p-2 text-xs text-ink hover:bg-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'W dół: ' + (row.label || 'pozycja ' + (i + 1))"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                        <button type="button" @click="rows.splice(i, 1)" class="rounded p-2 text-xs text-red-700 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'Usuń: ' + (row.label || 'pozycja ' + (i + 1))"><i class="fa-regular fa-trash-can" aria-hidden="true"></i></button>
+                                    </span>
+                                </li>
+                            </template>
+                        </ol>
+                        <button type="button" @click="add()" x-show="rows.length < 12" class="mt-2 inline-flex items-center gap-2 rounded px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj skrót</button>
+                        @error('portal_options.shortcuts_json') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </fieldset>
+
+                    @php
+                        $navProjects = $category->exists ? $category->publishedProjects()->withCount(['publishedPages' => fn ($q) => $q->whereNull('parent_id')])->get() : collect();
+                        if (old('portal_options.nav_json')) {
+                            $navRows = json_decode(old('portal_options.nav_json'), true) ?: [];
+                        } else {
+                            $byId = $navProjects->keyBy('id');
+                            $navRows = [];
+                            foreach ((array) $category->portalOption('nav.items', []) as $item) {
+                                if (($item['type'] ?? '') === 'link') {
+                                    $navRows[] = ['type' => 'link', 'label' => $item['label'], 'url' => $item['url']];
+                                } elseif ($p = $byId->pull((int) ($item['id'] ?? 0))) {
+                                    $navRows[] = ['type' => 'project', 'id' => $p->id, 'hidden' => ! empty($item['hidden']), 'label' => $item['label'] ?? '', 'subs' => $item['subs'] ?? 'collapsed'];
+                                }
+                            }
+                            foreach ($byId as $p) {
+                                $navRows[] = ['type' => 'project', 'id' => $p->id, 'hidden' => false, 'label' => '', 'subs' => 'collapsed'];
+                            }
+                        }
+                        $navNames = $navProjects->mapWithKeys(fn ($p) => [$p->id => ['title' => $p->nav_title ?: $p->title, 'pages' => $p->published_pages_count]]);
+                    @endphp
+                    <fieldset x-data="{ rows: @js(array_values($navRows)), names: @js((object) $navNames->all()),
+                            name(r) { return r.type === 'link' ? (r.label || 'nowy link') : (this.names[r.id]?.title || 'działanie'); },
+                            addLink() { this.rows.push({ type: 'link', label: '', url: '' }); this.$nextTick(() => this.$refs['nl' + (this.rows.length - 1)]?.focus()); },
+                            move(i, d) { const j = i + d; if (j < 0 || j >= this.rows.length) return; [this.rows[i], this.rows[j]] = [this.rows[j], this.rows[i]]; } }">
+                        <legend class="mb-1 text-sm font-bold">Menu portalu</legend>
+                        <p class="mb-2 text-xs text-muted">Kolejność, nazwy w menu i podstrony działań z tej kategorii oraz własne linki. Nowe działania pojawią się w menu na końcu.</p>
+                        <input type="hidden" name="portal_options[nav_json]" :value="JSON.stringify(rows)">
+                        <div class="mb-3">
+                            <label for="portal_nav_title" class="mb-1 block text-sm">Nagłówek menu</label>
+                            <input type="text" id="portal_nav_title" name="portal_options[nav_title]" value="{{ $opt('nav.title') }}" placeholder="Tytuł portalu" class="{{ $input }} text-sm">
+                        </div>
+                        @if (! $category->exists)
+                            <p class="text-sm text-muted">Zapisz kategorię i przypisz do niej działania — wtedy ułożysz tu menu.</p>
+                        @endif
+                        <ol role="list" class="space-y-2">
+                            <template x-for="(row, i) in rows" :key="i">
+                                <li class="rounded bg-gray-50 p-2" :class="row.hidden && 'bg-gray-100'">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="min-w-0 flex-1 text-sm font-bold text-ink">
+                                            <i class="fa-solid mr-1 text-xs" :class="row.type === 'link' ? 'fa-link' : 'fa-folder'" aria-hidden="true"></i>
+                                            <span x-text="name(row)"></span>
+                                            <span class="font-normal text-muted" x-show="row.type === 'link'">(własny link)</span>
+                                            <span class="font-normal text-muted" x-show="row.hidden">(ukryte)</span>
+                                        </span>
+                                        <button type="button" @click="move(i, -1)" :disabled="i === 0" class="rounded p-2 text-xs text-ink hover:bg-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'W górę: ' + name(row)"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                        <button type="button" @click="move(i, 1)" :disabled="i === rows.length - 1" class="rounded p-2 text-xs text-ink hover:bg-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'W dół: ' + name(row)"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                        <button type="button" x-show="row.type === 'link'" @click="rows.splice(i, 1)" class="rounded p-2 text-xs text-red-700 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'Usuń: ' + name(row)"><i class="fa-regular fa-trash-can" aria-hidden="true"></i></button>
+                                    </div>
+                                    <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]" x-show="row.type === 'project'">
+                                        <div>
+                                            <label class="sr-only" :for="'nav_label_' + i" x-text="'Nazwa w menu: ' + name(row)"></label>
+                                            <input type="text" :id="'nav_label_' + i" x-model="row.label" maxlength="120" :placeholder="'Nazwa w menu (puste = ' + name(row) + ')'" class="{{ $input }} text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="sr-only" :for="'nav_subs_' + i" x-text="'Podstrony: ' + name(row)"></label>
+                                            <select :id="'nav_subs_' + i" x-model="row.subs" :disabled="! names[row.id]?.pages" class="{{ $input }} text-sm">
+                                                @foreach (\App\Models\Category::PORTAL_NAV_SUBS as $subsKey => $subsLabel)
+                                                    <option value="{{ $subsKey }}">Podstrony: {{ $subsLabel }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <label class="flex min-h-8 items-center gap-2 text-sm">
+                                            <input type="checkbox" :checked="! row.hidden" @change="row.hidden = ! $event.target.checked" class="h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                            W menu
+                                        </label>
+                                    </div>
+                                    <div class="mt-2 grid gap-2 sm:grid-cols-2" x-show="row.type === 'link'">
+                                        <div>
+                                            <label class="sr-only" :for="'nav_link_label_' + i">Nazwa linku</label>
+                                            <input type="text" :id="'nav_link_label_' + i" :x-ref="'nl' + i" x-model="row.label" maxlength="120" placeholder="Nazwa linku" class="{{ $input }} text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="sr-only" :for="'nav_link_url_' + i">Adres linku</label>
+                                            <input type="text" :id="'nav_link_url_' + i" x-model="row.url" maxlength="500" placeholder="https://… albo /strona" class="{{ $input }} font-mono text-sm">
+                                        </div>
+                                    </div>
+                                </li>
+                            </template>
+                        </ol>
+                        <button type="button" @click="addLink()" class="mt-2 inline-flex items-center gap-2 rounded px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj własny link do menu</button>
+                        @error('portal_options.nav_json') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </fieldset>
+
+                    <fieldset>
+                        <legend class="mb-1 text-sm font-bold">Układ portalu</legend>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            @foreach ([
+                                'sidebar' => 'Kolumna boczna (menu i skróty)',
+                                'header' => 'Tytuł i wstęp',
+                                'slider' => 'Slider',
+                                'shortcuts' => 'Na skróty',
+                            ] as $layoutKey => $layoutLabel)
+                                <div>
+                                    <label for="portal_layout_{{ $layoutKey }}" class="mb-1 block text-sm">{{ $layoutLabel }}</label>
+                                    <select id="portal_layout_{{ $layoutKey }}" name="portal_options[layout][{{ $layoutKey }}]" class="{{ $input }} text-sm">
+                                        @foreach (\App\Models\Category::PORTAL_LAYOUT[$layoutKey] as $value => $valueLabel)
+                                            <option value="{{ $value }}" @selected(old('portal_options.layout.'.$layoutKey, $category->portalLayout($layoutKey)) === $value)>{{ $valueLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endforeach
+                        </div>
+                    </fieldset>
 
                     <fieldset class="space-y-4">
                         <legend class="mb-1 text-sm font-bold">Sekcja „Pozostańmy w kontakcie” na końcu portalu</legend>

@@ -3,7 +3,7 @@
     <section aria-labelledby="portal-w-projects">
         <h2 id="portal-w-projects" class="text-xl font-bold leading-tight text-ink md:text-2xl">{{ $category->portalWidgetTitle('projects') }}</h2>
         <span class="mt-2 block h-1 w-12 bg-brand" aria-hidden="true"></span>
-        <ul role="list" class="mt-6 grid gap-2 {{ $cols ?? 'md:grid-cols-2' }}">
+        <ul role="list" class="mt-6 grid gap-2 {{ $cols ?? (($compact ?? false) ? '' : 'md:grid-cols-2') }}">
             @foreach ($projects as $project)
                 <li>
                     <a href="{{ route('projects.show', $project) }}" class="group flex h-full items-center gap-4 rounded-md bg-gray-50 px-4 py-4 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">

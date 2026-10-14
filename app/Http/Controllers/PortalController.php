@@ -45,7 +45,8 @@ class PortalController extends Controller
             'category' => $category,
             'title' => $category->portal_title ?: $category->name,
             'projects' => $projects,
-            'slides' => $this->slides($category, $projects),
+            'navItems' => $category->portalNavItems($projects),
+            'slides' => $category->portalLayout('slider') === 'hide' ? collect() : $this->slides($category, $projects),
             'sliderDuration' => $this->sliderDuration($category),
             'widgets' => $widgets,
             'news' => $news,
@@ -98,7 +99,7 @@ class PortalController extends Controller
 
     private function category(string $portal): Category
     {
-        abort_unless(Schema::hasColumn('categories', 'portal_slug'), 404);
+        abort_unless(Schema::hasColumn('categories', 'portal_slug') && Category::portalsEnabled(), 404);
 
         return Category::where('portal_slug', $portal)->firstOrFail();
     }

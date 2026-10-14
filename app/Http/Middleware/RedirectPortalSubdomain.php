@@ -54,7 +54,7 @@ class RedirectPortalSubdomain
     private function hasPortal(string $sub): bool
     {
         try {
-            return Schema::hasColumn('categories', 'portal_slug') && Category::where('portal_slug', $sub)->exists();
+            return Schema::hasColumn('categories', 'portal_slug') && Category::portalsEnabled() && Category::where('portal_slug', $sub)->exists();
         } catch (Throwable) {
             return false; // przed instalacją / bez bazy — nic nie przekierowujemy
         }

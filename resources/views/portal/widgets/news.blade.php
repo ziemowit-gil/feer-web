@@ -4,8 +4,8 @@
     <section aria-labelledby="portal-news">
         <h2 id="portal-news" class="text-xl font-bold leading-tight text-ink md:text-2xl">{{ $category->portalWidgetTitle('news') }}</h2>
         <span class="mt-2 block h-1 w-12 bg-brand" aria-hidden="true"></span>
-        <div class="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
-            <article class="grid gap-6 md:grid-cols-2">
+        <div class="mt-6 grid gap-10 {{ ($compact ?? false) ? '' : 'lg:grid-cols-[minmax(0,1fr)_20rem]' }}">
+            <article class="grid gap-6 {{ ($compact ?? false) ? 'sm:grid-cols-2' : 'md:grid-cols-2' }}">
                 @if ($img = $lead->imageUrlOrDefault())
                     <img src="{{ $img }}" alt="{{ $lead->image_alt ?? '' }}" class="aspect-[4/3] w-full rounded-md object-cover" loading="lazy">
                 @endif

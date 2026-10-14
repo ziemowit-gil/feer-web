@@ -37,7 +37,7 @@ class PortalOptionsTest extends TestCase
             'portal_widgets_order' => 'contact,news', 'portal_widgets' => ['contact', 'news'],
             'portal_options' => [
                 'notice' => 'Zapisy do 30 listopada', 'notice_link_label' => 'Zapisz się', 'notice_link_url' => '/zapisy',
-                'shortcuts' => "Regulamin | /regulamin\n\nKurs online | https://example.org/kurs",
+                'shortcuts_json' => json_encode([['label' => 'Regulamin', 'url' => '/regulamin', 'icon' => 'fa-regular fa-file-lines'], ['label' => '', 'url' => ''], ['label' => 'Kurs online', 'url' => 'https://example.org/kurs', 'icon' => 'fa-solid fa-hack']]),
                 'contact_text' => 'Masz pytanie? Napisz.', 'contact_email' => 'szkolenia@example.org', 'contact_phone' => '+48 600 100 200',
                 'stay_enabled' => '0', 'stay_title' => '',
                 'titles' => ['news' => 'Co nowego', 'contact' => ''],
@@ -46,13 +46,14 @@ class PortalOptionsTest extends TestCase
 
         $options = $category->refresh()->portal_options;
         $this->assertSame('Zapisy do 30 listopada', $options['notice']);
-        $this->assertSame([['label' => 'Regulamin', 'url' => '/regulamin'], ['label' => 'Kurs online', 'url' => 'https://example.org/kurs']], $options['shortcuts']);
+        // Pusty wiersz pominięty, ikona spoza listy odrzucona.
+        $this->assertSame([['label' => 'Regulamin', 'url' => '/regulamin', 'icon' => 'fa-regular fa-file-lines'], ['label' => 'Kurs online', 'url' => 'https://example.org/kurs']], $options['shortcuts']);
         $this->assertFalse($options['stay_enabled']);
         $this->assertSame(['news' => 'Co nowego'], $options['titles']);
         $this->assertArrayNotHasKey('stay_title', $options);
 
         $this->get(route('admin.kategorie.edit', $category))->assertOk()
-            ->assertSee('Komunikat nad portalem')->assertSee('Regulamin | /regulamin');
+            ->assertSee('Komunikat nad portalem')->assertSee('Menu portalu')->assertSee('Układ portalu')->assertSee('Regulamin');
     }
 
     public function test_panel_odrzuca_zle_skroty_i_adres(): void
@@ -60,8 +61,12 @@ class PortalOptionsTest extends TestCase
         $category = $this->portal();
         $base = ['name' => 'Szkolenia i warsztaty', 'slug' => 'szkolenia-opcje-test', 'portal_slug' => 'opcjetest'];
 
-        $this->actingAs($this->admin())->put(route('admin.kategorie.update', $category), $base + ['portal_options' => ['shortcuts' => 'Zły | javascript:alert(1)']])
-            ->assertSessionHasErrors('portal_options.shortcuts');
+        $this->actingAs($this->admin())->put(route('admin.kategorie.update', $category), $base + ['portal_options' => ['shortcuts_json' => json_encode([['label' => 'Zły', 'url' => 'javascript:alert(1)']])]])
+            ->assertSessionHasErrors('portal_options.shortcuts_json');
+        $this->actingAs($this->admin())->put(route('admin.kategorie.update', $category), $base + ['portal_options' => ['nav_json' => json_encode([['type' => 'link', 'label' => 'X', 'url' => 'javascript:alert(1)']])]])
+            ->assertSessionHasErrors('portal_options.nav_json');
+        $this->actingAs($this->admin())->put(route('admin.kategorie.update', $category), $base + ['portal_options' => ['layout' => ['sidebar' => 'gora']]])
+            ->assertSessionHasErrors('portal_options.layout.sidebar');
         $this->actingAs($this->admin())->put(route('admin.kategorie.update', $category), $base + ['portal_options' => ['notice_link_url' => 'javascript:alert(1)', 'contact_email' => 'nie-email']])
             ->assertSessionHasErrors(['portal_options.notice_link_url', 'portal_options.contact_email']);
     }
@@ -73,7 +78,7 @@ class PortalOptionsTest extends TestCase
             'portal_widgets' => ['contact', 'news'],
             'portal_options' => [
                 'notice' => 'Zapisy do 30 listopada', 'notice_link_label' => 'Zapisz się', 'notice_link_url' => '/zapisy',
-                'shortcuts' => [['label' => 'Regulamin kursu', 'url' => '/regulamin']],
+                'shortcuts' => [['label' => 'Regulamin kursu', 'url' => '/regulamin', 'icon' => 'fa-regular fa-file-lines']],
                 'contact_text' => 'Masz pytanie? Napisz.', 'contact_email' => 'szkolenia@example.org',
                 'stay_enabled' => false,
                 'titles' => ['news' => 'Co nowego'],
@@ -102,5 +107,83 @@ class PortalOptionsTest extends TestCase
             ->assertDontSee('role="region" aria-label="Komunikat"', false)
             ->assertSee('Pozostańmy w kontakcie')
             ->assertSee('Kanał RSS portalu');
+    }
+
+    public function test_menu_portalu_kolejnosc_ukrywanie_nazwy_i_wlasne_linki(): void
+    {
+        $category = $this->portal();
+        $first = Project::where('slug', 'kurs-wcag-opcje')->first();
+        $second = Project::create(['title' => 'Warsztaty z audiodeskrypcji', 'slug' => 'warsztaty-ad-opcje', 'is_published' => true, 'category_id' => $category->id]);
+        $hidden = Project::create(['title' => 'Stary projekt archiwalny', 'slug' => 'stary-opcje', 'is_published' => true, 'category_id' => $category->id]);
+        $new = Project::create(['title' => 'Nowe działanie bez ustawień', 'slug' => 'nowe-opcje', 'is_published' => true, 'category_id' => $category->id]);
+
+        $this->actingAs($this->admin())->put(route('admin.kategorie.update', $category), [
+            'name' => 'Szkolenia i warsztaty', 'slug' => 'szkolenia-opcje-test', 'portal_slug' => 'opcjetest',
+            'portal_options' => [
+                'nav_title' => 'Nasze szkolenia',
+                'nav_json' => json_encode([
+                    ['type' => 'project', 'id' => $second->id, 'label' => 'Audiodeskrypcja', 'subs' => 'expanded'],
+                    ['type' => 'link', 'label' => 'Zapisy online', 'url' => 'https://example.org/zapisy'],
+                    ['type' => 'project', 'id' => $first->id, 'label' => '', 'subs' => 'collapsed'],
+                    ['type' => 'project', 'id' => $hidden->id, 'hidden' => true],
+                ]),
+            ],
+        ])->assertSessionHasNoErrors();
+
+        $html = $this->get('/portal/opcjetest')->assertOk()->getContent();
+        $nav = substr($html, strpos($html, 'id="portal-nav"'), 4000);
+        $this->assertStringContainsString('Nasze szkolenia', $nav);
+        $this->assertStringNotContainsString('Stary projekt archiwalny', $nav);
+        $positions = array_map(fn ($t) => strpos($nav, $t), ['Audiodeskrypcja', 'Zapisy online', 'Kurs WCAG dla NGO', 'Nowe działanie bez ustawień']);
+        $sorted = $positions;
+        sort($sorted);
+        $this->assertNotContains(false, $positions);
+        $this->assertSame($sorted, $positions);
+    }
+
+    public function test_uklad_kolumna_po_lewej_kafle_akcji_i_widzety_na_pol(): void
+    {
+        $this->portal([
+            'portal_widgets' => ['news', 'contact', 'projects'],
+            'portal_options' => [
+                'contact_email' => 'szkolenia@example.org',
+                'shortcuts' => [['label' => 'Zapisz się teraz', 'url' => '/zapisy', 'icon' => 'fa-regular fa-pen-to-square']],
+                'layout' => ['sidebar' => 'left', 'slider' => 'hide', 'shortcuts' => 'tiles', 'widths' => ['news' => 'half', 'contact' => 'half']],
+            ],
+        ]);
+
+        $html = $this->get('/portal/opcjetest')->assertOk()->getContent();
+        $this->assertStringContainsString('lg:grid-cols-[20rem_minmax(0,1fr)]', $html);
+        // Kolumna boczna po lewej: tytuł strony nadal przed menu, menu przed treścią główną.
+        $this->assertLessThan(strpos($html, 'id="portal-nav"'), strpos($html, '<h1'));
+        // Szybkie akcje jako kafle (nagłówek h2), nie w kolumnie bocznej.
+        $this->assertStringContainsString('<h2 id="portal-shortcuts"', $html);
+        $this->assertStringContainsString('fa-regular fa-pen-to-square', $html);
+        // Aktualności i kontakt w jednym wierszu na pół.
+        $this->assertMatchesRegularExpression('/lg:grid-cols-2 lg:gap-10">\s*<section aria-labelledby="portal-news"/', $html);
+        // Slider wyłączony — działania w głównej kolumnie.
+        $this->assertStringNotContainsString('portal-slider', $html);
+        $this->assertStringContainsString('id="portal-w-projects"', $html);
+    }
+
+    public function test_wylaczenie_portali_w_ustawieniach(): void
+    {
+        $category = $this->portal();
+        $project = Project::where('slug', 'kurs-wcag-opcje')->first();
+        \App\Models\SiteSetting::current()->update(['portals_enabled' => false]);
+
+        $this->get('/portal/opcjetest')->assertNotFound();
+        $this->get('/portal/opcjetest/rss.xml')->assertNotFound();
+        $this->assertFalse($category->fresh()->hasPortal());
+        // Linki działania prowadzą do zwykłej strony kategorii.
+        $this->get(route('projects.show', $project))->assertOk()->assertDontSee(route('portal.show', 'opcjetest'), false);
+
+        \App\Models\SiteSetting::current()->update(['portals_enabled' => true]);
+        $this->get('/portal/opcjetest')->assertOk();
+    }
+
+    public function test_panel_ustawien_zapisuje_wlacznik_portali(): void
+    {
+        $this->actingAs($this->admin())->get(route('admin.ustawienia.edit'))->assertOk()->assertSee('Portale kategorii');
     }
 }

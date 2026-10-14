@@ -35,12 +35,28 @@
         // Menu jak na stronie działania (projects/partials/sidebar-nav): pozycje na całą szerokość ze strzałką.
         $navItem = 'proj-nav-item flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-[0.9375rem] text-ink transition hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
         $shortcuts = $category->portalShortcuts() ?: array_values(array_filter([
-            ['Wszystkie działania w kategorii', route('categories.show', $category)],
-            Route::has('events.index') ? ['Kalendarz szkoleń i wydarzeń', route('events.index')] : null,
-            Route::has('newsletter.show') ? ['Zapisz się do newslettera', route('newsletter.show')] : null,
-            Route::has('contact.show') ? ['Kontakt z fundacją', route('contact.show')] : null,
-            ['Kanał RSS portalu', route('portal.feed', $category->portal_slug)],
+            ['Wszystkie działania w kategorii', route('categories.show', $category), ''],
+            Route::has('events.index') ? ['Kalendarz szkoleń i wydarzeń', route('events.index'), 'fa-regular fa-calendar'] : null,
+            Route::has('newsletter.show') ? ['Zapisz się do newslettera', route('newsletter.show'), 'fa-regular fa-envelope'] : null,
+            Route::has('contact.show') ? ['Kontakt z fundacją', route('contact.show'), 'fa-regular fa-address-card'] : null,
+            ['Kanał RSS portalu', route('portal.feed', $category->portal_slug), ''],
         ]));
+        if (! $category->portalOption('shortcuts_enabled', true)) {
+            $shortcuts = [];
+        }
+        $shortcutsTitle = $category->portalOption('shortcuts_title', 'Na skróty');
+        $navTitle = $category->portalOption('nav.title', $title);
+        // Układ z panelu: kolumna boczna po prawej / po lewej / bez niej; przy kolumnie po lewej tytuł zawsze nad nią,
+        // żeby na telefonie (jedna kolumna) nagłówek strony był pierwszy.
+        $sidebar = $category->portalLayout('sidebar');
+        $headerFull = $category->portalLayout('header') === 'full' || $sidebar === 'left';
+        $shortcutsInSidebar = $shortcuts && $sidebar !== 'none' && $category->portalLayout('shortcuts') === 'sidebar';
+        $shortcutsAsTiles = $shortcuts && ! $shortcutsInSidebar;
+        $gridCols = match ($sidebar) {
+            'left' => 'lg:grid-cols-[20rem_minmax(0,1fr)]',
+            'none' => '',
+            default => 'lg:grid-cols-[minmax(0,1fr)_20rem]',
+        };
         $stayEnabled = (bool) $category->portalOption('stay_enabled', true);
     @endphp
 
@@ -58,88 +74,70 @@
             </div>
         @endif
 
-        <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
-            {{-- ═════ Lewa kolumna: tytuł i wstęp, slider (albo działania) ═════ --}}
+        @if ($headerFull)
+            <div class="mb-8">
+                @include('portal.partials.header')
+                @includeWhen($shortcutsAsTiles, 'portal.partials.quick-actions')
+            </div>
+        @endif
+
+        <div class="grid items-start gap-10 {{ $gridCols }}">
+            @includeWhen($sidebar === 'left', 'portal.partials.sidebar')
+
+            {{-- ═════ Główna kolumna: tytuł i wstęp, szybkie akcje, slider (albo działania) ═════ --}}
             <div class="min-w-0">
-                <header>
-                    <h1 class="text-3xl font-bold leading-tight text-ink md:text-4xl">{{ $title }}</h1>
-                    <span class="{{ $bar }}" aria-hidden="true"></span>
-                    @if ($introParagraphs)
-                        <div class="mt-5 max-w-3xl space-y-4 text-lg leading-relaxed text-ink">
-                            @foreach ($introParagraphs as $paragraph)
-                                <p>{!! nl2br(e($paragraph)) !!}</p>
-                            @endforeach
-                        </div>
-                    @endif
-                </header>
+                @unless ($headerFull)
+                    @include('portal.partials.header')
+                    @includeWhen($shortcutsAsTiles, 'portal.partials.quick-actions')
+                @endunless
 
                 @if ($slides->isNotEmpty())
-                    <div class="mt-8">
+                    <div class="{{ $headerFull ? '' : 'mt-8' }}">
                         @include('portal.partials.slider', ['slides' => $slides, 'label' => 'Slider: ' . $title, 'duration' => $sliderDuration])
                     </div>
                 @elseif ($projectsInMain)
-                    <div class="mt-10">
-                        @include('portal.widgets.projects', ['cols' => ''])
+                    <div class="{{ $headerFull ? '' : 'mt-10' }}">
+                        @include('portal.widgets.projects', ['cols' => $sidebar === 'none' ? 'md:grid-cols-2' : ''])
                     </div>
                 @endif
             </div>
 
-            {{-- ═════ Prawa kolumna: menu działań i „Na skróty” (wygląd menu bocznego działania) ═════ --}}
-            <div class="space-y-4 lg:sticky lg:top-4">
-                <nav aria-labelledby="portal-nav" class="rounded-md bg-gray-50 p-5">
-                    <p id="portal-nav" class="text-base font-bold leading-snug text-ink">{{ $title }}</p>
-                    <span class="mb-3 mt-2 block h-1 w-10 bg-brand" aria-hidden="true"></span>
-                    @if ($projects->isEmpty())
-                        <p class="px-3 text-sm text-ink">Brak opublikowanych działań.</p>
+            @includeWhen($sidebar === 'right', 'portal.partials.sidebar')
+        </div>
+
+        {{-- ═════ Widżety w kolejności z panelu; dwa kolejne „na połowę” stają obok siebie, puste się nie pokazują ═════ --}}
+        @php
+            $blocks = [];
+            foreach ($widgets as $widget) {
+                if (($widget === 'projects' && $projectsInMain) || ! view()->exists('portal.widgets.' . $widget)) {
+                    continue;
+                }
+                $half = $category->portalWidgetWidth($widget) === 'half';
+                $html = trim($__env->make('portal.widgets.' . $widget, ['compact' => $half] + \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path', 'blocks', 'html']))->render());
+                if ($html !== '') {
+                    $blocks[] = ['half' => $half, 'html' => $html];
+                }
+            }
+            $rows = [];
+            for ($k = 0; $k < count($blocks); $k++) {
+                if ($blocks[$k]['half'] && ($blocks[$k + 1]['half'] ?? false)) {
+                    $rows[] = [$blocks[$k]['html'], $blocks[++$k]['html']];
+                } else {
+                    $rows[] = [$blocks[$k]['html']];
+                }
+            }
+        @endphp
+        @if ($rows)
+            <div class="mt-14 space-y-14">
+                @foreach ($rows as $row)
+                    @if (count($row) === 2)
+                        <div class="grid items-start gap-14 lg:grid-cols-2 lg:gap-10">{!! $row[0] !!}{!! $row[1] !!}</div>
                     @else
-                        <ul role="list" class="space-y-0.5">
-                            @foreach ($projects as $project)
-                                @php $subs = $project->publishedPages; @endphp
-                                <li @if ($subs->isNotEmpty()) x-data="{ open: false }" @endif>
-                                    @if ($subs->isEmpty())
-                                        <a href="{{ route('projects.show', $project) }}" class="{{ $navItem }}">
-                                            <span class="min-w-0">{{ $project->nav_title ?: $project->title }}</span>
-                                            <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
-                                        </a>
-                                    @else
-                                        <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="false" aria-controls="portal-sub-{{ $project->id }}" class="{{ $navItem }}">
-                                            <span class="min-w-0">{{ $project->nav_title ?: $project->title }}</span>
-                                            <i class="fa-solid fa-chevron-right flex-none text-xs transition-transform motion-reduce:transition-none" :class="open && 'rotate-90'" aria-hidden="true"></i>
-                                        </button>
-                                        <ul id="portal-sub-{{ $project->id }}" role="list" class="side-sub mt-0.5 space-y-0.5" x-show="open" x-cloak>
-                                            <li><a href="{{ route('projects.show', $project) }}" class="{{ $navItem }} font-bold"><span class="min-w-0">O działaniu</span><i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i></a></li>
-                                            @foreach ($subs as $sub)
-                                                <li><a href="{{ $sub->publicUrl() }}" class="{{ $navItem }}"><span class="min-w-0">{{ $sub->title }}</span><i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i></a></li>
-                                            @endforeach
-                                        </ul>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </ul>
+                        {!! $row[0] !!}
                     @endif
-                </nav>
-
-                @if ($shortcuts)
-                    <nav aria-labelledby="portal-shortcuts" class="rounded-md bg-gray-50 p-5">
-                        <p id="portal-shortcuts" class="text-base font-bold text-ink">Na skróty</p>
-                        <span class="mb-3 mt-2 block h-1 w-10 bg-brand" aria-hidden="true"></span>
-                        <ul role="list" class="space-y-0.5">
-                            @foreach ($shortcuts as [$label, $url])
-                                <li><a href="{{ $url }}" class="{{ $navItem }}"><span class="min-w-0">{{ $label }}</span><i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i></a></li>
-                            @endforeach
-                        </ul>
-                    </nav>
-                @endif
+                @endforeach
             </div>
-        </div>
-
-        {{-- ═════ Widżety w kolejności z panelu (każdy pusty widżet się nie pokazuje) ═════ --}}
-        <div class="mt-14 space-y-14">
-            @foreach ($widgets as $widget)
-                @continue($widget === 'projects' && $projectsInMain)
-                @includeIf('portal.widgets.' . $widget)
-            @endforeach
-        </div>
+        @endif
 
         {{-- ═════ Pozostańmy w kontakcie (włączane, nagłówek i opis z panelu) ═════ --}}
         @if ($stayEnabled)

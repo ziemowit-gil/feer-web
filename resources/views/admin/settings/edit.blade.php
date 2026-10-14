@@ -1889,6 +1889,13 @@
                         <input type="checkbox" name="projects_extras_enabled" value="1" {{ old('projects_extras_enabled', $settings->projects_extras_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span><span class="block text-sm font-bold">Dodatkowe informacje o projekcie</span><span class="block text-xs text-muted">W skrócie (termin, miejsce, forma, liczba miejsc), streszczenie prostym językiem, główny przycisk, wskaźniki rezultatów, opinie uczestników i pytania (FAQ).</span></span>
                     </label>
+                    @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'portals_enabled'))
+                        <label class="flex items-start gap-3">
+                            <input type="hidden" name="portals_enabled" value="0">
+                            <input type="checkbox" name="portals_enabled" value="1" {{ old('portals_enabled', $settings->portals_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span><span class="block text-sm font-bold">Portale kategorii</span><span class="block text-xs text-muted">Strony /portal/{adres} i krótkie adresy w subdomenach, ustawiane w Działania → Kategorie. Wyłączone: portale przestają działać, a linki prowadzą do zwykłej strony kategorii (ustawienia portali zostają).</span></span>
+                        </label>
+                    @endif
                     <label class="flex items-start gap-3">
                         <input type="hidden" name="projects_terms_enabled" value="0">
                         <input type="checkbox" name="projects_terms_enabled" value="1" {{ old('projects_terms_enabled', $settings->projects_terms_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">

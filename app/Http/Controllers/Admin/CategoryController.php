@@ -79,31 +79,44 @@ class CategoryController extends Controller
             'portal_options.notice' => ['nullable', 'string', 'max:500'],
             'portal_options.notice_link_label' => ['nullable', 'string', 'max:80'],
             'portal_options.notice_link_url' => ['nullable', 'string', 'max:500', 'regex:#^(https?://|/)#i'],
-            'portal_options.shortcuts' => ['nullable', 'string', 'max:3000'],
+            'portal_options.shortcuts_json' => ['nullable', 'json', 'max:10000'],
             'portal_options.contact_text' => ['nullable', 'string', 'max:1000'],
             'portal_options.contact_email' => ['nullable', 'email', 'max:255'],
             'portal_options.contact_phone' => ['nullable', 'string', 'max:40'],
             'portal_options.stay_enabled' => ['nullable', 'boolean'],
             'portal_options.stay_title' => ['nullable', 'string', 'max:120'],
             'portal_options.stay_text' => ['nullable', 'string', 'max:500'],
+            'portal_options.nav_title' => ['nullable', 'string', 'max:120'],
+            'portal_options.shortcuts_title' => ['nullable', 'string', 'max:120'],
+            'portal_options.shortcuts_enabled' => ['nullable', 'boolean'],
+            'portal_options.nav_json' => ['nullable', 'json', 'max:20000'],
+            'portal_options.layout' => ['nullable', 'array'],
+            'portal_options.layout.sidebar' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Category::PORTAL_LAYOUT['sidebar']))],
+            'portal_options.layout.slider' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Category::PORTAL_LAYOUT['slider']))],
+            'portal_options.layout.header' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Category::PORTAL_LAYOUT['header']))],
+            'portal_options.layout.shortcuts' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Category::PORTAL_LAYOUT['shortcuts']))],
+            'portal_options.layout.widths' => ['nullable', 'array'],
+            'portal_options.layout.widths.*' => [\Illuminate\Validation\Rule::in(['full', 'half'])],
         ] + $titleRules, [
             'portal_options.notice_link_url.regex' => 'Adres linku w komunikacie musi zaczynać się od https://, http:// albo / (strona w serwisie).',
             'portal_options.contact_email.email' => 'Podaj poprawny adres e-mail do kontaktu.',
         ])['portal_options'] ?? [];
 
-        // „Na skróty”: jeden wiersz = „Etykieta | adres”.
+        // „Na skróty” (szybkie akcje) z edytora listy: nazwa, adres, ikona.
         $shortcuts = [];
-        foreach (preg_split('/\R/', (string) ($v['shortcuts'] ?? '')) as $n => $line) {
-            if (trim($line) === '') {
-                continue;
+        foreach ((array) (json_decode((string) ($v['shortcuts_json'] ?? ''), true) ?: []) as $n => $row) {
+            $label = trim((string) ($row['label'] ?? ''));
+            $url = trim((string) ($row['url'] ?? ''));
+            if ($label === '' && $url === '') {
+                continue; // pusty, niewypełniony wiersz
             }
-            [$label, $url] = array_map('trim', explode('|', $line, 2)) + [1 => ''];
             if ($label === '' || ! preg_match('#^(https?://|/)\S*$#i', $url)) {
                 throw \Illuminate\Validation\ValidationException::withMessages([
-                    'portal_options.shortcuts' => 'Na skróty, wiersz '.($n + 1).': wpisz „Etykieta | adres”, a adres zacznij od https://, http:// albo /.',
+                    'portal_options.shortcuts_json' => 'Na skróty, pozycja '.($n + 1).': wpisz nazwę i adres zaczynający się od https://, http:// albo /.',
                 ]);
             }
-            $shortcuts[] = ['label' => Str::limit($label, 120, ''), 'url' => $url];
+            $icon = (string) ($row['icon'] ?? '');
+            $shortcuts[] = array_filter(['label' => Str::limit($label, 120, ''), 'url' => Str::limit($url, 500, ''), 'icon' => isset(Category::PORTAL_SHORTCUT_ICONS[$icon]) ? $icon : '']);
         }
 
         return array_filter([
@@ -118,7 +131,58 @@ class CategoryController extends Controller
             'stay_title' => trim((string) ($v['stay_title'] ?? '')),
             'stay_text' => trim((string) ($v['stay_text'] ?? '')),
             'titles' => array_filter(array_map(fn ($t) => trim((string) $t), $v['titles'] ?? []), fn ($t) => $t !== ''),
+            'shortcuts_enabled' => $request->boolean('portal_options.shortcuts_enabled', true),
+            'shortcuts_title' => trim((string) ($v['shortcuts_title'] ?? '')),
+            'nav' => array_filter([
+                'title' => trim((string) ($v['nav_title'] ?? '')),
+                'items' => $this->portalNavItems((string) ($v['nav_json'] ?? '')),
+            ]),
+            'layout' => array_filter([
+                ...array_intersect_key($v['layout'] ?? [], Category::PORTAL_LAYOUT),
+                // Zapisujemy tylko widżety na pół szerokości — pełna jest domyślna.
+                'widths' => array_filter(array_intersect_key($v['layout']['widths'] ?? [], Category::PORTAL_WIDGETS), fn ($w) => $w === 'half'),
+            ]),
         ], fn ($x) => $x !== '' && $x !== []);
+    }
+
+    /**
+     * Menu portalu z edytora w panelu (JSON): działania [id, hidden, label, subs] i własne linki [label, url]
+     * w ustalonej kolejności. Nieprawidłowe pozycje odrzucamy z komunikatem, nieznane pola pomijamy.
+     */
+    private function portalNavItems(string $json): array
+    {
+        $items = [];
+        foreach ((array) (json_decode($json, true) ?: []) as $n => $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            if (($item['type'] ?? '') === 'link') {
+                $label = trim((string) ($item['label'] ?? ''));
+                $url = trim((string) ($item['url'] ?? ''));
+                if ($label === '' && $url === '') {
+                    continue; // pusty, niewypełniony wiersz
+                }
+                if ($label === '' || ! preg_match('#^(https?://|/)\S*$#i', $url)) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'portal_options.nav_json' => 'Menu portalu, pozycja '.($n + 1).': własny link potrzebuje nazwy i adresu zaczynającego się od https://, http:// albo /.',
+                    ]);
+                }
+                $items[] = ['type' => 'link', 'label' => Str::limit($label, 120, ''), 'url' => Str::limit($url, 500, '')];
+            } elseif (($item['type'] ?? '') === 'project' && (int) ($item['id'] ?? 0) > 0) {
+                $items[] = array_filter([
+                    'type' => 'project',
+                    'id' => (int) $item['id'],
+                    'hidden' => ! empty($item['hidden']),
+                    'label' => Str::limit(trim((string) ($item['label'] ?? '')), 120, ''),
+                    'subs' => isset(Category::PORTAL_NAV_SUBS[$item['subs'] ?? '']) && $item['subs'] !== 'collapsed' ? $item['subs'] : '',
+                ], fn ($x) => $x !== '' && $x !== false);
+            }
+            if (count($items) >= 60) {
+                break;
+            }
+        }
+
+        return $items;
     }
 
     private function validated(Request $request): array

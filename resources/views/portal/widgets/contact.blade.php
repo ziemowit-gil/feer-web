@@ -10,7 +10,7 @@
     <section aria-labelledby="portal-w-contact">
         <h2 id="portal-w-contact" class="text-xl font-bold leading-tight text-ink md:text-2xl">{{ $category->portalWidgetTitle('contact') }}</h2>
         <span class="mt-2 block h-1 w-12 bg-brand" aria-hidden="true"></span>
-        <div class="mt-6 grid gap-8 {{ $hasArea && $coordinators->isNotEmpty() ? 'lg:grid-cols-[20rem_minmax(0,1fr)]' : '' }}">
+        <div class="mt-6 grid gap-8 {{ $hasArea && $coordinators->isNotEmpty() && ! ($compact ?? false) ? 'lg:grid-cols-[20rem_minmax(0,1fr)]' : '' }}">
             @if ($hasArea)
                 <div class="rounded-md bg-brand-light p-6 text-ink">
                     @if ($areaText)<p class="text-lg leading-relaxed">{{ $areaText }}</p>@endif
@@ -25,7 +25,7 @@
                 </div>
             @endif
             @if ($coordinators->isNotEmpty())
-                <ul role="list" class="grid gap-4 sm:grid-cols-2 {{ $hasArea ? '' : 'lg:grid-cols-4' }}">
+                <ul role="list" class="grid gap-4 sm:grid-cols-2 {{ $hasArea || ($compact ?? false) ? '' : 'lg:grid-cols-4' }}">
                     @foreach ($coordinators as $c)
                         <li class="flex gap-4 rounded-md bg-gray-50 p-4">
                             @if ($c->photo)<img src="{{ $c->photo }}" alt="" class="h-14 w-14 flex-none rounded-full object-cover" loading="lazy">@endif
