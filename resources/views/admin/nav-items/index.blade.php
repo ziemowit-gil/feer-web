@@ -58,18 +58,45 @@
                         <i class="fa-solid fa-bars mr-1 text-brand-dark" aria-hidden="true"></i> {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}
                         <span class="font-normal text-muted">({{ $navItems->count() }})</span>
                     </h2>
-                    <button type="button" @click="openCreate($event)" data-location="{{ $location }}"
-                        class="inline-flex shrink-0 items-center rounded-md bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
-                        style="min-height:2.25rem;padding:.375rem .875rem;gap:.375rem">
-                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj<span class="sr-only"> pozycję menu</span>
-                    </button>
-                    @if (Route::has('admin.pozycje-menu.ze-stron'))
-                        <button type="button" onclick="document.getElementById('nav-from-pages').showModal()"
-                            class="inline-flex shrink-0 items-center rounded-md bg-gray-100 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
-                            style="min-height:2.25rem;padding:.375rem .75rem;gap:.375rem">
-                            <i class="fa-solid fa-sitemap" aria-hidden="true"></i> Ze stron<span class="sr-only"> — dodaj strony z drzewa stron</span>
-                        </button>
-                    @endif
+                    {{-- „Dodaj” jako menu: nowa pozycja, strony z drzewa albo pozycje z pliku XML (WAI-ARIA menu button). --}}
+                    <div class="flex shrink-0 items-center gap-1.5">
+                        @if (Route::has('admin.pozycje-menu.eksport-xml'))
+                            <a href="{{ route('admin.pozycje-menu.eksport-xml', ['location' => $location]) }}"
+                                class="inline-flex shrink-0 items-center rounded-md bg-gray-100 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
+                                style="min-height:2.25rem;padding:.375rem .75rem;gap:.375rem">
+                                <i class="fa-solid fa-file-export" aria-hidden="true"></i> Eksport XML<span class="sr-only"> — pobierz strukturę tego menu</span>
+                            </a>
+                        @endif
+                        <div class="relative" x-data="{ addOpen: false, items() { return [...this.$refs.addMenu.querySelectorAll('[role=menuitem]')] }, focusAt(i) { const l = this.items(); l[(i + l.length) % l.length]?.focus() }, openAdd(i) { this.addOpen = true; setTimeout(() => this.focusAt(i), 30) }, closeAdd(back) { this.addOpen = false; if (back) this.$refs.addBtn.focus() } }"
+                            @keydown.escape.stop="if (addOpen) closeAdd(true)" @click.outside="addOpen = false">
+                            <button type="button" x-ref="addBtn" @click="addOpen ? closeAdd(false) : openAdd(0)" @keydown.arrow-down.prevent="openAdd(0)" @keydown.arrow-up.prevent="openAdd(-1)"
+                                aria-haspopup="menu" :aria-expanded="addOpen.toString()" aria-expanded="false" aria-controls="nav-add-menu"
+                                class="inline-flex shrink-0 items-center rounded-md bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
+                                style="min-height:2.25rem;padding:.375rem .875rem;gap:.375rem">
+                                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj<span class="sr-only"> do menu</span>
+                                <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="addOpen && 'rotate-180'" aria-hidden="true"></i>
+                            </button>
+                            <div id="nav-add-menu" x-ref="addMenu" role="menu" aria-label="Dodaj do menu" x-show="addOpen" x-cloak
+                                @keydown.arrow-down.prevent="focusAt(items().indexOf(document.activeElement) + 1)"
+                                @keydown.arrow-up.prevent="focusAt(items().indexOf(document.activeElement) - 1)"
+                                @keydown.home.prevent="focusAt(0)" @keydown.end.prevent="focusAt(-1)" @keydown.tab="addOpen = false"
+                                class="absolute right-0 top-full z-30 mt-1 rounded-lg border border-gray-200 bg-white py-1.5 shadow-xl" style="min-width:15rem">
+                                <button type="button" role="menuitem" tabindex="-1" @click="closeAdd(false); openCreate($event); trigger = $refs.addBtn" data-location="{{ $location }}" class="flex w-full items-center gap-2.5 rounded px-3 py-2 text-left text-sm font-bold text-ink hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none">
+                                    <i class="fa-solid fa-pen w-4 text-center text-gray-500" aria-hidden="true"></i> Nowa pozycja
+                                </button>
+                                @if (Route::has('admin.pozycje-menu.ze-stron'))
+                                    <button type="button" role="menuitem" tabindex="-1" @click="closeAdd(false); document.getElementById('nav-from-pages').showModal()" class="flex w-full items-center gap-2.5 rounded px-3 py-2 text-left text-sm font-bold text-ink hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none">
+                                        <i class="fa-solid fa-sitemap w-4 text-center text-gray-500" aria-hidden="true"></i> Ze stron<span class="sr-only"> — wybierz strony z drzewa stron</span>
+                                    </button>
+                                @endif
+                                @if (Route::has('admin.pozycje-menu.import-xml'))
+                                    <button type="button" role="menuitem" tabindex="-1" @click="closeAdd(false); document.getElementById('nav-import-xml').showModal()" class="flex w-full items-center gap-2.5 rounded px-3 py-2 text-left text-sm font-bold text-ink hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none">
+                                        <i class="fa-solid fa-file-import w-4 text-center text-gray-500" aria-hidden="true"></i> Z pliku XML
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div style="padding:.5rem">
                     @forelse ($navItems as $index => $item)
@@ -118,6 +145,51 @@
                         class="h-[26rem] w-full rounded border border-gray-200 bg-white"></iframe>
                 </div>
             </details>
+        @endif
+
+        {{-- ── Okno „Z pliku XML”: import struktury menu (pozycje dopisywane na końcu) ── --}}
+        @if (Route::has('admin.pozycje-menu.import-xml'))
+            <dialog id="nav-import-xml" aria-labelledby="nav-import-xml-title" aria-describedby="nav-import-xml-desc" class="m-auto overflow-hidden rounded-md bg-white p-0 text-ink backdrop:bg-black/50" style="width:min(36rem,calc(100vw - 2rem))">
+                <form method="POST" action="{{ route('admin.pozycje-menu.import-xml') }}" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="location" value="{{ $location }}">
+                    <div class="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
+                        <h2 id="nav-import-xml-title" class="text-lg font-bold">Dodaj pozycje z pliku XML</h2>
+                        <button type="button" onclick="this.closest('dialog').close()" class="rounded p-2 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="sr-only">Zamknij</span></button>
+                    </div>
+                    <div class="space-y-4 px-5 py-4">
+                        <p id="nav-import-xml-desc" class="text-sm text-ink">
+                            Wczytaj plik z „Eksport XML” (także z innej witryny). Pozycje zostaną <strong>dopisane na końcu</strong> menu „{{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}” — obecne pozostaną bez zmian.
+                            @if ($location !== 'main') Podpozycje z pliku trafią na ten sam poziom (to menu nie ma podmenu). @endif
+                        </p>
+                        <div>
+                            <label for="nav-import-file" class="mb-1 block text-sm font-bold">Plik XML</label>
+                            <input id="nav-import-file" type="file" name="xml" accept=".xml,application/xml,text/xml" required
+                                class="block w-full text-sm text-ink file:mr-3 file:rounded file:border-0 file:bg-brand-light file:px-3 file:py-2 file:text-sm file:font-bold file:text-brand-dark">
+                            @error('xml') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        </div>
+                        @if ($location === 'main' && $parentOptions->isNotEmpty())
+                            <div>
+                                <label for="nav-import-parent" class="mb-1 block text-sm font-bold">Gdzie dodać</label>
+                                <select id="nav-import-parent" name="parent_id" class="w-full rounded-md border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                                    <option value="">Jako pozycje główne menu</option>
+                                    @foreach ($parentOptions as $po)
+                                        <option value="{{ $po->id }}">Pod „{{ $po->label }}”</option>
+                                    @endforeach
+                                </select>
+                                @error('parent_id') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                            </div>
+                        @endif
+                    </div>
+                    <div class="flex items-center gap-3 border-t border-gray-100 px-5 py-4">
+                        <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Importuj</button>
+                        <button type="button" onclick="this.closest('dialog').close()" class="rounded px-2 py-2 text-sm text-muted hover:text-brand-dark">Anuluj</button>
+                    </div>
+                </form>
+            </dialog>
+            @if ($errors->has('xml'))
+                <script>document.addEventListener('DOMContentLoaded', () => document.getElementById('nav-import-xml')?.showModal());</script>
+            @endif
         @endif
 
         {{-- ── Okno „Dodaj strony”: wybór kilku stron z drzewa ── --}}

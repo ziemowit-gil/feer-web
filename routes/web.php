@@ -698,6 +698,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::patch('pozycje-menu/{navItem}/przenies', [NavItemController::class, 'move'])->name('pozycje-menu.przenies');
         Route::post('pozycje-menu/kolejnosc', [NavItemController::class, 'reorder'])->name('pozycje-menu.reorder');
         Route::post('pozycje-menu/ze-stron', [NavItemController::class, 'storeFromPages'])->name('pozycje-menu.ze-stron');
+        Route::get('pozycje-menu/eksport-xml', [\App\Http\Controllers\Admin\NavItemXmlController::class, 'export'])->name('pozycje-menu.eksport-xml');
+        Route::post('pozycje-menu/import-xml', [\App\Http\Controllers\Admin\NavItemXmlController::class, 'import'])->name('pozycje-menu.import-xml');
         Route::resource('koordynatorzy', \App\Http\Controllers\Admin\CoordinatorController::class)->except('show');
         Route::patch('pozycje-menu/{navItem}/aktywna', [NavItemController::class, 'toggleActive'])->name('pozycje-menu.aktywna');
 
