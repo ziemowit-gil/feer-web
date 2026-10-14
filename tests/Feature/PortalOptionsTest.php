@@ -196,7 +196,8 @@ class PortalOptionsTest extends TestCase
         preg_match('#<main.*</main>#s', $html, $main);
         $text = mb_strtolower(strip_tags($main[0] ?? ''));
         $this->assertStringNotContainsString('działa', $text);
-        $this->assertStringContainsString('w tym obszarze', $text);
+        $this->assertStringNotContainsString('obszar', $text);
+        $this->assertStringContainsString('co proponujemy', $text);
 
         $this->actingAs($this->admin())->put(route('admin.kategorie.update', $category), [
             'name' => 'Szkolenia i warsztaty', 'slug' => 'szkolenia-opcje-test', 'portal_slug' => 'opcjetest',
@@ -209,6 +210,6 @@ class PortalOptionsTest extends TestCase
         $this->assertSame(['all_link' => 'Pełna oferta szkoleń', 'stay_ask' => 'Pytania o szkolenia? Napisz.'], $category->fresh()->portal_options['labels']);
         $this->get('/portal/opcjetest')->assertOk()
             ->assertSee('Nasze szkolenia')->assertSee('Pełna oferta szkoleń')->assertSee('Pytania o szkolenia? Napisz.')
-            ->assertDontSee('Zobacz wszystko w tym obszarze');
+            ->assertDontSee('Zobacz pełną listę');
     }
 }

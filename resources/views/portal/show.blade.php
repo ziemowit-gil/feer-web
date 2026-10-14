@@ -1,7 +1,7 @@
 @extends('layouts.site')
 
 {{--
-    Portal kategorii działań (/portal/{adres}) — informuje o jednym obszarze działalności fundacji:
+    Portal kategorii działań (/portal/{adres}) — informuje o jednej dziedzinie pracy fundacji:
     komunikat (opcjonalnie), tytuł i wstęp, slider, obok menu działań kategorii z rozwijanymi podstronami i „Na skróty”,
     niżej widżety w kolejności z panelu (aktualności, kontakt, wydarzenia…), na końcu „Pozostańmy w kontakcie”.
     Treści edytowalne w panelu (Działania → Kategorie → Portal kategorii); puste elementy się nie pokazują.

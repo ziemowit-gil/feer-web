@@ -67,7 +67,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * Edytowalne elementy portalu (komunikat, „Na skróty”, kontakt do obszaru, „Pozostańmy w kontakcie”,
+     * Edytowalne elementy portalu (komunikat, „Na skróty”, kontakt do zespołu portalu, „Pozostańmy w kontakcie”,
      * nagłówki widżetów). Puste pola nie są zapisywane — portal pokazuje wtedy domyślną treść albo nic.
      */
     private function portalOptions(Request $request): array

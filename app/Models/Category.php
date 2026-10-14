@@ -20,7 +20,7 @@ class Category extends Model
     public const PORTAL_WIDGETS = [
         'projects' => 'Działania z kategorii (kafelki)',
         'news'     => 'Aktualności z działań kategorii',
-        'contact'  => 'Kontakt — do obszaru i koordynatorzy działań',
+        'contact'  => 'Kontakt — zespół portalu i koordynatorzy działań',
         'events'   => 'Najbliższe szkolenia i wydarzenia',
         'rss'      => 'Zewnętrzny kanał RSS',
         'stats'    => 'Liczby (działania, aktualności, wydarzenia)',
@@ -28,7 +28,7 @@ class Category extends Model
 
     /** Domyślne nagłówki widżetów portalu (w panelu można je nadpisać, puste pole = domyślny). */
     public const PORTAL_WIDGET_TITLES = [
-        'projects' => 'W tym obszarze',
+        'projects' => 'Co proponujemy',
         'news'     => 'Aktualności',
         'contact'  => 'Kontakt',
         'events'   => 'Najbliższe szkolenia i wydarzenia',
@@ -38,7 +38,7 @@ class Category extends Model
 
     /**
      * Ustawienie portalu z kolumny portal_options: notice, notice_link_label, notice_link_url,
-     * shortcuts (lista [label, url]), contact_text, contact_email, contact_phone (kontakt do obszaru),
+     * shortcuts (lista [label, url]), contact_text, contact_email, contact_phone (kontakt do zespołu portalu),
      * stay_enabled, stay_title, stay_text, titles (klucz widżetu => nagłówek).
      */
     public function portalOption(string $key, mixed $default = null): mixed
@@ -145,13 +145,13 @@ class Category extends Model
     }
 
     /**
-     * Nazwy i krótkie teksty na portalu (klucz => [opis w panelu, domyślna treść]). Portal mówi o obszarze
-     * działalności, nie o „działaniach”, więc domyślne treści są neutralne, a każdą można zmienić w panelu.
+     * Nazwy i krótkie teksty na portalu (klucz => [opis w panelu, domyślna treść]). Portal mówi językiem odbiorców,
+     * nie o „działaniach”, więc domyślne treści są neutralne, a każdą można zmienić w panelu.
      */
     public const PORTAL_LABELS = [
         'overview'     => ['Pierwszy link w rozwiniętym podmenu', 'Informacje ogólne'],
         'slide_button' => ['Przycisk na slajdach tworzonych automatycznie', 'Dowiedz się więcej'],
-        'all_link'     => ['Domyślny skrót do pełnej listy', 'Zobacz wszystko w tym obszarze'],
+        'all_link'     => ['Domyślny skrót do pełnej listy', 'Zobacz pełną listę'],
         'nav_empty'    => ['Gdy menu jest puste', 'Wkrótce pojawią się tu nowe informacje.'],
         'stay_ask'     => ['„Napisz do nas” w sekcji na końcu', 'Masz pytanie? Odpowiemy tak szybko, jak to możliwe.'],
         'stay_rss'     => ['„RSS” w sekcji na końcu', 'Śledź nowości z tego portalu w czytniku RSS.'],
@@ -178,7 +178,7 @@ class Category extends Model
 
     /**
      * Widżety włączone, dopóki w panelu nie zapisano własnego wyboru: portal ma przede wszystkim informować
-     * o obszarze działalności (wstęp, działania, kontakt), więc bez liczb i bez RSS, który wymaga adresu kanału.
+     * o tym, czym zajmuje się fundacja (wstęp, działania, kontakt), więc bez liczb i bez RSS, który wymaga adresu kanału.
      */
     public static function defaultPortalWidgets(): array
     {

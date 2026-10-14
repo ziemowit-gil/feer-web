@@ -1,4 +1,4 @@
-{{-- Widżet portalu: kontakt do obszaru (z panelu) i koordynatorzy działań kategorii. --}}
+{{-- Widżet portalu: kontakt do zespołu portalu (z panelu) i koordynatorzy działań kategorii. --}}
 @php
     $areaText = $category->portalOption('contact_text');
     $areaEmail = $category->portalOption('contact_email');

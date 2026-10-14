@@ -76,7 +76,7 @@
                 <div>
                     <label for="portal_intro" class="mb-1 block text-sm font-bold">Wstęp</label>
                     <textarea id="portal_intro" name="portal_intro" rows="6" aria-describedby="portal_intro_help" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('portal_intro', $category->portal_intro) }}</textarea>
-                    <p id="portal_intro_help" class="mt-1 text-xs text-muted">Czym fundacja zajmuje się w tym obszarze i dla kogo. Akapity oddzielaj pustą linią.</p>
+                    <p id="portal_intro_help" class="mt-1 text-xs text-muted">Czym się tu zajmujemy, dla kogo i jak można skorzystać. Akapity oddzielaj pustą linią.</p>
                     @error('portal_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
@@ -150,7 +150,7 @@
                     </fieldset>
 
                     <fieldset class="space-y-4">
-                        <legend class="mb-1 text-sm font-bold">Kontakt do obszaru <span class="font-normal text-muted">(widżet „Kontakt”, obok koordynatorów działań)</span></legend>
+                        <legend class="mb-1 text-sm font-bold">Kontakt do zespołu portalu <span class="font-normal text-muted">(widżet „Kontakt”, obok koordynatorów działań)</span></legend>
                         <div>
                             <label for="portal_contact_text" class="mb-1 block text-sm">Kilka słów zachęty</label>
                             <textarea id="portal_contact_text" name="portal_options[contact_text]" rows="2" maxlength="1000" placeholder="np. Masz pytanie o szkolenia? Napisz albo zadzwoń." class="{{ $input }}">{{ $opt('contact_text') }}</textarea>
@@ -339,7 +339,7 @@
 
                     <fieldset>
                         <legend class="mb-1 text-sm font-bold">Nagłówki i nazwy na portalu <span class="font-normal text-muted">(puste = domyślne)</span></legend>
-                        <p class="mb-2 text-xs text-muted">Portal opowiada o obszarze działalności — nazwij sekcje tak, jak mówią o nich odbiorcy (np. „Nasze szkolenia”, „Materiały”).</p>
+                        <p class="mb-2 text-xs text-muted">Nazwij sekcje tak, jak mówią o nich odbiorcy (np. „Nasze szkolenia”, „Materiały”).</p>
                         <div class="grid gap-3 sm:grid-cols-2">
                             @foreach (\App\Models\Category::PORTAL_WIDGET_TITLES as $wKey => $wDefault)
                                 <div>
