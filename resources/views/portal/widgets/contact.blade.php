@@ -12,7 +12,7 @@
         <span class="mt-2 block h-1 w-12 bg-brand" aria-hidden="true"></span>
         <div class="mt-6 grid gap-8 {{ $hasArea && $coordinators->isNotEmpty() && ! ($compact ?? false) ? 'lg:grid-cols-[20rem_minmax(0,1fr)]' : '' }}">
             @if ($hasArea)
-                <div class="rounded-md bg-brand-light p-6 text-ink">
+                <div class="rounded-md bg-gray-50 p-6 text-ink">
                     @if ($areaText)<p class="text-lg leading-relaxed">{{ $areaText }}</p>@endif
                     <ul role="list" class="{{ $areaText ? 'mt-4' : '' }} space-y-2">
                         @if ($areaEmail)

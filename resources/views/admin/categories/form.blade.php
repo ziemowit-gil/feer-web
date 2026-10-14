@@ -191,7 +191,7 @@
                         </div>
                         <ol role="list" class="space-y-2">
                             <template x-for="(row, i) in rows" :key="i">
-                                <li class="grid items-center gap-2 rounded bg-gray-50 p-2 sm:grid-cols-[1fr_1fr_10rem_auto]">
+                                <li class="grid items-center gap-2 rounded bg-gray-50 p-2 sm:grid-cols-2">
                                     <label class="sr-only" :for="'sc_label_' + i" x-text="'Nazwa, pozycja ' + (i + 1)"></label>
                                     <input type="text" :id="'sc_label_' + i" :x-ref="'sc' + i" x-model="row.label" maxlength="120" placeholder="Nazwa, np. Zapisz się" class="{{ $input }} text-sm">
                                     <label class="sr-only" :for="'sc_url_' + i" x-text="'Adres, pozycja ' + (i + 1)"></label>
@@ -202,7 +202,7 @@
                                             <option value="{{ $iconClass }}">{{ $iconLabel }}</option>
                                         @endforeach
                                     </select>
-                                    <span class="flex items-center">
+                                    <span class="flex items-center justify-end">
                                         <button type="button" @click="move(i, -1)" :disabled="i === 0" class="rounded p-2 text-xs text-ink hover:bg-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'W górę: ' + (row.label || 'pozycja ' + (i + 1))"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
                                         <button type="button" @click="move(i, 1)" :disabled="i === rows.length - 1" class="rounded p-2 text-xs text-ink hover:bg-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'W dół: ' + (row.label || 'pozycja ' + (i + 1))"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
                                         <button type="button" @click="rows.splice(i, 1)" class="rounded p-2 text-xs text-red-700 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'Usuń: ' + (row.label || 'pozycja ' + (i + 1))"><i class="fa-regular fa-trash-can" aria-hidden="true"></i></button>
@@ -262,7 +262,7 @@
                                         <button type="button" @click="move(i, 1)" :disabled="i === rows.length - 1" class="rounded p-2 text-xs text-ink hover:bg-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'W dół: ' + name(row)"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
                                         <button type="button" x-show="row.type === 'link'" @click="rows.splice(i, 1)" class="rounded p-2 text-xs text-red-700 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" :aria-label="'Usuń: ' + name(row)"><i class="fa-regular fa-trash-can" aria-hidden="true"></i></button>
                                     </div>
-                                    <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]" x-show="row.type === 'project'">
+                                    <div class="mt-2 grid items-center gap-2 sm:grid-cols-2" x-show="row.type === 'project'">
                                         <div>
                                             <label class="sr-only" :for="'nav_label_' + i" x-text="'Nazwa w menu: ' + name(row)"></label>
                                             <input type="text" :id="'nav_label_' + i" x-model="row.label" maxlength="120" :placeholder="'Nazwa w menu (puste = ' + name(row) + ')'" class="{{ $input }} text-sm">
@@ -271,7 +271,7 @@
                                             <label class="sr-only" :for="'nav_subs_' + i" x-text="'Podstrony: ' + name(row)"></label>
                                             <select :id="'nav_subs_' + i" x-model="row.subs" :disabled="! names[row.id]?.pages" class="{{ $input }} text-sm">
                                                 @foreach (\App\Models\Category::PORTAL_NAV_SUBS as $subsKey => $subsLabel)
-                                                    <option value="{{ $subsKey }}">Podstrony: {{ $subsLabel }}</option>
+                                                    <option value="{{ $subsKey }}">{{ $subsLabel }}</option>
                                                 @endforeach
                                             </select>
                                         </div>

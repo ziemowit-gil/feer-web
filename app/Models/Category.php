@@ -89,9 +89,9 @@ class Category extends Model
 
     /** Jak menu portalu pokazuje podstrony działania. */
     public const PORTAL_NAV_SUBS = [
-        'collapsed' => 'Rozwijane (zwinięte)',
-        'expanded'  => 'Rozwinięte',
-        'none'      => 'Bez podstron — link do działania',
+        'collapsed' => 'Podstrony zwinięte',
+        'expanded'  => 'Podstrony rozwinięte',
+        'none'      => 'Bez podstron',
     ];
 
     /** Ustawienie układu portalu (z dozwolonych wartości, inaczej pierwsza = domyślna). */
