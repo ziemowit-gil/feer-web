@@ -7,6 +7,16 @@
     partial obsługuje modal (dynamiczne dane) i zapasową stronę formularza.
 --}}
 
+{{-- Dwie kolumny od 768 px (pola parami), na telefonie jedna. Styl wbudowany — działa bez przebudowy CSS.
+     .nav-wide zajmuje cały rząd (bloki z wieloma kontrolkami). --}}
+<style>
+    .nav-form-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem 1.5rem; align-items: start; }
+    @media (min-width: 768px) {
+        .nav-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .nav-form-grid > .nav-wide { grid-column: 1 / -1; }
+    }
+</style>
+
 {{-- Formularz podzielony na zakładki: Podstawowe · Wygląd · Menu rozwijane i przyciski. Pola ukrytych zakładek nadal są w formularzu (x-show), więc zapis obejmuje wszystko. --}}
 <div x-data="{ tab: 'basic' }"
      x-effect="if ((tab === 'look' && ! (form.location === 'main')) || (tab === 'media' && ! (form.location === 'main' && form.parentId === '' && form.isMega)) || (tab === 'drop' && ! (form.location === 'main' && form.parentId === '' && (form.isMega || ['dropdown', 'projects', 'pages', 'link'].includes(form.type))))) tab = 'basic'"
@@ -39,7 +49,7 @@
         </button>
     </div>
 
-    <div id="nav-panel-basic" role="tabpanel" aria-labelledby="nav-tab-basic" x-show="tab === 'basic'" class="space-y-5">
+    <div id="nav-panel-basic" role="tabpanel" aria-labelledby="nav-tab-basic" x-show="tab === 'basic'" class="nav-form-grid">
 <div>
     <label for="nav-location" class="mb-1 block text-sm font-bold">Lokalizacja</label>
     <select id="nav-location" name="location" x-model="form.location"
@@ -157,7 +167,7 @@
 </div>
 
 
-<label class="flex items-center gap-2">
+<label class="nav-wide flex items-center gap-2">
     <input type="checkbox" name="is_active" value="1" x-model="form.isActive"
         class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     <span class="text-sm font-bold">Widoczna w menu</span>
@@ -165,7 +175,7 @@
 
     </div>
 
-    <div id="nav-panel-look" role="tabpanel" aria-labelledby="nav-tab-look" x-show="tab === 'look'" x-cloak class="space-y-5">
+    <div id="nav-panel-look" role="tabpanel" aria-labelledby="nav-tab-look" x-show="tab === 'look'" x-cloak class="nav-form-grid">
 <label class="flex items-center gap-2" x-show="(form.type === 'link' || form.type === 'volunteering') && form.parentId === ''" x-cloak>
     <input type="checkbox" name="is_button" value="1" x-model="form.isButton"
         class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
@@ -188,7 +198,7 @@
     @error('button_color') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
-<div x-show="form.location === 'main' && form.parentId === '' && !form.isButton" x-cloak>
+<div class="nav-wide" x-show="form.location === 'main' && form.parentId === '' && !form.isButton" x-cloak>
     @if (\Illuminate\Support\Facades\Schema::hasColumn('nav_items', 'highlight'))
         <input type="hidden" name="highlight" value="0">
         <label class="mb-4 flex cursor-pointer items-start gap-2 text-sm">
@@ -227,7 +237,7 @@
     @error('description') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
-<label class="flex items-start gap-2" x-show="form.location === 'main' && form.parentId !== ''" x-cloak>
+<label class="nav-wide flex items-start gap-2" x-show="form.location === 'main' && form.parentId !== ''" x-cloak>
     <input type="checkbox" name="is_column_heading" value="1" x-model="form.isHeading"
         aria-describedby="nav-heading-help"
         class="mt-0.5 rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
@@ -239,8 +249,8 @@
 
     </div>
 
-    <div id="nav-panel-drop" role="tabpanel" aria-labelledby="nav-tab-drop" x-show="tab === 'drop'" x-cloak class="space-y-5">
-<label class="flex items-start gap-2" x-show="form.location === 'main' && form.parentId === '' && (form.type === 'dropdown' || form.type === 'link' || form.type === 'projects')" x-cloak>
+    <div id="nav-panel-drop" role="tabpanel" aria-labelledby="nav-tab-drop" x-show="tab === 'drop'" x-cloak class="nav-form-grid">
+<label class="nav-wide flex items-start gap-2" x-show="form.location === 'main' && form.parentId === '' && (form.type === 'dropdown' || form.type === 'link' || form.type === 'projects')" x-cloak>
     <input type="checkbox" name="is_mega" value="1" x-model="form.isMega"
         class="mt-0.5 rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     <span>
@@ -282,7 +292,7 @@
     @error('mega_size') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
-<div x-show="(form.isMega || ['dropdown', 'projects', 'pages'].includes(form.type)) && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 p-4 rounded-md bg-white">
+<div x-show="(form.isMega || ['dropdown', 'projects', 'pages'].includes(form.type)) && form.location === 'main' && form.parentId === ''" x-cloak class="nav-wide space-y-3 p-4 rounded-md bg-white">
     <p class="text-xs font-bold uppercase tracking-wide text-muted">Własne linki i przyciski w menu rozwijanym (karta boczna mega menu / pod listą)</p>
     <div>
         <label for="nav-mega-side-title" class="mb-1 block text-xs font-bold text-muted">Tytuł karty <span class="font-normal">(opcjonalnie — puste = bez tytułu)</span></label>
@@ -331,7 +341,7 @@
     @error('mega_side_links.*.url') <p class="text-sm text-red-700">{{ $message }}</p> @enderror
 </div>
 
-<label class="flex items-center gap-2" x-show="form.type === 'dropdown' || form.type === 'projects' || form.type === 'pages'" x-cloak>
+<label class="nav-wide flex items-center gap-2" x-show="form.type === 'dropdown' || form.type === 'projects' || form.type === 'pages'" x-cloak>
     <input type="checkbox" name="is_transparent_dropdown" value="1" x-model="form.isTransparent"
         class="rounded border-gray-500 text-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
     <span class="text-sm font-bold">Przezroczyste tło rozwijanego panelu</span>
@@ -339,9 +349,9 @@
 
     </div>
 
-    <div id="nav-panel-media" role="tabpanel" aria-labelledby="nav-tab-media" x-show="tab === 'media'" x-cloak class="space-y-5">
-        <p class="text-sm text-muted" x-show="! form.isMega">Grafika promocyjna jest dostępna po włączeniu mega menu (zakładka „Menu rozwijane i przyciski”).</p>
-<div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak class="space-y-3 p-4 rounded-md bg-white">
+    <div id="nav-panel-media" role="tabpanel" aria-labelledby="nav-tab-media" x-show="tab === 'media'" x-cloak class="nav-form-grid">
+        <p class="nav-wide text-sm text-muted" x-show="! form.isMega">Grafika promocyjna jest dostępna po włączeniu mega menu (zakładka „Menu rozwijane i przyciski”).</p>
+<div x-show="form.isMega && form.location === 'main' && form.parentId === ''" x-cloak class="nav-wide space-y-3 p-4 rounded-md bg-white">
     <p class="text-xs font-bold uppercase tracking-wide text-muted">Grafika promocyjna w mega menu <span class="font-normal normal-case">(opcjonalnie — kolumna boczna nad opisem)</span></p>
     <template x-if="form.megaImage">
         <img :src="form.megaImage" alt="" class="h-24 w-full rounded-md border border-gray-200 object-cover">
