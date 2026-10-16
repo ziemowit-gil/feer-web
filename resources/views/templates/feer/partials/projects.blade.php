@@ -45,6 +45,8 @@
                 </li>
             @endforeach
         </ul>
+
+        @include('templates.feer.partials.projects-newsletter-cta')
     </div>
 </section>
 @endif
