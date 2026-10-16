@@ -27,7 +27,7 @@
                     </div>
                     <div class="flex flex-1 flex-col p-4">
                         @if ($post['date'])
-                            <p class="mb-1 text-xs font-bold uppercase tracking-wide text-muted">{{ $post['date']->translatedFormat('d MMMM Y') }}</p>
+                            <p class="mb-1 text-xs font-bold uppercase tracking-wide text-muted">{{ $post['date']->translatedFormat('j F Y') }}</p>
                         @endif
                         <h3 class="mb-1 font-bold text-ink group-hover:text-brand-dark group-hover:underline group-hover:underline-offset-4">{{ $post['title'] }}</h3>
                         @if ($post['excerpt'])

@@ -234,7 +234,7 @@ class HomeController extends Controller
                 $slides = $slides->take(1)->values();
             }
             return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home', $quickLinks)
-                ->with('gallery', $gallery)->with('heroSingle', $heroSingle);
+                ->with('gallery', $gallery)->with('heroSingle', $heroSingle)->with('substackPosts', $substackPosts);
         }
         if ($template === 'federation') {
             return $this->ngoHome($settings, $slides, $partners, 'templates.federation.home');

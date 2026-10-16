@@ -32,6 +32,8 @@
         @include('templates.feer.partials.news')
     @endif
     @include('templates.feer.partials.bands-slot', ['slot' => 'after_news'])
+    {{-- Wpisy z Substacka (blog przeniesiony z „Wiem FEER”) — tylko gdy w Ustawieniach podano adres Substacka. --}}
+    @include('partials.home.substack')
     @if ($siteSettings->isHomepageSectionEnabled('events'))
         @include('templates.feer.partials.trainings')
     @endif

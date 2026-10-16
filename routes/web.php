@@ -867,6 +867,13 @@ Route::middleware('module:forms')->group(function () {
     Route::get('/krs/{numer}', \App\Http\Controllers\KrsLookupController::class)->where('numer', '[0-9]{1,10}')->name('krs.lookup')->middleware('throttle:30,1');
 });
 
+// ── Dawny blog „Wiem FEER” → Substack ──────────────────────────────────────────
+// Gdy moduł bloga jest wyłączony, jego adresy przekierowujemy (przy włączonym wygrywają trasy modułu).
+// Przed sub-witrynami i catch-allem stron, żeby /wiem/… nie trafiło do witryny sieci „wiem” ani na 404.
+Route::get('/{blogPrefix}/{path?}', \App\Http\Controllers\BlogMovedController::class)
+    ->where(['blogPrefix' => 'wiem|blog|wiem-feer', 'path' => '.*'])
+    ->name('blog.moved');
+
 // ── Sub-witryny sieci (federacja + Ośrodki) ─────────────────────────────────
 // Ten sam zestaw podstawowych tras publicznych co na głównej witrynie, dostępny
 // pod trzema postaciami adresu: własna domena (zero zmian w routingu — patrz
