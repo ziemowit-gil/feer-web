@@ -61,8 +61,11 @@
     $nlShort = ['feer-1' => 'FEER-1 · klasyczny', 'feer-2' => 'FEER-2 · kolory marki'];
     // Szablon bazowy: ?szablon= (przełącznik w pasku) → kampania: zapisany w metadanych Mosaico → kolumna mosaico_template.
     $nlSaved = preg_match('#/templates/([a-z0-9-]+)/#', (string) data_get($subject->editor_metadata, 'template'), $nlM) ? $nlM[1] : null;
+    // Przełączenie szablonu: zapisany projekt ma motyw (kolory, style) poprzedniego szablonu — przy zmianie go pomijamy.
+    $nlSwitching = false;
     if (isset($nlTemplates[(string) request('szablon')])) {
         $mosaicoTemplate = request('szablon');
+        $nlSwitching = $nlSaved !== null && $nlSaved !== $mosaicoTemplate;
     } elseif ($subject instanceof \Modules\Newsletter\Models\NewsletterCampaign && $nlSaved && isset($nlTemplates[$nlSaved])) {
         $mosaicoTemplate = $nlSaved;
     }
@@ -234,6 +237,14 @@ $(function () {
         } catch (e) { console.error('Nagłówek z logo:', e); }
     }
 
+    // Po zmianie szablonu w pasku: bloki i treść zostają, motyw (kolory, czcionki, odstępy) bierzemy z nowego szablonu.
+    function savedContent() {
+        if (!@json($nlSwitching ?? false) || !saved.content) return saved.content;
+        var c = Object.assign({}, saved.content); delete c.theme;
+        setTimeout(function () { setStatus('Szablon zmieniony na ' + @json(strtoupper($mosaicoTemplate)) + ' — zapisz, aby zachować nowy wygląd.'); }, 500);
+        return c;
+    }
+
     var ok = Mosaico.init({
         imgProcessorBackend: @json(route('admin.newsletter.mosaico.image')),
         emailProcessorBackend: @json(route('admin.newsletter.mosaico.download')),
@@ -241,7 +252,7 @@ $(function () {
         fileuploadConfig: { url: @json(route('admin.newsletter.mosaico.upload')), headers: { 'X-CSRF-TOKEN': csrf } },
         strings: @json(json_decode(file_get_contents(public_path('vendor/mosaico/rs/lang/mosaico-pl.json')), true)),
         template: (saved.metadata && saved.content) ? undefined : templateUrl,
-        data: (saved.metadata && saved.content) ? { metadata: Object.assign({}, saved.metadata, { template: templateUrl }), content: saved.content } : undefined
+        data: (saved.metadata && saved.content) ? { metadata: Object.assign({}, saved.metadata, { template: templateUrl }), content: savedContent() } : undefined
     }, plugins);
     if (!ok) { document.getElementById('nl-status').textContent = 'Nie udało się uruchomić edytora.'; }
 

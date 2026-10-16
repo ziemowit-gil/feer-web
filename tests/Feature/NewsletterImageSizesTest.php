@@ -81,5 +81,10 @@ class NewsletterImageSizesTest extends TestCase
         ])->assertOk();
         $this->assertSame('feer-2', $template->fresh()->mosaico_template);
 
+        // Zapisany projekt w FEER-1 → przełączenie na FEER-2 wczytuje bloki bez starego motywu (kolory z nowego szablonu).
+        $template->update(['mosaico_template' => 'feer-1', 'editor_metadata' => ['template' => 'https://x/vendor/mosaico/templates/feer-1/template-feer-1.html'], 'editor_content' => ['type' => 'template', 'theme' => ['type' => 'theme']]]);
+        $this->actingAs($admin)->get(route('admin.newsletter.szablony.editor', $template) . '?szablon=feer-2')->assertOk()->assertSee('if (!true ||', false);
+        $this->actingAs($admin)->get(route('admin.newsletter.szablony.editor', $template))->assertOk()->assertSee('if (!false ||', false);
+
     }
 }
