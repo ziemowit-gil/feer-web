@@ -18,7 +18,8 @@
             @php $highlight = $siteSettings->wide_mission_highlight_account || $onBar; @endphp
             <span class="inline-flex min-h-9 items-center gap-1.5 {{ $onDark ? 'text-white' : ($highlight ? 'text-brand' : 'text-muted') }}">
                 <span class="font-medium {{ $highlight || $onDark ? '' : 'text-ink' }}">Nr konta:</span>
-                <span class="font-mono {{ $highlight ? 'font-bold' : '' }} tracking-wide">{{ $siteSettings->bank_account_number }}</span>
+                {{-- Na ciemnym pasku FEER numer spokojniej: zwykła grubość, jasnoszary (#D1D5DB na #1D1D1A ≈ 12:1). --}}
+                <span class="font-mono {{ $onDark ? 'font-normal text-gray-300' : ($highlight ? 'font-bold' : '') }} tracking-wide">{{ $siteSettings->bank_account_number }}</span>
             </span>
         @endif
 

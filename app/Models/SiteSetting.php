@@ -134,7 +134,7 @@ class SiteSetting extends Model implements HasMedia
      */
     public const SOCIAL_KEYS = [
         'facebook'       => ['label' => 'Facebook',        'icon' => 'bi bi-facebook'],
-        'facebook_group' => ['label' => 'Grupa Facebook',  'icon' => 'bi bi-people-fill'],
+        'facebook_group' => ['label' => 'Grupa na Facebooku', 'icon' => 'bi bi-people-fill'],
         'instagram'      => ['label' => 'Instagram',       'icon' => 'bi bi-instagram'],
         'youtube'        => ['label' => 'YouTube',         'icon' => 'bi bi-youtube'],
         'linkedin'       => ['label' => 'LinkedIn',        'icon' => 'bi bi-linkedin'],

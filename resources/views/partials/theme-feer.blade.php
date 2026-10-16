@@ -158,6 +158,17 @@
     .site-header nav > div > ul:not(.nav-pills) > li > a, .site-header nav > div > ul:not(.nav-pills) > li > button,
     .site-header nav > div > ul:not(.nav-pills) > li > div > a, .site-header nav > div > ul:not(.nav-pills) > li > div > button { font-size: clamp(1.0625rem, 1.3vw, 1.3125rem); }
 
+    /* Menu w dwóch rzędach: aktywna i najechana pozycja z podkreśleniem 3 px w kolorze marki (#1E6DFF na bieli 4,48:1 — element graficzny ≥ 3:1). */
+    .feer-nav > div > ul > li > a, .feer-nav > div > ul > li > button, .feer-nav > div > ul > li > div.border-b-2 { border-bottom-width: 3px; }
+    .feer-nav > div > ul > li > a:hover, .feer-nav > div > ul > li > button:hover, .feer-nav > div > ul > li > div.border-b-2:hover,
+    .feer-nav > div > ul > li > a[aria-current="page"], .feer-nav > div > ul > li > a.border-brand, .feer-nav > div > ul > li > button.border-brand,
+    .feer-nav > div > ul > li > div.border-b-2.border-brand { border-bottom-color: var(--color-brand) !important; }
+
+    /* Ikony social w nagłówku: podpis pod ikoną po najechaniu i przy fokusie z klawiatury (biały tekst na #1D1D1A, 16,9:1). */
+    .feer-social-tip { position: absolute; top: calc(100% + .375rem); left: 50%; transform: translateX(-50%); z-index: 40; white-space: nowrap;
+        border-radius: .375rem; background: #1d1d1a; color: #fff; padding: .25rem .5rem; font-size: .75rem; font-weight: 700; line-height: 1.2; pointer-events: none; opacity: 0; visibility: hidden; }
+    .feer-social a:hover .feer-social-tip, .feer-social a:focus-visible .feer-social-tip { opacity: 1; visibility: visible; }
+
     /* Pasek górny (dostępność, konto, wyszukiwarka, BIP, social): jeden smukły, ciemny rząd — biały tekst na #1D1D1A (16,9:1). */
     .site-topbar-feer > div:first-child { padding-top: .125rem; padding-bottom: .125rem; }
     .site-topbar-feer > div:first-child a,

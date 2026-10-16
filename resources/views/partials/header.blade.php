@@ -216,7 +216,8 @@
     <div @class(['relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 lg:gap-12', 'py-4' => ! $handBrand, 'py-3' => $handBrand])>
         <a href="{{ site_home_url() }}" class="flex min-w-0 items-center {{ $handBrand ? 'gap-3 sm:gap-4' : 'gap-3' }} rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 {{ $inlineOnBrand ? 'focus-visible:ring-white focus-visible:ring-offset-brand' : 'focus-visible:ring-brand' }}" aria-label="{{ $siteSettings->site_name }} — strona główna">
             @if ($siteSettings->logoUrl())
-                <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}" class="h-12 w-auto max-w-[16rem] flex-none rounded object-contain {{ $inlineOnBrand ? 'bg-white p-1' : '' }}">
+                {{-- Szablon FEER: logo o ~15% większe (rząd z logo ma sporo wolnego miejsca). --}}
+                <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->logoAltText() }}" class="{{ ($siteSettings->site_template ?? 'default') === 'feer' ? 'h-14' : 'h-12' }} w-auto max-w-[16rem] flex-none rounded object-contain {{ $inlineOnBrand ? 'bg-white p-1' : '' }}" @if (($siteSettings->site_template ?? 'default') === 'feer') style="max-width:18.5rem" @endif>
             @else
                 <span class="flex h-11 w-11 flex-none items-center justify-center rounded text-xl font-bold {{ $inlineOnBrand ? 'bg-white text-brand' : 'bg-brand text-white' }}" aria-hidden="true">{{ mb_substr($siteSettings->site_name, 0, 1) }}</span>
             @endif
@@ -253,13 +254,15 @@
             @if ($feerMaterials || $feerSocials)
                 <div class="hidden items-center gap-3 lg:flex">
                     @if ($feerSocials)
-                        <ul class="flex items-center gap-1" role="list" aria-label="Media społecznościowe">
+                        {{-- Ikony z widocznym podpisem po najechaniu i przy fokusie z klawiatury (.feer-social-tip w theme-feer). --}}
+                        <ul class="feer-social flex items-center gap-2" role="list" aria-label="Media społecznościowe">
                             @foreach ($feerSocials as [$socialUrl, $socialIcon, $socialLabel])
-                                <li>
+                                <li class="relative">
                                     <a href="{{ $socialUrl }}" target="_blank" rel="noopener"
                                        class="flex h-11 w-11 items-center justify-center rounded-md text-xl text-ink transition hover:bg-brand-light hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                                        aria-label="{{ $socialLabel }} — otwiera się w nowej karcie">
                                         <i class="{{ $socialIcon }}" aria-hidden="true"></i>
+                                        <span class="feer-social-tip" aria-hidden="true">{{ $socialLabel }}</span>
                                     </a>
                                 </li>
                             @endforeach
@@ -269,7 +272,8 @@
                         <a href="{{ site_route('materials.index') }}"
                            @class([
                                'inline-flex min-h-11 flex-none items-center gap-2 rounded-md px-5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2',
-                               'bg-ink text-white hover:bg-brand-dark' => ! $handBrand,
+                               // Kolor marki zamiast czerni — przycisk widoczny, ale nie konkuruje z menu (brand-dark na brand-light ≥ 4,5:1).
+                               'bg-brand-light text-brand-dark hover:bg-brand-dark hover:text-white' => ! $handBrand,
                                'border-2 border-solid border-ink bg-white text-ink hover:bg-ink hover:text-white' => $handBrand,
                            ])>
                             <i class="fa-solid fa-book-open" aria-hidden="true"></i>
@@ -297,7 +301,7 @@
     </div>
 
     @if ($feerTwoRows)
-        <nav aria-label="Menu główne" @class(['relative hidden bg-white lg:block', 'border-y border-gray-100' => ! $handBrand, 'border-t border-b-2 border-solid border-t-gray-100 border-b-brand-light' => $handBrand])>
+        <nav aria-label="Menu główne" @class(['feer-nav relative hidden bg-white lg:block', 'border-y border-gray-100' => ! $handBrand, 'border-t border-b-2 border-solid border-t-gray-100 border-b-brand-light' => $handBrand])>
             <div class="mx-auto max-w-6xl px-4">
                 @include('partials.main-nav-items', ['onBrand' => false, 'navDarkText' => false, 'navSoft' => $handBrand])
             </div>
