@@ -267,13 +267,12 @@ class NewsletterForm extends Model
             'ask_name'        => true,
             'ask_phone'       => false,
             'show_topics'     => true,
-            'topics'          => ['news', 'events', 'materials', 'etr'],
+            'topics'          => ['news', 'events', 'materials'],
             'default_topics'  => ['news'],
             'benefits'        => [
                 'Aktualności z działań Fundacji FEER',
                 'Zaproszenia na szkolenia i wydarzenia',
                 'Materiały edukacyjne do wykorzystania w pracy',
-                'Teksty w wersji Łatwy Odczyt',
             ],
             'faq'             => [
                 ['q' => 'Jak często wysyłacie newsletter?', 'a' => 'Raz w miesiącu.'],

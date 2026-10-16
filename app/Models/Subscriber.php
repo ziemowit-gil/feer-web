@@ -100,7 +100,6 @@ class Subscriber extends Model
         'events'    => 'Szkolenia i wydarzenia',
         'blog'      => 'Blog Wiem FEER',
         'materials' => 'Materiały edukacyjne',
-        'etr'       => 'Łatwy Odczyt',
         'projects'  => 'Działania',
         'campaigns' => 'Kampanie zbiórkowe',
     ];

@@ -32,14 +32,13 @@ return new class extends Migration
             ['events', 'Szkolenia i wydarzenia', 'Zaproszenia na szkolenia, webinary i spotkania.', 'fa-calendar-days', ['events'], false],
             ['blog', 'Blog Wiem FEER', 'Nowe artykuły z bloga.', 'fa-pen-nib', ['blog'], false],
             ['materials', 'Materiały edukacyjne', 'Nowe materiały do pobrania.', 'fa-book-open', ['materials'], false],
-            ['etr', 'Treści ETR (Łatwy Odczyt)', 'Teksty łatwe do czytania i rozumienia.', 'fa-universal-access', ['news'], false],
             ['projects', 'Działania', 'Nowe działania i nabory.', 'fa-diagram-project', ['news'], false],
             ['campaigns', 'Kampanie zbiórkowe', 'Zbiórki i podsumowania wsparcia.', 'fa-hand-holding-heart', [], false],
         ];
         foreach ($seed as $i => [$key, $label, $desc, $icon, $sources, $default]) {
             DB::table('newsletter_topics')->insert([
                 'key' => $key, 'label' => $label, 'description' => $desc, 'icon' => $icon, 'feed_sources' => json_encode($sources),
-                'news_category_slugs' => json_encode($key === 'etr' ? ['etr', 'latwy-odczyt'] : ($key === 'projects' ? ['dzialania', 'projekty'] : [])),
+                'news_category_slugs' => json_encode($key === 'projects' ? ['dzialania', 'projekty'] : []),
                 'is_active' => true, 'is_default' => $default, 'order' => $i, 'created_at' => $now, 'updated_at' => $now,
             ]);
         }
