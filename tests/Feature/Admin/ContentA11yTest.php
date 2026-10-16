@@ -103,7 +103,7 @@ class ContentA11yTest extends TestCase
                 'title' => 'Strona', 'slug' => 'strona-szkic', 'type' => 'standard', 'is_published' => 1, 'draft' => 1,
                 'parent_id' => '', 'project_id' => '', 'order' => 0, 'content' => '<p>x</p>',
             ])
-            ->assertRedirect(route('admin.podstrony.edit', $page))
+            ->assertRedirect(route('admin.podstrony.edit', [$page, 'klasyczny' => 1]))
             ->assertSessionHas('status', fn ($status) => str_starts_with($status, 'Zapisano wersję roboczą'));
 
         $this->assertFalse((bool) $page->fresh()->is_published);

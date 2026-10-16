@@ -204,6 +204,11 @@ class ProjectController extends Controller
     {
         $data = $this->validated($request, $project->id);
         $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $project->id);
+        // Treść w blokach: formularz klasyczny jej nie zmienia (edycja tylko w edytorze blokowym).
+        if ($project->hasLockedBlockContent()) {
+            unset($data['content']);
+        }
+
 
         $project->update($data);
         $project->partners()->sync($request->input('partner_ids', []));

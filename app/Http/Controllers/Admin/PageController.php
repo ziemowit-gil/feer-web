@@ -610,6 +610,11 @@ class PageController extends Controller
 
         $data = $this->validated($request, $page);
 
+        // Treść w blokach: formularz klasyczny jej nie zmienia (edycja tylko w edytorze blokowym).
+        if ($page->hasLockedBlockContent()) {
+            unset($data['content']);
+        }
+
         if ($data['type'] === 'about_person') {
             $titleChanged  = Str::slug($data['title']) !== Str::slug($page->title);
             $parentChanged = (int) ($data['parent_id'] ?? 0) !== (int) $page->parent_id;
@@ -629,7 +634,7 @@ class PageController extends Controller
 
         $route = $page->isAboutPerson() ? 'admin.osoby.index' : 'admin.podstrony.index';
         // „Zapisz” (stay=1) zostaje w edytorze; „Zapisz i zamknij” wraca do listy.
-        $target = ($request->boolean('stay') || $request->boolean('draft')) ? redirect()->route($page->isAboutPerson() ? 'admin.podstrony.edit' : 'admin.podstrony.edit', $page) : redirect()->route($route);
+        $target = ($request->boolean('stay') || $request->boolean('draft')) ? redirect()->route('admin.podstrony.edit', [$page, 'klasyczny' => 1]) : redirect()->route($route);
 
         return $target
             ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '" została zaktualizowana.' : ($request->boolean('draft') ? 'Zapisano wersję roboczą — strona nie jest opublikowana.' : 'Strona została zaktualizowana.') . $notice . ContentA11yChecker::saveNotice($page->content))

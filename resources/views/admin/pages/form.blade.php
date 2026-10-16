@@ -142,21 +142,18 @@
                     <div data-content-field class="{{ in_array($currentType, ['about', 'bip_move', 'wspolpraca', 'contact'], true) || $isLinkType ? 'hidden' : '' }}" data-hide-for-link>
                         <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                             <label class="block text-sm font-bold">Treść</label>
-                            @if ($page->exists && \App\Models\SiteSetting::current()->isModuleEnabled('block_editor'))
+                            @if ($page->exists && ! $page->hasLockedBlockContent() && \App\Models\SiteSetting::current()->isModuleEnabled('block_editor'))
                                 <a href="{{ route('admin.podstrony.bloki.edit', $page) }}"
                                     class="inline-flex items-center gap-1.5 rounded border border-brand-dark px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                     <i class="fa-solid fa-cubes" aria-hidden="true"></i> Otwórz w edytorze blokowym
                                 </a>
                             @endif
                         </div>
-                        @if ($page->exists && is_array($page->blocks) && \App\Models\SiteSetting::current()->isModuleEnabled('block_editor'))
-                            <p class="mb-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900" role="note">
-                                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-                                Ta strona jest edytowana w edytorze blokowym. Zmiana treści tutaj zastąpi bloki zwykłym HTML-em —
-                                edytor blokowy wczyta ją potem jako jeden blok „Własny HTML”.
-                            </p>
-                        @endif
+                        @if ($page->hasLockedBlockContent())
+                            @include('admin.partials.block-locked-content', ['editUrl' => route('admin.podstrony.bloki.edit', $page), 'noun' => 'tej strony', 'html' => $page->content])
+                        @else
                         @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $page->content), 'revisionable' => $page->exists ? ['type' => 'page', 'id' => $page->id] : null])
+                        @endif
                         @error('content') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 

@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 
 class Page extends Model
 {
+    use \App\Models\Concerns\HasBlockContent;
     use Approvable;
     use \App\Models\Concerns\RedirectsOldSlug;
     use BelongsToSite;

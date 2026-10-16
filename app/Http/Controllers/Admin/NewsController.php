@@ -172,6 +172,11 @@ class NewsController extends Controller
     {
         $data = $this->validated($request, $news);
         $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $news->id);
+        // Treść w blokach: formularz klasyczny jej nie zmienia (edycja tylko w edytorze blokowym).
+        if ($news->hasLockedBlockContent()) {
+            unset($data['content']);
+        }
+
 
         $news->update($data);
 
@@ -196,6 +201,11 @@ class NewsController extends Controller
             // Treść z edytora WYSIWYG na stronie — tylko gdy przesłana (starsze paski jej nie wysyłają).
             'content' => ['sometimes', 'nullable', 'string'],
         ]);
+
+        // Treść w blokach: szybka edycja jej nie zmienia (tylko edytor blokowy).
+        if ($news->hasLockedBlockContent()) {
+            unset($data['content']);
+        }
 
         $news->update($data);
 

@@ -12,6 +12,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Project extends Model implements HasMedia
 {
+    use \App\Models\Concerns\HasBlockContent;
     use \App\Models\Concerns\Approvable;
     use \App\Models\Concerns\RedirectsOldSlug;
     use \App\Models\Concerns\BelongsToSite;

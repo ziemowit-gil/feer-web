@@ -102,6 +102,10 @@ class InlineEditController extends Controller
             ? $target['model']::current()
             : $target['model']::findOrFail($request->input('id'));
 
+        // Treść w blokach edytuje się tylko w edytorze blokowym — edycja na żywo nie może jej nadpisać.
+        abort_if($field === 'content' && method_exists($record, 'hasLockedBlockContent') && $record->hasLockedBlockContent(),
+            422, 'Treść jest edytowana w edytorze blokowym — zmień ją tam.');
+
         if ($isArrayItem) {
             $accessor = $target['array_fields'][$field]['accessor'];
             $items = $record->{$accessor}();
