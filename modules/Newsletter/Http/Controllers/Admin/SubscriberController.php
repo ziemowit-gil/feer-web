@@ -336,7 +336,8 @@ class SubscriberController extends Controller
             return back()->withErrors(['mapping.email' => 'Wskaż kolumnę z adresem e-mail.']);
         }
         $activeRows = (int) ($import->summary['by_status'][Subscriber::STATUS_CONFIRMED] ?? 0);
-        if ($activeRows > 0 && ! $import->option('resend_doi') && ! $import->option('has_consent')) {
+        // Z MailerLite zgody są już udokumentowane (data zapisu i IP) — oświadczenie tylko dla plików z innych systemów.
+        if ($activeRows > 0 && ! $import->isMailerLite() && ! $import->option('resend_doi') && ! $import->option('has_consent')) {
             return back()->withErrors(['has_consent' => "Import obejmuje {$activeRows} aktywnych adresów bez ponownego potwierdzenia — potwierdź, że masz udokumentowane zgody, albo zaznacz ponowne potwierdzenie (double opt-in)."]);
         }
         if ($activeRows > 0 && ! $import->isMailerLite() && ! $import->option('resend_doi') && blank($import->option('consent_source'))) {

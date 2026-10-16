@@ -90,7 +90,7 @@ class NewsletterMailerLiteImportTest extends TestCase
         $import = NewsletterImport::latest('id')->first();
 
         $this->actingAs($admin)->put(route('admin.newsletter.subskrybenci.import.update', $import), $options + [
-            'action' => 'run', 'has_consent' => 1, 'group_map' => ['111' => 'new_list'], 'topics' => ['news'],
+            'action' => 'run', 'group_map' => ['111' => 'new_list'], 'topics' => ['news'],
         ])->assertRedirect(route('admin.newsletter.subskrybenci.import.show', $import));
 
         return $import->fresh();
@@ -178,7 +178,7 @@ class NewsletterMailerLiteImportTest extends TestCase
     public function test_opcja_ponownego_potwierdzenia_wysyla_double_opt_in(): void
     {
         $this->fakeMailerLite();
-        $this->runApiImport($this->admin(), ['resend_doi' => 1, 'has_consent' => 0]);
+        $this->runApiImport($this->admin(), ['resend_doi' => 1]);
 
         $anna = Subscriber::findByEmail('anna@example.org');
         $this->assertSame(Subscriber::STATUS_PENDING, $anna->status);
@@ -186,14 +186,15 @@ class NewsletterMailerLiteImportTest extends TestCase
         Bus::assertDispatched(SendDoubleOptIn::class, 2); // Anna (aktywna) i Bartek (niepotwierdzony)
     }
 
-    public function test_bez_oswiadczenia_o_zgodach_aktywni_nie_sa_importowani(): void
+    public function test_plik_z_innego_systemu_bez_oswiadczenia_o_zgodach_nie_importuje_aktywnych(): void
     {
-        $this->fakeMailerLite();
         $admin = $this->admin();
-        $this->actingAs($admin)->post(route('admin.newsletter.subskrybenci.import.mailerlite'), ['token' => self::TOKEN]);
+        $this->actingAs($admin)->post(route('admin.newsletter.subskrybenci.import.store'), [
+            'file' => UploadedFile::fake()->createWithContent('lista.csv', "email,status\njan@example.org,active\n"),
+        ]);
         $import = NewsletterImport::latest('id')->first();
 
-        $this->actingAs($admin)->put(route('admin.newsletter.subskrybenci.import.update', $import), ['action' => 'run'])
+        $this->actingAs($admin)->put(route('admin.newsletter.subskrybenci.import.update', $import), ['action' => 'run', 'mapping' => $import->mapping, 'consent_source' => 'baza SZO'])
             ->assertSessionHasErrors('has_consent');
         $this->assertSame(NewsletterImport::STATUS_PREVIEW, $import->fresh()->status);
         $this->assertSame(0, Subscriber::count());
@@ -247,7 +248,7 @@ class NewsletterMailerLiteImportTest extends TestCase
 
         $topicKey = array_key_first(Subscriber::availableTopics());
         $this->actingAs($admin)->put(route('admin.newsletter.subskrybenci.import.update', $import), [
-            'action' => 'run', 'has_consent' => 1, 'mapping' => $import->mapping,
+            'action' => 'run', 'mapping' => $import->mapping,
             'group_map' => ['Wolontariusze' => 'new_list', 'Darczyńcy' => 'topic:'.$topicKey],
         ])->assertRedirect();
         $import->refresh();
@@ -290,7 +291,7 @@ class NewsletterMailerLiteImportTest extends TestCase
         $import = NewsletterImport::latest('id')->first();
 
         Bus::fake([RunSubscriberImport::class]);
-        $this->actingAs($admin)->put(route('admin.newsletter.subskrybenci.import.update', $import), ['action' => 'run', 'has_consent' => 1]);
+        $this->actingAs($admin)->put(route('admin.newsletter.subskrybenci.import.update', $import), ['action' => 'run']);
 
         Bus::assertDispatched(RunSubscriberImport::class, fn ($job) => $job->importId === $import->id && $job->queue === 'newsletter');
         $this->assertSame(NewsletterImport::STATUS_QUEUED, $import->fresh()->status);
