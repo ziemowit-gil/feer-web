@@ -33,6 +33,10 @@ class ListingSection extends Model
     /** HTML do wyświetlenia albo null, gdy miejsce jest puste lub ukryte. */
     public static function html(string $key): ?string
     {
+        // Kod bywa na serwerze przed migracją (push wdraża bez `migrate`) — wtedy po prostu nic nie pokazujemy.
+        if (! \Illuminate\Support\Facades\Schema::hasTable('listing_sections')) {
+            return null;
+        }
         $section = static::query()->forCurrentSite()->where('key', $key)->first();
 
         return $section && $section->is_published && filled(trim(strip_tags((string) $section->content, '<img><iframe><video><audio><svg><hr>')))

@@ -38,7 +38,8 @@
                 @php
                     // Dowolne bloki pod menu kategorii (edytor blokowy, Ustawienia: link „Dodaj bloki pod menu”).
                     $sidebarBlocks = \App\Models\ListingSection::html('projects_sidebar');
-                    $canEditSidebar = auth()->check() && auth()->user()->isAdmin() && $siteSettings->isModuleEnabled('block_editor');
+                    // Route::has — po pushu serwer może mieć stary cache tras bez tej trasy (do czasu ./deploy.sh).
+                    $canEditSidebar = auth()->check() && auth()->user()->isAdmin() && $siteSettings->isModuleEnabled('block_editor') && \Illuminate\Support\Facades\Route::has('admin.edytor-blokowy.listing');
                 @endphp
                 <div class="min-w-0 space-y-8 lg:self-start {{ $sidebarBlocks ? '' : 'lg:sticky lg:top-6' }}">
                 <nav aria-label="Kategorie działań">
