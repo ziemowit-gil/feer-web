@@ -23,11 +23,6 @@
                             <ul class="nls-list">@foreach ($form->benefits as $benefit)<li>{{ $benefit }}</li>@endforeach</ul>
                         @endif
 
-                        <ul class="nls-facts" aria-label="W skrócie">
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v18M17 7H9.5a3 3 0 000 6h5a3 3 0 010 6H6"/></svg>Bezpłatnie</li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>Wypis jednym kliknięciem</li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>Dane tylko do wysyłki</li>
-                        </ul>
 
                         @if ($form->proof)<p class="nls-note" style="margin-top:20px;font-weight:700;color:var(--ink)">{{ $form->proof }}</p>@endif
 
