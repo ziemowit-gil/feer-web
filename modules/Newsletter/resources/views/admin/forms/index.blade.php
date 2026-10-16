@@ -14,7 +14,7 @@
                 <tr class="border-t border-gray-100">
                     <td class="px-4 py-2 font-bold">{{ $f->name }} @if($f->is_default)<span class="ml-1 text-xs text-brand-dark font-bold">domyślny</span>@endif</td>
                     <td class="px-4 py-2">{{ $f->heading }}</td>
-                    <td class="px-4 py-2 text-xs"><a href="{{ route('newsletter.form', $f) }}" target="_blank" rel="noopener" class="text-brand-dark underline">/newsletter/{{ $f->slug }}</a></td>
+                    <td class="px-4 py-2 text-xs"><a href="{{ route('newsletter.form', $f) }}" target="_blank" rel="noopener" class="text-brand-dark underline">/newsletter/{{ $f->slug }}</a><br><a href="{{ route('newsletter.landing', $f) }}" target="_blank" rel="noopener" class="text-brand-dark underline">landing: /dolacz</a></td>
                     <td class="px-4 py-2 text-right">{{ $f->submissions_count }}</td>
                     <td class="px-4 py-2">{{ $f->is_active ? 'aktywny' : 'wyłączony' }}</td>
                     <td class="px-4 py-2 text-right whitespace-nowrap"><a href="{{ route('admin.newsletter.formularze.edit', $f) }}" class="mr-3 text-muted hover:text-brand-dark" aria-label="Edytuj {{ $f->name }}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>

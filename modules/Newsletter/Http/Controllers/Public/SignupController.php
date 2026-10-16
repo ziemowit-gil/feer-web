@@ -14,15 +14,18 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 use Modules\Newsletter\Jobs\SendDoubleOptIn;
 use Modules\Newsletter\Jobs\SyncSubscriberToCrm;
+use Modules\Newsletter\Models\NewsletterCampaign;
 use Modules\Newsletter\Models\NewsletterConsent;
 use Modules\Newsletter\Models\NewsletterForm;
 use Modules\Newsletter\Models\NewsletterList;
+use Modules\Newsletter\Models\NewsletterTopic;
+use Modules\Newsletter\Services\ContentFeeder;
 
 /**
  * Publiczny zapis na newsletter: strona systemowa /newsletter, endpoint widgetu,
  * ekran „sprawdź skrzynkę" i potwierdzenie double opt-in.
  *
- * Metody: show(), showForm(), store(), pending(), confirm().
+ * Metody: show(), showForm(), landing(), store(), pending(), confirm().
  *
  * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
  */
@@ -34,14 +37,26 @@ class SignupController extends Controller
         $site = SiteSetting::current();
         $form = NewsletterForm::defaultFor($site->id);
 
-        return view('newsletter::public.show', ['form' => $form, 'embedCode' => $form ? null : $site->newsletter_code]);
+        return view('newsletter::public.show', ['form' => $form, 'embedCode' => $form ? null : $site->newsletter_code] + $this->pageData($form));
     }
 
     public function showForm(NewsletterForm $form)
     {
         abort_unless($form->is_active, 404);
 
-        return view('newsletter::public.show', ['form' => $form, 'embedCode' => null]);
+        return view('newsletter::public.show', ['form' => $form, 'embedCode' => null] + $this->pageData($form));
+    }
+
+    /**
+     * Wersja „landing page” tego samego formularza (/newsletter/{slug}/dolacz): pełny ekran
+     * z korzyściami, podglądem wydania, FAQ i formularzem na górze i na dole. Do kampanii,
+     * QR i postów — zwykła strona /newsletter/{slug} zostaje bez zmian.
+     */
+    public function landing(NewsletterForm $form)
+    {
+        abort_unless($form->is_active, 404);
+
+        return view('newsletter::public.landing', ['form' => $form, 'sample' => $this->sampleIssue()] + $this->pageData($form));
     }
 
     /** Rejestruje subskrybenta i wysyła e-mail potwierdzający (double opt-in). */
@@ -141,7 +156,7 @@ class SignupController extends Controller
 
     public function pending(Request $request)
     {
-        return view('newsletter::public.pending', ['form' => NewsletterForm::defaultFor(SiteSetting::current()->id)]);
+        return view('newsletter::public.pending', ['form' => NewsletterForm::defaultFor(SiteSetting::current()->id), 'ttlDays' => (int) (SiteSetting::current()->newsletter_doi_ttl_days ?: 7)]);
     }
 
     /** Potwierdza subskrypcję przez token z e-maila. */
@@ -169,6 +184,38 @@ class SignupController extends Controller
         }
 
         return view('newsletter::public.confirmed', ['subscriber' => $subscriber, 'expired' => false]);
+    }
+
+    /** Wspólne dane widoków zapisu: opisy tematów i ważność linku potwierdzającego. */
+    private function pageData(?NewsletterForm $form): array
+    {
+        $hints = [];
+        if ($form) {
+            try {
+                $hints = NewsletterTopic::query()->whereIn('key', array_keys($form->topicOptions()))->pluck('description', 'key')->filter()->all();
+            } catch (\Throwable) {
+                // brak tabeli tematów — formularz pokaże same nazwy
+            }
+        }
+
+        return ['topicHints' => $hints, 'ttlDays' => (int) (SiteSetting::current()->newsletter_doi_ttl_days ?: 7)];
+    }
+
+    /** Podgląd wydania na landingu: temat ostatniej wysłanej kampanii i najnowsze aktualności z CMS. */
+    private function sampleIssue(): array
+    {
+        try {
+            $last = NewsletterCampaign::query()->where('status', NewsletterCampaign::STATUS_SENT)->latest('id')->first();
+            $items = app(ContentFeeder::class)->items('news', ['limit' => 3]);
+        } catch (\Throwable) {
+            $last = null;
+            $items = collect();
+        }
+
+        // Temat bez znaczników personalizacji ({{first_name|default:…}}) — to podgląd dla każdego.
+        $subject = $last?->subject ? trim((string) preg_replace(['/,?\s*\{\{[^}]*\}\}/u', '/\s{2,}/'], ['', ' '], $last->subject)) : null;
+
+        return ['subject' => $subject ?: null, 'items' => $items];
     }
 
     private function recordConsent(Subscriber $s, string $channel, NewsletterForm $form, Request $request, string $source, bool $confirmed, ?string $text = null): void

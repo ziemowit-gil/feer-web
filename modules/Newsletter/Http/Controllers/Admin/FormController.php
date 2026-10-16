@@ -118,6 +118,20 @@ class FormController extends Controller
         $data['faq'] = NewsletterForm::parseFaq($request->input('faq'));
         $data['proof'] = trim((string) $request->input('proof')) ?: null;
 
+        if (NewsletterForm::supportsLandingTexts()) {
+            $landing = [];
+            foreach (NewsletterForm::LANDING_TEXTS as $key => [$label, $default, $max]) {
+                $value = trim((string) $request->input("landing.{$key}", ''));
+                if (mb_strlen($value) > $max) {
+                    throw ValidationException::withMessages(["landing.{$key}" => ["{$label}: maksymalnie {$max} znaków."]]);
+                }
+                if ($value !== '') {
+                    $landing[$key] = $value;
+                }
+            }
+            $data['landing'] = $landing ?: null;
+        }
+
         [$data['theme'], $themeErrors] = NewsletterForm::validateTheme((array) $request->input('theme', []));
         if ($themeErrors) {
             throw ValidationException::withMessages(collect($themeErrors)->mapWithKeys(fn ($msg, $key) => ["theme.{$key}" => [$msg]])->all());

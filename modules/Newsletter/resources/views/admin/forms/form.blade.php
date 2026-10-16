@@ -22,6 +22,24 @@
                 </div>
                 <div><label for="success_message" class="mb-1 block text-sm font-bold">Komunikat po wysłaniu</label><textarea id="success_message" name="success_message" rows="2" required class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('success_message', $form->success_message) }}</textarea></div>
             </section>
+            @if (\Modules\Newsletter\Models\NewsletterForm::supportsLandingTexts())
+            <section class="space-y-4 p-6 rounded-md bg-white" aria-labelledby="f-landing"><h2 id="f-landing" class="text-sm font-bold uppercase text-muted">Landing page</h2>
+                <p class="text-xs text-muted">Rozbudowana wersja strony zapisu pod adresem @if ($form->exists)<a href="{{ route('newsletter.landing', $form) }}" target="_blank" rel="noopener" class="font-bold text-brand-dark underline">/newsletter/{{ $form->slug }}/dolacz</a>@else /newsletter/…/dolacz @endif — do kampanii, postów i kodów QR. Nagłówek, tekst wprowadzający, korzyści i pytania bierze z pól powyżej. Puste pole = tekst domyślny (w podpowiedzi).</p>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    @foreach (\Modules\Newsletter\Models\NewsletterForm::LANDING_TEXTS as $key => [$label, $default, $max])
+                        <div class="{{ $max > 120 ? 'sm:col-span-2' : '' }}">
+                            <label for="landing-{{ $key }}" class="mb-1 block text-sm font-bold">{{ $label }}</label>
+                            @if ($max > 120)
+                                <textarea id="landing-{{ $key }}" name="landing[{{ $key }}]" rows="2" maxlength="{{ $max }}" placeholder="{{ $default }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old("landing.$key", $form->landing[$key] ?? '') }}</textarea>
+                            @else
+                                <input id="landing-{{ $key }}" name="landing[{{ $key }}]" maxlength="{{ $max }}" placeholder="{{ $default }}" value="{{ old("landing.$key", $form->landing[$key] ?? '') }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            @endif
+                            @error("landing.$key")<p class="mt-1 text-xs font-bold text-red-700">{{ $message }}</p>@enderror
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+            @endif
             <section class="space-y-4 p-6 rounded-md bg-white" aria-labelledby="f-fields"><h2 id="f-fields" class="text-sm font-bold uppercase text-muted">Pola i tematy</h2>
                 <div class="flex flex-wrap gap-4 text-sm">
                     @foreach (['ask_name' => 'Pole „Imię”', 'ask_phone' => 'Pole „Telefon”', 'show_topics' => 'Wybór tematów', 'offer_sms' => 'Zgoda na SMS (wymaga telefonu)', 'offer_webpush' => 'Zachęta do push po potwierdzeniu'] as $k => $l)

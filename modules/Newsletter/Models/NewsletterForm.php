@@ -18,13 +18,13 @@ class NewsletterForm extends Model
     protected $fillable = [
         'site_id', 'name', 'slug', 'eyebrow', 'heading', 'lead', 'ask_name', 'ask_phone', 'show_topics', 'topics',
         'default_topics', 'offer_webpush', 'offer_sms', 'consent_text', 'clause_id', 'privacy_url', 'button_label',
-        'success_message', 'style', 'accent_color', 'theme', 'benefits', 'faq', 'proof', 'list_ids', 'szo_form_slug', 'is_default', 'is_active', 'submissions_count',
+        'success_message', 'style', 'accent_color', 'theme', 'benefits', 'faq', 'proof', 'landing', 'list_ids', 'szo_form_slug', 'is_default', 'is_active', 'submissions_count',
     ];
 
     protected $casts = [
         'ask_name' => 'boolean', 'ask_phone' => 'boolean', 'show_topics' => 'boolean', 'offer_webpush' => 'boolean',
         'offer_sms' => 'boolean', 'is_default' => 'boolean', 'is_active' => 'boolean',
-        'topics' => 'array', 'default_topics' => 'array', 'list_ids' => 'array', 'theme' => 'array', 'benefits' => 'array', 'faq' => 'array',
+        'topics' => 'array', 'default_topics' => 'array', 'list_ids' => 'array', 'theme' => 'array', 'benefits' => 'array', 'faq' => 'array', 'landing' => 'array',
     ];
 
     public const STYLES = ['band' => 'Pasek (szeroki, dwie kolumny)', 'card' => 'Karta', 'inline' => 'Jedna linia (stopka)'];
@@ -70,6 +70,38 @@ class NewsletterForm extends Model
         ['border', 'bg', 3.0, 'Obramowanie pól na tle'],
         ['focus', 'bg', 3.0, 'Fokus na tle'],
     ];
+
+    /**
+     * Teksty landingu (/newsletter/{slug}/dolacz) edytowalne w panelu: klucz => [etykieta, domyślny tekst, maks. długość].
+     * Puste pole = tekst domyślny.
+     */
+    public const LANDING_TEXTS = [
+        'panel_title'    => ['Nagłówek formularza na górze', 'Zapisz się za darmo', 80],
+        'more_link'      => ['Link do podglądu wydania (w pierwszej sekcji)', 'Zobacz przykładowe wydanie', 80],
+        'benefits_title' => ['Nagłówek sekcji korzyści', 'Co znajdziesz w newsletterze', 120],
+        'sample_title'   => ['Nagłówek podglądu wydania', 'Tak wygląda wydanie', 120],
+        'sample_lead'    => ['Opis podglądu wydania', 'Krótko i na temat: kilka najważniejszych wiadomości z linkami do całości na stronie.', 400],
+        'sample_greeting' => ['Powitanie w podglądzie wydania', 'Dzień dobry! Oto, co u nas słychać', 120],
+        'faq_title'      => ['Nagłówek sekcji pytań', 'Pytania i odpowiedzi', 120],
+        'cta_title'      => ['Nagłówek formularza na dole', 'Dołącz teraz', 120],
+        'cta_lead'       => ['Tekst przy formularzu na dole (puste = tekst wprowadzający)', '', 400],
+    ];
+
+    /** Tekst landingu z panelu albo domyślny. */
+    public function landingText(string $key): string
+    {
+        $value = trim((string) (($this->landing ?? [])[$key] ?? ''));
+
+        return $value !== '' ? $value : (self::LANDING_TEXTS[$key][1] ?? '');
+    }
+
+    /** Czy baza ma już kolumnę `landing` (kod działa też przed migracją). */
+    public static function supportsLandingTexts(): bool
+    {
+        static $has;
+
+        return $has ??= \Illuminate\Support\Facades\Schema::hasColumn('newsletter_forms', 'landing');
+    }
 
     public static function defaultFor(?int $siteId = null): ?static
     {
@@ -241,7 +273,7 @@ class NewsletterForm extends Model
                 'Aktualności z działań Fundacji FEER',
                 'Zaproszenia na szkolenia i wydarzenia',
                 'Materiały edukacyjne do wykorzystania w pracy',
-                'Treści w wersji Łatwy Odczyt (ETR)',
+                'Teksty w wersji Łatwy Odczyt',
             ],
             'faq'             => [
                 ['q' => 'Jak często wysyłacie newsletter?', 'a' => 'Raz w miesiącu.'],
