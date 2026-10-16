@@ -148,6 +148,26 @@ $(function () {
     // Paleta próbnika kolorów = kolory marki z brandbooku (+ ciemniejszy niebieski do linków, 4,5:1 na białym)
     if ($.evol && $.evol.colorpicker) { $.evol.colorpicker.prototype.options.customTheme = ['#1E6DFF', '#1752BF', '#1D1D1A', '#EA8F00', '#CBD5E7', '#E8F0FF', '#FFFFFF']; }
 
+    // „Zmienne” w pasku edytora tekstu: wstawia tag personalizacji (np. first_name w podwójnych klamrach) w miejscu kursora.
+    var nlVars = @json(! empty($systemMail) ? $systemMail['tags'] : \Modules\Newsletter\Services\Personalizer::TAGS);
+    (function (wys) {
+        if (!wys) return;
+        var full = wys.fullOptions || {};
+        full.toolbar1 = (full.toolbar1 || 'bold italic forecolor backcolor hr styleselect removeformat | link unlink | pastetext code') + ' | nlvars';
+        var prevSetup = full.setup;
+        full.setup = function (editor) {
+            if (prevSetup) prevSetup(editor);
+            editor.addButton('nlvars', {
+                type: 'menubutton', text: 'Zmienne', icon: false, tooltip: 'Wstaw zmienną personalizacji (imię, link wypisu…)',
+                menu: Object.keys(nlVars).map(function (key) {
+                    var tag = '\x7b\x7b' + key + '\x7d\x7d'; // klamry zapisane kodami, żeby nie łapał ich Blade
+                    return { text: nlVars[key] + '  ' + tag, onclick: function () { editor.insertContent(tag); } };
+                })
+            });
+        };
+        wys.fullOptions = full;
+    })(window.ko && ko.bindingHandlers && ko.bindingHandlers.wysiwyg);
+
     var ok = Mosaico.init({
         imgProcessorBackend: @json(route('admin.newsletter.mosaico.image')),
         emailProcessorBackend: @json(route('admin.newsletter.mosaico.download')),
