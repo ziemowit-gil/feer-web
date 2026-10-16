@@ -58,4 +58,28 @@ class NewsletterImageSizesTest extends TestCase
             ->assertSee('id="nl-sizes" aria-pressed="true"', false)
             ->assertSee('function refreshImgSizes', false);
     }
+
+    public function test_pasek_edytora_bez_emoji_i_z_wyborem_szablonu(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->actingAs($admin)->get(route('admin.newsletter.mosaico'));
+        $template = \Modules\Newsletter\Models\NewsletterTemplate::first();
+        $template->update(['mosaico_template' => 'feer-1']);
+
+        $html = $this->actingAs($admin)->get(route('admin.newsletter.szablony.editor', $template))->assertOk()->getContent();
+        $this->assertStringContainsString('id="nl-template"', $html);
+        $this->assertStringNotContainsString('📰', $html);
+        $this->assertStringNotContainsString('📐', $html);
+        $this->assertMatchesRegularExpression('/<option value="feer-1"\s+selected/', $html);
+
+        $switched = $this->actingAs($admin)->get(route('admin.newsletter.szablony.editor', $template) . '?szablon=feer-2')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/<option value="feer-2"\s+selected/', $switched);
+        $this->assertStringContainsString('templates\/feer-2\/template-feer-2.html', $switched);
+
+        $this->actingAs($admin)->patchJson(route('admin.newsletter.szablony.editor.save', $template), [
+            'metadata' => ['template' => 'x'], 'content' => ['type' => 'template'], 'html' => '<p>x</p>', 'mosaico_template' => 'feer-2',
+        ])->assertOk();
+        $this->assertSame('feer-2', $template->fresh()->mosaico_template);
+
+    }
 }

@@ -13,17 +13,29 @@
     <style>
         :root { --nl-brand: #1E6DFF; --nl-brand-dark: #1752BF; --nl-ink: #1D1D1A; --nl-accent: #EA8F00; }
         html, body { height: 100%; margin: 0; }
-        #nl-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 10000; display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 12px; background: var(--nl-ink); color: #fff; font: 700 13px Montserrat, Arial, sans-serif; box-sizing: border-box; }
-        #nl-bar .title { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 400; }
-        #nl-bar button, #nl-bar a { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 6px 12px; border: 2px solid transparent; border-radius: 6px; background: #fff; color: var(--nl-ink); font: inherit; cursor: pointer; text-decoration: none; }
-        #nl-bar button.primary { background: var(--nl-brand); color: #fff; }
-        #nl-bar button.primary:hover { background: var(--nl-brand-dark); }
-        #nl-bar button:focus-visible, #nl-bar a:focus-visible { outline: 3px solid var(--nl-accent); outline-offset: 2px; }
-        #nl-bar button[disabled] { opacity: .6; cursor: progress; }
-        #nl-status { font-weight: 400; color: #CFCFCB; }
-        #nl-status.err { color: #FFB4A9; font-weight: 700; }
-        .mo-standalone #main-wysiwyg-area, #page { top: 46px !important; }
-        #nl-contrast { display: none; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; background: var(--nl-accent); color: var(--nl-ink); font-weight: 800; }
+        /* Pasek edytora: jasny jak panel CMS, płaski, ikony SVG (bez emoji) */
+        #nl-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 10000; display: flex; align-items: center; gap: 8px; height: 60px; padding: 0 16px; background: #fff; color: var(--nl-ink); font: 700 14px Montserrat, Arial, sans-serif; box-sizing: border-box; box-shadow: 0 1px 0 #CBD5E7; }
+        #nl-bar .nl-group { display: flex; align-items: center; gap: 6px; }
+        #nl-bar .title { flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; }
+        #nl-bar .title strong { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 15px; }
+        #nl-bar .nl-sep { width: 1px; height: 28px; background: #CBD5E7; margin: 0 4px; }
+        #nl-bar button, #nl-bar a { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--nl-ink); font: inherit; cursor: pointer; text-decoration: none; white-space: nowrap; }
+        #nl-bar button:hover, #nl-bar a:hover { background: #E8F0FF; }
+        #nl-bar svg { width: 18px; height: 18px; flex: none; }
+        #nl-bar button.primary { background: var(--nl-brand); color: #fff; padding: 8px 18px; }
+        #nl-bar button.primary:hover { background: var(--nl-ink); }
+        #nl-bar button.secondary { background: #E8F0FF; }
+        #nl-bar button.secondary:hover { background: #CBD5E7; }
+        #nl-bar button[aria-pressed="true"] { background: #E8F0FF; color: var(--nl-ink); box-shadow: inset 0 -3px 0 var(--nl-brand); }
+        #nl-bar button:focus-visible, #nl-bar a:focus-visible, #nl-bar select:focus-visible, #nl-bar input:focus-visible { outline: 3px solid var(--nl-brand); outline-offset: 2px; }
+        #nl-bar button[disabled] { cursor: progress; }
+        #nl-bar label.nl-tpl { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; color: #4A4A47; white-space: nowrap; }
+        #nl-bar select { min-height: 40px; padding: 6px 30px 6px 10px; border: 2px solid #6B6B67; border-radius: 8px; background: #fff; color: var(--nl-ink); font: 700 14px Montserrat, Arial, sans-serif; cursor: pointer; }
+        #nl-status { font-weight: 400; font-size: 13px; color: #4A4A47; white-space: nowrap; }
+        #nl-status.err { color: #B3261E; font-weight: 700; }
+        @media (max-width: 1280px) { #nl-bar .nl-hide-narrow { display: none; } }
+        .mo-standalone #main-wysiwyg-area, #page { top: 60px !important; }
+        #nl-contrast { display: none; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: #FCEBEA; color: #B3261E; font-weight: 700; font-size: 13px; }
         #nl-contrast.show { display: inline-flex; }
         /* modal wstawiania aktualności */
         #nl-news { position: fixed; inset: 0; z-index: 10001; display: none; align-items: center; justify-content: center; background: rgba(29,29,26,.6); font-family: Montserrat, Arial, sans-serif; }
@@ -44,21 +56,40 @@
     </style>
 </head>
 <body class="mo-standalone">
+@php
+    $nlTemplates = \Modules\Newsletter\Models\NewsletterTemplate::MOSAICO_TEMPLATES;
+    $nlShort = ['feer-1' => 'FEER-1 · klasyczny', 'feer-2' => 'FEER-2 · kolory marki'];
+    // Szablon bazowy: ?szablon= (przełącznik w pasku) → kampania: zapisany w metadanych Mosaico → kolumna mosaico_template.
+    $nlSaved = preg_match('#/templates/([a-z0-9-]+)/#', (string) data_get($subject->editor_metadata, 'template'), $nlM) ? $nlM[1] : null;
+    if (isset($nlTemplates[(string) request('szablon')])) {
+        $mosaicoTemplate = request('szablon');
+    } elseif ($subject instanceof \Modules\Newsletter\Models\NewsletterCampaign && $nlSaved && isset($nlTemplates[$nlSaved])) {
+        $mosaicoTemplate = $nlSaved;
+    }
+@endphp
 <div id="nl-bar" role="toolbar" aria-label="Pasek edytora">
-    <a href="{{ $backUrl }}" aria-label="Wróć bez zapisu">← Wróć</a>
-    <span class="title">{{ $title }}</span>
+    <a href="{{ $backUrl }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Wróć</a>
+    <span class="nl-sep" aria-hidden="true"></span>
+    <div class="title">
+        <strong>{{ $title }}</strong>
+        <label class="nl-tpl" for="nl-template">Szablon
+            <select id="nl-template" aria-describedby="nl-template-hint">@foreach ($nlTemplates as $key => $label)<option value="{{ $key }}" @selected($key === $mosaicoTemplate) title="{{ $label }}">{{ $nlShort[$key] ?? strtoupper($key) }}</option>@endforeach</select>
+        </label>
+        <span id="nl-template-hint" class="sr-only">Zmiana szablonu zapisuje bieżącą treść i przeładowuje edytor z nowym wyglądem. Treść bloków zostaje.</span>
+    </div>
     <span id="nl-contrast" role="status" aria-live="polite"></span>
+    <span id="nl-status" role="status" aria-live="polite"></span>
     @if (! empty($systemMail))
     <label for="nl-subject" class="sr-only">Temat wiadomości</label>
-    <input id="nl-subject" type="text" value="{{ $mailSubject }}" placeholder="Temat wiadomości" style="min-height:32px;min-width:280px;padding:4px 10px;border-radius:6px;border:2px solid #fff;font:inherit;font-weight:400">
-    <button type="button" id="nl-tags" title="Tagi do wstawienia w treści i w adresach przycisków">{ } Tagi</button>
+    <input id="nl-subject" type="text" value="{{ $mailSubject }}" placeholder="Temat wiadomości" style="min-height:40px;min-width:260px;padding:6px 10px;border-radius:8px;border:2px solid #6B6B67;font:inherit;font-weight:400">
+    <button type="button" id="nl-tags" title="Tagi do wstawienia w treści i w adresach przycisków"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H7a2 2 0 00-2 2v5a2 2 0 01-2 2 2 2 0 012 2v5a2 2 0 002 2h1M16 3h1a2 2 0 012 2v5a2 2 0 002 2 2 2 0 00-2 2v5a2 2 0 01-2 2h-1"/></svg>Tagi</button>
     @else
-    <button type="button" id="nl-insert-news" title="Wstaw aktualność z CMS jako blok artykułu">📰 Wstaw aktualność</button>
+    <button type="button" id="nl-insert-news" title="Wstaw aktualność z CMS jako blok artykułu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg><span class="nl-hide-narrow">Wstaw </span>aktualność</button>
     @endif
-    <button type="button" id="nl-sizes" aria-pressed="true" title="Pokaż przy obrazkach wymagane wymiary w pikselach">📐 Wymiary obrazków</button>
-    <button type="button" id="nl-preview" title="Podgląd w nowym oknie">Podgląd</button>
-    <span id="nl-status" role="status" aria-live="polite"></span>
-    <button type="button" id="nl-save" class="primary">Zapisz</button>
+    <button type="button" id="nl-sizes" aria-pressed="true" title="Pokaż przy obrazkach wymagane wymiary w pikselach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21L21 3"/><path d="M3 15v6h6M21 9V3h-6"/></svg>Wymiary<span class="nl-hide-narrow"> obrazków</span></button>
+    <button type="button" id="nl-preview" title="Podgląd w nowym oknie"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Podgląd</button>
+    <span class="nl-sep" aria-hidden="true"></span>
+    <button type="button" id="nl-save" class="secondary">Zapisz</button>
     <button type="button" id="nl-save-close" class="primary">Zapisz i zamknij</button>
 </div>
 
@@ -133,21 +164,31 @@ $(function () {
 
     function setStatus(msg, err) { var s = document.getElementById('nl-status'); s.textContent = msg; s.className = err ? 'err' : ''; }
 
-    function doSave(close) {
+    function doSave(close, then) {
         if (!viewModel) return;
         var btns = document.querySelectorAll('#nl-save, #nl-save-close'); btns.forEach(function (b) { b.disabled = true; });
         setStatus('Zapisuję…');
         var payload = { metadata: viewModel.exportMetadata(), content: viewModel.exportJSON(), html: viewModel.exportHTML() };
         var subj = document.getElementById('nl-subject'); if (subj) payload.subject = subj.value;
+        payload.mosaico_template = @json($mosaicoTemplate);
         if (typeof payload.content === 'string') payload.content = JSON.parse(payload.content);
         if (typeof payload.metadata === 'string') payload.metadata = JSON.parse(payload.metadata);
         fetch(saveUrl, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }, body: JSON.stringify(payload) })
             .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-            .then(function (d) { dirty = false; setStatus((d.warnings && d.warnings.length) ? '⚠ ' + d.warnings.join(' ') : 'Zapisano ' + d.saved_at, !!(d.warnings && d.warnings.length)); if (close) window.location.href = @json($backUrl); })
+            .then(function (d) { dirty = false; setStatus((d.warnings && d.warnings.length) ? '⚠ ' + d.warnings.join(' ') : 'Zapisano ' + d.saved_at, !!(d.warnings && d.warnings.length)); if (close) window.location.href = @json($backUrl); if (then) then(); })
             .catch(function (e) { setStatus('Błąd zapisu (' + e.message + '). Spróbuj ponownie.', true); })
             .finally(function () { btns.forEach(function (b) { b.disabled = false; }); });
     }
     document.getElementById('nl-save').addEventListener('click', function () { doSave(false); });
+    // Zmiana szablonu bazowego: zapis bieżącej treści i przeładowanie edytora z nowym wyglądem (bloki FEER-1/FEER-2 są zgodne).
+    var tplSelect = document.getElementById('nl-template');
+    tplSelect.addEventListener('change', function () {
+        var next = tplSelect.value, current = @json($mosaicoTemplate);
+        if (next === current) return;
+        if (!confirm('Zmienić szablon na ' + next.toUpperCase() + '? Treść bloków zostanie, zmieni się wygląd (kolory, przyciski, tło). Bieżące zmiany zapiszę przed przeładowaniem.')) { tplSelect.value = current; return; }
+        var go = function () { dirty = false; var u = new URL(window.location.href); u.searchParams.set('szablon', next); window.location.href = u.toString(); };
+        if (viewModel) { doSave(false, go); } else { go(); }
+    });
     document.getElementById('nl-save-close').addEventListener('click', function () { doSave(true); });
     document.getElementById('nl-preview').addEventListener('click', function () { if (viewModel) viewModel.test.execute(); });
     setInterval(function () { if (dirty && viewModel) doSave(false); }, 90000);

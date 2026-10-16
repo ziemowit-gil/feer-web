@@ -99,8 +99,10 @@ class TemplateController extends Controller
 
     public function saveEditor(Request $request, NewsletterTemplate $template)
     {
-        $data = $request->validate(['metadata' => ['required', 'array'], 'content' => ['required', 'array'], 'html' => ['required', 'string'], 'subject' => ['nullable', 'string', 'max:255']]);
-        $template->update(['editor_metadata' => $data['metadata'], 'editor_content' => $data['content'], 'html_body' => $data['html'], 'subject' => $data['subject'] ?? $template->subject]);
+        $data = $request->validate(['metadata' => ['required', 'array'], 'content' => ['required', 'array'], 'html' => ['required', 'string'], 'subject' => ['nullable', 'string', 'max:255'],
+            'mosaico_template' => ['nullable', Rule::in(array_keys(NewsletterTemplate::MOSAICO_TEMPLATES))]]);
+        $template->update(['editor_metadata' => $data['metadata'], 'editor_content' => $data['content'], 'html_body' => $data['html'], 'subject' => $data['subject'] ?? $template->subject,
+            'mosaico_template' => $data['mosaico_template'] ?? $template->mosaico_template]);
 
         $warnings = [];
         if ($template->system_key && ($req = NewsletterTemplate::SYSTEM_MAILS[$template->system_key]['required'] ?? null) && ! str_contains($data['html'], $req)) {
