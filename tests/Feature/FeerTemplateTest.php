@@ -973,9 +973,9 @@ class FeerTemplateTest extends TestCase
         // Stary adres zapisów przekierowuje na stronę systemową modułu Newsletter.
         $this->get('/subskrypcje')->assertRedirect('/newsletter');
 
-        // Strona /newsletter renderuje dedykowany formularz modułu (widget w kolorach marki).
+        // Strona /newsletter renderuje stronę zapisu modułu (formularz nls, od add1c7e9).
         $news = $this->get('/newsletter')->assertOk()->getContent();
-        $this->assertStringContainsString('class="nlw nlw--band"', $news);
+        $this->assertStringContainsString('data-nls-form', $news);
         $this->assertStringContainsString('name="email"', $news);
 
         $book = $this->get('/rezerwuj-spotkanie-modul')->assertOk()->getContent();

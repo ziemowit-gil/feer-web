@@ -82,7 +82,8 @@ class NewsletterSignupPageTest extends TestCase
             ->assertSee('Jak często wysyłacie newsletter?')
             ->assertSee('name="source" value="landing_top"', false)
             ->assertSee('name="source" value="landing_bottom"', false)
-            ->assertSeeInOrder(['Zapisz się za darmo', 'Co znajdziesz w newsletterze', 'Tak wygląda wydanie', 'Pytania i odpowiedzi', 'Dołącz teraz']);
+            ->assertSeeInOrder(['Zapisz się za darmo', 'Tak wygląda wydanie', 'Pytania i odpowiedzi', 'Dołącz teraz'])
+            ->assertDontSee('Co znajdziesz w newsletterze');
     }
 
     public function test_landing_uzywa_tekstow_z_panelu(): void
@@ -92,7 +93,7 @@ class NewsletterSignupPageTest extends TestCase
         $this->get(route('newsletter.landing', $form))->assertOk()
             ->assertSee('Zajrzyj do środka')->assertSee('Ostatni krok')
             ->assertDontSee('Tak wygląda wydanie')
-            ->assertSee('Co znajdziesz w newsletterze'); // puste pole = tekst domyślny
+            ->assertSee('Pytania i odpowiedzi'); // puste pole = tekst domyślny
     }
 
     public function test_wylaczony_formularz_nie_ma_strony_ani_landingu(): void

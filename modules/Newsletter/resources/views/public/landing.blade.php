@@ -9,7 +9,7 @@
 @include('newsletter::public._signup-style')
 @php
     $benefits = $form->benefits ?? [];
-    $issueTitle = $sample['subject'] ?: ($form->eyebrow ?: 'Newsletter ' . $siteSettings->site_name);
+    $issueTitle = ($form->eyebrow ?: 'Newsletter ' . $siteSettings->site_name) . ' — ' . now()->translatedFormat('F Y');
 @endphp
 <div class="nls nls-landing">
     {{-- 1. Hero na pełny ekran: obietnica + formularz od razu pod ręką --}}
@@ -21,7 +21,7 @@
                     <h1 id="nls-hero-h" class="nls-title">{{ $form->heading }}</h1>
                     @if ($form->lead)<p class="nls-lead">{{ $form->lead }}</p>@endif
                     @if (count($benefits))
-                        <ul class="nls-list">@foreach (array_slice($benefits, 0, 3) as $benefit)<li>{{ $benefit }}</li>@endforeach</ul>
+                        <ul class="nls-list">@foreach ($benefits as $benefit)<li>{{ $benefit }}</li>@endforeach</ul>
                     @endif
                     <a href="#nls-sample" class="nls-hero__more">{{ $form->landingText('more_link') }} <span aria-hidden="true">↓</span></a>
                 </div>
@@ -31,21 +31,6 @@
             </div>
         </div>
     </section>
-
-    {{-- 2. Korzyści --}}
-    @if (count($benefits))
-    <section class="nls-band" aria-labelledby="nls-benefits-h">
-        <div class="nls-wrap">
-            <div class="nls-band__head">
-                <h2 id="nls-benefits-h" class="nls-h2">{{ $form->landingText('benefits_title') }}</h2>
-                @if ($form->proof)<p>{{ $form->proof }}</p>@endif
-            </div>
-            <ul class="nls-cards">
-                @foreach ($benefits as $i => $benefit)<li><span aria-hidden="true">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>{{ $benefit }}</li>@endforeach
-            </ul>
-        </div>
-    </section>
-    @endif
 
     {{-- 3. Podgląd wydania + jak to działa --}}
     <section id="nls-sample" class="nls-band nls-band--tint" aria-labelledby="nls-sample-h" tabindex="-1">
@@ -73,7 +58,7 @@
                     <p class="nls-mail__title">{{ $form->landingText('sample_greeting') }}</p>
                     <ul class="nls-mail__items">
                         @forelse ($sample['items'] as $item)
-                            <li><h4><a href="{{ $item->url }}">{{ $item->title }}</a></h4>@if ($item->excerpt)<p>{{ \Illuminate\Support\Str::limit($item->excerpt, 140) }}</p>@endif</li>
+                            <li><h4><a href="{{ $item->url }}">{{ html_entity_decode(strip_tags($item->title), ENT_QUOTES | ENT_HTML5, 'UTF-8') }}</a></h4>@if ($item->excerpt)<p>{{ \Illuminate\Support\Str::limit(trim(html_entity_decode(strip_tags($item->excerpt), ENT_QUOTES | ENT_HTML5, 'UTF-8')), 140) }}</p>@endif</li>
                         @empty
                             @foreach (array_slice($benefits, 0, 3) as $benefit)<li><h4>{{ $benefit }}</h4></li>@endforeach
                         @endforelse

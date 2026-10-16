@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 use Modules\Newsletter\Jobs\SendDoubleOptIn;
 use Modules\Newsletter\Jobs\SyncSubscriberToCrm;
-use Modules\Newsletter\Models\NewsletterCampaign;
 use Modules\Newsletter\Models\NewsletterConsent;
 use Modules\Newsletter\Models\NewsletterForm;
 use Modules\Newsletter\Models\NewsletterList;
@@ -201,21 +200,16 @@ class SignupController extends Controller
         return ['topicHints' => $hints, 'ttlDays' => (int) (SiteSetting::current()->newsletter_doi_ttl_days ?: 7)];
     }
 
-    /** Podgląd wydania na landingu: temat ostatniej wysłanej kampanii i najnowsze aktualności z CMS. */
+    /** Podgląd wydania na landingu: najnowsze aktualności z CMS. */
     private function sampleIssue(): array
     {
         try {
-            $last = NewsletterCampaign::query()->where('status', NewsletterCampaign::STATUS_SENT)->latest('id')->first();
             $items = app(ContentFeeder::class)->items('news', ['limit' => 3]);
         } catch (\Throwable) {
-            $last = null;
             $items = collect();
         }
 
-        // Temat bez znaczników personalizacji ({{first_name|default:…}}) — to podgląd dla każdego.
-        $subject = $last?->subject ? trim((string) preg_replace(['/,?\s*\{\{[^}]*\}\}/u', '/\s{2,}/'], ['', ' '], $last->subject)) : null;
-
-        return ['subject' => $subject ?: null, 'items' => $items];
+        return ['items' => $items];
     }
 
     private function recordConsent(Subscriber $s, string $channel, NewsletterForm $form, Request $request, string $source, bool $confirmed, ?string $text = null): void

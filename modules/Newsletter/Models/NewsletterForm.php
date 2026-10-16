@@ -78,7 +78,6 @@ class NewsletterForm extends Model
     public const LANDING_TEXTS = [
         'panel_title'    => ['Nagłówek formularza na górze', 'Zapisz się za darmo', 80],
         'more_link'      => ['Link do podglądu wydania (w pierwszej sekcji)', 'Zobacz przykładowe wydanie', 80],
-        'benefits_title' => ['Nagłówek sekcji korzyści', 'Co znajdziesz w newsletterze', 120],
         'sample_title'   => ['Nagłówek podglądu wydania', 'Tak wygląda wydanie', 120],
         'sample_lead'    => ['Opis podglądu wydania', 'Krótko i na temat: kilka najważniejszych wiadomości z linkami do całości na stronie.', 400],
         'sample_greeting' => ['Powitanie w podglądzie wydania', 'Dzień dobry! Oto, co u nas słychać', 120],
