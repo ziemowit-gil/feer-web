@@ -71,7 +71,7 @@ class DoubleOptInMail extends Mailable
     {
         $v = $this->vars();
         $v['topics'] = implode(', ', $v['topics']);
-        unset($v['subscriber']);
+        unset($v['subscriber'], $v['signature']);
 
         return $v;
     }
@@ -91,6 +91,14 @@ class DoubleOptInMail extends Mailable
             'logo_url'    => $site->logoUrl(),
             'tagline'     => $site->tagline,
             'preferences_url' => route('newsletter.preferences', ['token' => $this->subscriber->token]),
+            // Podpis: dane kontaktowe z ustawień witryny (Kontakt).
+            'signature'   => [
+                // „Zespół Fundacji …” — dopełniacz typowych form prawnych, polskie cudzysłowy.
+                'team'    => 'Zespół ' . preg_replace(['/^Fundacja\b/u', '/^Stowarzyszenie\b/u', '/"([^"]+)"/u'], ['Fundacji', 'Stowarzyszenia', '„$1”'], trim((string) $site->site_name)),
+                'address' => trim(implode(', ', array_filter([$site->contact_address ? (preg_match('/^(ul\.|al\.|pl\.|os\.)/iu', $site->contact_address) ? $site->contact_address : 'ul. ' . $site->contact_address) : null, $site->contact_city]))),
+                'phone'   => $site->contact_phone,
+                'email'   => $site->contact_email ?: $site->newsletter_reply_to ?: $site->newsletter_from_address,
+            ],
         ];
     }
 }
