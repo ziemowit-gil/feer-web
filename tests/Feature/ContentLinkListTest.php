@@ -230,6 +230,17 @@ class ContentLinkListTest extends TestCase
         $this->assertStringContainsString('bip-link-box', $classic['snippets'][0]['html']);
     }
 
+    public function test_admin_drawer_on_news_links_to_block_editor(): void
+    {
+        $news = News::create(['title' => 'Piknik NGO', 'slug' => 'piknik-ngo', 'content' => '<p>Treść</p>', 'is_published' => true, 'published_at' => now()->subDay()]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->get(route('news.show', $news))->assertOk()
+            ->assertSee('Ta aktualność')
+            ->assertSee('href="'.route('admin.edytor-blokowy.edit', ['news', $news->id]).'"', false)
+            ->assertSee('Edytuj w panelu');
+    }
+
     public function test_shortcodes_are_detected_and_removed_from_excerpts(): void
     {
         $this->assertTrue(ShortcodeParser::has('<p>[podstrony:poziomy=2]</p>'));

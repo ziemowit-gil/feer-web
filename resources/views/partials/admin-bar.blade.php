@@ -62,6 +62,34 @@
         {{-- Linki --}}
         <div class="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
 
+            {{-- Bieżąca treść: edytor blokowy i formularz w panelu (aktualność, strona, działanie). --}}
+            @php
+                $abUser = auth('web')->user();
+                $abBlocks = $siteSettings->isModuleEnabled('block_editor');
+                $abCurrent = null;
+                if (isset($news) && $news instanceof \App\Models\News && $news->exists && $abUser->canAccessModule('news')) {
+                    $abCurrent = ['label' => 'Ta aktualność', 'noun' => 'aktualność', 'blocks' => route('admin.edytor-blokowy.edit', ['news', $news->id]), 'edit' => route('admin.newsy.edit', $news)];
+                } elseif (isset($page) && $page instanceof \App\Models\Page && $page->exists && $abUser->canAccessModule('pages')) {
+                    $abCurrent = ['label' => 'Ta strona', 'noun' => 'stronę', 'blocks' => route('admin.podstrony.bloki.edit', $page), 'edit' => route('admin.podstrony.edit', $page)];
+                } elseif (isset($project) && $project instanceof \App\Models\Project && $project->exists && $abUser->canAccessModule('projects')) {
+                    $abCurrent = ['label' => 'To działanie', 'noun' => 'działanie', 'blocks' => route('admin.edytor-blokowy.edit', ['project', $project->id]), 'edit' => route('admin.projekty.edit', $project)];
+                }
+            @endphp
+            @if ($abCurrent)
+                <p class="px-3 pb-1 pt-1 text-[0.65rem] font-bold uppercase tracking-wide text-white/60">{{ $abCurrent['label'] }}</p>
+                @if ($abBlocks)
+                    <a href="{{ $abCurrent['blocks'] }}" class="{{ $abl }}">
+                        <i class="fa-solid fa-cubes w-5 text-center text-white/40" aria-hidden="true"></i>
+                        Edytor blokowy<span class="sr-only"> — edytuj {{ $abCurrent['noun'] }}</span>
+                    </a>
+                @endif
+                <a href="{{ $abCurrent['edit'] }}" class="{{ $abl }}">
+                    <i class="fa-solid fa-pen-to-square w-5 text-center text-white/40" aria-hidden="true"></i>
+                    Edytuj w panelu<span class="sr-only"> — {{ $abCurrent['noun'] }}</span>
+                </a>
+                <hr class="my-2 border-white/10">
+            @endif
+
             @if ($siteSettings->isModuleEnabled('news') && (auth('web')->user()->canAccessModule('news')))
                 <a href="{{ route('admin.newsy.index') }}" class="{{ $abl }}">
                     <i class="fa-solid fa-newspaper w-5 text-center text-white/40" aria-hidden="true"></i>

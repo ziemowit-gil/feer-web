@@ -456,6 +456,24 @@ function start(config) {
         const doc = new DOMParser().parseFromString('<body>' + (html || '') + '</body>', 'text/html');
         return nodesToBlocks([...doc.body.childNodes]);
     }
+    // Klasy, które mają style na stronie (arkusze wczytane w edytorze, m.in. app.css) — takich <div> nie rozpakowujemy.
+    let styledClasses = null;
+    function isStyledClass(name) {
+        if (!styledClasses) {
+            styledClasses = new Set();
+            const collect = (rules) => {
+                for (const r of rules || []) {
+                    if (r.selectorText) for (const m of r.selectorText.matchAll(/\.([A-Za-z0-9_-]+)/g)) styledClasses.add(m[1]);
+                    if (r.cssRules) collect(r.cssRules);
+                }
+            };
+            for (const sheet of document.styleSheets) { try { collect(sheet.cssRules); } catch (e) { /* arkusz z innej domeny */ } }
+        }
+        return styledClasses.has(name);
+    }
+    function isWrapperDiv(n) {
+        return !n.id && !n.getAttribute('style') && ![...n.classList].some(isStyledClass);
+    }
     function nodesToBlocks(nodes) {
         const out = [];
         const SHORTCODE = /^\[[a-z0-9_-]+(?::[^\]\r\n]{1,200})?\]$/i;
@@ -538,7 +556,8 @@ function start(config) {
                 const images = [...n.querySelectorAll('img')].map((img) => ({ url: img.getAttribute('src') || '', alt: img.getAttribute('alt') || '', caption: img.closest('figure')?.querySelector('figcaption')?.textContent.trim() || '' }));
                 const cols = Number((n.className.match(/content-gallery--cols-(\d)/) || [])[1] || 3);
                 out.push(block('gallery', { images, columns: cols }));
-            } else if (tag === 'DIV' && !n.className && !n.id) {
+            } else if (tag === 'DIV' && isWrapperDiv(n)) {
+                // Opakowania bez wyglądu (np. wklejka z Teams/Worda: role, aria-*, tabindex, klasy bez stylów) — rozpakowujemy.
                 out.push(...nodesToBlocks([...n.childNodes]));
             } else if (tag === 'IFRAME' && embedSrc(n.getAttribute('src') || '')) {
                 out.push(block('embed', { url: n.getAttribute('src'), title: n.getAttribute('title') || '' }));
