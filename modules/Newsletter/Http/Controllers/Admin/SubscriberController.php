@@ -9,12 +9,16 @@ use App\Models\SiteSetting;
 use App\Models\Subscriber;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Modules\Newsletter\Jobs\RunSubscriberImport;
 use Modules\Newsletter\Jobs\SendDoubleOptIn;
 use Modules\Newsletter\Jobs\SyncSubscriberToCrm;
 use Modules\Newsletter\Models\NewsletterConsent;
+use Modules\Newsletter\Models\NewsletterImport;
 use Modules\Newsletter\Models\NewsletterList;
 use Modules\Newsletter\Models\NewsletterSegment;
 use Modules\Newsletter\Models\NewsletterSuppression;
+use Modules\Newsletter\Services\MailerLiteClient;
+use Modules\Newsletter\Services\SubscriberImporter;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -171,72 +175,213 @@ class SubscriberController extends Controller
 
     public function importForm()
     {
-        return view('newsletter::admin.subscribers.import', ['lists' => NewsletterList::orderBy('name')->get(), 'topics' => Subscriber::availableTopics()]);
+        $token = MailerLiteClient::token();
+
+        return view('newsletter::admin.subscribers.import', [
+            'tokenMask'  => $token ? '••••' . substr($token, -4) : null,
+            'tokenInDb'  => filled(SiteSetting::current()->newsletter_mailerlite_token),
+            'imports'    => NewsletterImport::latest()->limit(10)->get(),
+        ]);
     }
 
-    public function import(Request $request)
+    /** Krok 1 (plik): zapis pliku, rozpoznanie kolumn i podgląd. */
+    public function import(Request $request, SubscriberImporter $importer)
     {
         $data = $request->validate([
-            'file'          => ['required', 'file', 'mimes:csv,txt,json', 'max:10240'],
-            'status'        => ['required', Rule::in([Subscriber::STATUS_PENDING, Subscriber::STATUS_CONFIRMED])],
-            'has_consent'   => ['required_if:status,confirmed'],
-            'consent_source'=> ['required_if:status,confirmed', 'nullable', 'string', 'max:120'],
-            'consent_date'  => ['nullable', 'date'],
-            'list_id'       => ['nullable', 'integer'],
-            'topics'        => ['nullable', 'array'],
-            'tag'           => ['nullable', 'string', 'max:40'],
+            'file'   => ['required', 'file', 'mimes:csv,txt,json', 'max:20480'],
+            'source' => ['nullable', Rule::in([NewsletterImport::SOURCE_FILE, NewsletterImport::SOURCE_MAILERLITE_CSV])],
         ]);
 
-        $rows = $this->parseImport($request->file('file'));
-        $stats = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'invalid' => []];
-        $topics = $data['topics'] ?? ['news'];
+        $import = NewsletterImport::create([
+            'site_id' => SiteSetting::current()->id, 'user_id' => auth()->id(), 'source' => $data['source'] ?? NewsletterImport::SOURCE_FILE,
+            'status'  => NewsletterImport::STATUS_PREVIEW, 'options' => $this->defaultImportOptions(),
+        ]);
 
-        foreach ($rows as $i => $row) {
-            $email = trim((string) ($row['email'] ?? ''));
-            if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $stats['invalid'][] = ($i + 1) . ': ' . $email;
-                continue;
-            }
-            $s = Subscriber::findByEmail($email);
-            if ($s && in_array($s->status, [Subscriber::STATUS_ANONYMIZED, Subscriber::STATUS_COMPLAINED, Subscriber::STATUS_SUPPRESSED], true)) {
-                $stats['skipped']++;
-                continue;
-            }
-            $isNew = ! $s;
-            $s ??= new Subscriber(['email' => $email, 'site_id' => SiteSetting::current()->id, 'source' => 'import']);
-            $s->name = $row['name'] ?? ($row['imie'] ?? $s->name);
-            $s->phone = ! empty($row['phone'] ?? $row['telefon'] ?? null) ? preg_replace('/[^0-9+]/', '', (string) ($row['phone'] ?? $row['telefon'])) : $s->phone;
-            $rowTopics = ! empty($row['topics']) ? array_values(array_intersect(array_map('trim', explode(',', (string) $row['topics'])), array_keys(Subscriber::availableTopics()))) : [];
-            $s->topics = array_values(array_unique(array_merge($s->topics ?? [], $rowTopics ?: $topics)));
-            if (! empty($data['tag'])) {
-                $s->tags = array_values(array_unique(array_merge($s->tags ?? [], [$data['tag']])));
-            }
-            if (! $s->isConfirmed()) {
-                $s->status = $data['status'];
-                if ($data['status'] === Subscriber::STATUS_CONFIRMED) {
-                    $s->confirmed_at = ! empty($data['consent_date']) ? $data['consent_date'] : now();
-                }
-            }
-            $s->save();
-            if (! empty($data['list_id'])) {
-                $s->lists()->syncWithoutDetaching([$data['list_id'] => ['added_at' => now(), 'added_by' => auth()->id()]]);
-            }
-            if ($data['status'] === Subscriber::STATUS_CONFIRMED) {
-                NewsletterConsent::create([
-                    'subscriber_id' => $s->id, 'channel' => 'email', 'clause_text' => 'Zgoda udokumentowana poza systemem: ' . $data['consent_source'],
-                    'source' => 'import', 'method' => 'admin_import', 'granted_at' => ! empty($data['consent_date']) ? $data['consent_date'] : now(), 'confirmed_at' => now(),
-                ]);
-            } elseif ($isNew || $s->isPending()) {
-                SendDoubleOptIn::dispatch($s->id);
-            }
-            $s->logEvent('imported', ['status' => $data['status'], 'file' => $request->file('file')->getClientOriginalName()]);
-            $isNew ? $stats['created']++ : $stats['updated']++;
+        try {
+            $importer->storeFile($request->file('file'), $import);
+            $import->summary = $importer->previewFile($import);
+            $import->save();
+        } catch (\Throwable $e) {
+            $importer->deleteFile($import);
+            $import->delete();
+
+            return back()->withErrors(['file' => 'Nie udało się odczytać pliku: ' . $e->getMessage()]);
         }
 
-        activity()->causedBy(auth()->user())->withProperties($stats + ['file' => $request->file('file')->getClientOriginalName()])->log('newsletter.import');
+        return redirect()->route('admin.newsletter.subskrybenci.import.show', $import);
+    }
 
-        return redirect()->route('admin.newsletter.subskrybenci.index')->with('status', "Import: nowych {$stats['created']}, zaktualizowanych {$stats['updated']}, pominiętych {$stats['skipped']}, błędnych " . count($stats['invalid']) . '.')
-            ->with('import_invalid', $stats['invalid']);
+    /** Krok 1 (API MailerLite): zapis tokenu, test połączenia, liczby wg statusu, grupy i pola. */
+    public function importMailerLite(Request $request)
+    {
+        $data = $request->validate(['token' => ['nullable', 'string', 'max:2000'], 'forget_token' => ['nullable', 'boolean']]);
+        $site = SiteSetting::current();
+
+        if ($request->boolean('forget_token')) {
+            $site->forceFill(['newsletter_mailerlite_token' => null])->save();
+
+            return back()->with('status', 'Token MailerLite usunięty z ustawień.');
+        }
+        if (filled($data['token'] ?? null)) {
+            $site->forceFill(['newsletter_mailerlite_token' => trim($data['token'])])->save();
+        }
+
+        $client = MailerLiteClient::fromSettings($site);
+        if (! $client) {
+            return back()->withErrors(['token' => 'Podaj token API MailerLite (MailerLite → Integracje → API).']);
+        }
+
+        try {
+            $counts = $client->countsByStatus();
+            $groups = $client->groups();
+            $fields = $client->fields();
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['token' => $e->getMessage()]);
+        }
+
+        $byStatus = [];
+        foreach ($counts as $ml => $n) {
+            $local = app(SubscriberImporter::class)->mapStatus($ml);
+            $byStatus[$local] = ($byStatus[$local] ?? 0) + $n;
+        }
+
+        $import = NewsletterImport::create([
+            'site_id' => $site->id, 'user_id' => auth()->id(), 'source' => NewsletterImport::SOURCE_MAILERLITE_API,
+            'status'  => NewsletterImport::STATUS_PREVIEW, 'total' => array_sum($counts),
+            'options' => $this->defaultImportOptions() + ['field_map' => array_filter([
+                'name'      => isset($fields['name']) ? 'name' : null,
+                'last_name' => isset($fields['last_name']) ? 'last_name' : null,
+                'phone'     => isset($fields['phone']) ? 'phone' : null,
+            ])],
+            'summary' => [
+                'total'         => array_sum($counts),
+                'source_status' => $counts,
+                'by_status'     => array_filter($byStatus),
+                'groups'        => array_map(fn ($g) => ['key' => $g['id'], 'name' => $g['name'], 'count' => $g['total'], 'active' => $g['active_count']], $groups),
+                'fields'        => $fields,
+            ],
+        ]);
+
+        return redirect()->route('admin.newsletter.subskrybenci.import.show', $import);
+    }
+
+    /** Krok 2: podgląd i mapowanie (przed uruchomieniem) albo postęp i raport. */
+    public function importShow(NewsletterImport $import)
+    {
+        return view('newsletter::admin.subscribers.import-show', [
+            'import'   => $import,
+            'lists'    => NewsletterList::orderBy('name')->get(),
+            'topics'   => Subscriber::availableTopics(),
+            'statuses' => Subscriber::STATUSES,
+            'fields'   => SubscriberImporter::FIELDS,
+        ]);
+    }
+
+    /** Zapis mapowania: przeliczenie podglądu albo uruchomienie importu. */
+    public function importUpdate(Request $request, NewsletterImport $import, SubscriberImporter $importer)
+    {
+        abort_unless($import->status === NewsletterImport::STATUS_PREVIEW, 409, 'Ten import został już uruchomiony.');
+
+        $groupKeys = collect($import->summary['groups'] ?? [])->pluck('key')->map(fn ($k) => (string) $k)->all();
+        $data = $request->validate([
+            'action'         => ['required', Rule::in(['preview', 'run'])],
+            'mapping'        => ['nullable', 'array'],
+            'mapping.*'      => ['nullable', 'integer', 'min:0', 'max:' . max(0, count($import->columns ?? []) - 1)],
+            'field_map'      => ['nullable', 'array'],
+            'field_map.*'    => ['nullable', 'string', 'max:100'],
+            'group_map'      => ['nullable', 'array'],
+            'group_map.*'    => ['nullable', 'string', 'max:60'],
+            'default_status' => ['nullable', Rule::in([Subscriber::STATUS_PENDING, Subscriber::STATUS_CONFIRMED])],
+            'resend_doi'     => ['nullable', 'boolean'],
+            'has_consent'    => ['nullable', 'boolean'],
+            'consent_source' => ['nullable', 'string', 'max:120'],
+            'consent_date'   => ['nullable', 'date', 'before_or_equal:today'],
+            'list_id'        => ['nullable', 'integer', Rule::exists('newsletter_lists', 'id')],
+            'topics'         => ['nullable', 'array'],
+            'topics.*'       => [Rule::in(array_keys(Subscriber::availableTopics(false)))],
+            'tag'            => ['nullable', 'string', 'max:40'],
+        ]);
+
+        $groupMap = [];
+        foreach ((array) ($data['group_map'] ?? []) as $key => $target) {
+            if (in_array((string) $key, $groupKeys, true) && preg_match('/^(|new_list|list:\d+|topic:[\w-]+)$/', (string) $target)) {
+                $groupMap[(string) $key] = (string) $target;
+            }
+        }
+
+        $import->options = array_merge($import->options ?? [], [
+            'group_map'      => $groupMap,
+            'default_status' => $data['default_status'] ?? Subscriber::STATUS_PENDING,
+            'resend_doi'     => $request->boolean('resend_doi'),
+            'has_consent'    => $request->boolean('has_consent'),
+            'consent_source' => $data['consent_source'] ?? null,
+            'consent_date'   => $data['consent_date'] ?? null,
+            'list_id'        => $data['list_id'] ?? null,
+            'topics'         => $data['topics'] ?? [],
+            'tag'            => $data['tag'] ?? null,
+        ] + ($import->source === NewsletterImport::SOURCE_MAILERLITE_API ? ['field_map' => array_filter((array) ($data['field_map'] ?? []))] : []));
+
+        if ($import->source !== NewsletterImport::SOURCE_MAILERLITE_API) {
+            $mapping = array_map('intval', array_filter((array) ($data['mapping'] ?? []), fn ($v) => $v !== null && $v !== ''));
+            $import->mapping = array_intersect_key($mapping, SubscriberImporter::FIELDS);
+            $import->summary = $importer->previewFile($import);
+        }
+        $import->save();
+
+        if ($data['action'] === 'preview') {
+            return redirect()->route('admin.newsletter.subskrybenci.import.show', $import)->with('status', 'Podgląd przeliczony.');
+        }
+
+        if (! isset($import->mapping['email']) && $import->source !== NewsletterImport::SOURCE_MAILERLITE_API) {
+            return back()->withErrors(['mapping.email' => 'Wskaż kolumnę z adresem e-mail.']);
+        }
+        $activeRows = (int) ($import->summary['by_status'][Subscriber::STATUS_CONFIRMED] ?? 0);
+        if ($activeRows > 0 && ! $import->option('resend_doi') && ! $import->option('has_consent')) {
+            return back()->withErrors(['has_consent' => "Import obejmuje {$activeRows} aktywnych adresów bez ponownego potwierdzenia — potwierdź, że masz udokumentowane zgody, albo zaznacz ponowne potwierdzenie (double opt-in)."]);
+        }
+        if ($activeRows > 0 && ! $import->isMailerLite() && ! $import->option('resend_doi') && blank($import->option('consent_source'))) {
+            return back()->withErrors(['consent_source' => 'Podaj źródło zgody — trafi do rejestru zgód.']);
+        }
+
+        // Grupy mapowane na „nową listę” — zakładamy listy przed startem, żeby porcje w kolejce ich nie dublowały.
+        foreach ($groupMap as $key => $target) {
+            if ($target === 'new_list') {
+                $name = (string) (collect($import->summary['groups'] ?? [])->firstWhere('key', $key)['name'] ?? $key);
+                $groupMap[$key] = 'list:' . $this->listForGroup($name)->id;
+            }
+        }
+        $options = $import->options;
+        $options['group_map'] = $groupMap;
+        $import->forceFill(['options' => $options, 'status' => NewsletterImport::STATUS_QUEUED, 'position' => 0, 'cursor' => null])->save();
+
+        // Mały plik — od razu, z raportem po przeładowaniu; większe i API MailerLite — w kolejce.
+        $small = $import->source !== NewsletterImport::SOURCE_MAILERLITE_API && (int) ($import->summary['total'] ?? 0) <= RunSubscriberImport::FILE_CHUNK;
+        if (! $small) {
+            RunSubscriberImport::dispatch($import->id);
+        } else {
+            try {
+                RunSubscriberImport::dispatchSync($import->id);
+            } catch (\Throwable $e) {
+                (new RunSubscriberImport($import->id))->failed($e);
+            }
+        }
+
+        return redirect()->route('admin.newsletter.subskrybenci.import.show', $import)
+            ->with('status', $small ? 'Import zakończony.' : 'Import uruchomiony w tle — raport uzupełnia się na bieżąco.');
+    }
+
+    public function importProgress(NewsletterImport $import)
+    {
+        return response()->json($import->progress());
+    }
+
+    public function importDestroy(NewsletterImport $import, SubscriberImporter $importer)
+    {
+        abort_if($import->isInProgress(), 409, 'Nie można usunąć trwającego importu.');
+        $importer->deleteFile($import);
+        $import->delete();
+
+        return redirect()->route('admin.newsletter.subskrybenci.import')->with('status', 'Import usunięty z historii.');
     }
 
     public function export(Request $request): StreamedResponse
@@ -331,43 +476,25 @@ class SubscriberController extends Controller
         ]);
     }
 
-    /** @return array<int, array<string, string>> */
-    private function parseImport(\Illuminate\Http\UploadedFile $file): array
+    private function defaultImportOptions(): array
     {
-        $content = (string) file_get_contents($file->getRealPath());
-        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content) ?? $content;
+        return ['default_status' => Subscriber::STATUS_PENDING, 'topics' => ['news'], 'tag' => 'import-' . now()->format('Y-m-d'), 'resend_doi' => false];
+    }
 
-        if (strtolower($file->getClientOriginalExtension()) === 'json') {
-            $json = json_decode($content, true);
-            $rows = is_array($json) ? (isset($json[0]) ? $json : ($json['subscribers'] ?? $json['data'] ?? [])) : [];
-
-            return array_map(fn ($r) => is_array($r) ? array_change_key_case($r, CASE_LOWER) : ['email' => (string) $r], $rows);
+    private function listForGroup(string $name): NewsletterList
+    {
+        $name = mb_substr(trim($name) ?: 'MailerLite', 0, 120);
+        $existing = NewsletterList::where('name', $name)->first();
+        if ($existing) {
+            return $existing;
+        }
+        $base = \Illuminate\Support\Str::slug($name) ?: 'lista';
+        $slug = $base;
+        $i = 2;
+        while (NewsletterList::where('slug', $slug)->exists()) {
+            $slug = $base . '-' . $i++;
         }
 
-        $lines = preg_split('/\r\n|\r|\n/', trim($content)) ?: [];
-        if ($lines === []) {
-            return [];
-        }
-        $delimiter = substr_count($lines[0], ';') >= substr_count($lines[0], ',') ? ';' : ',';
-        $header = array_map(fn ($h) => strtolower(trim((string) $h)), str_getcsv($lines[0], $delimiter));
-        $hasHeader = in_array('email', $header, true) || in_array('e-mail', $header, true);
-        $rows = [];
-        foreach ($lines as $i => $line) {
-            if ($line === '' || ($hasHeader && $i === 0)) {
-                continue;
-            }
-            $cells = str_getcsv($line, $delimiter);
-            if ($hasHeader) {
-                $row = [];
-                foreach ($header as $k => $name) {
-                    $row[$name === 'e-mail' ? 'email' : $name] = $cells[$k] ?? null;
-                }
-                $rows[] = $row;
-            } else {
-                $rows[] = ['email' => $cells[0] ?? '', 'name' => $cells[1] ?? null];
-            }
-        }
-
-        return $rows;
+        return NewsletterList::create(['site_id' => SiteSetting::current()->id, 'name' => $name, 'slug' => $slug, 'description' => 'Grupa zaimportowana z MailerLite.']);
     }
 }

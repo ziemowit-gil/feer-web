@@ -62,6 +62,11 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
         Route::middleware('can:newsletter.subscribers')->group(function (): void {
             Route::get('subskrybenci/import', [AdminSubscriberController::class, 'importForm'])->name('subskrybenci.import');
             Route::post('subskrybenci/import', [AdminSubscriberController::class, 'import'])->name('subskrybenci.import.store');
+            Route::post('subskrybenci/import/mailerlite', [AdminSubscriberController::class, 'importMailerLite'])->name('subskrybenci.import.mailerlite');
+            Route::get('subskrybenci/import/{import}', [AdminSubscriberController::class, 'importShow'])->name('subskrybenci.import.show');
+            Route::put('subskrybenci/import/{import}', [AdminSubscriberController::class, 'importUpdate'])->name('subskrybenci.import.update');
+            Route::get('subskrybenci/import/{import}/postep', [AdminSubscriberController::class, 'importProgress'])->name('subskrybenci.import.progress');
+            Route::delete('subskrybenci/import/{import}', [AdminSubscriberController::class, 'importDestroy'])->name('subskrybenci.import.destroy');
             Route::get('subskrybenci/eksport', [AdminSubscriberController::class, 'export'])->name('subskrybenci.export');
             Route::post('subskrybenci/zbiorczo', [AdminSubscriberController::class, 'bulk'])->name('subskrybenci.bulk');
             Route::post('subskrybenci/{subscriber}/anonimizuj', [AdminSubscriberController::class, 'anonymize'])->name('subskrybenci.anonymize');

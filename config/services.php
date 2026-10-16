@@ -70,6 +70,12 @@ return [
     ],
 
 
+    // Import subskrybentów newslettera z MailerLite (token można też podać w panelu).
+    'mailerlite' => [
+        'token' => env('MAILERLITE_API_TOKEN'),
+        'url'   => env('MAILERLITE_API_URL', 'https://connect.mailerlite.com/api'),
+    ],
+
     // Asystent AI w panelu (Claude API) — klucz zapasowy, gdy nie podano go w Ustawienia → Treści.
     'anthropic' => [
         'key' => env('ANTHROPIC_API_KEY'),
