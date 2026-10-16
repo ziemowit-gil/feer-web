@@ -348,12 +348,9 @@ return (async function () {
         quickbars_insert_toolbar: false,
         quickbars_selection_toolbar: 'bold italic underline | h2 h3 | link blockquote',
         // Gotowe bloki treści — te same klasy co w edytorze w panelu
-        // (style w resources/css/app.css: .cta-button, .content-box, …).
+        // (style w resources/css/app.css: .cta-button, .content-columns, …).
         inline_snippets: [
             { text: 'Przycisk CTA', html: '<p><a href="#" class="cta-button">Sprawdź więcej</a></p><p>&nbsp;</p>' },
-            { text: 'Tekst w ramce', html: '<div class="content-box"><p>Wpisz tutaj tekst w ramce…</p></div><p>&nbsp;</p>' },
-            { text: 'Notatka / ostrzeżenie', html: '<div class="content-note"><p>Wpisz tutaj treść notatki lub ostrzeżenia…</p></div><p>&nbsp;</p>' },
-            { text: 'Ważna informacja', html: '<div class="content-important"><p><strong>Ważne</strong></p><p>Wpisz tutaj treść ważnej informacji…</p></div><p>&nbsp;</p>' },
             { text: 'Dwie kolumny', html: '<div class="content-columns"><div class="content-column"><p>Pierwsza kolumna…</p></div><div class="content-column"><p>Druga kolumna…</p></div></div><p>&nbsp;</p>' },
             { text: 'Tabela dostępna (nagłówki + opis)', html: '<table><caption>Opis tabeli</caption><thead><tr><th scope="col">Kolumna 1</th><th scope="col">Kolumna 2</th></tr></thead><tbody><tr><th scope="row">Wiersz 1</th><td>Dane</td></tr></tbody></table><p>&nbsp;</p>' },
         ],

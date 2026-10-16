@@ -11,18 +11,8 @@
     $columnsHtml = '<div class="content-columns"><div class="content-column"><p>Pierwsza kolumna&hellip;</p></div><div class="content-column"><p>Druga kolumna&hellip;</p></div></div><p>&nbsp;</p>';
     $columnsHtmlForCk = '<table><tbody><tr><td><p>Pierwsza kolumna&hellip;</p></td><td><p>Druga kolumna&hellip;</p></td></tr></tbody></table><p>&nbsp;</p>';
     $ctaHtml = '<p><a href="#" class="cta-button">Sprawdź więcej</a></p><p>&nbsp;</p>';
-    // Boxed/framed text block insertable from the editor. TinyMCE keeps the
-    // custom <div> as-is; CKEditor's classic build unwraps unknown <div>s, so
-    // it falls back to a <blockquote> — the one "boxed" construct its schema
-    // preserves (and which is styled as a highlighted box on the front-end).
-    $boxHtml = '<div class="content-box"><p>Wpisz tutaj tekst w ramce&hellip;</p></div><p>&nbsp;</p>';
-    $boxHtmlForCk = '<blockquote><p>Wpisz tutaj tekst w ramce&hellip;</p></blockquote><p>&nbsp;</p>';
-    // Blok ostrzeżenie/notatka — bursztynowa ramka boczna.
-    $noteHtml = '<div class="content-note"><p>Wpisz tutaj treść notatki lub ostrzeżenia&hellip;</p></div><p>&nbsp;</p>';
-    $noteHtmlForCk = '<blockquote><p>⚠ Wpisz tutaj treść notatki lub ostrzeżenia&hellip;</p></blockquote><p>&nbsp;</p>';
-    // Blok ważna informacja — niebieska ramka boczna, kontrast WCAG AA+.
-    $importantHtml = '<div class="content-important"><p><strong>Ważne</strong></p><p>Wpisz tutaj treść ważnej informacji&hellip;</p></div><p>&nbsp;</p>';
-    $importantHtmlForCk = '<blockquote><p><strong>ℹ Ważne</strong><br>Wpisz tutaj treść ważnej informacji&hellip;</p></blockquote><p>&nbsp;</p>';
+    // Stare ramki (Tekst z ramką, Notatka, Ważne info) zastąpiła „Ramka informacyjna” z kreatora bloków ([blok:ID]);
+    // istniejące <div class="content-box|note|important"> nadal się wyświetlają.
     // Historia wersji: opcjonalny kontekst przekazywany z formularza.
     $revisionType = $revisionable['type'] ?? null;
     $revisionId   = $revisionable['id'] ?? null;
@@ -39,14 +29,8 @@
         'accentLeft' => \App\Support\ClassicInserts::SNIPPETS['accentLeft']['html'].'<p>&nbsp;</p>',
         'accentRight' => \App\Support\ClassicInserts::SNIPPETS['accentRight']['html'].'<p>&nbsp;</p>',
         'table' => '<table><caption>Opis tabeli</caption><thead><tr><th scope="col">Kolumna 1</th><th scope="col">Kolumna 2</th><th scope="col">Kolumna 3</th></tr></thead><tbody><tr><th scope="row">Wiersz 1</th><td>Dane</td><td>Dane</td></tr><tr><th scope="row">Wiersz 2</th><td>Dane</td><td>Dane</td></tr></tbody></table><p>&nbsp;</p>',
-        'note' => $noteHtml,
-        'important' => $importantHtml,
     ];
-    // CKEditor nie zachowuje <div class="content-*"> — podmień na <blockquote>.
-    $ckEditorSnippets = array_merge($editorSnippets, [
-        'note' => $noteHtmlForCk,
-        'important' => $importantHtmlForCk,
-    ]);
+    $ckEditorSnippets = $editorSnippets;
 
     $pages = \App\Models\Page::where('is_published', true)->orderBy('title')->get();
     // Schedule pages, offered as ready-made CTA buttons ("Sprawdź harmonogram").
@@ -109,9 +93,9 @@
             <button type="button" data-insert-key="green" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-square w-4 text-center" style="color:#15803d" aria-hidden="true"></i> Przycisk zielony</button>
             <hr class="my-1 border-gray-100" role="separator">
             {{-- Bloki treści --}}
-            <button type="button" id="{{ $editorId }}-box" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-vector-square w-4 text-center" aria-hidden="true"></i> Tekst z ramką</button>
-            <button type="button" data-insert-key="note" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-triangle-exclamation w-4 text-center text-amber-500" aria-hidden="true"></i> Notatka / ostrzeżenie</button>
-            <button type="button" data-insert-key="important" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-circle-info w-4 text-center text-blue-600" aria-hidden="true"></i> Ważne info</button>
+            @if (in_array('callout', $newBlockTypes, true))
+                <button type="button" id="{{ $editorId }}-block-new-callout" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-circle-info w-4 text-center" aria-hidden="true"></i> Ramka informacyjna…</button>
+            @endif
             <button type="button" data-insert-key="bip" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-landmark w-4 text-center text-muted" aria-hidden="true"></i> Więcej informacji w BIP</button>
             <hr class="my-1 border-gray-100" role="separator">
             {{-- Układ --}}
@@ -153,9 +137,6 @@
             @endif
             @if (in_array('accordion', $newBlockTypes, true))
                 <button type="button" id="{{ $editorId }}-block-new-accordion" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-bars-staggered w-4 text-center" aria-hidden="true"></i> Nowy akordeon…</button>
-            @endif
-            @if (in_array('callout', $newBlockTypes, true))
-                <button type="button" id="{{ $editorId }}-block-new-callout" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-circle-exclamation w-4 text-center" aria-hidden="true"></i> Nowa ramka informacyjna…</button>
             @endif
             @if (in_array('pricing', $newBlockTypes, true))
                 <button type="button" id="{{ $editorId }}-block-new-pricing" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-coins w-4 text-center" aria-hidden="true"></i> Nowy cennik…</button>
@@ -1626,13 +1607,6 @@
                         editor.editing.view.focus();
                     });
 
-                    document.getElementById('{{ $editorId }}-box').addEventListener('click', function () {
-                        var viewFragment = editor.data.processor.toView({!! json_encode($boxHtmlForCk) !!});
-                        var modelFragment = editor.data.toModel(viewFragment);
-                        editor.model.insertContent(modelFragment);
-                        editor.editing.view.focus();
-                    });
-
                     var ckSnippets = {!! json_encode($ckEditorSnippets) !!};
                     document.getElementById('{{ $editorId }}-toolbar').querySelectorAll('[data-insert-key]').forEach(function (b) {
                         b.addEventListener('click', function () {
@@ -1928,7 +1902,6 @@
 
                 var snippets = {!! json_encode($editorSnippets) !!};
                 var ctaHtml = {!! json_encode($ctaHtml) !!};
-                var boxHtml = {!! json_encode($boxHtml) !!};
                 var columnsHtml = {!! json_encode($columnsHtml) !!};
                 var pageLinks = {!! json_encode($pages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
                 var scheduleLinks = {!! json_encode($schedulePages->map(fn ($p) => ['url' => '/'.$p->slug, 'title' => $p->title])->values()) !!};
@@ -2047,6 +2020,13 @@
                             });
                         });
 
+                        // Kreator nowego bloku ([blok:ID]) i wstawienie go w miejscu kursora.
+                        function newBlock(bt) {
+                            window.BlockBuilder.open({ type: bt, id: null, trigger: document.activeElement, onSave: function (b) {
+                                if (! contentBlocks.some(function (x) { return x.id === b.id; })) { contentBlocks.push({ id: b.id, type: b.type, name: b.name }); }
+                                editor.insertContent('<p>[blok:' + b.id + ']</p>');
+                            } });
+                        }
                         editor.ui.registry.addMenuButton('insertmenu', {
                             text: 'Wstaw', icon: 'plus', tooltip: 'Wstaw element',
                             fetch: function (cb) {
@@ -2061,9 +2041,8 @@
                                     { type: 'menuitem', text: 'Przycisk zielony', onAction: function () { editor.insertContent(snippets.green); } },
                                     { type: 'separator' },
                                     // Bloki treści
-                                    { type: 'menuitem', text: 'Tekst z ramką', onAction: function () { editor.insertContent(boxHtml); } },
-                                    { type: 'menuitem', text: 'Notatka / ostrzeżenie', onAction: function () { editor.insertContent(snippets.note); } },
-                                    { type: 'menuitem', text: 'Ważne info', icon: 'info', onAction: function () { editor.insertContent(snippets.important); } },
+                                    // „Ramka informacyjna” z kreatora bloków zastępuje stare ramki (tekst z ramką, notatka, ważne info).
+                                    ...(@js(in_array('callout', $newBlockTypes, true)) ? [{ type: 'menuitem', text: 'Ramka informacyjna…', icon: 'info', onAction: function () { newBlock('callout'); } }] : []),
                                     { type: 'menuitem', text: 'Więcej informacji w BIP', onAction: function () { editor.insertContent(snippets.bip); } },
                                     { type: 'separator' },
                                     // Układ
@@ -2097,13 +2076,8 @@
                                     } });
                                 }
                                 items.push({ type: 'separator' });
-                                @js($newBlockTypes).forEach(function (bt) {
-                                    items.push({ type: 'menuitem', text: { cta: 'Nowe przyciski CTA…', accordion: 'Nowy akordeon…', callout: 'Nowa ramka informacyjna…', pricing: 'Nowy cennik…' }[bt], onAction: function () {
-                                        window.BlockBuilder.open({ type: bt, id: null, trigger: document.activeElement, onSave: function (b) {
-                                            if (! contentBlocks.some(function (x) { return x.id === b.id; })) { contentBlocks.push({ id: b.id, type: b.type, name: b.name }); }
-                                            editor.insertContent('<p>[blok:' + b.id + ']</p>');
-                                        } });
-                                    } });
+                                @js($newBlockTypes).filter(function (bt) { return bt !== 'callout'; }).forEach(function (bt) {
+                                    items.push({ type: 'menuitem', text: { cta: 'Nowe przyciski CTA…', accordion: 'Nowy akordeon…', pricing: 'Nowy cennik…' }[bt], onAction: function () { newBlock(bt); } });
                                 });
                                 if (contentBlocks.length) {
                                     items.push({ type: 'nestedmenuitem', text: 'Wstaw blok', getSubmenuItems: function () {

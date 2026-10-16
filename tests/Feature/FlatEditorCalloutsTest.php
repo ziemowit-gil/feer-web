@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\ContentBlock;
+use App\Models\Page;
+use App\Models\SiteSetting;
+use App\Models\User;
 use App\Support\ShortcodeParser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -40,5 +43,20 @@ class FlatEditorCalloutsTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/\.cx-[a-z.-]*[^{]*\{[^}]*border(-color|-width|:)/', $html);
         $this->assertLessThan(strpos($html, 'class="cx-title'), strpos($html, 'class="cx-ico'));
         $this->assertStringContainsString('aria-hidden="true"', $html);
+    }
+
+    /** Klasyczny edytor: zamiast „Tekst z ramką / Notatka / Ważne info” jest „Ramka informacyjna…” z kreatora. */
+    public function test_klasyczny_edytor_wstawia_ramke_informacyjna_zamiast_starych(): void
+    {
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'default_editor' => User::EDITOR_CLASSIC]);
+        $page = Page::create(['title' => 'Strona', 'slug' => 'strona', 'type' => 'standard', 'content' => '<p>Treść</p>', 'is_published' => true]);
+
+        $html = $this->actingAs($admin)->get(route('admin.podstrony.edit', [$page, 'klasyczny' => 1]))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Ramka informacyjna…', $html);
+        foreach (['Tekst z ramką', 'Ważne info', 'data-insert-key="note"', 'class=\\"content-box', 'class=\\"content-note', 'class=\\"content-important', 'Nowa ramka informacyjna'] as $old) {
+            $this->assertStringNotContainsString($old, $html, $old);
+        }
     }
 }
