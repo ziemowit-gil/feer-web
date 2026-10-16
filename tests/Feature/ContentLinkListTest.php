@@ -241,6 +241,25 @@ class ContentLinkListTest extends TestCase
             ->assertSee('Edytuj w panelu');
     }
 
+    public function test_block_editor_link_search_includes_people_and_events_and_schedule_cta(): void
+    {
+        $this->page('Anna Kowalska', null, ['type' => 'about_person', 'slug' => 'zespol/osoba/anna-kowalska']);
+        $this->page('Harmonogram szkoleń', null, ['type' => 'schedule']);
+        \App\Models\Event::create(['title' => 'Annowe warsztaty', 'slug' => 'annowe-warsztaty', 'lead' => 'Opis', 'description' => 'Opis', 'is_published' => true, 'starts_at' => now()->addWeek()]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $results = collect($this->actingAs($admin)->getJson(route('admin.edytor-blokowy.links', ['q' => 'Ann']))->assertOk()->json());
+        $this->assertSame('Osoba', $results->firstWhere('title', 'Anna Kowalska')['kind'] ?? null);
+        $this->assertSame('/wydarzenia/annowe-warsztaty', $results->firstWhere('title', 'Annowe warsztaty')['url'] ?? null);
+
+        $page = $this->page('Edytowana');
+        $html = $this->actingAs($admin)->get(route('admin.podstrony.bloki.edit', $page))->getContent();
+        preg_match("~data-config='([^']*)'~", $html, $m);
+        $config = json_decode($m[1] ?? '', true);
+        $this->assertSame([['title' => 'Harmonogram szkoleń', 'url' => '/harmonogram-szkolen']], $config['classic']['schedules']);
+        $this->assertSame(\App\Support\Edition::allows('docx_import') ? route('admin.editor.docx.import') : null, $config['urls']['docx']);
+    }
+
     public function test_shortcodes_are_detected_and_removed_from_excerpts(): void
     {
         $this->assertTrue(ShortcodeParser::has('<p>[podstrony:poziomy=2]</p>'));

@@ -128,7 +128,7 @@ class BlockEditorController extends Controller
     ];
 
     /** Maksymalna liczba podpowiedzi w wyborze odnośnika wewnętrznego. */
-    private const LINK_LIMIT = 20;
+    private const LINK_LIMIT = 30;
 
     // ── Trasy dotychczasowe (podstrony) ─────────────────────────────────────
 
@@ -192,7 +192,7 @@ class BlockEditorController extends Controller
         $results = collect();
 
         $base(Page::class)->live()->latest('updated_at')->limit($perKind)->get()
-            ->each(fn (Page $p) => $results->push(['title' => $p->title, 'url' => $this->relativeUrl($p->publicUrl()), 'kind' => 'Strona']));
+            ->each(fn (Page $p) => $results->push(['title' => $p->title, 'url' => $this->relativeUrl($p->publicUrl()), 'kind' => $p->isAboutPerson() ? 'Osoba' : 'Strona']));
 
         if ($settings->isModuleEnabled('news')) {
             $base(News::class)->where('is_published', true)->where('published_at', '<=', now())
@@ -204,6 +204,18 @@ class BlockEditorController extends Controller
             $base(Project::class)->where('is_published', true)->latest('updated_at')->limit($perKind)->get()
                 ->each(fn (Project $p) => $results->push(['title' => $p->title, 'url' => route('projects.show', $p, false), 'kind' => 'Działanie']));
         }
+
+        // Jak w menu „Wstaw link" klasycznego edytora: także wydarzenia i pliki do pobrania.
+        if ($settings->isModuleEnabled('events')) {
+            $base(\App\Models\Event::class)->where('is_published', true)->latest('starts_at')->limit($perKind)->get()
+                ->each(fn (\App\Models\Event $e) => $results->push(['title' => $e->title, 'url' => route('events.show', $e, false), 'kind' => 'Wydarzenie']));
+        }
+
+        \App\Models\Attachment::query()->with('media')
+            ->when($q !== '', fn ($w) => $w->where('label', 'like', '%'.$q.'%'))
+            ->latest('id')->limit($perKind)->get()
+            ->filter(fn ($a) => $a->file_url)
+            ->each(fn ($a) => $results->push(['title' => $a->label, 'url' => $a->file_url, 'kind' => 'Plik'.($a->file_extension ? ' '.strtoupper($a->file_extension) : '')]));
 
         // Przy wyszukiwaniu najpierw tytuły zaczynające się od frazy.
         if ($q !== '') {
@@ -330,6 +342,8 @@ class BlockEditorController extends Controller
                     'upload' => route('admin.multimedia.upload-ajax'),
                     'links' => route('admin.edytor-blokowy.links'),
                     'shortcode' => route('admin.edytor-blokowy.shortcode'),
+                    // Import treści z Worda (jak „Import → DOCX" klasycznego edytora) — tylko w wersji z tą funkcją.
+                    'docx' => \App\Support\Edition::allows('docx_import') ? route('admin.editor.docx.import') : null,
                 ],
             ],
         ]);

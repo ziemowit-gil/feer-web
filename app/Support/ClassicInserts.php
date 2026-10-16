@@ -81,6 +81,9 @@ class ClassicInserts
             'bands' => $site->isModuleEnabled('feer_bands')
                 ? FeerBand::forCurrentSite()->active()->orderBy('order')->orderBy('title')->get(['id', 'title'])->map(fn ($b) => ['value' => $b->id, 'label' => (string) $b->title])->all()
                 : [],
+            // „Przycisk CTA do harmonogramu" z menu „Wstaw link".
+            'schedules' => Page::where('is_published', true)->where('type', 'schedule')->orderBy('title')->get(['id', 'slug', 'title', 'type', 'parent_id'])
+                ->map(fn (Page $p) => ['title' => $p->title, 'url' => '/'.$p->slug])->all(),
             'snippets' => collect(self::SNIPPETS)->map(fn ($s, $key) => ['key' => $key] + $s)->values()->all(),
             'events' => Event::where('is_published', true)->orderByDesc('starts_at')->limit(30)->get()
                 ->map(fn (Event $e) => ['title' => $e->title, 'html' => self::eventBox($e)])->all(),

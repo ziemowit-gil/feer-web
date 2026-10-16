@@ -238,6 +238,7 @@ function start(config) {
 
     // Wstawki HTML z klasycznego edytora (BIP, sekcje akcentu) i ramki z wydarzeniem — jako bloki „Własny HTML”.
     (CI.snippets || []).forEach((sn) => PATTERNS.push({ title: sn.title, desc: sn.desc + ' (jak w klasycznym edytorze)', build: () => [block('html', { html: sn.html })] }));
+    (CI.schedules || []).forEach((sc) => PATTERNS.push({ title: 'Przycisk CTA do harmonogramu: ' + sc.title, desc: 'Przycisk prowadzący do strony harmonogramu.', build: () => [block('buttons', { items: [{ label: sc.title, url: sc.url, variant: 'brand', newTab: false }] })] }));
     (CI.events || []).forEach((ev) => PATTERNS.push({ title: 'Ramka z wydarzeniem: ' + ev.title, desc: 'Termin, miejsce i przycisk do wydarzenia.', build: () => [block('html', { html: ev.html })] }));
 
     // ── Stan ───────────────────────────────────────────────────────────────
@@ -744,6 +745,7 @@ function start(config) {
                 tbButton('Cofnij', 'rotate-left', undo, { shortcut: mod + '+Z', attrs: { 'aria-disabled': String(!S.past.length) } }),
                 tbButton('Ponów', 'rotate-right', redo, { shortcut: mod + '+Shift+Z', attrs: { 'aria-disabled': String(!S.future.length) } }),
                 tbButton('Widok listy', 'bars-staggered', () => togglePanel('list'), { attrs: { 'aria-pressed': String(S.panel === 'list') } }),
+                tbButton(config.urls.docx ? 'Importuj z pliku (DOCX, TXT)' : 'Importuj z pliku TXT', 'file-import', () => importInput.click()),
                 h('button', { type: 'button', 'data-key': 'a11y', class: 'be-btn be-a11y-btn' + (count ? ' has-issues' : ''), 'aria-pressed': String(S.panel === 'a11y'), onClick: () => togglePanel('a11y') },
                     icon('universal-access'), h('span', {}, count ? `Dostępność: ${count} ${plural(count, 'uwaga', 'uwagi', 'uwag')}` : 'Dostępność: OK')),
             ),
@@ -761,6 +763,39 @@ function start(config) {
         );
         if (focusedKey) topbar.querySelector(`[data-key="${focusedKey}"]`)?.focus();
     }
+    // Import treści z pliku (jak „Import” klasycznego edytora): DOCX przez serwer (czysty HTML) albo TXT
+    // (akapity rozdzielone pustą linią). Bloki trafiają w miejsce wstawiania.
+    const importInput = h('input', { type: 'file', accept: (config.urls.docx ? '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,' : '') + '.txt,text/plain', class: 'be-sr-only', tabindex: '-1', 'aria-hidden': 'true' });
+    importInput.addEventListener('change', async () => {
+        const file = importInput.files?.[0];
+        importInput.value = '';
+        if (!file) return;
+        try {
+            let blocks;
+            if (/\.docx$/i.test(file.name)) {
+                if (!config.urls.docx) throw new Error('Import DOCX nie jest dostępny w tej wersji.');
+                announce('Importowanie pliku…');
+                const fd = new FormData();
+                fd.append('docx', file);
+                const res = await fetch(config.urls.docx, { method: 'POST', body: fd, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' } });
+                const json = await res.json().catch(() => ({}));
+                if (!res.ok || json.error) throw new Error(json.error || json.message || 'Błąd serwera (' + res.status + ').');
+                blocks = htmlToBlocks(json.html || '');
+            } else {
+                const text = await file.text();
+                blocks = text.replace(/\r\n?/g, '\n').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+                    .map((p) => block('paragraph', { text: escapeHtml(p).replace(/\n/g, '<br>') }));
+            }
+            if (!blocks.length) { announce('Plik nie zawiera treści do zaimportowania.'); return; }
+            insertFromPanel(blocks);
+            announce(`Zaimportowano ${blocks.length} ${plural(blocks.length, 'blok', 'bloki', 'bloków')} z pliku ${file.name}`);
+        } catch (e) {
+            S.error = 'Nie udało się zaimportować pliku: ' + e.message;
+            updateTopbar();
+        }
+    });
+    mount.append(importInput);
+
     function plural(n, one, few, many) {
         if (n === 1) return one;
         const d = n % 10; const t = n % 100;
@@ -1721,7 +1756,9 @@ function start(config) {
                 btn(`Pogrubienie (${mod}+B)`, 'bold', () => withSelection(() => document.execCommand('bold'))),
                 btn(`Kursywa (${mod}+I)`, 'italic', () => withSelection(() => document.execCommand('italic'))),
                 btn(`Odnośnik (${mod}+K)`, 'link', () => withSelection((el) => openLinkDialog(el))),
-                btn('Przekreślenie', 'strikethrough', () => withSelection(() => document.execCommand('strikeThrough')))));
+                btn('Przekreślenie', 'strikethrough', () => withSelection(() => document.execCommand('strikeThrough'))),
+                btn('Znak specjalny', 'section', () => withSelection((el) => openCharDialog(el, 'chars'))),
+                btn('Emoji', 'face-smile', () => withSelection((el) => openCharDialog(el, 'emoji')))));
         }
         if (b.type === 'image' && b.attrs.url) {
             groups.push(h('div', { class: 'be-tool-group' }, btn('Zamień obraz', 'arrows-rotate', async () => { const p = await openMediaLibrary(); if (p[0]) await setImageWithAlt(b, p[0].url, { alt: p[0].alt || b.attrs.alt, decorative: b.attrs.decorative }); })));
@@ -2117,7 +2154,7 @@ function start(config) {
             'aria-autocomplete': 'list', 'aria-expanded': 'false', 'aria-controls': listId, 'aria-describedby': helpId,
             autocomplete: 'off', spellcheck: 'false',
         });
-        const list = h('ul', { class: 'be-combo-list', id: listId, role: 'listbox', 'aria-label': 'Strony, aktualności i działania', hidden: true });
+        const list = h('ul', { class: 'be-combo-list', id: listId, role: 'listbox', 'aria-label': 'Strony, osoby, aktualności, działania, wydarzenia, pliki i kotwice', hidden: true });
         let items = [];
         let active = -1;
         let seq = 0;
@@ -2146,8 +2183,16 @@ function start(config) {
         };
         const search = async () => {
             const raw = input.value.trim();
-            // Pełny adres (https://, mailto:, tel:, #) wpisany ręcznie — bez podpowiedzi.
-            if (/^(https?:|mailto:|tel:|#|www\.)/i.test(raw)) { items = []; close(); return; }
+            // Pełny adres (https://, mailto:, tel:) wpisany ręcznie — bez podpowiedzi.
+            if (/^(https?:|mailto:|tel:|www\.)/i.test(raw)) { items = []; close(); return; }
+            // Kotwice nagłówków tej treści (jak „Link do kotwicy…” w klasycznym edytorze).
+            const anchorItems = (q) => {
+                const out = [];
+                walk(S.blocks, (b) => { if (b.type === 'heading' && b.attrs.anchor) out.push({ title: textOf(b.attrs.text) || b.attrs.anchor, url: '#' + b.attrs.anchor, kind: 'Kotwica' }); });
+                const n = q.toLowerCase();
+                return out.filter((a) => !n || a.title.toLowerCase().includes(n) || a.url.includes(n));
+            };
+            if (raw.startsWith('#')) { items = anchorItems(raw.slice(1)); showItems(raw); return; }
             // Ścieżka (/aktualnosci/nazwa) — szukamy po ostatnim członie adresu.
             const q = raw.startsWith('/') ? (raw.split(/[/?#]/).filter(Boolean).pop() || '') : raw;
             const my = ++seq;
@@ -2157,7 +2202,10 @@ function start(config) {
                 return;
             }
             if (my !== seq || document.activeElement !== input) return;
-            items = Array.isArray(data) ? data : [];
+            items = [...anchorItems(q), ...(Array.isArray(data) ? data : [])];
+            showItems(q);
+        };
+        const showItems = (q) => {
             list.replaceChildren(...items.map((it, i) => h('li', {
                 id: `${listId}-${i}`, role: 'option', class: 'be-combo-option', 'aria-selected': 'false',
                 onMousedown: (e) => { e.preventDefault(); choose(i); },
@@ -2197,7 +2245,7 @@ function start(config) {
             h('label', { for: id }, label),
             input,
             list,
-            h('p', { id: helpId, class: 'be-help' }, 'Wpisz adres (https://…, /strona, mailto:…) albo zacznij pisać tytuł, aby wybrać stronę, aktualność lub działanie z listy (strzałka w dół).'),
+            h('p', { id: helpId, class: 'be-help' }, 'Wpisz adres (https://…, /strona, mailto:…) albo zacznij pisać tytuł, aby wybrać z listy stronę, osobę, aktualność, działanie, wydarzenie albo plik do pobrania (strzałka w dół). „#” pokazuje kotwice nagłówków tej treści.'),
             chosen,
             status);
         return { root, input, escapedRecently: () => Date.now() - escapedAt < 400 };
@@ -2243,6 +2291,49 @@ function start(config) {
         dlg.showModal();
         url.focus();
         url.select();
+    }
+
+    // Znaki specjalne i emoji (jak „charmap” / „emoticons” w klasycznym edytorze). Siatka przycisków
+    // z nazwami dla czytnika ekranu; wybrany znak wstawia się w miejscu kursora.
+    const CHARS = [['„', 'cudzysłów otwierający'], ['”', 'cudzysłów zamykający'], ['«', 'cudzysłów ostrokątny lewy'], ['»', 'cudzysłów ostrokątny prawy'], ['–', 'półpauza'], ['—', 'pauza'], ['…', 'wielokropek'], ['\u00a0', 'twarda spacja'],
+        ['·', 'kropka środkowa'], ['•', 'punktor'], ['§', 'paragraf'], ['©', 'copyright'], ['®', 'znak zastrzeżony'], ['™', 'znak towarowy'], ['°', 'stopień'], ['±', 'plus minus'],
+        ['×', 'razy'], ['÷', 'dzielone'], ['≈', 'około'], ['≠', 'różne'], ['≤', 'mniejsze lub równe'], ['≥', 'większe lub równe'], ['€', 'euro'], ['£', 'funt'],
+        ['¼', 'jedna czwarta'], ['½', 'jedna druga'], ['¾', 'trzy czwarte'], ['²', 'do kwadratu'], ['³', 'do sześcianu'], ['‰', 'promil'], ['№', 'numer'], ['′', 'prim'],
+        ['→', 'strzałka w prawo'], ['←', 'strzałka w lewo'], ['↑', 'strzałka w górę'], ['↓', 'strzałka w dół'], ['✓', 'ptaszek'], ['✗', 'krzyżyk'], ['★', 'gwiazdka'], ['♥', 'serce']];
+    const EMOJI = [['😀', 'uśmiech'], ['😊', 'zadowolenie'], ['😉', 'mrugnięcie'], ['😍', 'zachwyt'], ['🤔', 'zamyślenie'], ['😢', 'smutek'], ['😮', 'zdziwienie'], ['🙏', 'dziękuję'],
+        ['👍', 'kciuk w górę'], ['👏', 'brawa'], ['🙌', 'hura'], ['💪', 'siła'], ['🤝', 'uścisk dłoni'], ['👋', 'cześć'], ['❤️', 'czerwone serce'], ['💙', 'niebieskie serce'],
+        ['🎉', 'gratulacje'], ['✨', 'iskry'], ['⭐', 'gwiazda'], ['🔥', 'ogień'], ['✅', 'zrobione'], ['❌', 'błąd'], ['⚠️', 'uwaga'], ['ℹ️', 'informacja'],
+        ['📢', 'ogłoszenie'], ['📅', 'kalendarz'], ['⏰', 'budzik'], ['📍', 'miejsce'], ['📞', 'telefon'], ['✉️', 'koperta'], ['📄', 'dokument'], ['🔗', 'link'],
+        ['💡', 'pomysł'], ['🎓', 'edukacja'], ['📚', 'książki'], ['💻', 'komputer'], ['♿', 'dostępność'], ['🦻', 'aparat słuchowy'], ['🦯', 'biała laska'], ['🌍', 'świat']];
+    function openCharDialog(el, kind) {
+        const sel = window.getSelection();
+        const range = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null;
+        const n = ++dialogSeq;
+        const set = kind === 'emoji' ? EMOJI : CHARS;
+        const title = kind === 'emoji' ? 'Wstaw emoji' : 'Wstaw znak specjalny';
+        const dlg = h('dialog', { class: 'be-dialog be-dialog--small', 'aria-labelledby': `be-char-title-${n}` });
+        const restore = () => { el.focus(); if (range) { sel.removeAllRanges(); sel.addRange(range); } };
+        const done = (ch) => {
+            dlg.close(); dlg.remove(); restore();
+            if (ch) { document.execCommand('insertText', false, ch); el.dispatchEvent(new Event('input', { bubbles: true })); announce('Wstawiono: ' + set.find(([c]) => c === ch)[1]); }
+        };
+        const grid = h('div', { class: 'be-char-grid', role: 'group', 'aria-label': title },
+            ...set.map(([ch, name]) => h('button', { type: 'button', class: 'be-char', 'aria-label': name, title: name, onClick: () => done(ch) }, ch === '\u00a0' ? '⍽' : ch)));
+        // Strzałki przesuwają fokus po siatce.
+        grid.addEventListener('keydown', (e) => {
+            const btns = [...grid.querySelectorAll('button')];
+            const i = btns.indexOf(document.activeElement);
+            const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 8, ArrowUp: -8 }[e.key];
+            if (i < 0 || !step) return;
+            e.preventDefault();
+            btns[Math.max(0, Math.min(btns.length - 1, i + step))].focus();
+        });
+        dlg.append(h('h2', { id: `be-char-title-${n}` }, title), grid,
+            h('div', { class: 'be-dialog-actions' }, h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => done(null) }, 'Anuluj')));
+        dlg.addEventListener('cancel', (e) => { e.preventDefault(); done(null); });
+        document.body.append(dlg);
+        dlg.showModal();
+        grid.querySelector('button').focus();
     }
 
     // Okno wyboru adresu dla pól inspektora (przyciski, odnośnik obrazu).

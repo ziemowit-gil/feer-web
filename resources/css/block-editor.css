@@ -547,3 +547,8 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
 .be-page-tiles-note a { color: #1752bf; font-weight: 700; text-decoration: underline; }
 .be-page-tiles-body { pointer-events: none; }
 .be-page-tiles-body > :first-child, .be-page-tiles-body nav { margin-top: 0 !important; }
+
+/* Znaki specjalne i emoji: siatka 8 kolumn, duże pola do kliknięcia. */
+.be-char-grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 0.25rem; }
+.be-char { min-height: 2.75rem; border: 0; border-radius: 0.375rem; background: #f3f4f6; color: #1a1a1a; font-size: 1.25rem; cursor: pointer; }
+.be-char:hover { background: #e8f0ff; }
