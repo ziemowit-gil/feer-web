@@ -436,6 +436,10 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
 .be-check { display: grid; grid-template-columns: auto 1fr; gap: 0.15rem 0.5rem; align-items: start; margin-bottom: 0.75rem; font-size: 0.875rem; }
 .be-check input { width: 1.1rem; height: 1.1rem; margin-top: 0.1rem; accent-color: var(--be-ui); }
 .be-check .be-help { grid-column: 2; }
+.be-check[hidden] { display: none; }
+/* Wybór stron w bloku „Lista podstron”: przewijana lista pól wyboru. */
+.be-pick-list { margin: 0.5rem 0; padding: 0.5rem; border-radius: 0.375rem; background: #f9fafb; }
+.be-pick-list .be-check { margin-bottom: 0.35rem; }
 .be-dl { display: grid; grid-template-columns: auto 1fr; gap: 0.35rem 0.75rem; margin: 0; font-size: 0.8125rem; }
 .be-dl dt { color: var(--be-muted); }
 .be-dl dd { margin: 0; font-weight: 600; }

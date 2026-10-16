@@ -9,7 +9,9 @@ use App\Models\Page;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use App\Support\BlockRenderer;
+use App\Support\NewsList;
 use App\Support\ShortcodeParser;
+use App\Support\SubpageList;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
@@ -224,9 +226,15 @@ class BlockEditorController extends Controller
         $data = $this->validateJson($request, [
             'code' => ['required_without:html', 'nullable', 'string', 'max:220', 'regex:/^\[[a-z0-9_-]+(?::[^\]\r\n]{1,200})?\]$/i'],
             'html' => ['required_without:code', 'nullable', 'string', 'max:200000'],
+            // Strona, dla której liczyć „bieżącą stronę" listy podstron ([podstrony]).
+            'page_id' => ['nullable', 'integer'],
         ], [
             'code.regex' => 'Nieprawidłowy shortcode. Wpisz go w nawiasach kwadratowych, np. [formularz:nazwa].',
         ]);
+
+        if (filled($data['page_id'] ?? null)) {
+            SubpageList::setContextPage(Page::query()->forCurrentSite()->find($data['page_id']));
+        }
 
         $html = filled($data['code'] ?? null)
             ? ShortcodeParser::render('<p>'.$data['code'].'</p>')
@@ -301,6 +309,13 @@ class BlockEditorController extends Controller
                 // Działanie: płótno w układzie strony działania (kategoria, „Opis działania”, podgląd menu bocznego).
                 'layout' => $record instanceof Project ? $this->projectLayout($record) : null,
                 'imported' => $imported,
+                // Blok „Lista podstron": strony do wyboru źródła i wyboru ręcznego.
+                'subpages' => [
+                    'pages' => SubpageList::pickerOptions(),
+                    'contextPage' => $record instanceof Page ? $record->id : null,
+                ],
+                // Blok „Lista aktualności": kategorie do wyboru.
+                'newsCategories' => NewsList::categoryOptions(),
                 'urls' => [
                     'save' => $updateUrl,
                     'view' => $this->publicUrl($type, $record),

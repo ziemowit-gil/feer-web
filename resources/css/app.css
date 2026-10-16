@@ -874,6 +874,36 @@ html.no-animations .nav-mega-panel { transition: none !important; }
 .prose .content-file-meta { font-weight: 400; color: var(--color-muted); }
 .prose .content-file-desc { font-size: 0.875rem; color: var(--color-muted); }
 
+/* Listy linków: podstrony ([podstrony…]) i aktualności ([aktualnosci…]), bloki „Lista podstron”/„Lista aktualności”: płasko, bez ramek, kolory marki.
+   Linki zawsze podkreślone (WCAG 1.4.1); kontrast brand-dark na bieli i brand-light ≥ 4,5:1 we wszystkich stanach. */
+.content-links { margin: 1.5rem 0; }
+.content-links ul { list-style: none; margin: 0; padding: 0; }
+.content-links-list { display: grid; gap: 0.5rem; }
+.content-links-link, .content-links-sublink {
+    color: var(--color-brand-dark, #1752bf);
+    text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em;
+}
+.content-links-link { font-weight: 700; }
+.content-links-link:hover, .content-links-sublink:hover { color: var(--color-ink, #1a1a1a); text-decoration-thickness: 2px; }
+.content-links-link:focus-visible, .content-links-sublink:focus-visible {
+    outline: 2px solid var(--color-brand-dark, #1752bf); outline-offset: 2px; border-radius: 2px;
+}
+.content-links-date { display: block; margin-top: 0.15rem; font-size: 0.875rem; color: var(--color-muted, #4b5563); }
+.content-links--kafle .content-links-date { color: var(--color-ink, #1a1a1a); }
+.content-links-excerpt { margin: 0.25rem 0 0; font-size: 0.9375rem; line-height: 1.5; color: var(--color-muted, #4b5563); }
+.content-links-sub { display: grid; gap: 0.25rem; margin-top: 0.4rem !important; padding-left: 1.25rem !important; }
+.content-links-sub li { position: relative; }
+.content-links-sub li::before { content: ""; position: absolute; left: -0.9rem; top: 0.7em; width: 0.4rem; height: 2px; background: var(--color-brand, #1e6dff); }
+.content-links--zajawki .content-links-list { gap: 1.25rem; }
+.content-links--kafle .content-links-list { grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 640px) { .content-links--kafle .content-links-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.content-links--kafle .content-links-item { position: relative; padding: 1.1rem 1.25rem; border-radius: 0.5rem; background: var(--color-brand-light, #e8f0ff); }
+.content-links--kafle .content-links-link { font-size: 1.0625rem; }
+/* Kafel bez podstron jest klikalny w całości (rozciągnięty link); z podstronami — tylko tytuł i linki podstron. */
+.content-links--kafle .content-links-item:not(:has(.content-links-sub)) .content-links-link::after { content: ""; position: absolute; inset: 0; border-radius: 0.5rem; }
+.content-links--kafle .content-links-item:has(.content-links-link:focus-visible) { outline: 2px solid var(--color-brand-dark, #1752bf); outline-offset: 2px; }
+.content-links--kafle .content-links-excerpt { color: var(--color-ink, #1a1a1a); }
+
 /* Kroki w treściach (np. „Jak wygląda współpraca” przy wsparciu NGO): numer w jasnoniebieskim kwadracie,
    jak ikony obszarów (.ngo-ico) — nadpisuje starszy styl wstawiony w treść (niebieskie kółko). */
 .prose .ngo-steps { gap: .5rem; }

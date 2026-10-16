@@ -59,7 +59,41 @@ function start(config) {
     const debounce = (fn, ms) => { let t = null; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; };
     const SHORTCODE_RE = /^\[[a-z0-9_-]+(?::[^\]\r\n]{1,200})?\]$/i;
     // Jak App\Support\ShortcodeParser::DETECT_PATTERN — czy HTML zawiera shortcode do wyrenderowania.
-    const SHORTCODE_DETECT = /\[(?:(?:formularz|kafelki):[a-z0-9_-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?)\]/i;
+    const SHORTCODE_DETECT = /\[(?:(?:formularz|kafelki):[a-z0-9_-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci)(?::[^\]\r\n<]{0,200})?)\]/i;
+
+    // Shortcode'y list linków — jak App\Support\SubpageList::shortcode() i NewsList::shortcode().
+    const LIST_LAYOUTS = [['lista', 'Prosta lista linków'], ['zajawki', 'Lista z zajawką'], ['kafle', 'Kafle w 2 kolumnach']];
+    function subpagesCode(a) {
+        const parts = [];
+        if (a.manual && a.picked?.length) parts.push('wybrane=' + a.picked.join(','));
+        else if (a.source === 'page' && a.page) parts.push('strona=' + a.page);
+        if (a.sort === 'alfabet') parts.push('sortowanie=alfabet');
+        if (Number(a.depth) === 2) parts.push('poziomy=2');
+        if (a.layout && a.layout !== 'lista') parts.push('wyglad=' + a.layout);
+        return '[podstrony' + (parts.length ? ':' + parts.join(';') : '') + ']';
+    }
+    function newsCode(a) {
+        const parts = [];
+        if (a.category) parts.push('kategoria=' + a.category);
+        if (Number(a.limit) && Number(a.limit) !== 5) parts.push('liczba=' + Number(a.limit));
+        if (a.sort === 'alfabet') parts.push('sortowanie=alfabet');
+        if (a.layout && a.layout !== 'lista') parts.push('wyglad=' + a.layout);
+        return '[aktualnosci' + (parts.length ? ':' + parts.join(';') : '') + ']';
+    }
+    // Shortcode listy z treści (klasyczny edytor, wklejanie) → atrybuty bloku.
+    function listBlockFromCode(code) {
+        const m = code.match(/^\[(podstrony|aktualnosci)(?::([^\]]*))?\]$/i);
+        if (!m) return null;
+        const o = {};
+        (m[2] || '').split(/[;|]/).forEach((p) => { const i = p.indexOf('='); if (i > 0) o[p.slice(0, i).trim().toLowerCase()] = p.slice(i + 1).trim(); });
+        const layout = ['lista', 'zajawki', 'kafle'].includes(o.wyglad) ? o.wyglad : 'lista';
+        if (m[1].toLowerCase() === 'aktualnosci') {
+            return block('newslist', { category: Number(o.kategoria) || null, limit: Math.min(30, Number(o.liczba) || 5), sort: o.sortowanie === 'alfabet' ? 'alfabet' : 'najnowsze', layout });
+        }
+        const picked = (o.wybrane || '').split(',').map(Number).filter((n) => n > 0);
+        const page = Number(o.strona) || null;
+        return block('subpages', { source: page ? 'page' : 'current', page, manual: picked.length > 0, picked, sort: o.sortowanie === 'alfabet' ? 'alfabet' : 'drzewo', depth: Number(o.poziomy) === 2 ? 2 : 1, layout });
+    }
 
     async function postJson(url, data) {
         const res = await fetch(url, {
@@ -155,6 +189,8 @@ function start(config) {
         column: { title: 'Kolumna', icon: 'square', cat: 'design', desc: 'Jedna kolumna układu.', container: true, hidden: true, create: () => ({}), inner: () => [block('paragraph')] },
         separator: { title: 'Separator', icon: 'minus', cat: 'design', desc: 'Pozioma linia oddzielająca sekcje.', keywords: ['linia', 'hr', 'podział'], create: () => ({}) },
         shortcode: { title: 'Shortcode', icon: 'code', cat: 'widgets', desc: 'Osadzenie modułu: formularz, kafelki, blok z kreatora.', keywords: ['formularz', 'kafelki', 'blok', 'moduł'], create: () => ({ code: '' }) },
+        subpages: { title: 'Lista podstron', icon: 'sitemap', cat: 'widgets', desc: 'Linki do podstron tej lub wskazanej strony. Aktualizuje się sama — nowa podstrona pojawi się bez edycji.', keywords: ['podstrony', 'spis', 'menu', 'linki', 'nawigacja', 'dzieci'], create: () => ({ source: 'current', page: null, manual: false, picked: [], sort: 'drzewo', depth: 1, layout: 'lista' }) },
+        newslist: { title: 'Lista aktualności', icon: 'newspaper', cat: 'widgets', desc: 'Linki do najnowszych aktualności (wszystkich lub z kategorii). Aktualizuje się sama.', keywords: ['aktualności', 'wpisy', 'newsy', 'blog', 'linki'], create: () => ({ category: null, limit: 5, sort: 'najnowsze', layout: 'lista' }) },
         html: { title: 'Własny HTML', icon: 'file-code', cat: 'widgets', desc: 'Kod HTML (np. treść z klasycznego edytora).', keywords: ['kod', 'klasyczny', 'classic'], create: () => ({ html: '' }) },
     };
 
@@ -419,7 +455,7 @@ function start(config) {
                 const imgs = n.querySelectorAll('img');
                 const ctas = n.querySelectorAll('a.cta-button');
                 if (!t && !imgs.length) continue;
-                if (SHORTCODE.test(t) && n.children.length === 0) { out.push(block('shortcode', { code: t })); continue; }
+                if (SHORTCODE.test(t) && n.children.length === 0) { out.push(listBlockFromCode(t) || block('shortcode', { code: t })); continue; }
                 if (imgs.length === 1 && !t) { out.push(imageFrom(imgs[0], n.querySelector('a')?.getAttribute('href'))); continue; }
                 if (ctas.length && ctas.length === n.querySelectorAll('a').length && t === [...ctas].map((a) => a.textContent.trim()).join(' ').trim()) {
                     out.push(block('buttons', { align: alignOf(n), items: [...ctas].map((a) => ({ label: a.textContent.trim(), url: a.getAttribute('href') || '', variant: a.classList.contains('cta-red') ? 'red' : (a.classList.contains('cta-green') ? 'green' : 'brand'), newTab: a.target === '_blank' })) }));
@@ -1182,6 +1218,8 @@ function start(config) {
         file: (b) => fileEditor(b),
         html: (b) => htmlEditor(b),
         shortcode: (b) => shortcodeEditor(b),
+        subpages: (b) => linkListEditor(b, subpagesCode(b.attrs), subpagesSummary(b.attrs)),
+        newslist: (b) => linkListEditor(b, newsCode(b.attrs), newsSummary(b.attrs)),
     };
 
     function listEditor(b) {
@@ -1420,7 +1458,7 @@ function start(config) {
     const shortcodePreviewCache = new Map();
     function fetchShortcodePreview(code) {
         if (!shortcodePreviewCache.has(code)) {
-            const p = postJson(config.urls.shortcode, { code }).then((j) => j.html || '');
+            const p = postJson(config.urls.shortcode, { code, page_id: config.subpages?.contextPage || null }).then((j) => j.html || '');
             p.catch(() => shortcodePreviewCache.delete(code));
             shortcodePreviewCache.set(code, p);
         }
@@ -1468,6 +1506,44 @@ function start(config) {
             h('label', { class: 'be-placeholder-title' }, icon('code'), ' Shortcode'),
             input,
             h('p', { id: 'sc-help-' + b.id, class: 'be-small' }, 'Np. [formularz:slug], [kafelki:slug], [kafelki-zestaw:ID], [blok:ID], [pasek:ID].'),
+            status,
+            preview);
+    }
+
+    // Bloki „Lista podstron” i „Lista aktualności”: opis ustawień i podgląd z serwera
+    // (ten sam renderer co na stronie). Ustawienia są w panelu bocznym („Blok”).
+    const pageTitle = (id) => (config.subpages?.pages || []).find((p) => p.id === Number(id))?.title || ('strona #' + id);
+    const layoutLabel = (v) => (LIST_LAYOUTS.find(([k]) => k === v) || LIST_LAYOUTS[0])[1].toLowerCase();
+    function subpagesSummary(a) {
+        const src = a.manual && a.picked.length ? `wybrane strony (${a.picked.length})` : (a.source === 'page' && a.page ? 'podstrony strony „' + pageTitle(a.page) + '”' : 'podstrony tej strony');
+        return [src, a.sort === 'alfabet' ? 'alfabetycznie' : 'kolejność z drzewa', Number(a.depth) === 2 ? 'dzieci i wnuki' : 'tylko dzieci', layoutLabel(a.layout)].join(' · ');
+    }
+    function newsSummary(a) {
+        const cat = a.category ? (config.newsCategories || []).find((c) => c.id === Number(a.category))?.name : null;
+        return [cat ? 'kategoria „' + cat + '”' : 'wszystkie kategorie', 'do ' + (Number(a.limit) || 5) + ' wpisów', a.sort === 'alfabet' ? 'alfabetycznie' : 'od najnowszych', layoutLabel(a.layout)].join(' · ');
+    }
+    function linkListEditor(b, code, summary) {
+        const def = BLOCKS[b.type];
+        const status = h('p', { class: 'be-small be-sc-status', 'aria-live': 'polite' }, 'Wczytywanie podglądu…');
+        const body = h('div', { class: 'be-sc-preview-body' });
+        const preview = h('div', { class: 'be-sc-preview', hidden: true },
+            h('p', { class: 'be-sc-preview-label', 'aria-hidden': 'true' }, icon('eye'), ' Podgląd'),
+            h('div', { inert: true, 'aria-hidden': 'true' }, body));
+        fetchShortcodePreview(code).then((html) => {
+            const frag = sanitizePreview(html);
+            if (!frag.textContent.trim()) {
+                status.textContent = b.type === 'subpages'
+                    ? 'Na razie nie ma opublikowanych podstron do pokazania — lista pojawi się sama, gdy się pojawią.'
+                    : 'Na razie nie ma opublikowanych aktualności do pokazania.';
+                return;
+            }
+            body.replaceChildren(frag);
+            preview.hidden = false;
+            status.textContent = 'Podgląd poniżej — lista aktualizuje się sama przy wyświetlaniu strony.';
+        }).catch((e) => { status.textContent = 'Nie udało się wczytać podglądu: ' + e.message; status.classList.add('be-error'); });
+        return h('div', { class: 'be-placeholder be-placeholder--compact' },
+            h('p', { class: 'be-placeholder-title' }, icon(def.icon), ' ' + def.title),
+            h('p', { class: 'be-small' }, summary, ' — zmień w panelu „Blok”.'),
             status,
             preview);
     }
@@ -1876,6 +1952,45 @@ function start(config) {
                     field('Adres pliku', textInput(a.url, (v) => updateAttrs(b, { url: v.trim() }, { typing: true }), { type: 'url' })),
                     field('Nazwa wyświetlana', textInput(a.label, (v) => updateAttrs(b, { label: v }, { typing: true }))),
                     field('Opis (opcjonalnie)', textInput(a.description, (v) => updateAttrs(b, { description: v }, { typing: true })), 'Np. „Wersja dostępna, 2 strony”.')));
+                break;
+            case 'subpages': {
+                const pages = config.subpages?.pages || [];
+                const indent = (p) => '\u2003'.repeat(Math.min(p.depth, 6)) + p.title;
+                const picker = () => {
+                    const filter = h('input', { type: 'search', class: 'be-input', placeholder: 'Szukaj strony…', 'aria-label': 'Szukaj strony na liście wyboru' });
+                    const list = h('div', { class: 'be-pick-list', role: 'group', 'aria-label': 'Strony do pokazania', style: 'max-height:16rem;overflow:auto' },
+                        ...pages.map((p) => {
+                            const row = checkbox(indent(p), a.picked.includes(p.id), (v) => {
+                                const chosen = new Set(find(b.id).block.attrs.picked);
+                                if (v) chosen.add(p.id); else chosen.delete(p.id);
+                                // Kolejność jak w drzewie stron.
+                                set({ picked: pages.filter((x) => chosen.has(x.id)).map((x) => x.id) });
+                            });
+                            row.dataset.title = p.title.toLowerCase();
+                            return row;
+                        }));
+                    filter.addEventListener('input', () => { const q = filter.value.trim().toLowerCase(); list.querySelectorAll('[data-title]').forEach((r) => { r.hidden = !!q && !r.dataset.title.includes(q); }); });
+                    return [filter, list, h('p', { class: 'be-help' }, `Wybrano: ${a.picked.length}. Kolejność na liście jak w drzewie stron (albo alfabetyczna).`)];
+                };
+                parts.push(panelSection('Źródło',
+                    field('Pokaż podstrony', select(a.source, [['current', config.subpages?.contextPage ? 'Tej strony' : 'Bieżącej strony (tej, na której stoi lista)'], ['page', 'Wskazanej strony']], (v) => { set({ source: v }); renderSidebar(); })),
+                    a.source === 'page' ? field('Strona', select(a.page || '', [['', '— wybierz stronę —'], ...pages.map((p) => [p.id, indent(p)])], (v) => set({ page: Number(v) || null }))) : null,
+                    checkbox('Wybierz strony ręcznie', a.manual, (v) => { set({ manual: v }); renderSidebar(); }, 'Zamiast wszystkich podstron pokaże tylko zaznaczone strony.'),
+                    ...(a.manual ? picker() : [])),
+                panelSection('Ustawienia listy',
+                    field('Sortowanie', select(a.sort, [['drzewo', 'Kolejność z drzewa stron'], ['alfabet', 'Alfabetycznie']], (v) => set({ sort: v }))),
+                    field('Głębokość', select(a.depth, [[1, 'Tylko podstrony (dzieci)'], [2, 'Podstrony i ich podstrony (dzieci i wnuki)']], (v) => set({ depth: Number(v) }))),
+                    field('Wygląd', select(a.layout, LIST_LAYOUTS, (v) => set({ layout: v }))),
+                    h('p', { class: 'be-help' }, 'Strony nieopublikowane, wyłączone i ukryte na mapie strony są pomijane.')));
+                break;
+            }
+            case 'newslist':
+                parts.push(panelSection('Ustawienia listy',
+                    field('Kategoria', select(a.category || '', [['', 'Wszystkie kategorie'], ...(config.newsCategories || []).map((c) => [c.id, c.name])], (v) => set({ category: Number(v) || null }))),
+                    field('Liczba wpisów', select(a.limit, [3, 4, 5, 6, 8, 10, 12, 15, 20, 30].map((n) => [n, String(n)]), (v) => set({ limit: Number(v) }))),
+                    field('Sortowanie', select(a.sort, [['najnowsze', 'Od najnowszych'], ['alfabet', 'Alfabetycznie (spośród najnowszych)']], (v) => set({ sort: v }))),
+                    field('Wygląd', select(a.layout, LIST_LAYOUTS, (v) => set({ layout: v }))),
+                    h('p', { class: 'be-help' }, 'Pokazuje tylko opublikowane aktualności; szkice, zaplanowane i zarchiwizowane są pomijane.')));
                 break;
             default: break;
         }

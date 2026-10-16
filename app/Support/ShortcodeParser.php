@@ -19,6 +19,10 @@ use Illuminate\Support\Facades\View;
  *   [nabory]         — lista naborów (strony typu „Rekrutacja do projektu") z filtrem
  *                      aktualne / zakończone / wszystkie (?status=…) i archiwum
  *   [zapytania-ofertowe] — lista zapytań ofertowych z tym samym filtrem
+ *   [podstrony]      — lista linków do podstron (bieżącej lub wskazanej strony),
+ *                      składana przy renderowaniu; opcje w App\Support\SubpageList
+ *   [aktualnosci]    — lista linków do aktualności (kategoria, liczba, sortowanie, wygląd);
+ *                      opcje w App\Support\NewsList
  */
 class ShortcodeParser
 {
@@ -73,6 +77,19 @@ class ShortcodeParser
             $content,
         );
 
+        // Lista podstron i lista aktualności — akapit może mieć klasę/opis zaślepki z edytora WYSIWYG (<p class="content-subpages-shortcode" …>).
+        $content = preg_replace_callback(
+            '~(?:<p\b[^>]*>\s*)?\[podstrony(?::([^\]\r\n<]{0,200}))?\](?:\s*</p>)?~i',
+            fn ($matches) => SubpageList::render(SubpageList::parse($matches[1] ?? '')),
+            $content,
+        );
+
+        $content = preg_replace_callback(
+            '~(?:<p\b[^>]*>\s*)?\[aktualnosci(?::([^\]\r\n<]{0,200}))?\](?:\s*</p>)?~i',
+            fn ($matches) => NewsList::render(NewsList::parse($matches[1] ?? '')),
+            $content,
+        );
+
         return $content;
     }
 
@@ -82,7 +99,7 @@ class ShortcodeParser
      */
     private static function unwrapBlockShortcodes(string $content): string
     {
-        $blocks = '(?:(?:kafelki-zestaw|kafelki|blok|formularz):[a-z0-9_\-]+|nabory|zapytania-ofertowe)';
+        $blocks = '(?:(?:kafelki-zestaw|kafelki|blok|formularz):[a-z0-9_\-]+|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci)(?::[^\]\r\n<]*)?)';
 
         return preg_replace_callback(
             '~<(blockquote|div class="content-(?:box|note|important)")[^>]*>((?:(?!</?(?:blockquote|div)\b).)*?)</(?:blockquote|div)>~is',
@@ -92,7 +109,7 @@ class ShortcodeParser
     }
 
     /** Wzorzec wszystkich shortcodów — do wykrywania (np. wyłączenie edycji inline). */
-    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe)\]/i';
+    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci)(?::[^\]\r\n<]{0,200})?)\]/i';
 
     public static function has(?string $content): bool
     {

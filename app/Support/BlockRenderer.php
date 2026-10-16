@@ -35,7 +35,7 @@ class BlockRenderer
 
     public const TYPES = [
         'paragraph', 'heading', 'list', 'quote', 'image', 'gallery', 'buttons', 'callout',
-        'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode',
+        'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist',
     ];
 
     private const INLINE_TAGS = ['strong', 'b', 'em', 'i', 'a', 'br', 'code', 's', 'sub', 'sup', 'mark'];
@@ -168,9 +168,38 @@ class BlockRenderer
             'embed' => ['url' => self::url($str('url')), 'title' => $str('title', 300), 'caption' => $rich('caption', 1000)],
             'file' => ['url' => self::url($str('url')), 'label' => $str('label', 300), 'description' => $str('description', 500)],
             'html' => ['html' => mb_substr((string) ($a['html'] ?? ''), 0, 500000)],
+            'subpages' => self::subpagesAttrs($a),
+            'newslist' => NewsList::normalize($a),
             'shortcode' => ['code' => preg_match('/^\[[a-z0-9_-]+(?::[^\]\r\n]{1,200})?\]$/i', $str('code', 220)) ? $str('code', 220) : ''],
             default => [],
         };
+    }
+
+    /**
+     * Blok „Lista podstron": źródło (bieżąca / wskazana strona), opcjonalny wybór ręczny, sortowanie, głębokość, wygląd.
+     *
+     * @return array<string, mixed>
+     */
+    private static function subpagesAttrs(array $a): array
+    {
+        $o = SubpageList::normalize([
+            'page' => $a['page'] ?? null,
+            'picked' => $a['picked'] ?? [],
+            'sort' => $a['sort'] ?? null,
+            'depth' => $a['depth'] ?? null,
+            'layout' => $a['layout'] ?? null,
+        ]);
+        $source = ($a['source'] ?? null) === 'page' && $o['page'] ? 'page' : 'current';
+
+        return [
+            'source' => $source,
+            'page' => $source === 'page' ? $o['page'] : null,
+            'manual' => (bool) ($a['manual'] ?? false) && $o['picked'] !== [],
+            'picked' => $o['picked'],
+            'sort' => $o['sort'],
+            'depth' => $o['depth'],
+            'layout' => $o['layout'],
+        ];
     }
 
     /** @return array<int, array<int, string>> */
@@ -336,6 +365,19 @@ class BlockRenderer
 
             case 'shortcode':
                 return $a['code'] !== '' ? '<p>'.$a['code'].'</p>' : '';
+
+            case 'subpages':
+                // Shortcode, nie gotowy HTML — lista składa się przy renderowaniu strony (nowe podstrony pojawiają się same).
+                return '<p>'.SubpageList::shortcode([
+                    'page' => $a['page'],
+                    'picked' => $a['manual'] ? $a['picked'] : [],
+                    'sort' => $a['sort'],
+                    'depth' => $a['depth'],
+                    'layout' => $a['layout'],
+                ]).'</p>';
+
+            case 'newslist':
+                return '<p>'.NewsList::shortcode($a).'</p>';
         }
 
         return '';

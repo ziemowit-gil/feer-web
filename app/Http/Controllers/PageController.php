@@ -28,6 +28,8 @@ class PageController extends Controller
         $preview = $this->isPreviewRequest($request);
         $isLive = $page->is_published && ($page->publish_at === null || $page->publish_at->isPast());
         abort_unless($isLive || $preview, 404);
+        // Źródło domyślne listy podstron ([podstrony]) w treści tej strony.
+        \App\Support\SubpageList::setContextPage($page);
 
         // Strona typu „Przekierowanie” w trybie automatycznym kieruje od razu (podgląd z panelu pokazuje stronę z informacją).
         if ($page->isRedirect() && ! $preview && ($page->typeData()['redirect_mode'] ?? 'notice') === 'auto' && ($target = $page->redirectTarget())) {

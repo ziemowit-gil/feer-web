@@ -99,6 +99,7 @@
 @endphp
 @include('admin.partials.tiles-builder')
 @include('admin.partials.content-block-builder')
+@include('admin.partials.link-list-builder')
 
 @php $mi = 'flex w-full items-center gap-2 rounded px-3 py-2 text-left text-xs font-bold text-ink hover:bg-brand-light hover:text-brand-dark'; @endphp
 <div id="{{ $editorId }}-toolbar" class="mb-2 flex-wrap items-center gap-2 {{ $useCkEditor ? 'flex' : 'hidden' }}">
@@ -133,6 +134,9 @@
             <hr class="my-1 border-gray-100" role="separator">
             {{-- Inne --}}
             <button type="button" data-insert-key="table" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-table w-4 text-center" aria-hidden="true"></i> Tabela dostępna (WCAG)</button>
+            <hr class="my-1 border-gray-100" role="separator">
+            <button type="button" id="{{ $editorId }}-subpages" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-sitemap w-4 text-center" aria-hidden="true"></i> Lista podstron…</button>
+            <button type="button" id="{{ $editorId }}-newslist" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-newspaper w-4 text-center" aria-hidden="true"></i> Lista aktualności…</button>
             @if ($eventBoxOptions->isNotEmpty())
                 <hr class="my-1 border-gray-100" role="separator">
                 <label for="{{ $editorId }}-event-box" class="block px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Ramka z wydarzeniem</label>
@@ -1454,7 +1458,7 @@
             else if (generic.indexOf(t) !== -1) problems.push('Nieopisowy tekst linku: „' + a.textContent.trim() + '".');
         });
         // Bloki z shortcodów ([blok:…], [kafelki-zestaw:…], [kafelki:…], [formularz:…]) renderują się dopiero na stronie.
-        var blocks = (html.match(/\[(?:blok|kafelki-zestaw|kafelki|formularz):[a-z0-9_\-]+\]/gi) || []).length;
+        var blocks = (html.match(/\[(?:(?:blok|kafelki-zestaw|kafelki|formularz):[a-z0-9_\-]+|(?:podstrony|aktualnosci)(?::[^\]]*)?)\]/gi) || []).length;
         var blocksNote = blocks
             ? '<p style="margin-top:.6rem;font-size:.85em">ℹ Wstawione bloki: ' + blocks + '. Mają wbudowaną dostępność (nagłówki sekcji bloków to H2, grupy są opisane nagłówkiem, przyciski i akordeon obsługują klawiaturę), ale ich zawartość nie jest tu sprawdzana — wskazówki dla etykiet pokazuje kreator bloku.</p>'
             : '';
@@ -1753,6 +1757,19 @@
                         });
                     }
 
+                    // Lista podstron / aktualności — shortcode rozwijany przy renderowaniu (CKEditor nie zachowuje klas akapitu, więc sam znacznik).
+                    ['subpages', 'newslist'].forEach(function (kind) {
+                        var btn = document.getElementById('{{ $editorId }}-' + kind);
+                        if (!btn) return;
+                        btn.addEventListener('click', function () {
+                            window.LinkListBuilder.open({ kind: kind === 'newslist' ? 'news' : 'subpages', trigger: btn, onInsert: function (code) {
+                                var viewFragment = editor.data.processor.toView('<p>' + code + '</p>');
+                                editor.model.insertContent(editor.data.toModel(viewFragment));
+                                editor.editing.view.focus();
+                            } });
+                        });
+                    });
+
                     var formPickSelect = document.getElementById('{{ $editorId }}-form-pick');
                     if (formPickSelect) {
                         formPickSelect.addEventListener('change', function () {
@@ -1973,7 +1990,7 @@
                     },
                     elementpath: false,
                     placeholder: 'Tu wpisz tekst…',
-                    content_style: '.sr-only{position:static!important;display:inline!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;white-space:normal!important;background:#ede9fe;outline:2px dashed #7c3aed;padding:1px 4px;border-radius:2px}.sr-only::before{content:"⦿ ";color:#7c3aed;font-weight:700;font-size:.75em;letter-spacing:.02em}',
+                    content_style: '.content-links-shortcode{background:#e8f0ff;color:#1752bf;padding:.75rem 1rem;border-radius:.5rem;font-family:ui-monospace,monospace;font-size:.85em}.content-links-shortcode::before{content:attr(data-summary);display:block;margin-bottom:.25rem;font-family:Montserrat,system-ui,sans-serif;font-weight:700;font-size:1.05em;color:#1a1a1a}.sr-only{position:static!important;display:inline!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;white-space:normal!important;background:#ede9fe;outline:2px dashed #7c3aed;padding:1px 4px;border-radius:2px}.sr-only::before{content:"⦿ ";color:#7c3aed;font-weight:700;font-size:.75em;letter-spacing:.02em}',
                     // Autozapis roboczy w przeglądarce — po awarii można przywrócić wersję.
                     autosave_interval: '20s',
                     autosave_restore_when_empty: false,
@@ -2013,6 +2030,34 @@
                         });
                         @endif
 
+                        // Okno listy podstron / aktualności. Gdy kursor stoi w akapicie z takim shortcodem — edytuje go.
+                        function currentLinkList() {
+                            var p = editor.dom.getParent(editor.selection.getNode(), 'p');
+                            var code = p ? (p.textContent || '').trim() : '';
+                            return p && /^\[(podstrony|aktualnosci)(:[^\]]*)?\]$/i.test(code) ? { p: p, code: code } : null;
+                        }
+                        function openLinkList(kind) {
+                            var cur = currentLinkList();
+                            window.LinkListBuilder.open({ kind: kind, code: cur && window.LinkListBuilder.parse(cur.code).kind === kind ? cur.code : null, trigger: { focus: function () { editor.focus(); } }, onInsert: function (code) {
+                                editor.focus();
+                                if (cur && window.LinkListBuilder.parse(cur.code).kind === kind && cur.p.isConnected) {
+                                    editor.undoManager.transact(function () { editor.dom.setOuterHTML(cur.p, window.LinkListBuilder.html(code)); });
+                                } else {
+                                    editor.insertContent(window.LinkListBuilder.html(code) + '<p>&nbsp;</p>');
+                                }
+                            } });
+                        }
+                        // Czytelne zaślepki list wstawionych wcześniej (np. ręcznie albo w CKEditorze): opis z atrybutu data-summary.
+                        editor.on('SetContent', function () {
+                            editor.dom.select('p').forEach(function (p) {
+                                var code = (p.textContent || '').trim();
+                                if (/^\[(podstrony|aktualnosci)(:[^\]]*)?\]$/i.test(code) && p.childElementCount === 0) {
+                                    editor.dom.addClass(p, 'content-links-shortcode');
+                                    p.setAttribute('data-summary', window.LinkListBuilder.summary(code));
+                                }
+                            });
+                        });
+
                         editor.ui.registry.addMenuButton('insertmenu', {
                             text: 'Wstaw', icon: 'plus', tooltip: 'Wstaw element',
                             fetch: function (cb) {
@@ -2041,6 +2086,10 @@
                                     { type: 'menuitem', text: 'Linia pozioma', onAction: function () { editor.insertContent('<hr>'); } },
                                     { type: 'menuitem', text: 'Tabela dostępna (WCAG)', icon: 'table', onAction: function () { editor.insertContent(snippets.table); } },
                                     { type: 'menuitem', text: 'Wstaw kotwicę', icon: 'anchor', onAction: function () { window['__anchorInsertOpen_{{ $editorId }}']?.(); } },
+                                    { type: 'separator' },
+                                    // Listy linków — shortcode rozwijany przy renderowaniu; kursor w istniejącej liście = edycja.
+                                    { type: 'menuitem', text: 'Lista podstron…', onAction: function () { openLinkList('subpages'); } },
+                                    { type: 'menuitem', text: 'Lista aktualności…', onAction: function () { openLinkList('news'); } },
                                 ];
                                 if (eventBoxes.length) {
                                     items.push({ type: 'separator' });
