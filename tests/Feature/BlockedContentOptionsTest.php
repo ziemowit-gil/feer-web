@@ -51,6 +51,8 @@ class BlockedContentOptionsTest extends TestCase
 
     public function test_zablokowany_typ_wpisu_znika_i_jest_odrzucany_ale_istniejacy_zostaje(): void
     {
+        $this->useClassicNewsForm();
+
         $this->block(['news_post_types' => ['review']]);
         $admin = $this->admin();
 

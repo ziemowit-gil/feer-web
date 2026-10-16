@@ -59,6 +59,8 @@
             @error('meta_title') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
         </div>
 
+        {{-- hideMetaDescription: opis SEO edytuje edytor blokowy (formularz osadzony). --}}
+        @unless ($hideMetaDescription ?? false)
         <div>
             <div class="mb-1.5 flex items-baseline justify-between gap-3">
                 <label for="meta_description" class="text-[15px] font-bold text-ink">Opis SEO</label>
@@ -75,5 +77,6 @@
             </p>
             @error('meta_description') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
         </div>
+        @endunless
     </div>
 </div>

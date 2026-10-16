@@ -68,6 +68,8 @@ class NewsPostTypesTest extends TestCase
 
     public function test_panel_zapisuje_typy_i_waliduje_wymagane_pola(): void
     {
+        $this->useClassicNewsForm();
+
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
         $base = ['title' => 'Komunikat', 'published_at' => now()->format('Y-m-d H:i'), 'is_published' => '1', 'content' => '<p>x</p>'];
 

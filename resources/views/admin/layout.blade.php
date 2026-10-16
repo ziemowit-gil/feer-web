@@ -115,7 +115,11 @@
 
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-brand-dark focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-brand-dark">Przejdź do treści</a>
 
+    {{-- ?osadzony=1 — formularz osadzony w edytorze blokowym (okno „Ustawienia aktualności”): bez menu i nagłówka panelu. --}}
+    @php $adminEmbedded = request()->boolean('osadzony'); @endphp
+    @unless ($adminEmbedded)
     @include('admin.partials.sidebar')
+    @endunless
 
     @php
         $moduleManager = app(\App\Modules\ModuleManager::class);
@@ -127,6 +131,7 @@
     @endphp
 
     <div class="flex min-w-0 flex-1 flex-col">
+        @unless ($adminEmbedded)
         <header class="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 sm:px-6">
             <div class="flex min-w-0 flex-1 items-center gap-3">
                 <button type="button" @click="$store.adminNav.open()"
@@ -318,9 +323,11 @@
         </div>
         @endif
 
+        @endunless
+
         @stack('page_module_banner')
 
-        <main id="main" class="p-4 sm:p-6" tabindex="-1">
+        <main id="main" class="{{ $adminEmbedded ? 'p-3 sm:p-4' : 'p-4 sm:p-6' }}" tabindex="-1">
             @if (session('status'))
                 <div role="status" aria-live="polite" class="mb-4 flex items-start gap-2 rounded-md bg-brand-light px-4 py-3 text-sm font-bold text-ink">
                     <i class="fa-solid fa-circle-check mt-0.5 text-brand-dark" aria-hidden="true"></i>

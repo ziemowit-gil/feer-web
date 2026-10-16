@@ -238,6 +238,8 @@ class ModulesViewTest extends TestCase
 
     public function test_zablokowany_uklad_artykulu_znika_z_formularza_i_jest_odrzucany(): void
     {
+        $this->useClassicNewsForm();
+
         SiteSetting::current()->update(['blocked_options' => ['news_layouts' => ['side', 'portal']]]);
         $this->resetSettings();
         $admin = $this->admin();

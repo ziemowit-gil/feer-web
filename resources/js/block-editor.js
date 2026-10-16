@@ -356,6 +356,58 @@ function start(config) {
         return out;
     }
 
+    // ── Ustawienia aktualności: formularz klasyczny 1:1 w ramce (?osadzony=1, bez tytułu, treści,
+    // opisu SEO i publikacji — te pola są w edytorze). Zapisywany po blokach, gdy coś w nim zmieniono.
+    let newsDlg = null;
+    let newsFrame = null;
+    let newsSnap = null;     // stan pól po wczytaniu ramki; null = do zapisu (np. wrócił z błędami)
+    let newsLoaded = null;   // obietnica kolejnego wczytania ramki (po wysłaniu formularza)
+    const newsForm = () => newsFrame?.contentDocument?.getElementById('news-form') || null;
+    function newsFormState(form) {
+        newsFrame.contentWindow.tinymce?.triggerSave();
+        return JSON.stringify([...new FormData(form)].map(([k, v]) => [k, typeof v === 'string' ? v : v.name + ':' + v.size]));
+    }
+    function openNewsSettings() {
+        if (!newsDlg) {
+            let onLoad = null;
+            newsFrame = h('iframe', { src: config.urls.newsForm, title: 'Formularz ustawień aktualności', class: 'be-settings-frame' });
+            newsFrame.addEventListener('load', () => {
+                const form = newsForm();
+                if (form) {
+                    const errors = Number(newsFrame.contentDocument.querySelector('[data-embedded-errors]')?.dataset.embeddedErrors || 0);
+                    newsSnap = errors ? null : newsFormState(form);
+                    form.addEventListener('input', () => markDirty());
+                    form.addEventListener('change', () => markDirty());
+                    onLoad?.(errors);
+                }
+                onLoad = null;
+            });
+            newsLoaded = () => new Promise((resolve) => { onLoad = resolve; });
+            newsDlg = h('dialog', { class: 'be-dialog be-dialog--frame', 'aria-labelledby': 'be-news-settings-title' },
+                h('div', { class: 'be-dialog-head' },
+                    h('h2', { id: 'be-news-settings-title' }, 'Ustawienia aktualności'),
+                    h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': 'Zamknij ustawienia aktualności', onClick: () => newsDlg.close() }, icon('xmark'))),
+                h('p', { class: 'be-muted' }, 'Wszystkie pola formularza aktualności poza tytułem, treścią, opisem SEO i publikacją (te są w edytorze). Zmiany zapiszesz przyciskiem „Zapisz” edytora — razem z treścią.'),
+                newsFrame,
+                h('div', { class: 'be-dialog-actions' }, h('button', { type: 'button', class: 'be-btn be-btn--primary', onClick: () => newsDlg.close() }, 'Gotowe')));
+            newsDlg.addEventListener('close', () => sidebar.querySelector('[data-news-settings-open]')?.focus());
+            document.body.append(newsDlg);
+        }
+        newsDlg.showModal();
+    }
+    // Wysyła formularz ramki, jeśli coś w nim zmieniono; rzuca błąd, gdy wrócił z błędami walidacji.
+    async function saveNewsSettings() {
+        const form = newsForm();
+        if (!form || (newsSnap !== null && newsFormState(form) === newsSnap)) return;
+        const loaded = newsLoaded();
+        form.requestSubmit();
+        const errors = await loaded;
+        if (errors) {
+            if (!newsDlg.open) newsDlg.showModal();
+            throw new Error('Ustawienia aktualności: popraw zaznaczone pola w oknie ustawień.');
+        }
+    }
+
     function markDirty() {
         S.dirty = true;
         S.error = null;
@@ -2092,7 +2144,10 @@ function start(config) {
                     h('dt', {}, L.typeLabel), h('dd', {}, config.page.type),
                     h('dt', {}, 'Status'), h('dd', {}, config.page.is_published ? L.publishedLong : L.draftLong),
                     h('dt', {}, 'Bloków'), h('dd', {}, String(countBlocks())))),
-            panelSection('Więcej ustawień',
+            config.urls.newsForm ? panelSection('Ustawienia aktualności',
+                h('p', { class: 'be-help' }, L.more),
+                h('button', { type: 'button', class: 'be-btn be-btn--secondary be-w-full', 'data-news-settings-open': true, 'aria-haspopup': 'dialog', onClick: openNewsSettings }, icon('sliders'), ' Ustawienia aktualności'))
+            : panelSection('Więcej ustawień',
                 h('p', { class: 'be-help' }, L.more),
                 h('a', { href: config.urls.admin, class: 'be-btn be-btn--secondary be-w-full' }, icon('sliders'), ' ' + L.form)));
     }
@@ -2778,6 +2833,7 @@ function start(config) {
             const json = await res.json().catch(() => ({}));
             if (res.status === 419) throw new Error('Sesja wygasła. Skopiuj zmiany i odśwież stronę.');
             if (!res.ok) throw new Error(Object.values(json.errors || {})[0]?.[0] || json.message || 'Nie udało się zapisać zmian.');
+            await saveNewsSettings();
             S.dirty = false;
             if (json.settings) {
                 const wasRequested = S.settings?.is_published && !draft;

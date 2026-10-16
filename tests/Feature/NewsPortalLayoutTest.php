@@ -122,6 +122,8 @@ class NewsPortalLayoutTest extends TestCase
 
     public function test_admin_moze_zapisac_uklad_portal(): void
     {
+        $this->useClassicNewsForm();
+
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)->get(route('admin.newsy.create'))->assertOk()

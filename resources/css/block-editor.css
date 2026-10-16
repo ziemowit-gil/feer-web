@@ -469,6 +469,10 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
     font-family: 'Ubuntu', ui-sans-serif, system-ui, sans-serif;
 }
 .be-dialog--small { width: min(30rem, calc(100vw - 2rem)); }
+/* Okno „Ustawienia aktualności” — formularz aktualności w ramce. */
+.be-dialog--frame { width: min(80rem, calc(100vw - 2rem)); height: calc(100vh - 4rem); display: flex; flex-direction: column; }
+.be-dialog--frame:not([open]) { display: none; }
+.be-settings-frame { flex: 1; width: 100%; min-height: 0; margin-top: 0.75rem; border: 1px solid var(--be-line); border-radius: 0.375rem; background: #f3f4f6; }
 /* Okno „Pola typu strony” — sekcje z formularza strony (klasy Tailwind z app.css). */
 .be-type-fields-body { margin-top: 0.75rem; }
 .be-type-fields-body > div:first-child { border-top: 0; padding-top: 0; }

@@ -62,9 +62,24 @@ class NewsController extends Controller
         ]);
     }
 
-    /** Wyświetla formularz tworzenia nowej aktualności. */
+    /**
+     * Wyświetla formularz tworzenia nowej aktualności. Z włączonym edytorem blokowym
+     * aktualności edytuje się tylko w nim — zakładamy szkic i otwieramy go w edytorze.
+     */
     public function create()
     {
+        if (self::blockEditorOnly()) {
+            $news = News::create([
+                'title' => 'Nowa aktualność',
+                'slug' => $this->uniqueSlug('nowa-aktualnosc'),
+                'published_at' => now(),
+                'is_published' => false,
+            ]);
+
+            return redirect()->route('admin.edytor-blokowy.edit', ['news', $news->id])
+                ->with('status', 'Utworzono szkic aktualności — wpisz tytuł i treść, a w „Ustawieniach aktualności” zdjęcie, kategorię i pozostałe pola.');
+        }
+
         return view('admin.news.form', [
             'news' => new News,
             'newsCategories' => NewsCategory::orderBy('order')->orderBy('name')->get(),
@@ -146,6 +161,11 @@ class NewsController extends Controller
      */
     private function afterSave(Request $request, News $news): \Illuminate\Http\RedirectResponse
     {
+        // Formularz osadzony w edytorze blokowym wraca do siebie (w ramce okna ustawień).
+        if ($request->boolean('osadzony')) {
+            return redirect()->route('admin.newsy.edit', [$news, 'osadzony' => 1]);
+        }
+
         return in_array($request->input('after'), ['stay', 'draft'], true)
             ? redirect()->route('admin.newsy.edit', [$news, 'klasyczny' => 1])
             : redirect()->route('admin.newsy.index');
@@ -154,8 +174,9 @@ class NewsController extends Controller
     /** Wyświetla formularz edycji aktualności. */
     public function edit(News $news)
     {
-        // Domyślny edytor blokowy (Mój profil); ?klasyczny=1 wymusza formularz.
-        if (! request()->boolean('klasyczny') && auth()->user()->prefersBlockEditor()) {
+        // Z włączonym edytorem blokowym aktualności edytuje się tylko w nim; formularz
+        // (?osadzony=1) służy wtedy za okno „Ustawienia aktualności” wewnątrz edytora.
+        if (! request()->boolean('osadzony') && self::blockEditorOnly()) {
             return redirect()->route('admin.edytor-blokowy.edit', ['news', $news->id]);
         }
 
@@ -170,8 +191,26 @@ class NewsController extends Controller
     /** Aktualizuje aktualność z tagami i opcjonalnym zdjęciem. */
     public function update(Request $request, News $news)
     {
+        // Okno „Ustawienia aktualności” w edytorze blokowym nie ma pól, które edytuje sam edytor
+        // (tytuł, treść, opis SEO, publikacja) — do walidacji bierzemy zapisane wartości, a przy
+        // zapisie ich nie dotykamy (edytor zapisał je chwilę wcześniej).
+        $embedded = $request->boolean('osadzony');
+        if ($embedded) {
+            $request->merge([
+                'title' => $news->title,
+                'meta_description' => $news->meta_description,
+                'published_at' => ($news->published_at ?? now())->format('Y-m-d\TH:i'),
+                'is_published' => $news->is_published ? '1' : '0',
+                'is_archived' => $news->is_archived ? '1' : '0',
+            ]);
+        }
+
         $data = $this->validated($request, $news);
-        $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : $data['title'], $news->id);
+        if ($embedded) {
+            unset($data['title'], $data['meta_description'], $data['content'], $data['published_at'],
+                $data['is_published'], $data['is_archived'], $data['pending_approval'], $data['submitted_by_id']);
+        }
+        $data['slug'] = $this->uniqueSlug($data['slug'] !== '' ? $data['slug'] : ($data['title'] ?? $news->title), $news->id);
         // Treść w blokach: formularz klasyczny jej nie zmienia (edycja tylko w edytorze blokowym).
         if ($news->hasLockedBlockContent()) {
             unset($data['content']);
@@ -185,6 +224,12 @@ class NewsController extends Controller
         $news->tags()->sync($this->resolveTagIds($request->input('tags', '')));
 
         return $this->afterSave($request, $news)->with('status', ($request->input('after') === 'draft' ? 'Zapisano wersję roboczą — aktualność nie jest opublikowana.' : 'News został zaktualizowany.') . ContentA11yChecker::saveNotice($news->content));
+    }
+
+    /** Czy aktualności edytuje się wyłącznie w edytorze blokowym (moduł włączony w Ustawienia → Moduły). */
+    public static function blockEditorOnly(): bool
+    {
+        return SiteSetting::current()->isModuleEnabled('block_editor');
     }
 
     /**

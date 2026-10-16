@@ -18,13 +18,16 @@
             'publikacja' => ['published_at', 'is_published', 'is_archived'],
             'seo' => ['meta_title', 'meta_description'],
         ];
+        // ?osadzony=1 — okno „Ustawienia aktualności” w edytorze blokowym: tytuł, treść, opis SEO
+        // i publikację edytuje sam edytor, więc tu ich nie ma (NewsController pomija je przy zapisie).
+        $embedded = request()->boolean('osadzony') && $news->exists;
         $tabErrors = collect($tabFields)->map(fn ($fields) => $errors->hasAny($fields))->all();
         $btnSecondary = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
         $btnStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem';
     @endphp
 
     <div data-editor-tabs>
-        @if ($news->exists)
+        @if ($news->exists && ! $embedded)
             @include('admin.partials.edit-lock', ['lockType' => 'news', 'lockId' => $news->id])
         @endif
 
@@ -48,6 +51,7 @@
                 </div>
 
                 <div style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem">
+@unless ($embedded)
                     {{-- Zapis: „Zapisz” zostaje na rekordzie, „Zapisz i zamknij” wraca do listy --}}
                     <div style="display:inline-flex;overflow:hidden;border-radius:.5rem">
                         <button type="submit" form="news-form" name="after" value="stay"
@@ -63,19 +67,20 @@
                     </div>
                     <a href="{{ route('admin.newsy.index') }}" class="{{ $btnSecondary }}" style="{{ $btnStyle }}"><i class="fa-solid fa-xmark" aria-hidden="true"></i> Zamknij</a>
 
+@endunless
                     @if ($news->exists)
                         <span style="width:1px;height:1.5rem;background:#d1d5db" aria-hidden="true"></span>
                         <a href="{{ $news->previewUrl() }}" target="_blank" rel="noopener" class="{{ $btnSecondary }}" style="{{ $btnStyle }}" title="Podgląd przed publikacją (link ważny 14 dni)">
                             <i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd<span class="sr-only"> (nowa karta)</span>
                         </a>
-                        <a href="{{ route('admin.historia.index', ['type' => 'news', 'id' => $news->id]) }}" class="{{ $btnSecondary }}" style="{{ $btnStyle }}">
+                        <a href="{{ route('admin.historia.index', ['type' => 'news', 'id' => $news->id]) }}" @if ($embedded) target="_top" @endif class="{{ $btnSecondary }}" style="{{ $btnStyle }}">
                             <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Historia
                         </a>
-                        <form method="POST" action="{{ route('admin.newsy.klonuj', $news) }}" data-confirm="Sklonować news „{{ $news->title }}”? Kopia zostanie zapisana jako szkic.">
+                        <form method="POST" action="{{ route('admin.newsy.klonuj', $news) }}" @if ($embedded) target="_top" @endif data-confirm="Sklonować news „{{ $news->title }}”? Kopia zostanie zapisana jako szkic.">
                             @csrf
                             <button type="submit" class="{{ $btnSecondary }}" style="{{ $btnStyle }}"><i class="fa-solid fa-copy" aria-hidden="true"></i> Klonuj</button>
                         </form>
-                        <form method="POST" action="{{ route('admin.newsy.destroy', $news) }}"
+                        <form method="POST" action="{{ route('admin.newsy.destroy', $news) }}" @if ($embedded) target="_top" @endif
                             data-confirm="Usunąć news „{{ $news->title }}”? Operacji nie można cofnąć."
                             @if (($clonesCount ?? 0) > 0) data-clone-count="{{ $clonesCount }}" @endif>
                             @csrf @method('DELETE')
@@ -90,11 +95,13 @@
         </div>
 
         <div>
+@unless ($embedded)
     @include('admin.partials.template-panel', [
         'templateType'   => 'news',
         'templateFields' => ['news_category_id', 'project_id', 'audience', 'accent_color', 'excerpt', 'content', 'meta_title', 'meta_description'],
     ])
 
+@endunless
     @if (session('preview_url'))
         <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md bg-amber-50 px-4 py-3">
             <p class="flex items-center gap-2 text-sm font-bold text-amber-800">
@@ -112,6 +119,12 @@
         enctype="multipart/form-data" class="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start" data-readable>
         @csrf
         @if ($news->exists) @method('PUT') @endif
+        @if ($embedded)
+            <input type="hidden" name="osadzony" value="1">
+            <input type="hidden" name="after" value="stay">
+            {{-- Edytor blokowy sprawdza po zapisie, czy formularz wrócił z błędami. --}}
+            <div data-embedded-errors="{{ $errors->count() }}" hidden></div>
+        @endif
 
         {{-- ============ LEWA KOLUMNA: treść, zdjęcie, SEO ============ --}}
         <div class="min-w-0 space-y-6">
@@ -261,6 +274,7 @@
             <div class="space-y-5 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Nagłówek i adres</h2>
             <div class="grid gap-5 sm:grid-cols-2">
+@unless ($embedded)
                 <div x-data="{
                     dupeItems: [],
                     dupeTimer: null,
@@ -293,6 +307,7 @@
                     </template>
                 </div>
 
+@endunless
                 <div>
                     <label for="slug" class="mb-1 block text-sm font-bold">Slug (adres URL)</label>
                     <div class="flex items-center gap-2">
@@ -306,6 +321,7 @@
             </div>
 
             </div>
+@unless ($embedded)
             <div class="space-y-3 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Treść</h2>
             <div>
@@ -327,6 +343,7 @@
             </div>
             </div>
 
+@endunless
             <div class="space-y-5 p-6 rounded-md bg-white">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Zdjęcie</h2>
             @php $hasUnsplash = (bool) config('services.unsplash.access_key'); @endphp
@@ -724,7 +741,7 @@
                     <i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i>
                 </summary>
                 <div class="border-t border-gray-100 p-4">
-        @include('admin.partials.seo-fields', ['model' => $news])
+        @include('admin.partials.seo-fields', ['model' => $news, 'hideMetaDescription' => $embedded])
                 </div>
             </details>
         </div>
@@ -733,6 +750,7 @@
         <aside class="space-y-4 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pb-1" aria-label="Publikacja i kategoryzacja aktualności">
             <div class="space-y-4 rounded-md bg-white p-5">
                 <h2 class="text-sm font-bold uppercase tracking-widest text-muted">Publikacja</h2>
+@unless ($embedded)
                 <div>
                 <div>
                     <label for="published_at" class="mb-1 block text-sm font-bold">Opublikowano od</label>
@@ -742,10 +760,12 @@
                     @error('published_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 </div>
+@endunless
                 @include('admin.partials.unpublish-field', ['model' => $news])
             <fieldset class="p-4 rounded-md bg-gray-50">
                 <legend class="px-1 text-sm font-bold text-ink">Status publikacji</legend>
                 <div class="space-y-3">
+@unless ($embedded)
                     <label class="flex items-center gap-2">
                         <input type="checkbox" name="is_published" value="1" {{ old('is_published', $news->is_published ?? true) ? 'checked' : '' }}
                             class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
@@ -756,6 +776,7 @@
                             class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                         <span class="flex items-center gap-1 text-sm font-bold"><i class="fa-solid fa-clock-rotate-left text-muted" aria-hidden="true"></i> Treść archiwalna</span>
                     </label>
+@endunless
                     @if ($news->exists)
                         <label class="flex items-center gap-2">
                             <input type="hidden" name="is_clone" value="0">
@@ -767,15 +788,19 @@
                 </div>
             </fieldset>
 
+@unless ($embedded)
                 <div class="space-y-2 border-t border-gray-100 pt-4">
                     <button type="submit" name="after" value="stay" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz</button>
                     <button type="submit" name="after" value="close" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-check" aria-hidden="true"></i> Zapisz i zamknij</button>
                     <button type="submit" name="after" value="draft" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md px-4 text-sm font-bold text-ink underline underline-offset-4 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Zapisz wersję roboczą</button>
                     <p class="text-xs text-muted">Wersja robocza nie jest widoczna publicznie — opublikujesz ją później.</p>
                 </div>
+@endunless
             </div>
 
+            @unless ($embedded)
             @include('admin.content-a11y.panel', ['html' => old('content', $news->content), 'formId' => 'news-form'])
+            @endunless
 
             <div class="space-y-5 rounded-md bg-white p-5">
                 <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Kategoria i działanie</h2>

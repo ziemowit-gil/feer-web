@@ -30,6 +30,8 @@ class NewsFormTabsTest extends TestCase
 
     public function test_formularz_ma_tresc_i_panel_boczny_oraz_przypiety_pasek_zapisu(): void
     {
+        $this->useClassicNewsForm();
+
         $html = $this->actingAs($this->admin())->get(route('admin.newsy.create'))->assertOk()->getContent();
 
         foreach (['Nagłówek i adres', 'Zdjęcie', 'Publikacja', 'Dostępność treści', 'Kategoria i działanie', 'SEO i udostępnianie'] as $label) {
@@ -46,6 +48,8 @@ class NewsFormTabsTest extends TestCase
 
     public function test_klonuj_i_usun_sa_poza_glownym_formularzem(): void
     {
+        $this->useClassicNewsForm();
+
         $news = $this->news();
         $html = $this->actingAs($this->admin())->get(route('admin.newsy.edit', $news))->assertOk()->getContent();
 
@@ -83,6 +87,8 @@ class NewsFormTabsTest extends TestCase
 
     public function test_bledy_walidacji_sa_widoczne_przy_polach(): void
     {
+        $this->useClassicNewsForm();
+
         $admin = $this->admin();
 
         $html = $this->actingAs($admin)->from(route('admin.newsy.create'))->followingRedirects()

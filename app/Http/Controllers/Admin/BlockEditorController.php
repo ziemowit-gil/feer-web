@@ -77,7 +77,7 @@ class BlockEditorController extends Controller
                 'publishedLong' => 'Opublikowana',
                 'draftLong' => 'Szkic (niewidoczna publicznie)',
                 'contentLabel' => 'Treść aktualności',
-                'more' => 'Adres, kategoria, zdjęcie, zajawka, data i publikacja są w klasycznym formularzu.',
+                'more' => 'Zdjęcie, adres, kategoria, zajawka, tagi, typ wpisu, układ, SEO, ETR, PJM i pliki są w oknie ustawień aktualności.',
                 'imported' => 'Ta aktualność była edytowana w klasycznym edytorze',
                 'empty' => 'Aktualność nie ma jeszcze bloków.',
                 'titleRequired' => 'Tytuł aktualności nie może być pusty.',
@@ -349,7 +349,13 @@ class BlockEditorController extends Controller
                     'save' => $updateUrl,
                     'view' => $this->publicUrl($type, $record),
                     // ?klasyczny=1 — bez tego domyślny edytor blokowy (Mój profil) odesłałby z formularza z powrotem tutaj.
-                    'admin' => $record instanceof ListingSection ? route($target['admin_route']) : route($target['admin_route'], $record).'?klasyczny=1',
+                    // Aktualności (z włączonym edytorem) mają formularz tylko jako okno „Ustawienia aktualności”.
+                    'admin' => match (true) {
+                        $record instanceof ListingSection => route($target['admin_route']),
+                        $record instanceof News => route('admin.newsy.edit', [$record, 'osadzony' => 1]),
+                        default => route($target['admin_route'], $record).'?klasyczny=1',
+                    },
+                    'newsForm' => $record instanceof News ? route('admin.newsy.edit', [$record, 'osadzony' => 1]) : null,
                     'images' => route('admin.multimedia.images'),
                     'upload' => route('admin.multimedia.upload-ajax'),
                     'links' => route('admin.edytor-blokowy.links'),

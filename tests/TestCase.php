@@ -26,4 +26,20 @@ abstract class TestCase extends BaseTestCase
             $modules->bootActiveProviders();
         }
     }
+
+    /**
+     * Wyłącza moduł edytora blokowego — z włączonym aktualności edytuje się tylko w nim,
+     * więc testy klasycznego formularza aktualności muszą go wyłączyć.
+     */
+    protected function useClassicNewsForm(): void
+    {
+        // Pamięć podręczna ustawień może trzymać rekord z poprzedniego testu (inna baza) — czyścimy przed i po.
+        $forget = \Closure::bind(function () {
+            static::$cached = null;
+        }, null, \App\Models\SiteSetting::class);
+        $forget();
+        $settings = \App\Models\SiteSetting::current();
+        $settings->update(['disabled_modules' => array_values(array_unique(array_merge((array) $settings->disabled_modules, ['block_editor'])))]);
+        $forget();
+    }
 }
