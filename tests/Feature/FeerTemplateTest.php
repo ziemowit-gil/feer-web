@@ -328,7 +328,7 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('Grupy materiałów', $html);
         $this->assertStringContainsString('id="zapis"', $html);
         $this->assertStringContainsString('data-thumb-wrap', $html);
-        $this->assertStringContainsString('aspect-video', $html);
+        $this->assertStringContainsString('mat-thumb', $html);
 
         SiteSetting::current()->update(['site_template' => 'ngo_mix']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
