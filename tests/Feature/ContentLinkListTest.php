@@ -212,6 +212,24 @@ class ContentLinkListTest extends TestCase
         $this->assertStringContainsString('Panel kursanta', $config['pageTiles']['after']);
     }
 
+    public function test_block_editor_offers_classic_editor_inserts(): void
+    {
+        $page = $this->page('Edytowana blokowo');
+        \App\Models\TileSet::create(['name' => 'Kafle działu', 'tiles' => []]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $html = $this->actingAs($admin)->get(route('admin.podstrony.bloki.edit', $page))->assertOk()->getContent();
+        preg_match("~data-config='([^']*)'~", $html, $m);
+        $classic = json_decode($m[1] ?? '', true)['classic'];
+
+        // Kreatory jak w klasycznym edytorze.
+        $this->assertStringContainsString('id="tb-root"', $html);
+        $this->assertStringContainsString('id="bb-root"', $html);
+        $this->assertSame('Kafle działu', $classic['tileSets'][0]['label']);
+        $this->assertSame(['bip', 'accentLeft', 'accentRight'], array_column($classic['snippets'], 'key'));
+        $this->assertStringContainsString('bip-link-box', $classic['snippets'][0]['html']);
+    }
+
     public function test_shortcodes_are_detected_and_removed_from_excerpts(): void
     {
         $this->assertTrue(ShortcodeParser::has('<p>[podstrony:poziomy=2]</p>'));

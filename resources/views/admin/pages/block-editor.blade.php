@@ -42,5 +42,8 @@
         <p class="be-noscript">Edytor blokowy wymaga JavaScriptu. <a href="{{ $editorConfig['urls']['admin'] }}">{{ $editorConfig['labels']['noscript'] }}</a>.</p>
     </noscript>
     <div id="block-editor" data-config='@json($editorConfig, JSON_HEX_APOS | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT)'></div>
+    {{-- Kreatory z klasycznego edytora (zestawy kafelków, bloki CTA/akordeon/ramka/cennik) — window.TilesBuilder / window.BlockBuilder. --}}
+    @include('admin.partials.tiles-builder')
+    @include('admin.partials.content-block-builder')
 </body>
 </html>

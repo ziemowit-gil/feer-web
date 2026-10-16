@@ -170,7 +170,11 @@ function start(config) {
     }
 
     // ── Definicje bloków ───────────────────────────────────────────────────
-    const CATEGORIES = { text: 'Tekst', media: 'Multimedia', design: 'Układ i wyróżnienia', widgets: 'Zaawansowane' };
+    const CATEGORIES = { text: 'Tekst', media: 'Multimedia', design: 'Układ i wyróżnienia', modules: 'Moduły (jak w klasycznym edytorze)', widgets: 'Zaawansowane' };
+    // Elementy z menu „Wstaw” klasycznego edytora (App\Support\ClassicInserts) — w edytorze blokowym to bloki „Shortcode”
+    // z wybranym modułem albo wzorce HTML, więc oba edytory pozwalają wstawić to samo.
+    const CI = config.classic || {};
+    const firstCode = (list, fmt) => (list && list.length ? fmt(list[0].value) : '');
 
     const BLOCKS = {
         paragraph: { title: 'Akapit', icon: 'paragraph', cat: 'text', desc: 'Zwykły tekst. Wpisz „/”, aby wybrać inny blok.', keywords: ['tekst', 'p'], rich: true, align: true, transforms: ['heading', 'list', 'quote', 'callout'], create: () => ({ text: '', align: 'left', lead: false }) },
@@ -191,11 +195,21 @@ function start(config) {
         shortcode: { title: 'Shortcode', icon: 'code', cat: 'widgets', desc: 'Osadzenie modułu: formularz, kafelki, blok z kreatora.', keywords: ['formularz', 'kafelki', 'blok', 'moduł'], create: () => ({ code: '' }) },
         subpages: { title: 'Lista podstron', icon: 'sitemap', cat: 'widgets', desc: 'Linki do podstron tej lub wskazanej strony. Aktualizuje się sama — nowa podstrona pojawi się bez edycji.', keywords: ['podstrony', 'spis', 'menu', 'linki', 'nawigacja', 'dzieci'], create: () => ({ source: 'current', page: null, manual: false, picked: [], sort: 'drzewo', depth: 1, layout: 'lista' }) },
         newslist: { title: 'Lista aktualności', icon: 'newspaper', cat: 'widgets', desc: 'Linki do najnowszych aktualności (wszystkich lub z kategorii). Aktualizuje się sama.', keywords: ['aktualności', 'wpisy', 'newsy', 'blog', 'linki'], create: () => ({ category: null, limit: 5, sort: 'najnowsze', layout: 'lista' }) },
+        form: { as: 'shortcode', title: 'Formularz', icon: 'rectangle-list', cat: 'modules', desc: 'Formularz z modułu Formularze.', keywords: ['formularz', 'zapisy', 'zgłoszenie'], hidden: !(CI.forms || []).length, create: () => ({ code: firstCode(CI.forms, (v) => '[formularz:' + v + ']') }) },
+        tileset: { as: 'shortcode', title: 'Zestaw kafelków', icon: 'table-cells-large', cat: 'modules', desc: 'Kafelki z kreatora — wybierz istniejący zestaw albo utwórz nowy.', keywords: ['kafelki', 'kafle', 'zestaw'], create: () => ({ code: firstCode(CI.tileSets, (v) => '[kafelki-zestaw:' + v + ']') }) },
+        contentblock: { as: 'shortcode', title: 'Blok z kreatora', icon: 'cubes', cat: 'modules', desc: 'Przyciski CTA, akordeon, ramka informacyjna albo cennik z kreatora bloków.', keywords: ['cta', 'akordeon', 'ramka', 'cennik', 'blok'], create: () => ({ code: firstCode(CI.contentBlocks, (v) => '[blok:' + v + ']') }) },
+        tilesgrid: { as: 'shortcode', title: 'Siatka kafelków', icon: 'border-all', cat: 'modules', desc: 'Kafelki ze strony typu „Siatka kafelków”.', keywords: ['kafelki', 'siatka'], hidden: !(CI.tilesGrids || []).length, create: () => ({ code: firstCode(CI.tilesGrids, (v) => '[kafelki:' + v + ']') }) },
+        band: { as: 'shortcode', title: 'Pasek FEER', icon: 'grip-lines', cat: 'modules', desc: 'Pasek z modułu „FEER Paski” (tytuł, tekst, przyciski).', keywords: ['pasek', 'baner', 'band'], hidden: !(CI.bands || []).length, create: () => ({ code: firstCode(CI.bands, (v) => '[pasek:' + v + ']') }) },
+        gdpr: { as: 'shortcode', title: 'Klauzule RODO', icon: 'user-shield', cat: 'modules', desc: 'Lista klauzul informacyjnych RODO z SZO.', keywords: ['rodo', 'klauzule', 'gdpr'], create: () => ({ code: '[klauzule-rodo]' }) },
+        recruitments: { as: 'shortcode', title: 'Lista naborów', icon: 'user-plus', cat: 'modules', desc: 'Nabory do projektów z filtrem aktualne / zakończone.', keywords: ['nabory', 'rekrutacja'], create: () => ({ code: '[nabory]' }) },
+        tenders: { as: 'shortcode', title: 'Zapytania ofertowe', icon: 'file-signature', cat: 'modules', desc: 'Lista zapytań ofertowych z filtrem.', keywords: ['zapytania', 'oferty', 'przetargi'], create: () => ({ code: '[zapytania-ofertowe]' }) },
         html: { title: 'Własny HTML', icon: 'file-code', cat: 'widgets', desc: 'Kod HTML (np. treść z klasycznego edytora).', keywords: ['kod', 'klasyczny', 'classic'], create: () => ({ html: '' }) },
     };
 
     function block(type, attrs = {}, inner) {
-        const def = BLOCKS[type];
+        let def = BLOCKS[type];
+        // Skróty modułów („Formularz”, „Zestaw kafelków”…) to bloki „Shortcode” z gotowym kodem.
+        if (def.as) { attrs = { ...def.create(), ...attrs }; type = def.as; def = BLOCKS[type]; }
         const b = { id: uid(), type, attrs: { ...def.create(), ...attrs } };
         if (def.container) b.inner = inner ?? def.inner();
         return b;
@@ -203,7 +217,7 @@ function start(config) {
 
     // Bloki z serwera: dokładamy id i brakujące atrybuty.
     function hydrate(list) {
-        return (list || []).filter((b) => BLOCKS[b?.type]).map((b) => {
+        return (list || []).filter((b) => BLOCKS[b?.type] && !BLOCKS[b.type].as).map((b) => {
             const def = BLOCKS[b.type];
             const out = { id: uid(), type: b.type, attrs: { ...def.create(), ...(b.attrs || {}) } };
             if (def.container) out.inner = hydrate(b.inner);
@@ -221,6 +235,10 @@ function start(config) {
         { title: 'Dokumenty do pobrania', desc: 'Nagłówek i lista plików.', build: () => [block('heading', { text: 'Dokumenty do pobrania' }), block('file'), block('file')] },
         { title: 'Kontakt w sprawie', desc: 'Ramka z osobą do kontaktu.', build: () => [block('callout', { variant: 'box' }, [block('heading', { text: 'Kontakt w sprawie', level: 3 }), block('paragraph', { text: 'Imię Nazwisko<br>tel. <a href="tel:+48000000000">000 000 000</a><br><a href="mailto:adres@feer.org.pl">adres@feer.org.pl</a>' })])] },
     ];
+
+    // Wstawki HTML z klasycznego edytora (BIP, sekcje akcentu) i ramki z wydarzeniem — jako bloki „Własny HTML”.
+    (CI.snippets || []).forEach((sn) => PATTERNS.push({ title: sn.title, desc: sn.desc + ' (jak w klasycznym edytorze)', build: () => [block('html', { html: sn.html })] }));
+    (CI.events || []).forEach((ev) => PATTERNS.push({ title: 'Ramka z wydarzeniem: ' + ev.title, desc: 'Termin, miejsce i przycisk do wydarzenia.', build: () => [block('html', { html: ev.html })] }));
 
     // ── Stan ───────────────────────────────────────────────────────────────
     const S = {
@@ -1506,6 +1524,45 @@ function start(config) {
             showStatus('Podgląd poniżej pokazuje, jak moduł wygląda na stronie.');
         };
         const loadSoon = debounce(load, 500);
+        // Wybór modułu z listy (jak menu „Wstaw” klasycznego edytora) i kreatory kafelków / bloków.
+        const groups = [
+            ['Formularze', (CI.forms || []).map((o) => ['[formularz:' + o.value + ']', o.label])],
+            ['Zestawy kafelków', (CI.tileSets || []).map((o) => ['[kafelki-zestaw:' + o.value + ']', o.label])],
+            ['Bloki z kreatora', (CI.contentBlocks || []).map((o) => ['[blok:' + o.value + ']', o.label])],
+            ['Siatki kafelków', (CI.tilesGrids || []).map((o) => ['[kafelki:' + o.value + ']', o.label])],
+            ['Paski FEER', (CI.bands || []).map((o) => ['[pasek:' + o.value + ']', o.label])],
+            ['Listy', [['[klauzule-rodo]', 'Klauzule RODO'], ['[klauzule-rodo:en]', 'Klauzule RODO (wersje angielskie)'], ['[nabory]', 'Lista naborów'], ['[zapytania-ofertowe]', 'Zapytania ofertowe']]],
+        ].filter(([, opts]) => opts.length);
+        const setCode = (code) => { input.value = code; input.dispatchEvent(new Event('input')); pick.value = groups.some(([, o]) => o.some(([v]) => v === code)) ? code : ''; renderTools(); };
+        const pick = h('select', { class: 'be-input', 'aria-label': 'Wybierz moduł' },
+            h('option', { value: '' }, '— wybierz moduł z listy —'),
+            ...groups.map(([label, opts]) => h('optgroup', { label }, ...opts.map(([v, l]) => h('option', { value: v, selected: v === b.attrs.code ? true : null }, l)))));
+        pick.addEventListener('change', () => { if (pick.value) setCode(pick.value); });
+        const tools = h('div', { class: 'be-row be-mt' });
+        const renderTools = () => {
+            const code = b.attrs.code || '';
+            const btn = (label, iconName, onClick) => h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: (e) => onClick(e.currentTarget) }, icon(iconName), ' ' + label);
+            const items = [];
+            if (window.TilesBuilder) {
+                items.push(btn('Nowy zestaw kafelków…', 'plus', (t) => window.TilesBuilder.open({ id: null, trigger: t, onSave: (set) => {
+                    if (!(CI.tileSets ||= []).some((x) => x.value === set.id)) CI.tileSets.push({ value: set.id, label: set.name });
+                    setCode('[kafelki-zestaw:' + set.id + ']');
+                } })));
+                const m = code.match(/^\[kafelki-zestaw:(\d+)\]$/);
+                if (m) items.push(btn('Edytuj zestaw', 'pen', (t) => window.TilesBuilder.open({ id: Number(m[1]), trigger: t, onSave: () => { shortcodePreviewCache.delete(code); load(); } })));
+            }
+            if (window.BlockBuilder) {
+                (CI.newBlockTypes || []).forEach((bt) => items.push(btn({ cta: 'Nowe przyciski CTA…', accordion: 'Nowy akordeon…', callout: 'Nowa ramka informacyjna…', pricing: 'Nowy cennik…' }[bt] || bt, 'plus', (t) => window.BlockBuilder.open({ type: bt, id: null, trigger: t, onSave: (nb) => {
+                    if (!(CI.contentBlocks ||= []).some((x) => x.value === nb.id)) CI.contentBlocks.push({ value: nb.id, type: nb.type, label: ((CI.blockTypes || {})[nb.type] || nb.type) + ': ' + nb.name });
+                    setCode('[blok:' + nb.id + ']');
+                } }))));
+                const m = code.match(/^\[blok:(\d+)\]$/);
+                const cb = m && (CI.contentBlocks || []).find((x) => x.value === Number(m[1]));
+                if (cb) items.push(btn('Edytuj blok', 'pen', (t) => window.BlockBuilder.open({ type: cb.type, id: cb.value, trigger: t, onSave: () => { shortcodePreviewCache.delete(code); load(); } })));
+            }
+            tools.replaceChildren(...items);
+        };
+        renderTools();
         input.addEventListener('input', () => {
             typingHistory();
             b.attrs.code = input.value.trim();
@@ -1515,7 +1572,9 @@ function start(config) {
         });
         load();
         return h('div', { class: 'be-placeholder be-placeholder--compact' },
-            h('label', { class: 'be-placeholder-title' }, icon('code'), ' Shortcode'),
+            h('label', { class: 'be-placeholder-title' }, icon('code'), ' Moduł (shortcode)'),
+            groups.length ? pick : null,
+            tools,
             input,
             h('p', { id: 'sc-help-' + b.id, class: 'be-small' }, 'Np. [formularz:slug], [kafelki:slug], [kafelki-zestaw:ID], [blok:ID], [pasek:ID].'),
             status,

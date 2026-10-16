@@ -34,9 +34,10 @@
     $editorSnippets = [
         'red' => '<p><a href="#" class="cta-button cta-red">Przycisk</a></p><p>&nbsp;</p>',
         'green' => '<p><a href="#" class="cta-button cta-green">Przycisk</a></p><p>&nbsp;</p>',
-        'bip' => '<div class="bip-link-box"><p><img src="/img/bip-logo.svg" alt="Logo Biuletynu Informacji Publicznej (BIP)"></p><p>Więcej informacji o naszej fundacji oraz dokumenty formalne publikujemy w Biuletynie Informacji Publicznej.</p><p><a href="/bip" class="cta-button">Więcej informacji w BIP</a></p></div><p>&nbsp;</p>',
-        'accentLeft' => '<div class="accent-section accent-left"><p>Treść w kolorowej sekcji&hellip;</p></div><p>&nbsp;</p>',
-        'accentRight' => '<div class="accent-section accent-right"><p>Treść w kolorowej sekcji&hellip;</p></div><p>&nbsp;</p>',
+        // Wstawki wspólne z edytorem blokowym (App\Support\ClassicInserts).
+        'bip' => \App\Support\ClassicInserts::SNIPPETS['bip']['html'].'<p>&nbsp;</p>',
+        'accentLeft' => \App\Support\ClassicInserts::SNIPPETS['accentLeft']['html'].'<p>&nbsp;</p>',
+        'accentRight' => \App\Support\ClassicInserts::SNIPPETS['accentRight']['html'].'<p>&nbsp;</p>',
         'table' => '<table><caption>Opis tabeli</caption><thead><tr><th scope="col">Kolumna 1</th><th scope="col">Kolumna 2</th><th scope="col">Kolumna 3</th></tr></thead><tbody><tr><th scope="row">Wiersz 1</th><td>Dane</td><td>Dane</td></tr><tr><th scope="row">Wiersz 2</th><td>Dane</td><td>Dane</td></tr></tbody></table><p>&nbsp;</p>',
         'note' => $noteHtml,
         'important' => $importantHtml,
@@ -56,20 +57,8 @@
     // TinyMCE zachowuje <div class="event-box">; CKEditor rozbija nieznane <div>y,
     // więc dostaje wariant na <blockquote> (który i tak wygląda jak ramka).
     $eventsForBox = \App\Models\Event::where('is_published', true)->orderByDesc('starts_at')->get();
-    $eventBoxMeta = fn ($e) => collect([
-        $e->typeLabel(),
-        $e->starts_at ? $e->dateRangeLabel() : null,
-        $e->location ?: $e->modeLabel(),
-    ])->filter()->map(fn ($p) => e($p))->implode(' · ');
-    $eventBoxHtml = fn ($e) => '<div class="event-box">'
-        .'<p class="event-box-meta">'.$eventBoxMeta($e).'</p>'
-        .'<p class="event-box-title"><a href="/wydarzenia/'.e($e->slug).'">'.e($e->title).'</a></p>'
-        .'<p><a href="/wydarzenia/'.e($e->slug).'" class="cta-button">Szczegóły wydarzenia</a></p>'
-        .'</div><p>&nbsp;</p>';
-    $eventBoxHtmlCk = fn ($e) => '<blockquote>'
-        .'<p><strong>'.e($e->title).'</strong><br>'.$eventBoxMeta($e).'</p>'
-        .'<p><a href="/wydarzenia/'.e($e->slug).'">Szczegóły wydarzenia →</a></p>'
-        .'</blockquote><p>&nbsp;</p>';
+    $eventBoxHtml = fn ($e) => \App\Support\ClassicInserts::eventBox($e).'<p>&nbsp;</p>';
+    $eventBoxHtmlCk = fn ($e) => \App\Support\ClassicInserts::eventBox($e, true).'<p>&nbsp;</p>';
     $eventBoxOptions = $eventsForBox->map(fn ($e) => [
         'slug' => $e->slug,
         'title' => $e->title,

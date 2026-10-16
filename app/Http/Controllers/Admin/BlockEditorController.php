@@ -9,6 +9,7 @@ use App\Models\Page;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use App\Support\BlockRenderer;
+use App\Support\ClassicInserts;
 use App\Support\NewsList;
 use App\Support\ShortcodeParser;
 use App\Support\SubpageList;
@@ -316,6 +317,8 @@ class BlockEditorController extends Controller
                 ],
                 // Kafelki strony (pole „Kafelki na stronie" i nawigacja kafelkowa podstron) — podgląd nad/pod treścią, jak na stronie.
                 'pageTiles' => $record instanceof Page ? $this->pageTiles($record) : null,
+                // Elementy z menu „Wstaw" klasycznego edytora (moduły, wstawki HTML, wydarzenia).
+                'classic' => ClassicInserts::forBlockEditor(),
                 // Blok „Lista aktualności": kategorie do wyboru.
                 'newsCategories' => NewsList::categoryOptions(),
                 'urls' => [
