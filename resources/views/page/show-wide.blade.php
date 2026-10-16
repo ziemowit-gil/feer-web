@@ -56,6 +56,9 @@
                     <div class="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-md bg-gray-50 px-4 py-3">
                         <div class="no-print print:hidden">@include('partials.print-button')</div>
                     </div>
+                    @if ($page->is_archived)
+                        @include('partials.archival-notice', ['date' => $page->created_at, 'class' => 'mt-4'])
+                    @endif
                 </header>
                 @include('partials.pjm-video', ['url' => $page->pjm_video_url, 'title' => $page->title])
 

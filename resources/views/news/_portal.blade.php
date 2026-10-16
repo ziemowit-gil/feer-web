@@ -42,8 +42,6 @@
 <section class="mx-auto max-w-6xl px-4 py-10" x-data="audioPlayer()">
     @if ($news->is_legacy)
         @include('partials.legacy-notice')
-    @elseif ($news->is_archived)
-        @include('partials.archival-notice', ['date' => $news->published_at])
     @endif
 
     @include('partials.etr-toggle', ['etr' => $news->etr, 'title' => $news->title])
@@ -105,6 +103,9 @@
 
                     @if ($news->excerpt)
                         <p class="news-portal-lead mt-6 font-bold leading-relaxed text-ink">{{ $news->excerpt }}</p>
+                    @endif
+                    @if ($news->is_archived && ! $news->is_legacy)
+                        @include('partials.archival-notice', ['date' => $news->published_at, 'class' => 'mt-6'])
                     @endif
                 </header>
 

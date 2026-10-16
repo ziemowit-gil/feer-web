@@ -75,8 +75,6 @@
     <section class="mx-auto px-4 py-12 {{ $isSide ? 'max-w-5xl' : 'max-w-2xl' }}" x-data="audioPlayer()">
         @if ($news->is_legacy)
             @include('partials.legacy-notice')
-        @elseif ($news->is_archived)
-            @include('partials.archival-notice', ['date' => $news->published_at])
         @endif
 
         @include('partials.etr-toggle', ['etr' => $news->etr, 'title' => $news->title])
@@ -106,6 +104,10 @@
                     {{ $news->title }}
                 @endif
             </h1>
+
+            @if ($news->is_archived && ! $news->is_legacy)
+                @include('partials.archival-notice', ['date' => $news->published_at])
+            @endif
 
             @if ($articleLayout === 'side' && $img)
                 {{-- ── Obok tekstu: zdjęcie po lewej, treść po prawej ── --}}

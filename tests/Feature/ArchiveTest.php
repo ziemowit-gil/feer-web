@@ -61,4 +61,26 @@ class ArchiveTest extends TestCase
             ->assertOk()
             ->assertSee('Archiwalny komunikat');
     }
+
+    /** Komunikat archiwalny stoi pod tytułem (nie nad nagłówkiem) — strony i aktualności, każdy szablon. */
+    public function test_archival_notice_sits_below_the_title(): void
+    {
+        Page::create(['title' => 'Stary regulamin', 'slug' => 'stary-regulamin', 'type' => 'page', 'is_published' => true, 'is_archived' => true]);
+        $news = News::create(['title' => 'Archiwalny komunikat', 'slug' => 'archiwalny-komunikat', 'is_published' => true, 'is_archived' => true, 'published_at' => now()->subYear(), 'excerpt' => 'stare']);
+
+        foreach (['default', 'feer'] as $template) {
+            SiteSetting::current()->update(['site_template' => $template]);
+            \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+            foreach (['/stary-regulamin', route('news.show', $news)] as $url) {
+                $html = $this->get($url)->assertOk()->getContent();
+                $h1 = strpos($html, '<h1');
+                $notice = strpos($html, 'archival-notice');
+                $this->assertNotFalse($h1, "$template $url: brak h1");
+                $this->assertNotFalse($notice, "$template $url: brak komunikatu");
+                $this->assertGreaterThan($h1, $notice, "$template $url: komunikat nad tytułem");
+                $this->assertSame(1, substr_count($html, 'class="archival-notice'), "$template $url: komunikat powtórzony");
+            }
+        }
+    }
 }

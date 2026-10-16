@@ -59,6 +59,9 @@
                 </div>
             </header>
             <article class="mx-auto max-w-5xl px-4 py-12" aria-label="{{ $page->title }}">
+                @if ($page->is_archived)
+                    @include('partials.archival-notice', ['date' => $page->created_at])
+                @endif
                 @include('partials.pjm-video', ['url' => $page->pjm_video_url, 'title' => $page->title])
                 @include('partials.page-content-image')
 

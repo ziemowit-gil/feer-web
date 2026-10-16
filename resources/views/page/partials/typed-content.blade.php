@@ -9,7 +9,8 @@
         </div>
     @endif
 
-    @if ($page->is_archived)
+    {{-- Strony standardowe pokazują komunikat pod nagłówkiem (show/show-wide/show-hero). --}}
+    @if ($page->is_archived && ! $page->usesStandardLayout())
         <div class="mx-auto max-w-4xl px-4 pt-8">
             @include('partials.archival-notice', ['date' => $page->created_at])
         </div>

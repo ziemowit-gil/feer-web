@@ -175,6 +175,9 @@
                                     </div>
                                 </div>
                             </div>
+                            @if ($page->is_archived)
+                                @include('partials.archival-notice', ['date' => $page->created_at, 'class' => 'mt-4'])
+                            @endif
                         </header>
 
                         @include('partials.page-content-image')
