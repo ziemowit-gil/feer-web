@@ -130,15 +130,15 @@ $(function () {
     @php $tplRel = 'vendor/mosaico/templates/' . $mosaicoTemplate . '/template-' . $mosaicoTemplate . '.html'; @endphp
     var templateUrl = @json(asset($tplRel) . '?v=' . (is_file(public_path($tplRel)) ? filemtime(public_path($tplRel)) : '1'));
     var saved = @json(['metadata' => $subject->editor_metadata, 'content' => $subject->editor_content]);
-    @php $brandSite = \App\Models\SiteSetting::current(); $brandData = ['logo' => $brandSite->logoUrl(), 'name' => (string) $brandSite->site_name, 'url' => rtrim((string) config('app.url'), '/')]; @endphp
+    @php $brandSite = \App\Models\SiteSetting::current(); $brandData = ['logo' => $brandSite->logoUrl(), 'name' => (string) $brandSite->site_name, 'title' => (string) ($brandSite->getAttributes()['newsletter_name'] ?? null ?: 'FEERletter'), 'url' => rtrim((string) config('app.url'), '/')]; @endphp
     var brand = @json($brandData);
     var contentUrl = @json(route('admin.newsletter.content.items', ['source' => '__SRC__']));
     var viewModel = null, dirty = false;
 
     var plugins = [function (vm) {
         window.viewModel = viewModel = vm;
-        // Nowy projekt: na górę nagłówek z logo i nazwą organizacji (z ustawień witryny).
-        if (!(saved.metadata && saved.content)) { setTimeout(function () { insertBrandHeader(vm); }, 0); }
+        // Nowy projekt: na górę nagłówek „logo + FEERletter”; każdy później dodany blok logo/nagłówka wypełnia się sam.
+        setTimeout(function () { watchLogoBlocks(vm); if (!(saved.metadata && saved.content)) insertBrandHeader(vm); }, 0);
         vm.logoPath = ''; vm.logoUrl = @json($backUrl);
         var cmd = function (name, fn) { return { name: name, enabled: ko.observable(true), execute: fn }; };
         vm.save = cmd('Save', function () { doSave(false); });
@@ -172,6 +172,33 @@ $(function () {
         wys.fullOptions = full;
     })(window.ko && ko.bindingHandlers && ko.bindingHandlers.wysiwyg);
 
+    // Blok „Logo” i nagłówek „logo + FEERletter”: przy dodaniu dostają logo organizacji (alt, link do strony) i nazwę newslettera.
+    function fillLogo(block) {
+        try {
+            block = ko.utils.unwrapObservable(block);
+            var type = block && ko.utils.unwrapObservable(block.type);
+            if (type !== 'logoBlock' && type !== 'brandHeaderBlock') return;
+            var img = ko.utils.unwrapObservable(block.image);
+            if (img && brand.logo && ko.isObservable(img.src) && !img.src()) {
+                img.src(brand.logo);
+                if (ko.isObservable(img.alt) && !img.alt()) img.alt(brand.name);
+                if (ko.isObservable(img.url) && !img.url()) img.url(brand.url);
+            }
+            if (type === 'brandHeaderBlock' && ko.isObservable(block.orgName)) {
+                var cur = (block.orgName() || '').replace(/<[^>]*>/g, '').trim();
+                if (!cur || cur === 'Nazwa organizacji') block.orgName(brand.title);
+            }
+        } catch (e) { console.error('Blok logo:', e); }
+    }
+    function watchLogoBlocks(vm) {
+        if (!vm.content) return;
+        var list = vm.content().mainBlocks().blocks;
+        list().forEach(fillLogo); // zapisany projekt z pustym blokiem logo/nagłówka
+        list.subscribe(function (changes) {
+            changes.forEach(function (c) { if (c.status === 'added') setTimeout(function () { fillLogo(c.value); }, 50); }); // po wyrenderowaniu bloku (wiązanie obrazka Mosaico)
+        }, null, 'arrayChange');
+    }
+
     function insertBrandHeader(vm) {
         try {
             var def = ko.utils.arrayFirst(ko.utils.unwrapObservable(vm.blocks), function (b) { return ko.utils.unwrapObservable(b.type) === 'brandHeaderBlock'; });
@@ -181,11 +208,7 @@ $(function () {
             vm.selectedBlock(null);
             vm.addBlock(def);
             var added = list.pop(); list.unshift(added);
-            var block = ko.utils.unwrapObservable(added);
-            var set = function (o, k, v) { if (o && ko.isObservable(o[k]) && v) o[k](v); };
-            set(block, 'orgName', brand.name);
-            var img = ko.utils.unwrapObservable(block.image);
-            if (img) { set(img, 'src', brand.logo); set(img, 'alt', brand.name); set(img, 'url', brand.url); }
+            fillLogo(added);
             vm.selectedBlock(null);
         } catch (e) { console.error('Nagłówek z logo:', e); }
     }

@@ -303,8 +303,8 @@
       logoBlock imageWidth { label: Image Size; widget: select; options: 166=Small|258=Medium|350=Big;
         renderHint: buttonset;
       }
-      orgName { label: Nazwa organizacji; extend: text }
-      brandHeaderBlock { label: Nagłówek: logo i nazwa organizacji; theme: contentTheme }
+      orgName { label: Nazwa newslettera; extend: text }
+      brandHeaderBlock { label: Nagłówek: logo i FEERletter; theme: contentTheme }
       logoBlock { label: Logo; properties: externalBackgroundVisible=true image imageWidth=258 externalTextStyle; variant: externalBackgroundVisible; theme: contentTheme}
       
       /* a deprecated block is a block that is "known", so loaded models will still work, but is not available in the block list */
@@ -570,14 +570,14 @@
   <div data-ko-container="main" data-ko-wrap="false">
 
     
-    <!-- brandHeaderBlock -->
+    <!-- brandHeaderBlock: logo organizacji + nazwa newslettera (FEERletter) -->
     <table role="presentation" class="vb-outer" width="100%" cellpadding="0" border="0" cellspacing="0" bgcolor="#F3F6FB" style="background-color: #F3F6FB; -ko-background-color: @[externalBackgroundColor]; -ko-attr-bgcolor: @[externalBackgroundColor]" data-ko-block="brandHeaderBlock">
       <tr><td class="vb-outer" align="center" valign="top" style="padding-left: 9px; padding-right: 9px; font-size: 0">
       <!--[if (gte mso 9)|(lte ie 8)]><table role="presentation" align="center" border="0" cellspacing="0" cellpadding="0" width="570"><tr><td align="center" valign="top"><![endif]--><!--
       --><div style="margin: 0 auto; max-width: 570px; -mru-width: 0px"><table role="presentation" class="vb-row" border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; width: 100%; background-color: #ffffff; -ko-background-color: @[backgroundColor]; -ko-attr-bgcolor: @[backgroundColor]; max-width: 570px; -mru-width: 0px; border-top: 6px solid #1E6DFF" bgcolor="#ffffff" width="570">
         <tr>
           <td valign="middle" align="left" style="padding: 22px 18px 18px 27px; width: 200px;" width="200"><a href="" style="display: inline-block; text-decoration: none;" data-ko-link="image.url"><img alt="" border="0" hspace="0" vspace="0" style="vertical-align: top; display: block; height: auto; width: 100%; max-width: 180px; color: #1D1D1A; font-size: 18px; font-family: Montserrat, Arial, Helvetica, sans-serif; -ko-attr-alt: @image.alt; -ko-attr-alt-if: image.alt !== ''" data-ko-editable="image.src" width="180" data-ko-placeholder-height="60" src="/admin/newsletter/mosaico/img?method=placeholder&amp;params=180%2C60"></a></td>
-          <td valign="middle" align="right" style="padding: 22px 27px 18px 9px; font-weight: bold; color: #1D1D1A; font-size: 18px; font-family: Montserrat, Arial, Helvetica, sans-serif; text-align: right; line-height: 1.35; -ko-font-size: @[titleTextStyle.size]px; -ko-color: @titleTextStyle.color; -ko-font-family: @titleTextStyle.face;"><span style="font-weight: bold" data-ko-editable="orgName">Nazwa organizacji</span></td>
+          <td valign="middle" align="right" style="padding: 22px 27px 18px 9px; font-weight: bold; color: #1D1D1A; font-size: 18px; font-family: Montserrat, Arial, Helvetica, sans-serif; text-align: right; line-height: 1.35; -ko-font-size: @[titleTextStyle.size]px; -ko-color: @titleTextStyle.color; -ko-font-family: @titleTextStyle.face;"><span style="font-weight: bold" data-ko-editable="orgName">FEERletter</span></td>
         </tr>
       </table></div><!--
     --><!--[if (gte mso 9)|(lte ie 8)]></td></tr></table><![endif]-->
