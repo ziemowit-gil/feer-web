@@ -374,7 +374,7 @@
                                 <label class="{{ $row }}">
                                     <input type="hidden" name="show_side_nav" value="0">
                                     <input type="checkbox" name="show_side_nav" value="1" {{ old('show_side_nav', $page->show_side_nav ?? true) ? 'checked' : '' }} @change="sideNav = $event.target.checked">
-                                    <span><span class="{{ $rowTitle }}">Nawigacja po podstronach działu</span><span class="{{ $rowHint }}">Lista podstron w tym dziale. Wyłącz dla stron bez rozbudowanej struktury. Styl ustawiony na stronie głównej działu obowiązuje dla wszystkich jej podstron.</span></span>
+                                    <span><span class="{{ $rowTitle }}">Nawigacja po podstronach</span><span class="{{ $rowHint }}">Lista podstron w tym dziale. Wyłącz dla stron bez rozbudowanej struktury. Styl ustawiony na stronie głównej działu obowiązuje dla wszystkich jej podstron.</span></span>
                                 </label>
                                 <div x-show="sideNav" x-cloak class="mb-4 ml-[3.75rem]">
                                 @php
