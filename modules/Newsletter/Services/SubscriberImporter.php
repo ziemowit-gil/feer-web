@@ -15,7 +15,7 @@ use Modules\Newsletter\Models\NewsletterSuppression;
 use RuntimeException;
 
 /**
- * Import subskrybentów: odczyt pliku (CSV/JSON, także eksport MailerLite i GetResponse) z mapowaniem
+ * Import subskrybentów: odczyt pliku (CSV/JSON, Excel .xlsx, OpenDocument .ods, także eksport MailerLite i GetResponse) z mapowaniem
  * kolumn, normalizacja rekordów z API MailerLite i GetResponse, podgląd i zapis pojedynczego rekordu.
  *
  * Import jest idempotentny po adresie e-mail (ślepy indeks `email_hash`): ponowny import
@@ -70,8 +70,23 @@ class SubscriberImporter
     /** Zapisuje plik poza katalogiem publicznym i odczytuje nagłówek. */
     public function storeFile(UploadedFile $file, NewsletterImport $import): void
     {
-        $ext = strtolower($file->getClientOriginalExtension()) === 'json' ? 'json' : 'csv';
-        $path = $file->storeAs('newsletter-imports', $import->id.'-'.bin2hex(random_bytes(8)).'.'.$ext, self::DISK);
+        $original = strtolower($file->getClientOriginalExtension());
+        $ext = $original === 'json' ? 'json' : 'csv';
+        $name = 'newsletter-imports/'.$import->id.'-'.bin2hex(random_bytes(8)).'.'.$ext;
+
+        if (in_array($original, SpreadsheetReader::EXTENSIONS, true)) {
+            // Arkusz Excel/ODS → CSV; dalej import jak z pliku CSV.
+            $tmp = tempnam(sys_get_temp_dir(), 'nlimp');
+            try {
+                app(SpreadsheetReader::class)->toCsv((string) $file->getRealPath(), $original, $tmp);
+                Storage::disk(self::DISK)->put($name, (string) file_get_contents($tmp));
+            } finally {
+                @unlink($tmp);
+            }
+            $path = $name;
+        } else {
+            $path = $file->storeAs(dirname($name), basename($name), self::DISK);
+        }
 
         $import->forceFill(['file_path' => $path, 'file_name' => mb_substr($file->getClientOriginalName(), 0, 255)]);
         [$columns, $hasHeader] = $this->readHeader($import);
@@ -472,7 +487,10 @@ class SubscriberImporter
             return null;
         }
         try {
-            $date = CarbonImmutable::parse((string) $value);
+            // Data z Excela zapisana jako liczba dni od 1899-12-30 (np. 45352.4167).
+            $date = is_numeric($value) && (float) $value > 20000 && (float) $value < 80000
+                ? CarbonImmutable::create(1899, 12, 30, 0, 0, 0, 'UTC')->addSeconds((int) round((float) $value * 86400))
+                : CarbonImmutable::parse((string) $value);
 
             return $date->isFuture() ? null : $date;
         } catch (\Throwable) {

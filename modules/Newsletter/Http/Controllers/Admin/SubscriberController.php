@@ -192,8 +192,10 @@ class SubscriberController extends Controller
     public function import(Request $request, SubscriberImporter $importer)
     {
         $data = $request->validate([
-            'file'   => ['required', 'file', 'mimes:csv,txt,json', 'max:20480'],
+            'file'   => ['required', 'file', 'extensions:csv,txt,json,xlsx,ods', 'max:20480'],
             'source' => ['nullable', Rule::in([NewsletterImport::SOURCE_FILE, NewsletterImport::SOURCE_MAILERLITE_CSV, NewsletterImport::SOURCE_GETRESPONSE_CSV])],
+        ], [
+            'file.extensions' => 'Obsługujemy pliki .xlsx, .ods, .csv i .json. Starszy format .xls zapisz w Excelu jako .xlsx (Plik → Zapisz jako).',
         ]);
 
         $import = NewsletterImport::create([

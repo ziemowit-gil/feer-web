@@ -6,13 +6,13 @@
 
     <div class="grid max-w-6xl gap-6 lg:grid-cols-3">
         <section aria-labelledby="import-file-heading" class="space-y-4 rounded-md bg-white p-6">
-            <h2 id="import-file-heading" class="text-lg font-bold">Z pliku CSV lub JSON</h2>
+            <h2 id="import-file-heading" class="text-lg font-bold">Z pliku Excel, CSV lub JSON</h2>
             <form method="POST" action="{{ route('admin.newsletter.subskrybenci.import.store') }}" enctype="multipart/form-data" class="space-y-4">
                 @csrf
                 <div>
                     <label for="file" class="mb-1 block text-sm font-bold">Plik (max 20 MB)</label>
-                    <input id="file" name="file" type="file" accept=".csv,.txt,.json" required aria-describedby="file-help" class="w-full rounded border border-gray-500 text-sm file:mr-3 file:rounded file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:font-bold">
-                    <p id="file-help" class="mt-1 text-xs text-muted">CSV z nagłówkiem (separator „;”, „,” lub tabulator) albo JSON — tablica obiektów. Kolumny dopasujesz w następnym kroku; rozpoznajemy m.in. <code>email</code>, <code>name</code>, <code>last_name</code>, <code>phone</code>, <code>status</code>, <code>subscribed_at</code>, <code>ip_address</code>, <code>groups</code>.</p>
+                    <input id="file" name="file" type="file" accept=".xlsx,.ods,.csv,.txt,.json" required aria-describedby="file-help" class="w-full rounded border border-gray-500 text-sm file:mr-3 file:rounded file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:font-bold">
+                    <p id="file-help" class="mt-1 text-xs text-muted">Excel (.xlsx) lub OpenDocument (.ods) — czytamy pierwszy arkusz; CSV z nagłówkiem (separator „;”, „,” lub tabulator) albo JSON — tablica obiektów. Kolumny dopasujesz w następnym kroku; rozpoznajemy m.in. <code>email</code>, <code>name</code>, <code>last_name</code>, <code>phone</code>, <code>status</code>, <code>subscribed_at</code>, <code>ip_address</code>, <code>groups</code>.</p>
                 </div>
                 <fieldset>
                     <legend class="mb-1 text-sm font-bold">Skąd pochodzi plik?</legend>
