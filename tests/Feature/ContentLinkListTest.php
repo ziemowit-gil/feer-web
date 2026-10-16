@@ -196,6 +196,22 @@ class ContentLinkListTest extends TestCase
             ->assertSee('Lista aktualności…');
     }
 
+    public function test_block_editor_shows_page_tiles_preview(): void
+    {
+        $page = $this->page('Z kafelkami', null, [
+            'tiles_enabled' => true,
+            'tiles' => [['label' => 'Panel kursanta', 'url' => '/panel', 'icon' => 'fa-solid fa-user']],
+        ]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $html = $this->actingAs($admin)->get(route('admin.podstrony.bloki.edit', $page))->assertOk()->getContent();
+        preg_match("~data-config='([^']*)'~", $html, $m);
+        $config = json_decode($m[1] ?? '', true);
+
+        $this->assertNull($config['pageTiles']['before']);
+        $this->assertStringContainsString('Panel kursanta', $config['pageTiles']['after']);
+    }
+
     public function test_shortcodes_are_detected_and_removed_from_excerpts(): void
     {
         $this->assertTrue(ShortcodeParser::has('<p>[podstrony:poziomy=2]</p>'));

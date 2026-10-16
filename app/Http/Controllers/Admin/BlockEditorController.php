@@ -314,6 +314,8 @@ class BlockEditorController extends Controller
                     'pages' => SubpageList::pickerOptions(),
                     'contextPage' => $record instanceof Page ? $record->id : null,
                 ],
+                // Kafelki strony (pole „Kafelki na stronie" i nawigacja kafelkowa podstron) — podgląd nad/pod treścią, jak na stronie.
+                'pageTiles' => $record instanceof Page ? $this->pageTiles($record) : null,
                 // Blok „Lista aktualności": kategorie do wyboru.
                 'newsCategories' => NewsList::categoryOptions(),
                 'urls' => [
@@ -389,6 +391,35 @@ class BlockEditorController extends Controller
             'navTitle' => (string) ($project->nav_title ?: $project->title),
             'nav' => collect(['O projekcie'])->merge($sections)->merge($tabPages)->values()->all(),
         ];
+    }
+
+    /**
+     * Kafelki, które strona pokazuje poza treścią: „Kafelki na stronie" (nad albo pod treścią)
+     * oraz nawigacja kafelkowa podstron. HTML z tych samych widoków co na stronie publicznej.
+     *
+     * @return array{before: ?string, after: ?string}
+     */
+    private function pageTiles(Page $page): array
+    {
+        $out = ['before' => null, 'after' => null];
+
+        if (! $page->isTilesGrid() && $page->showsTiles()) {
+            $tiles = collect($page->tiles ?? [])
+                ->filter(fn ($t) => filled($t['heading'] ?? null) || (filled($t['label'] ?? null) && filled($t['url'] ?? null)))
+                ->values();
+            if ($tiles->isNotEmpty()) {
+                $out[$page->tiles_content_position === 'below' ? 'before' : 'after'] = view('partials._tiles-sections', ['tiles' => $tiles->all(), 'label' => $page->title])->render();
+            }
+        }
+
+        if ($page->sideNavStyle() === 'tiles' && $page->publishedChildren->isNotEmpty()) {
+            $out['after'] = ($out['after'] ?? '').view('partials.page-tiles-nav', [
+                'tiles' => $page->publishedChildren()->orderBy('order')->orderBy('title')->get(),
+                'page' => $page,
+            ])->render();
+        }
+
+        return $out;
     }
 
     private function typeLabel(string $type, Model $record): string

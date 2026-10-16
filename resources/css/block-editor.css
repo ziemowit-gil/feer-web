@@ -540,3 +540,10 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
 @media (prefers-reduced-motion: reduce) {
     .be-block, .be-appender { transition: none; }
 }
+
+/* Podgląd kafelków strony nad/pod treścią (nieaktywny — kafelki edytuje się w formularzu strony). */
+.be-page-tiles { margin: 1.5rem 0; padding: 0.75rem 1rem 1rem; border-radius: 0.5rem; background: #f3f4f6; }
+.be-page-tiles-note { margin: 0 0 0.75rem; font-size: 0.875rem; color: #374151; }
+.be-page-tiles-note a { color: #1752bf; font-weight: 700; text-decoration: underline; }
+.be-page-tiles-body { pointer-events: none; }
+.be-page-tiles-body > :first-child, .be-page-tiles-body nav { margin-top: 0 !important; }

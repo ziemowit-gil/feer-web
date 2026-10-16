@@ -618,6 +618,16 @@ function start(config) {
         if (el) { placeCaret(el, where === 'start'); selectBlock(id); } else selectBlock(id, { focusWrapper: true });
     }
 
+    // Kafelki strony (pole „Kafelki na stronie”, nawigacja kafelkowa podstron) — tylko podgląd w miejscu,
+    // w którym pokazuje je strona; edytuje się je w formularzu strony.
+    function pageTilesPreview(html, where) {
+        if (!html) return null;
+        return h('section', { class: 'be-page-tiles', 'aria-label': 'Kafelki strony ' + where + ' (podgląd)' },
+            h('p', { class: 'be-page-tiles-note' }, icon('table-cells-large'), ' Kafelki strony ' + where + ' — podgląd. ',
+                h('a', { href: config.urls.admin }, 'Zmień je w formularzu strony'), '.'),
+            h('div', { inert: true, 'aria-hidden': 'true', class: 'be-page-tiles-body' }, sanitizePreview(html)));
+    }
+
     // ── Szkielet interfejsu ────────────────────────────────────────────────
     const live = h('div', { class: 'be-sr-only', role: 'status', 'aria-live': 'polite' });
     let liveTimer = null;
@@ -636,7 +646,9 @@ function start(config) {
         projLayout && projLayout.kicker ? h('p', { class: 'be-proj-kicker' }, projLayout.kicker) : null,
         titleEl,
         projLayout ? [h('span', { class: 'be-proj-bar', 'aria-hidden': 'true' }), h('h2', { class: 'be-proj-h2' }, projLayout.heading)] : null,
-        canvas);
+        pageTilesPreview(config.pageTiles?.before, 'nad treścią'),
+        canvas,
+        pageTilesPreview(config.pageTiles?.after, 'pod treścią'));
     const projNav = projLayout ? h('aside', { class: 'be-proj-nav', 'aria-label': 'Podgląd menu bocznego działania' },
         h('p', { class: 'be-proj-nav-title' }, projLayout.navTitle),
         h('span', { class: 'be-proj-bar', 'aria-hidden': 'true' }),
