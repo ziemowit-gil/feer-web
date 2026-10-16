@@ -9,7 +9,7 @@
         $faqItems->push(['q' => 'Jak się wypisać lub zmienić tematy?', 'a' => 'W stopce każdej wiadomości są dwa linki: do zmiany tematów i do wypisu. Wystarczy jedno kliknięcie, bez logowania.']);
     }
     if (! $has('dane')) {
-        $faqItems->push(['q' => 'Co robicie z moimi danymi?', 'a' => 'Adresu e-mail i imienia używamy tylko do wysyłki newslettera. Nie przekazujemy ich nikomu do celów reklamowych. W rejestrze zgód przechowujemy datę i treść zgody, żeby móc wykazać, że zapis był dobrowolny.']);
+        $faqItems->push(['q' => 'Co robicie z moimi danymi?', 'a' => 'Adresu e-mail i imienia używamy tylko do wysyłki newslettera. Nie przekazujemy ich nikomu do celów reklamowych.']);
     }
 @endphp
 <div class="nls-faq">

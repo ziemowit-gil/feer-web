@@ -313,7 +313,7 @@ class NewsletterForm extends Model
             'slug'            => 'glowny',
             'eyebrow'         => 'Newsletter FEER',
             'heading'         => 'Bądź na bieżąco z tym, co robimy',
-            'lead'            => 'Raz w miesiącu: aktualności, szkolenia, materiały edukacyjne. Bez spamu, wypis jednym kliknięciem.',
+            'lead'            => 'Raz na 2 tygodnie: aktualności, szkolenia, materiały edukacyjne. Bez spamu, wypis jednym kliknięciem.',
             'ask_name'        => true,
             'ask_phone'       => false,
             'show_topics'     => true,
@@ -325,7 +325,7 @@ class NewsletterForm extends Model
                 'Materiały edukacyjne do wykorzystania w pracy',
             ],
             'faq'             => [
-                ['q' => 'Jak często wysyłacie newsletter?', 'a' => 'Raz w miesiącu.'],
+                ['q' => 'Jak często wysyłacie newsletter?', 'a' => 'Raz na 2 tygodnie.'],
                 ['q' => 'Jak się wypisać?', 'a' => 'Link do wypisu i zmiany preferencji znajdziesz w stopce każdej wiadomości.'],
             ],
             'consent_text'    => 'Chcę otrzymywać newsletter na podany adres e-mail. Wiem, że mogę się wypisać w każdej chwili.',
