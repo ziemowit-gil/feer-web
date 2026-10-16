@@ -36,6 +36,8 @@ use Illuminate\Http\Request;
  */
 class BlockEditorController extends Controller
 {
+    use \App\Http\Controllers\Concerns\HandlesContentApproval;
+
     /** Obsługiwane typy treści: model, moduł uprawnień, trasa formularza i etykiety interfejsu. */
     private const TARGETS = [
         'page' => [
@@ -337,6 +339,8 @@ class BlockEditorController extends Controller
                 ],
                 // Kafelki strony (pole „Kafelki na stronie" i nawigacja kafelkowa podstron) — podgląd nad/pod treścią, jak na stronie.
                 'pageTiles' => $record instanceof Page ? $this->pageTiles($record) : null,
+                // Publikacja, wersja robocza, kosz i miejsce w serwisie — jak w panelu bocznym formularza.
+                'settings' => $this->settingsConfig($type, $record),
                 // Elementy z menu „Wstaw" klasycznego edytora (moduły, wstawki HTML, wydarzenia).
                 'classic' => ClassicInserts::forBlockEditor(),
                 // Blok „Lista aktualności": kategorie do wyboru.
@@ -376,8 +380,9 @@ class BlockEditorController extends Controller
 
         $blocks = BlockRenderer::normalize($data['blocks']);
         $typeColumns = $this->typeColumns($request, $record);
+        $settings = $this->settingsColumns($request, $record);
 
-        $record->update($typeColumns + [
+        $record->update($settings + $typeColumns + [
             'title' => $data['title'],
             'meta_description' => $data['meta_description'] ?? null,
             'blocks' => $blocks,
@@ -388,7 +393,121 @@ class BlockEditorController extends Controller
             'ok' => true,
             'blocks' => $blocks,
             'saved_at' => now()->format('H:i'),
+            'settings' => $this->settingsValues($record->fresh()),
         ]);
+    }
+
+    /**
+     * Najważniejsze ustawienia z panelu bocznego formularza (widoczne tam bez przewijania):
+     * publikacja, termin publikacji, treść archiwalna, wersja robocza, a dla stron — miejsce
+     * w serwisie (strona nadrzędna, działanie, sposób pokazania, kolejność). Wysyłane tylko
+     * po zmianie (klucz `settings`); publikacja przechodzi przez zatwierdzanie jak w formularzu.
+     *
+     * @return array<string, mixed>
+     */
+    private function settingsColumns(Request $request, Model $record): array
+    {
+        if (! $request->has('settings') || $record instanceof ListingSection) {
+            return [];
+        }
+
+        $rules = ['is_published' => ['required', 'boolean'], 'draft' => ['nullable', 'boolean']];
+        if ($record instanceof Page) {
+            $rules += [
+                'publish_at' => ['nullable', 'date'],
+                'is_archived' => ['nullable', 'boolean'],
+                'parent_id' => ['nullable', 'integer', 'exists:pages,id'],
+                'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+                'project_display' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Page::PROJECT_DISPLAYS))],
+                'order' => ['nullable', 'integer', 'min:0'],
+            ];
+        } elseif ($record instanceof News) {
+            $rules += ['published_at' => ['nullable', 'date'], 'is_archived' => ['nullable', 'boolean']];
+        }
+
+        $input = (array) $request->input('settings', []);
+        $validator = validator($input, $rules, [
+            'parent_id.exists' => 'Wybrana strona nadrzędna nie istnieje.',
+            'project_id.exists' => 'Wybrane działanie nie istnieje.',
+        ]);
+        if ($validator->fails()) {
+            throw new HttpResponseException(response()->json(['message' => $validator->errors()->first(), 'errors' => $validator->errors()->toArray()], 422));
+        }
+        $v = $validator->validated();
+
+        $data = ['is_published' => ! ($v['draft'] ?? false) && (bool) $v['is_published']];
+        if ($record instanceof Page) {
+            $parentId = ($v['parent_id'] ?? null) ?: null;
+            if ($parentId) {
+                $parent = Page::find($parentId);
+                if ($parent->id === $record->id || $parent->ancestors()->contains('id', $record->id)) {
+                    throw new HttpResponseException(response()->json(['message' => 'Strona nie może być podstroną samej siebie ani swojej podstrony.'], 422));
+                }
+            }
+            $projectId = ($v['project_id'] ?? null) ?: null;
+            $data += [
+                'publish_at' => $v['publish_at'] ?? null,
+                'is_archived' => (bool) ($v['is_archived'] ?? false),
+                'parent_id' => $parentId,
+                'project_id' => $projectId,
+                'project_display' => $projectId ? ($v['project_display'] ?? 'link') : 'link',
+                'order' => (int) ($v['order'] ?? $record->order ?? 0),
+            ];
+        } elseif ($record instanceof News) {
+            $data += ['published_at' => $v['published_at'] ?? $record->published_at ?? now(), 'is_archived' => (bool) ($v['is_archived'] ?? false)];
+        }
+
+        return in_array(\App\Models\Concerns\Approvable::class, class_uses_recursive($record), true)
+            ? $this->applyApprovalWorkflow($data)
+            : $data;
+    }
+
+    /** Bieżące wartości ustawień panelu bocznego (do edytora). @return array<string, mixed>|null */
+    private function settingsValues(Model $record): ?array
+    {
+        if ($record instanceof ListingSection) {
+            return null;
+        }
+        $base = ['is_published' => (bool) $record->is_published, 'pending_approval' => (bool) ($record->pending_approval ?? false)];
+
+        return match (true) {
+            $record instanceof Page => $base + [
+                'publish_at' => $record->publish_at?->format('Y-m-d\TH:i'),
+                'is_archived' => (bool) $record->is_archived,
+                'parent_id' => $record->parent_id,
+                'project_id' => $record->project_id,
+                'project_display' => $record->project_display ?: 'link',
+                'order' => (int) $record->order,
+            ],
+            $record instanceof News => $base + ['published_at' => $record->published_at?->format('Y-m-d\TH:i'), 'is_archived' => (bool) $record->is_archived],
+            default => $base,
+        };
+    }
+
+    /** Listy wyboru i adresy akcji do ustawień panelu bocznego. @return array<string, mixed>|null */
+    private function settingsConfig(string $type, Model $record): ?array
+    {
+        $values = $this->settingsValues($record);
+        if ($values === null) {
+            return null;
+        }
+        $destroy = ['page' => 'admin.podstrony.destroy', 'news' => 'admin.newsy.destroy', 'project' => 'admin.projekty.destroy'][$type] ?? null;
+        $index = ['page' => 'admin.podstrony.index', 'news' => 'admin.newsy.index', 'project' => 'admin.projekty.index'][$type] ?? null;
+        $locked = $record instanceof Page && ($record->is_system || $record->is_locked);
+
+        return [
+            'values' => $values,
+            'destroy' => $destroy && ! $locked ? route($destroy, $record) : null,
+            'index' => $index ? route($index) : null,
+            'parents' => $record instanceof Page
+                ? Page::where('id', '!=', $record->id)->orderBy('title')->get(['id', 'title'])->map(fn ($p) => ['id' => $p->id, 'title' => $p->title])->all()
+                : [],
+            'projects' => $record instanceof Page
+                ? Project::orderBy('title')->get(['id', 'title'])->map(fn ($p) => ['id' => $p->id, 'title' => $p->title])->all()
+                : [],
+            'projectDisplays' => Page::PROJECT_DISPLAYS,
+            'canApprove' => (bool) auth()->user()?->canApproveContent(),
+        ];
     }
 
     /**

@@ -279,6 +279,41 @@ class ContentLinkListTest extends TestCase
         $this->assertSame('<h2>Program</h2>', $data['content']);
     }
 
+    public function test_block_editor_saves_sidebar_settings_like_the_form(): void
+    {
+        $root = $this->page('Rodzic');
+        $page = $this->page('Dziecko', $root);
+        $other = $this->page('Inna');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $save = fn (array $settings) => $this->actingAs($admin)->putJson(route('admin.podstrony.bloki.update', $page), [
+            'title' => 'Dziecko', 'blocks' => [['type' => 'paragraph', 'attrs' => ['text' => 'x']]], 'settings' => $settings,
+        ]);
+
+        $html = $this->actingAs($admin)->get(route('admin.podstrony.bloki.edit', $page))->getContent();
+        preg_match("~data-config='([^']*)'~", $html, $m);
+        $config = json_decode($m[1] ?? '', true)['settings'];
+        $this->assertSame($root->id, $config['values']['parent_id']);
+        $this->assertStringContainsString('/admin/podstrony/'.$page->id, $config['destroy']);
+
+        $save(['is_published' => true, 'parent_id' => $other->id, 'order' => 7, 'is_archived' => true])->assertOk()
+            ->assertJsonPath('settings.parent_id', $other->id);
+        $page->refresh();
+        $this->assertSame([$other->id, 7, true, true], [$page->parent_id, $page->order, $page->is_archived, $page->is_published]);
+
+        // Wersja robocza zdejmuje publikację niezależnie od przełącznika.
+        $save(['is_published' => true, 'draft' => true, 'parent_id' => $other->id])->assertOk();
+        $this->assertFalse($page->fresh()->is_published);
+
+        // Pętla w drzewie stron jest blokowana.
+        $this->actingAs($admin)->putJson(route('admin.podstrony.bloki.update', $other), [
+            'title' => 'Inna', 'blocks' => [], 'settings' => ['is_published' => true, 'parent_id' => $page->id],
+        ])->assertStatus(422);
+
+        // Bez klucza settings ustawienia się nie zmieniają.
+        $this->actingAs($admin)->putJson(route('admin.podstrony.bloki.update', $page), ['title' => 'Dziecko', 'blocks' => []])->assertOk();
+        $this->assertSame($other->id, $page->fresh()->parent_id);
+    }
+
     public function test_shortcodes_are_detected_and_removed_from_excerpts(): void
     {
         $this->assertTrue(ShortcodeParser::has('<p>[podstrony:poziomy=2]</p>'));

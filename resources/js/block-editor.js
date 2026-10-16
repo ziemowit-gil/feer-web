@@ -253,6 +253,9 @@ function start(config) {
         insertTarget: null,     // { parentId, index } albo null (= po zaznaczonym)
         past: [],
         future: [],
+        // Ustawienia z panelu bocznego formularza (publikacja, miejsce w serwisie) — wysyłane tylko po zmianie.
+        settings: config.settings ? JSON.parse(JSON.stringify(config.settings.values)) : null,
+        settingsDirty: false,
         dirty: false,
         saving: false,
         savedAt: null,
@@ -2076,6 +2079,7 @@ function start(config) {
         const meta = textInput(S.meta, (v) => { typingHistory(); S.meta = v; metaCount(); markDirty(); }, { multiline: true, rows: 4, maxlength: '500' });
         metaCount();
         return h('div', {},
+            ...publicationSettings(),
             panelSection(null,
                 field(L.title, title),
                 field('Opis dla wyszukiwarek', meta, 'Jedno, dwa zdania o tym, czego dotyczy treść. Najlepiej do 160 znaków.'),
@@ -2091,6 +2095,58 @@ function start(config) {
             panelSection('Więcej ustawień',
                 h('p', { class: 'be-help' }, L.more),
                 h('a', { href: config.urls.admin, class: 'be-btn be-btn--secondary be-w-full' }, icon('sliders'), ' ' + L.form)));
+    }
+    // Publikacja, wersja robocza, kosz i miejsce w serwisie — to, co formularz pokazuje bez przewijania.
+    function publicationSettings() {
+        const C = config.settings;
+        const v = S.settings;
+        if (!C || !v) return [];
+        const change = (patch, rerender = false) => {
+            Object.assign(v, patch); S.settingsDirty = true; markDirty();
+            // Po przerysowaniu panelu fokus wraca na zmienione pole.
+            if (rerender) { renderSidebar(); sidebar.querySelector(`[data-setting="${Object.keys(patch)[0]}"]`)?.focus(); }
+        };
+        const tag = (el, key) => { (el.matches('input, select') ? el : el.querySelector('input, select')).dataset.setting = key; return el; };
+        const isPage = TARGET.type === 'page';
+        const isNews = TARGET.type === 'news';
+        const dateKey = isPage ? 'publish_at' : (isNews ? 'published_at' : null);
+        const pubBox = checkbox(L.publishedLong, v.is_published, (on) => change({ is_published: on }, true),
+            v.pending_approval ? 'Czeka na zatwierdzenie przez osobę zatwierdzającą.' : (C.canApprove ? 'Treść jest dostępna publicznie.' : 'Po zapisie trafi do zatwierdzenia.'));
+        const date = dateKey && v.is_published ? field(isPage ? 'Opublikuj dopiero od (opcjonalnie)' : 'Data publikacji', (() => {
+            const el = h('input', { type: 'datetime-local', class: 'be-input', value: v[dateKey] || '' });
+            el.addEventListener('change', () => change({ [dateKey]: el.value || null }));
+            return el;
+        })(), isPage ? 'Puste = widoczna od razu po zapisie.' : 'Od tej chwili aktualność jest widoczna na liście.') : null;
+        const parts = [panelSection('Publikacja',
+            tag(pubBox, 'is_published'),
+            date,
+            'is_archived' in v ? checkbox('Treść archiwalna', v.is_archived, (on) => change({ is_archived: on }), 'Baner, że treść może być nieaktualna (zostaje w wyszukiwarce).') : null,
+            h('div', { class: 'be-grid-2' },
+                h('button', { type: 'button', class: 'be-btn be-btn--primary', onClick: () => save() }, icon('floppy-disk'), ' Zapisz'),
+                h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: () => { v.is_published = false; save({ draft: true }); } }, icon('pen-ruler'), ' Wersja robocza')),
+            h('p', { class: 'be-help' }, 'Wersja robocza nie jest widoczna publicznie — opublikujesz ją później.'),
+            h('div', { class: 'be-row be-row--between' },
+                C.index ? h('a', { href: C.index, class: 'be-btn be-btn--ghost' }, icon('arrow-left'), ' Anuluj') : null,
+                C.destroy ? h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => {
+                    if (!window.confirm(`Przenieść „${S.title || 'bez tytułu'}” do kosza?`)) return;
+                    S.dirty = false;
+                    clearDraft();
+                    const f = h('form', { method: 'POST', action: C.destroy, hidden: true },
+                        h('input', { type: 'hidden', name: '_token', value: CSRF }), h('input', { type: 'hidden', name: '_method', value: 'DELETE' }));
+                    document.body.append(f);
+                    f.submit();
+                } }, icon('trash-can'), ' Do kosza') : null))];
+        if (isPage) {
+            const opts = (list, empty) => [['', empty], ...list.map((o) => [o.id, o.title])];
+            const order = h('input', { type: 'number', class: 'be-input', min: '0', value: String(v.order ?? 0) });
+            order.addEventListener('change', () => change({ order: Math.max(0, Number(order.value) || 0) }));
+            parts.push(panelSection('Miejsce w serwisie',
+                field('Nadrzędna strona', select(v.parent_id || '', opts(C.parents, '— brak (strona główna) —'), (x) => change({ parent_id: Number(x) || null })), 'Strony z tym samym rodzicem tworzą wspólne podmenu.'),
+                field('Powiąż z działaniem', tag(select(v.project_id || '', opts(C.projects, '— brak —'), (x) => change({ project_id: Number(x) || null }, true)), 'project_id'), 'Strona zachowa adres i pojawi się też na stronie działania.'),
+                v.project_id ? field('Jak pokazać na stronie działania', select(v.project_display, Object.entries(C.projectDisplays), (x) => change({ project_display: x }))) : null,
+                field('Kolejność', order, 'Mniejsza liczba = wyżej w menu i na listach podstron.')));
+        }
+        return parts;
     }
     const countBlocks = () => { let n = 0; walk(S.blocks, () => n++); return n; };
 
@@ -2703,7 +2759,7 @@ function start(config) {
     });
 
     // ── Zapis ──────────────────────────────────────────────────────────────
-    async function save() {
+    async function save({ draft = false } = {}) {
         if (S.saving) return;
         if (!S.title.trim()) { S.error = L.titleRequired; updateTopbar(); titleEl.focus(); return; }
         S.saving = true;
@@ -2716,12 +2772,21 @@ function start(config) {
                 body: JSON.stringify({
                     title: S.title.trim(), meta_description: S.meta, blocks: serialize(S.blocks),
                     ...(typeForm ? { fields: typeFieldsData() } : {}),
+                    ...(S.settings && (S.settingsDirty || draft) ? { settings: { ...S.settings, draft } } : {}),
                 }),
             });
             const json = await res.json().catch(() => ({}));
             if (res.status === 419) throw new Error('Sesja wygasła. Skopiuj zmiany i odśwież stronę.');
             if (!res.ok) throw new Error(Object.values(json.errors || {})[0]?.[0] || json.message || 'Nie udało się zapisać zmian.');
             S.dirty = false;
+            if (json.settings) {
+                const wasRequested = S.settings?.is_published && !draft;
+                S.settings = json.settings;
+                S.settingsDirty = false;
+                config.page.is_published = json.settings.is_published;
+                if (wasRequested && json.settings.pending_approval) announce('Zapisano. Publikacja czeka na zatwierdzenie.');
+                if (S.sidebarTab === 'page') renderSidebar();
+            }
             S.savedAt = json.saved_at || new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
             clearDraft();
             announce('Zapisano zmiany');
