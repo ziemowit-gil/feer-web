@@ -337,29 +337,38 @@
         </section>
     @endif
 
-    {{-- ══ Aktualności ══ --}}
+    {{-- ══ Aktualności: jak karty „Aktualności” na stronie głównej (zdjęcie 16:10, kategoria, tytuł, data na dole) ══ --}}
     @if ($latestNews->isNotEmpty())
-        <section class="mx-auto max-w-6xl px-4 pb-16" aria-labelledby="latest-news-heading">
-            <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
-                <h2 id="latest-news-heading" class="text-2xl font-bold text-ink md:text-3xl">Co ostatnio u nas słychać</h2>
-                <a href="{{ site_route('news.index') }}" class="text-sm font-bold text-brand-dark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Wszystkie aktualności →</a>
+        <section class="py-14" aria-labelledby="latest-news-heading">
+            <div class="mx-auto max-w-6xl px-4">
+                <div class="mb-8 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+                    <h2 id="latest-news-heading" class="text-2xl font-bold text-ink md:text-3xl">Co ostatnio u nas słychać</h2>
+                    <a href="{{ site_route('news.index') }}" class="shrink-0 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Wszystkie aktualności →</a>
+                </div>
+                <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
+                    @foreach ($latestNews as $item)
+                        <li>
+                            <article class="group relative flex h-full flex-col overflow-hidden rounded-md bg-gray-50 transition-colors hover:bg-gray-100 focus-within:ring-2 focus-within:ring-brand-dark motion-reduce:transition-none">
+                                @if ($item->imageUrlOrDefault())
+                                    <img src="{{ $item->imageUrlOrDefault() }}" alt="{{ $item->image_alt ?: '' }}" class="aspect-[16/10] w-full object-cover" loading="lazy">
+                                @endif
+                                <div class="flex flex-1 flex-col gap-2 p-6">
+                                    @if ($item->category)
+                                        <span class="text-xs font-bold uppercase tracking-widest text-brand-dark">{{ $item->category->name }}</span>
+                                    @endif
+                                    <h3 class="text-lg font-bold leading-snug text-ink group-hover:text-brand-dark group-hover:underline group-hover:underline-offset-4">
+                                        <a href="{{ site_route('news.show', $item) }}" class="stretched-link focus-visible:outline-none">{{ $item->title }}</a>
+                                    </h3>
+                                    @if ($item->excerpt)<p class="line-clamp-2 text-sm leading-relaxed text-muted">{{ $item->excerpt }}</p>@endif
+                                    @if ($item->published_at)
+                                        <time datetime="{{ $item->published_at->toDateString() }}" class="mt-auto pt-2 text-sm text-muted">{{ $item->published_at->locale('pl')->translatedFormat('j F Y') }}</time>
+                                    @endif
+                                </div>
+                            </article>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
-            <ul class="grid gap-6 sm:grid-cols-3" role="list">
-                @foreach ($latestNews as $item)
-                    <li>
-                        <a href="{{ site_route('news.show', $item) }}" class="feer-card group flex h-full flex-col overflow-hidden rounded-lg bg-gray-50 hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                            @if ($item->imageUrlOrDefault())
-                                <img src="{{ $item->imageUrlOrDefault() }}" alt="{{ $item->image_alt ?: '' }}" class="aspect-[16/10] w-full object-cover" loading="lazy">
-                            @endif
-                            <span class="flex flex-1 flex-col p-5">
-                                @if ($item->published_at)<span class="text-xs font-bold uppercase tracking-widest text-muted">{{ $item->published_at->locale('pl')->isoFormat('D MMMM YYYY') }}</span>@endif
-                                <span class="mt-2 text-lg font-bold leading-snug text-ink group-hover:text-brand-dark">{{ $item->title }}</span>
-                                @if ($item->excerpt)<span class="mt-2 line-clamp-3 flex-1 text-sm leading-relaxed text-muted">{{ $item->excerpt }}</span>@endif
-                            </span>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
         </section>
     @endif
 

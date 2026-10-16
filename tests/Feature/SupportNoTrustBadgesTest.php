@@ -4,10 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\HeroSlide;
+use App\Models\News;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -84,5 +86,20 @@ class SupportNoTrustBadgesTest extends TestCase
         $this->assertStringContainsString('bg-brand-light text-ink', $section);
         $this->assertStringContainsString('bg-ink text-white', $section);
         $this->assertStringContainsString('-z-10 select-none text-[8.5rem]', $section, 'ikona kategorii w tle');
+    }
+
+    public function test_aktualnosci_na_stronie_wsparcia_jak_na_stronie_glownej(): void
+    {
+        $this->template('feer');
+        Cache::flush();
+        News::create(['title' => 'Zmiana rachunku bankowego', 'slug' => 'zmiana-rachunku', 'content' => '<p>x</p>', 'excerpt' => 'Nowy numer konta.', 'is_published' => true, 'published_at' => now()->subDay()]);
+
+        $html = $this->get(route('support.show'))->assertOk()->getContent();
+        $section = substr($html, strpos($html, '<section class="py-14" aria-labelledby="latest-news-heading">'), 6000);
+        $this->assertStringContainsString('Co ostatnio u nas słychać', $section);
+        $this->assertStringContainsString('<a href="'.route('news.show', 'zmiana-rachunku').'" class="stretched-link', $section);
+        $this->assertStringContainsString('Nowy numer konta.', $section);
+        $this->assertStringContainsString('<time datetime="'.now()->subDay()->toDateString().'"', $section);
+        $this->assertStringContainsString('sm:grid-cols-2 lg:grid-cols-3', $section);
     }
 }
