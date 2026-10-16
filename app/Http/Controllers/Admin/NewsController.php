@@ -510,16 +510,6 @@ class NewsController extends Controller
 
     private function uniqueSlug(string $source, ?int $ignoreId = null): string
     {
-        $base = Str::slug($source) ?: 'news';
-        $slug = $base;
-        $suffix = 2;
-
-        // withTrashed() – slug w koszu też blokuje constraint UNIQUE w bazie.
-        while (News::withTrashed()->where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
-            $slug = "{$base}-{$suffix}";
-            $suffix++;
-        }
-
-        return $slug;
+        return \App\Support\UniqueSlug::news($source, $ignoreId);
     }
 }

@@ -2296,7 +2296,7 @@ function start(config) {
                 checkbox('Pokaż menu podstron działu', v.show_side_nav, (on) => change({ show_side_nav: on }, true)),
                 v.show_side_nav ? field('Wygląd menu podstron', select(v.side_nav_style, Object.entries(C.sideNavStyles || {}), (x) => change({ side_nav_style: x })), 'O wyglądzie decyduje strona nadrzędna działu.') : null));
         }
-        if (isNews) parts.push(newsFieldsSection(C, v, change));
+        if (isNews) parts.push(...newsFieldsSection(C, v, change));
         if ('slug' in v) parts.push(addressSection(C, v, change));
         return parts;
     }
@@ -2311,7 +2311,22 @@ function start(config) {
         const alt = textInput(v.image_alt, (x) => { v.image_alt = x; S.settingsDirty = true; markDirty(); }, { multiline: true, rows: 2, maxlength: '255' });
         const color = h('input', { type: 'color', class: 'be-input be-color', value: v.accent_color || '#1752bf', 'aria-label': 'Kolor akcentu' });
         color.addEventListener('change', () => change({ accent_color: color.value }));
-        return panelSection('Aktualność',
+        const pt = v.post_type || 'standard';
+        const ctaLabel = textInput(v.cta_label, (x) => { v.cta_label = x; S.settingsDirty = true; markDirty(); }, { maxlength: '80', placeholder: 'np. Zapisz się' });
+        const ctaUrl = textInput(v.cta_url, (x) => { v.cta_url = x.trim(); S.settingsDirty = true; markDirty(); }, { placeholder: 'https://… lub /kontakt' });
+        const expires = h('input', { type: 'datetime-local', class: 'be-input', value: v.expires_at || '' });
+        expires.addEventListener('change', () => change({ expires_at: expires.value || null }));
+        const typeSection = panelSection('Typ wpisu',
+            tagSelect(select(pt, Object.entries(C.postTypes || {}), (x) => change({ post_type: x }, true)), 'post_type'),
+            pt === 'announcement' ? [
+                field('Ważny do (wymagane)', expires, 'Po tej dacie komunikat zniknie z listy aktualności i trafi do archiwum.'),
+                checkbox('Ważny komunikat (wyróżniony na stronie wpisu)', v.important, (on) => change({ important: on })),
+                field('Przycisk CTA — napis (opcjonalnie)', ctaLabel, 'Powiedz, co się stanie: „Zapisz się na szkolenie”, nie „Kliknij tutaj”.'),
+                field('Przycisk CTA — adres', ctaUrl),
+                pickLinkButton('news-cta', ' dla przycisku komunikatu', () => v.cta_url, (url) => { v.cta_url = url; S.settingsDirty = true; markDirty(); }),
+            ] : null,
+            pt === 'review' ? h('p', { class: 'be-help' }, 'Ocenę, plusy i minusy testu narzędzia uzupełnisz w formularzu aktualności.') : null);
+        return [typeSection, panelSection('Aktualność',
             field('Lead (krótki opis)', lead, 'Wyświetla się na liście aktualności i pod tytułem.'), counter,
             h('div', { class: 'be-field' }, h('span', { class: 'be-label' }, 'Zdjęcie główne'),
                 thumb ? h('img', { src: thumb, alt: '', class: 'be-thumb' }) : h('p', { class: 'be-muted' }, 'Brak zdjęcia — lista pokaże zdjęcie domyślne.'),
@@ -2329,8 +2344,9 @@ function start(config) {
             field('Odbiorcy (kolor)', select(v.audience || 'brand', Object.entries(C.audiences || {}), (x) => change({ audience: x }))),
             h('div', { class: 'be-field' }, h('label', { for: color.id = 'be-accent-' + TARGET.id }, 'Kolor akcentu'),
                 h('div', { class: 'be-row' }, color, v.accent_color ? h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => change({ accent_color: '' }, true) }, 'Bez koloru') : h('span', { class: 'be-muted' }, 'domyślny')),
-                h('p', { class: 'be-help' }, 'Za jasny kolor zostanie przyciemniony, żeby tekst miał kontrast co najmniej 4,5:1.')));
+                h('p', { class: 'be-help' }, 'Za jasny kolor zostanie przyciemniony, żeby tekst miał kontrast co najmniej 4,5:1.')))];
     }
+    const tagSelect = (el, key) => { el.dataset.setting = key; el.setAttribute('aria-label', 'Typ wpisu'); return el; };
 
     // Adres (slug) z informacją o przekierowaniu starego adresu i tytuł SEO.
     function addressSection(C, v, change) {

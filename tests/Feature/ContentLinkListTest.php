@@ -314,6 +314,54 @@ class ContentLinkListTest extends TestCase
         $this->assertSame($other->id, $page->fresh()->parent_id);
     }
 
+    public function test_block_editor_saves_news_fields_cta_slug_and_seo(): void
+    {
+        $cat = NewsCategory::create(['name' => 'Szkolenia', 'slug' => 'szkolenia']);
+        $news = News::create(['title' => 'Stary tytuł', 'slug' => 'stary-adres', 'content' => '<p>x</p>', 'is_published' => true, 'published_at' => now()->subDay()]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $html = $this->actingAs($admin)->get(route('admin.edytor-blokowy.edit', ['news', $news->id]))->getContent();
+        preg_match("~data-config='([^']*)'~", $html, $m);
+        $config = json_decode($m[1] ?? '', true);
+        $this->assertSame('stary-adres', $config['settings']['values']['slug']);
+        $this->assertSame(route('admin.historia.json', ['type' => 'news', 'id' => $news->id]), $config['urls']['history']);
+        $this->assertStringContainsString('preview=1', $config['urls']['preview']);
+
+        $this->actingAs($admin)->putJson(route('admin.edytor-blokowy.update', ['news', $news->id]), [
+            'title' => 'Stary tytuł', 'blocks' => [['type' => 'paragraph', 'attrs' => ['text' => 'x']]],
+            'settings' => [
+                'is_published' => true, 'excerpt' => 'Krótki lead', 'news_category_id' => $cat->id, 'slug' => 'Nowy Adres', 'meta_title' => 'SEO',
+                'post_type' => 'announcement', 'expires_at' => now()->addMonth()->format('Y-m-d\TH:i'), 'important' => true, 'cta_label' => 'Zapisz się', 'cta_url' => '/zapisy',
+            ],
+        ])->assertOk()->assertJsonPath('settings.slug', 'nowy-adres');
+
+        $news->refresh();
+        $this->assertSame(['Krótki lead', $cat->id, 'nowy-adres', 'SEO', 'announcement'], [$news->excerpt, $news->news_category_id, $news->slug, $news->meta_title, $news->post_type]);
+        $this->assertSame(['important' => true, 'cta_label' => 'Zapisz się', 'cta_url' => '/zapisy'], array_intersect_key($news->type_data, array_flip(['important', 'cta_label', 'cta_url'])));
+        // Stary adres przekierowuje na nowy (jak przy zapisie z formularza).
+        $this->get('/aktualnosci/stary-adres')->assertRedirect();
+
+        // Komunikat bez daty ważności i zły adres przycisku — błędy jak w formularzu.
+        $this->actingAs($admin)->putJson(route('admin.edytor-blokowy.update', ['news', $news->id]), [
+            'title' => 'Stary tytuł', 'blocks' => [], 'settings' => ['is_published' => true, 'post_type' => 'announcement', 'expires_at' => null, 'cta_url' => 'javascript:alert(1)'],
+        ])->assertStatus(422);
+    }
+
+    public function test_block_editor_saves_page_menu_and_unpublish_settings(): void
+    {
+        $page = $this->page('Menu');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->putJson(route('admin.podstrony.bloki.update', $page), [
+            'title' => 'Menu', 'blocks' => [],
+            'settings' => ['is_published' => true, 'show_in_menu' => false, 'hide_in_sitemap' => true, 'show_side_nav' => true, 'side_nav_style' => 'tabs', 'unpublish_at' => now()->addWeek()->format('Y-m-d\TH:i'), 'meta_title' => 'Tytuł SEO'],
+        ])->assertOk();
+
+        $page->refresh();
+        $this->assertSame([false, true, 'tabs', 'Tytuł SEO'], [(bool) $page->show_in_menu, (bool) $page->hide_in_sitemap, $page->side_nav_style, $page->meta_title]);
+        $this->assertNotNull($page->unpublish_at);
+    }
+
     public function test_shortcodes_are_detected_and_removed_from_excerpts(): void
     {
         $this->assertTrue(ShortcodeParser::has('<p>[podstrony:poziomy=2]</p>'));

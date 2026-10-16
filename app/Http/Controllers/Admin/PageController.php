@@ -1502,19 +1502,6 @@ class PageController extends Controller
 
     private function uniqueSlug(string $source, ?int $ignoreId = null): string
     {
-        $base = Str::slug($source) ?: 'strona';
-        $slug = $base;
-        $suffix = 2;
-
-        $isTaken = fn (string $candidate) => in_array($candidate, Page::RESERVED_SLUGS, true)
-            || Page::withTrashed()->where('slug', $candidate)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()
-            || \App\Models\SiteSetting::whereNotNull('slug')->where('slug', $candidate)->exists();
-
-        while ($isTaken($slug)) {
-            $slug = "{$base}-{$suffix}";
-            $suffix++;
-        }
-
-        return $slug;
+        return \App\Support\UniqueSlug::page($source, $ignoreId);
     }
 }

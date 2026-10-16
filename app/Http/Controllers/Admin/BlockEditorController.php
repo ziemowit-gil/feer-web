@@ -366,6 +366,10 @@ class BlockEditorController extends Controller
                         'base' => url('admin/szablony'),
                         'store' => \App\Support\Edition::allows('content_templates') ? route('admin.szablony.store') : null,
                     ] : null,
+                    // Historia wersji treści (jak przycisk „Historia wersji" klasycznego edytora).
+                    'history' => in_array($type, ['page', 'news', 'project'], true) ? route('admin.historia.json', ['type' => $type, 'id' => $record->id]) : null,
+                    // Podgląd wersji roboczej — podpisany link (strona publiczna dla szkicu zwraca 404).
+                    'preview' => method_exists($record, 'previewUrl') ? $record->previewUrl() : null,
                     // Import treści z Worda (jak „Import → DOCX" klasycznego edytora) — tylko w wersji z tą funkcją.
                     'docx' => \App\Support\Edition::allows('docx_import') ? route('admin.editor.docx.import') : null,
                 ],
@@ -394,6 +398,7 @@ class BlockEditorController extends Controller
             'blocks' => $blocks,
             'content' => BlockRenderer::render($blocks),
         ]);
+        $this->applyNewsImage($request, $record);
 
         return response()->json([
             'ok' => true,
@@ -426,13 +431,40 @@ class BlockEditorController extends Controller
                 'project_id' => ['nullable', 'integer', 'exists:projects,id'],
                 'project_display' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Page::PROJECT_DISPLAYS))],
                 'order' => ['nullable', 'integer', 'min:0'],
+                'show_in_menu' => ['nullable', 'boolean'],
+                'hide_in_sitemap' => ['nullable', 'boolean'],
+                'show_side_nav' => ['nullable', 'boolean'],
+                'side_nav_style' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Page::SIDE_NAV_STYLES))],
             ];
         } elseif ($record instanceof News) {
-            $rules += ['published_at' => ['nullable', 'date'], 'is_archived' => ['nullable', 'boolean']];
+            $rules += [
+                'published_at' => ['nullable', 'date'],
+                'is_archived' => ['nullable', 'boolean'],
+                'excerpt' => ['nullable', 'string', 'max:255'],
+                'news_category_id' => ['nullable', 'integer', 'exists:news_categories,id'],
+                'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+                'audience' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(SiteSetting::current()->audienceOptions()))],
+                'accent_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+                'image_alt' => ['nullable', 'string', 'max:255'],
+                'library_media_id' => ['nullable', 'integer'],
+                'delete_image' => ['nullable', 'boolean'],
+                // Typ wpisu i komunikat z przyciskiem CTA (jak w formularzu aktualności).
+                'post_type' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(News::POST_TYPES)),
+                    \Illuminate\Validation\Rule::notIn(SiteSetting::current()->blockedOptionsExcept('news_post_types', $record->post_type ?? 'standard'))],
+                'expires_at' => ['nullable', 'date', 'required_if:post_type,announcement'],
+                'important' => ['nullable', 'boolean'],
+                'cta_label' => ['nullable', 'string', 'max:80'],
+                'cta_url' => ['nullable', 'string', 'max:500', 'regex:~^(https?://\S+|/(?!/)\S*|#\S*)$~i'],
+            ];
+        }
+        if ($record instanceof Page || $record instanceof News) {
+            $rules += ['slug' => ['nullable', 'string', 'max:255'], 'meta_title' => ['nullable', 'string', 'max:255'], 'unpublish_at' => ['nullable', 'date']];
         }
 
         $input = (array) $request->input('settings', []);
         $validator = validator($input, $rules, [
+            'expires_at.required_if' => 'Komunikat musi mieć datę ważności — po niej trafi do archiwum.',
+            'cta_url.regex' => 'Adres przycisku: https://…, /strona albo #kotwica.',
             'parent_id.exists' => 'Wybrana strona nadrzędna nie istnieje.',
             'project_id.exists' => 'Wybrane działanie nie istnieje.',
         ]);
@@ -458,14 +490,70 @@ class BlockEditorController extends Controller
                 'project_id' => $projectId,
                 'project_display' => $projectId ? ($v['project_display'] ?? 'link') : 'link',
                 'order' => (int) ($v['order'] ?? $record->order ?? 0),
+                'show_in_menu' => (bool) ($v['show_in_menu'] ?? $record->show_in_menu),
+                'hide_in_sitemap' => (bool) ($v['hide_in_sitemap'] ?? $record->hide_in_sitemap),
+                'show_side_nav' => (bool) ($v['show_side_nav'] ?? $record->show_side_nav),
             ];
+            // Styl ukryty w Ustawienia → Moduły nie przejdzie — zostaje bieżący (jak w formularzu).
+            $style = $v['side_nav_style'] ?? $record->side_nav_style ?? 'sidebar';
+            $data['side_nav_style'] = in_array($style, SiteSetting::current()->blockedOptionsExcept('side_nav_styles', $record->side_nav_style), true)
+                ? ($record->side_nav_style ?: 'sidebar') : $style;
+            // Adres: strony osób i systemowe mają adres nadawany automatycznie — bez zmian.
+            if (array_key_exists('slug', $v) && ! $record->isAboutPerson() && ! $record->is_system) {
+                $data['slug'] = \App\Support\UniqueSlug::page(trim((string) $v['slug']) !== '' ? (string) $v['slug'] : (string) $request->input('title'), $record->id);
+            }
         } elseif ($record instanceof News) {
-            $data += ['published_at' => $v['published_at'] ?? $record->published_at ?? now(), 'is_archived' => (bool) ($v['is_archived'] ?? false)];
+            $data += [
+                'published_at' => $v['published_at'] ?? $record->published_at ?? now(),
+                'is_archived' => (bool) ($v['is_archived'] ?? false),
+                'excerpt' => $v['excerpt'] ?? null,
+                'news_category_id' => ($v['news_category_id'] ?? null) ?: null,
+                'project_id' => ($v['project_id'] ?? null) ?: null,
+                'audience' => $v['audience'] ?? ($record->audience ?: 'brand'),
+                'accent_color' => filled($v['accent_color'] ?? null) ? SiteSetting::current()->contrastSafeColor($v['accent_color']) : null,
+                'image_alt' => $v['image_alt'] ?? null,
+            ];
+            if (array_key_exists('post_type', $v)) {
+                $postType = $v['post_type'] ?: 'standard';
+                $td = is_array($record->type_data) ? $record->type_data : [];
+                if ($postType === 'announcement') {
+                    $td = array_merge($td, ['important' => (bool) ($v['important'] ?? false), 'cta_label' => $v['cta_label'] ?? null, 'cta_url' => $v['cta_url'] ?? null]);
+                }
+                $data += ['post_type' => $postType, 'type_data' => $td, 'expires_at' => $postType === 'announcement' ? ($v['expires_at'] ?? null) : null];
+            }
+            if (array_key_exists('slug', $v)) {
+                $data['slug'] = \App\Support\UniqueSlug::news(trim((string) $v['slug']) !== '' ? (string) $v['slug'] : (string) $request->input('title'), $record->id);
+            }
+        }
+        if ($record instanceof Page || $record instanceof News) {
+            if (array_key_exists('meta_title', $v)) {
+                $data['meta_title'] = $v['meta_title'] ?: null;
+            }
+            // „Zdejmij z publikacji" — kolumna dochodzi z migracją.
+            if (array_key_exists('unpublish_at', $v) && \Illuminate\Support\Facades\Schema::hasColumn($record->getTable(), 'unpublish_at')) {
+                $data['unpublish_at'] = $v['unpublish_at'] ?: null;
+            }
         }
 
         return in_array(\App\Models\Concerns\Approvable::class, class_uses_recursive($record), true)
             ? $this->applyApprovalWorkflow($data)
             : $data;
+    }
+
+    /** Zdjęcie aktualności z biblioteki multimediów albo jego usunięcie (jak w formularzu). */
+    private function applyNewsImage(Request $request, Model $record): void
+    {
+        if (! $record instanceof News || ! $request->has('settings')) {
+            return;
+        }
+        $s = (array) $request->input('settings', []);
+        if (! empty($s['delete_image'])) {
+            $record->clearMediaCollection('image');
+            $record->update(['image_alt' => null]);
+        } elseif (! empty($s['library_media_id']) && ($source = \Spatie\MediaLibrary\MediaCollections\Models\Media::find((int) $s['library_media_id']))) {
+            $source->copy($record, 'image');
+            $record->refreshImageDimensions();
+        }
     }
 
     /** Bieżące wartości ustawień panelu bocznego (do edytora). @return array<string, mixed>|null */
@@ -484,8 +572,35 @@ class BlockEditorController extends Controller
                 'project_id' => $record->project_id,
                 'project_display' => $record->project_display ?: 'link',
                 'order' => (int) $record->order,
+                'show_in_menu' => (bool) $record->show_in_menu,
+                'hide_in_sitemap' => (bool) $record->hide_in_sitemap,
+                'show_side_nav' => (bool) ($record->show_side_nav ?? true),
+                'side_nav_style' => $record->side_nav_style ?: 'sidebar',
+                'slug' => (string) $record->slug,
+                'slug_editable' => ! $record->isAboutPerson() && ! $record->is_system,
+                'meta_title' => (string) $record->meta_title,
+                'unpublish_at' => $record->unpublish_at?->format('Y-m-d\TH:i'),
             ],
-            $record instanceof News => $base + ['published_at' => $record->published_at?->format('Y-m-d\TH:i'), 'is_archived' => (bool) $record->is_archived],
+            $record instanceof News => $base + [
+                'published_at' => $record->published_at?->format('Y-m-d\TH:i'),
+                'is_archived' => (bool) $record->is_archived,
+                'excerpt' => (string) $record->excerpt,
+                'news_category_id' => $record->news_category_id,
+                'project_id' => $record->project_id,
+                'audience' => $record->audience ?: 'brand',
+                'accent_color' => (string) $record->accent_color,
+                'image_url' => $record->image_url,
+                'post_type' => $record->post_type ?: 'standard',
+                'expires_at' => $record->expires_at?->format('Y-m-d\TH:i'),
+                'important' => (bool) ($record->type_data['important'] ?? false),
+                'cta_label' => (string) ($record->type_data['cta_label'] ?? ''),
+                'cta_url' => (string) ($record->type_data['cta_url'] ?? ''),
+                'image_alt' => (string) $record->image_alt,
+                'slug' => (string) $record->slug,
+                'slug_editable' => true,
+                'meta_title' => (string) $record->meta_title,
+                'unpublish_at' => $record->unpublish_at?->format('Y-m-d\TH:i'),
+            ],
             default => $base,
         };
     }
@@ -508,10 +623,18 @@ class BlockEditorController extends Controller
             'parents' => $record instanceof Page
                 ? Page::where('id', '!=', $record->id)->orderBy('title')->get(['id', 'title'])->map(fn ($p) => ['id' => $p->id, 'title' => $p->title])->all()
                 : [],
-            'projects' => $record instanceof Page
+            'projects' => $record instanceof Page || $record instanceof News
                 ? Project::orderBy('title')->get(['id', 'title'])->map(fn ($p) => ['id' => $p->id, 'title' => $p->title])->all()
                 : [],
             'projectDisplays' => Page::PROJECT_DISPLAYS,
+            'sideNavStyles' => collect(Page::SIDE_NAV_STYLES)->except(SiteSetting::current()->blockedOptionsExcept('side_nav_styles', $record->side_nav_style ?? null))->all(),
+            'audiences' => SiteSetting::current()->audienceOptions(),
+            'categories' => $record instanceof News ? NewsList::categoryOptions() : [],
+            'postTypes' => $record instanceof News
+                ? collect(SiteSetting::current()->availableOptions('news_post_types', News::POST_TYPES, $record->post_type))->map(fn ($o) => $o['label'])->all()
+                : [],
+            'wasPublished' => (bool) $record->is_published,
+            'publicBase' => $record instanceof News ? url('/aktualnosci').'/' : url('/'),
             'canApprove' => (bool) auth()->user()?->canApproveContent(),
         ];
     }
