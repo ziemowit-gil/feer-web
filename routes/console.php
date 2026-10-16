@@ -8,6 +8,12 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+// Worker kolejki (QUEUE_CONNECTION=database): na hostingu bez supervisora uruchamiany
+// co minutę z crona schedule:run; kończy pracę po opróżnieniu kolejki lub po ~50 s.
+// Obsługuje wysyłkę newslettera (kolejka „newsletter”) oraz maile/zadania z „default”.
+Schedule::command('queue:work --queue=newsletter,default --stop-when-empty --max-time=50 --tries=3')
+    ->everyMinute()->withoutOverlapping(10)->runInBackground();
+
 // Codzienna auto-archiwizacja przeterminowanych wydarzeń i ofert wolontariatu.
 Schedule::command('content:auto-archive')->dailyAt('03:00');
 
