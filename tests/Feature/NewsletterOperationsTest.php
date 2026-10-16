@@ -204,4 +204,28 @@ class NewsletterOperationsTest extends TestCase
         $this->actingAs($admin)->get(route('admin.newsletter.raporty.pdf'))->assertOk()->assertHeader('content-type', 'application/pdf');
         $this->actingAs($admin)->get(route('admin.newsletter.kampanie.report.pdf', NewsletterCampaign::first()))->assertOk()->assertHeader('content-type', 'application/pdf');
     }
+
+    public function test_szablony_maja_naglowek_z_logo_i_nazwa_a_edytor_wstawia_go_do_nowego_projektu(): void
+    {
+        foreach (['feer-1', 'feer-2'] as $tpl) {
+            $html = file_get_contents(public_path("vendor/mosaico/templates/{$tpl}/template-{$tpl}.html"));
+            $this->assertStringContainsString('data-ko-block="brandHeaderBlock"', $html);
+            $this->assertStringContainsString('data-ko-editable="orgName"', $html);
+            $this->assertFileExists(public_path("vendor/mosaico/templates/{$tpl}/edres/brandHeaderBlock.png"));
+        }
+
+        SiteSetting::current()->update(['site_name' => 'Fundacja Testowa']);
+        $admin = $this->admin();
+        $this->actingAs($admin)->get(route('admin.newsletter.mosaico'))->assertRedirect();
+        $template = \Modules\Newsletter\Models\NewsletterTemplate::first();
+        $this->actingAs($admin)->get(route('admin.newsletter.szablony.editor', $template))->assertOk()
+            ->assertSee('function insertBrandHeader', false)
+            ->assertSee('"name":"Fundacja Testowa"', false);
+    }
+
+    public function test_zajawki_z_cms_bez_encji_html(): void
+    {
+        $this->assertSame('Bank – główny rachunek', \Modules\Newsletter\Services\ContentFeeder::plain('<p>Bank &ndash; gł&oacute;wny&nbsp;rachunek</p>'));
+        $this->assertSame('A B', \Modules\Newsletter\Services\ContentFeeder::plain('<p>A</p><p>B</p>'));
+    }
 }
