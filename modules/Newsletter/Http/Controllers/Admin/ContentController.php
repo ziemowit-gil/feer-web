@@ -20,9 +20,10 @@ class ContentController extends Controller
             'category' => $request->query('category'),
             'since'    => $request->query('since', 'all'),
             'sort'     => $request->query('sort', 'newest'),
+            'max'      => 30,
         ];
         if ($request->filled('q')) {
-            $opts['limit'] = 12;
+            $opts['limit'] = 30; // wyszukiwanie filtruje po pobraniu
         }
         $items = $feeder->items($source, $opts);
         if ($request->filled('q')) {

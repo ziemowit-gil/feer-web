@@ -38,7 +38,8 @@ class ContentFeeder
      */
     public function items(string $source, array $opts = [], ?NewsletterCampaign $campaign = null): Collection
     {
-        $limit = max(1, min(12, (int) ($opts['limit'] ?? 3)));
+        // 12 to limit bloku w mailu; okno „Wstaw aktualność” w edytorze może poprosić o więcej (max).
+        $limit = max(1, min((int) ($opts['max'] ?? 12), (int) ($opts['limit'] ?? 3)));
         $since = $this->sinceDate($opts['since'] ?? null, $campaign);
 
         $items = match ($source) {

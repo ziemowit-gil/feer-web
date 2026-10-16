@@ -47,6 +47,8 @@
         #nl-news .item { display: grid; grid-template-columns: 72px 1fr auto; gap: 12px; align-items: center; padding: 10px; border: 2px solid #E5E7EB; border-radius: 8px; margin-bottom: 8px; }
         #nl-news .item img { width: 72px; height: 54px; object-fit: cover; border-radius: 4px; }
         #nl-news .item button { min-height: 36px; padding: 6px 12px; border: 0; border-radius: 6px; background: var(--nl-brand-dark); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+        #nl-news h3.group { margin: 16px 0 8px; font-size: 15px; color: var(--nl-ink); }
+        #nl-news h3.group:first-child { margin-top: 0; }
         #nl-news .close { float: right; border: 0; background: none; font-size: 22px; cursor: pointer; }
         /* wymagane wymiary obrazków przy każdym obrazku w bloku (tylko w edytorze, nie trafia do maila) */
         #main-wysiwyg-area td.uploadzone { position: relative; }
@@ -117,7 +119,7 @@
         <div class="row">
             <select id="nl-src" aria-label="Źródło">@foreach (\Modules\Newsletter\Services\ContentFeeder::SOURCES as $k => $l)<option value="{{ $k }}">{{ $l }}</option>@endforeach</select>
             <select id="nl-cat" aria-label="Kategoria"><option value="">Wszystkie kategorie</option>@foreach ($newsCategories ?? [] as $slug => $name)<option value="{{ $slug }}">{{ $name }}</option>@endforeach</select>
-            <select id="nl-sort" aria-label="Sortowanie"><option value="newest">Od najnowszych</option><option value="category">Według kategorii</option><option value="oldest">Od najstarszych</option></select>
+            <select id="nl-sort" aria-label="Sortowanie"><option value="category" selected>Według kategorii</option><option value="newest">Od najnowszych</option><option value="oldest">Od najstarszych</option></select>
             <input id="nl-q" type="search" placeholder="Szukaj w tytule…" aria-label="Szukaj">
         </div>
         <div id="nl-list" aria-live="polite"></div>
@@ -337,10 +339,15 @@ $(function () {
     function loadNews() {
         var src = document.getElementById('nl-src').value, cat = document.getElementById('nl-cat').value, sort = document.getElementById('nl-sort').value, q = document.getElementById('nl-q').value;
         list.innerHTML = '<p>Wczytywanie…</p>';
-        fetch(contentUrl.replace('__SRC__', src) + '?limit=12&since=all&sort=' + encodeURIComponent(sort) + '&category=' + encodeURIComponent(cat) + '&q=' + encodeURIComponent(q), { headers: { 'Accept': 'application/json' } })
+        fetch(contentUrl.replace('__SRC__', src) + '?limit=' + (sort === 'category' ? 30 : 12) + '&since=all&sort=' + encodeURIComponent(sort) + '&category=' + encodeURIComponent(cat) + '&q=' + encodeURIComponent(q), { headers: { 'Accept': 'application/json' } })
             .then(function (r) { return r.json(); }).then(function (d) {
                 list.innerHTML = d.items.length ? '' : '<p>Brak pozycji.</p>';
+                var lastCat = null;
                 d.items.forEach(function (it) {
+                    if (sort === 'category') {
+                        var c = it.category || 'Bez kategorii';
+                        if (c !== lastCat) { var h = document.createElement('h3'); h.className = 'group'; h.textContent = c; list.appendChild(h); lastCat = c; }
+                    }
                     var div = document.createElement('div'); div.className = 'item';
                     div.innerHTML = (it.image ? '<img src="' + it.image + '" alt="">' : '<span></span>') + '<div><strong>' + esc(it.title) + '</strong><br><small>' + esc((it.date || '') + (it.category ? ' · ' + it.category : '')) + '</small></div><button type="button">Wstaw</button>';
                     div.querySelector('button').addEventListener('click', function () { insertArticle(it); modal.classList.remove('open'); });

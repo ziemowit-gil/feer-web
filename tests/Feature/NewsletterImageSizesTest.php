@@ -87,4 +87,26 @@ class NewsletterImageSizesTest extends TestCase
         $this->actingAs($admin)->get(route('admin.newsletter.szablony.editor', $template))->assertOk()->assertSee('if (!false ||', false);
 
     }
+
+    public function test_wstaw_aktualnosc_sortuje_po_kategorii_i_daje_wiecej_niz_12_pozycji(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $a = \App\Models\NewsCategory::create(['name' => 'Aktualności', 'slug' => 'aktualnosci', 'order' => 1]);
+        $b = \App\Models\NewsCategory::create(['name' => 'Szkolenia', 'slug' => 'szkolenia', 'order' => 2]);
+        foreach (range(1, 16) as $i) {
+            \App\Models\News::create(['title' => "Wpis {$i}", 'slug' => "wpis-{$i}", 'content' => '<p>x</p>', 'is_published' => true,
+                'published_at' => now()->subDays($i), 'news_category_id' => $i % 2 ? $a->id : $b->id]);
+        }
+
+        $items = $this->actingAs($admin)->getJson(route('admin.newsletter.content.items', ['source' => 'news']) . '?limit=30&since=all&sort=category')
+            ->assertOk()->json('items');
+
+        $this->assertCount(16, $items);
+        $cats = array_column($items, 'category');
+        $this->assertSame(array_merge(array_fill(0, 8, 'Aktualności'), array_fill(0, 8, 'Szkolenia')), $cats);
+        $this->assertSame('Wpis 1', $items[0]['title']); // w grupie od najnowszych
+
+        // Blok w mailu nadal ma limit 12.
+        $this->assertCount(12, app(\Modules\Newsletter\Services\ContentFeeder::class)->items('news', ['limit' => 30, 'since' => 'all']));
+    }
 }
