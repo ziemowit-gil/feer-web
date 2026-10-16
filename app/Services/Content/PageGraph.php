@@ -65,6 +65,7 @@ class PageGraph
                 $menuIds[$page->id] = true;
             }
         }
+        $menuOrder = array_flip(array_keys($menuIds));
         foreach (array_keys($menuIds) as $id) {
             $edges[] = ['source' => 'menu', 'target' => 'p'.$id, 'kind' => 'menu'];
         }
@@ -121,9 +122,14 @@ class PageGraph
                 'published' => (bool) $page->is_published,
                 'menu' => $inMenu,
                 'main' => isset($menuIds[$page->id]),
+                'menu_order' => $menuOrder[$page->id] ?? null,
                 'orphan' => $orphan,
+                // Do budowy drzewa w przeglądarce: strona nadrzędna i działanie (tylko gdy są w grafie).
+                'parent' => $page->parent_id && $pages->contains('id', $page->parent_id) ? 'p'.$page->parent_id : null,
+                'project' => $page->project_id && $projects->contains('id', $page->project_id) ? 'd'.$page->project_id : null,
                 'url' => $urls[$page->id],
                 'edit' => route('admin.podstrony.edit', $page->id),
+                'tree' => route('admin.podstrony.index', ['wybrana' => $page->id]),
                 'out' => count($linksOut),
                 'in' => count($linksIn),
             ]];
@@ -167,7 +173,7 @@ class PageGraph
             'nodes' => $nodes,
             'edges' => $edges,
             'warnings' => [
-                'orphans' => array_map(fn ($id) => ['id' => $id, 'title' => $titles[$id]], $warnings['orphans']),
+                'orphans' => array_map(fn ($id) => ['id' => $id, 'title' => $titles[$id], 'suggest' => $this->suggestParent($pages->firstWhere('id', $id), $pages, $warnings['orphans'], $menuIds)], $warnings['orphans']),
                 'draft_links' => array_map(fn ($w) => ['from' => $titles[$w['from']], 'from_id' => $w['from'], 'to' => $titles[$w['to']]], $warnings['draft_links']),
             ],
             'rows' => $rows,
@@ -177,6 +183,79 @@ class PageGraph
                 'projects' => $projects->count(),
             ],
         ];
+    }
+
+    /** Słowa pomijane przy szukaniu miejsca dla strony bez wejścia (zbyt ogólne). */
+    private const STOPWORDS = ['jak', 'nas', 'dla', 'oraz', 'przez', 'jest', 'strona', 'stron', 'strony', 'nasz', 'nasze', 'nasza', 'feer', 'fundacja', 'fundacji', 'tego', 'które', 'ktore', 'jako', 'przyklad'];
+
+    /**
+     * Rekomendacja, pod którą stronę dopiąć stronę bez wejścia: opublikowana strona z wejściem,
+     * z którą dzieli najwięcej słów (tytuł i adres; dodatkowo tytuł kandydata wymieniony w treści).
+     * Strony główne (z menu) mają lekką przewagę, bo do nich najłatwiej trafić.
+     *
+     * @return array{id: int, title: string, words: array<int, string>}|null
+     */
+    private function suggestParent(Page $page, Collection $pages, array $orphanIds, array $menuIds): ?array
+    {
+        $own = $this->stems($page->title.' '.str_replace('-', ' ', (string) $page->slug));
+        if (! $own) {
+            return null;
+        }
+        $text = $this->stems(strip_tags((string) $page->content));
+
+        $best = null;
+        foreach ($pages as $candidate) {
+            if ($candidate->id === $page->id || ! $candidate->is_published || in_array($candidate->id, $orphanIds, true)
+                || $candidate->slug === 'strona-glowna' || in_array($this->rootId($candidate, $pages, $page->id), [null, ...$orphanIds], true)) {
+                continue;
+            }
+            $theirs = $this->stems($candidate->title.' '.str_replace('-', ' ', (string) $candidate->slug));
+            $shared = array_intersect_key($own, $theirs);
+            if (! $shared) {
+                continue;
+            }
+            $mentioned = array_intersect_key($theirs, $text);
+            $score = 3 * count($shared) + min(2, count($mentioned)) + (isset($menuIds[$candidate->id]) ? 0.5 : 0);
+            if (! $best || $score > $best['score']) {
+                $best = ['score' => $score, 'id' => $candidate->id, 'title' => $candidate->title, 'words' => array_values($shared)];
+            }
+        }
+
+        return $best ? array_diff_key($best, ['score' => true]) : null;
+    }
+
+    /** Rdzenie słów (pierwsze 6 liter bez znaków diakrytycznych) => pierwsze wystąpienie słowa. */
+    private function stems(string $text): array
+    {
+        $out = [];
+        foreach (preg_split('/[^\p{L}\p{N}]+/u', mb_strtolower($text)) as $word) {
+            $ascii = \Illuminate\Support\Str::ascii($word);
+            if (mb_strlen($word) < 4 || in_array($ascii, self::STOPWORDS, true)) {
+                continue;
+            }
+            $out[substr($ascii, 0, 6)] ??= $word;
+        }
+
+        return $out;
+    }
+
+    /**
+     * Najwyższy przodek kandydata — null, gdy kandydat leży pod stroną $skipId (podstrona nie może
+     * być stroną nadrzędną) albo w pętli. Kandydat spod strony bez wejścia sam jest nieosiągalny.
+     */
+    private function rootId(Page $candidate, Collection $pages, int $skipId): ?int
+    {
+        $seen = [];
+        $node = $candidate;
+        while ($node->parent_id && ($parent = $pages->firstWhere('id', $node->parent_id))) {
+            if ($parent->id === $skipId || isset($seen[$parent->id])) {
+                return null;
+            }
+            $seen[$parent->id] = true;
+            $node = $parent;
+        }
+
+        return $node->id;
     }
 
     /** Id stron, do których prowadzą linki w treści (adresy względne i z domeną serwisu). */

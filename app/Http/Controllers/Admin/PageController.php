@@ -316,6 +316,11 @@ class PageController extends Controller
 
         $page->update(['parent_id' => $parentId]);
 
+        // Przeniesienie z mapy zależności (rekomendacja dla strony bez wejścia) wraca na mapę.
+        if ($request->input('wroc') === 'mapa') {
+            return redirect()->route('admin.podstrony.mapa')->with('status', "Strona „{$page->title}” jest teraz podstroną innej strony.");
+        }
+
         return redirect()->route('admin.podstrony.index', ['wybrana' => $page->id])
             ->with('status', "Strona „{$page->title}” została przeniesiona.");
     }

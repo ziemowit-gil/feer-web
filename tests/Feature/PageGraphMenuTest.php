@@ -33,4 +33,25 @@ class PageGraphMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]))
             ->get(route('admin.podstrony.mapa'))->assertOk()->assertSee('Menu główne');
     }
+
+    public function test_wezly_maja_dane_do_drzewa_bocznego(): void
+    {
+        NavItem::query()->delete();
+        $druga = Page::create(['title' => 'Druga w menu', 'slug' => 'druga-w-menu', 'type' => 'standard', 'is_published' => true, 'show_in_menu' => false]);
+        $pierwsza = Page::create(['title' => 'Pierwsza w menu', 'slug' => 'pierwsza-w-menu', 'type' => 'standard', 'is_published' => true, 'show_in_menu' => false]);
+        $pod = Page::create(['title' => 'Podstrona testowa', 'slug' => 'podstrona-testowa', 'type' => 'standard', 'is_published' => false, 'parent_id' => $pierwsza->id]);
+        NavItem::create(['label' => 'Pierwsza', 'url' => '/pierwsza-w-menu', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 0]);
+        NavItem::create(['label' => 'Druga', 'url' => '/druga-w-menu', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1]);
+
+        $nodes = collect(app(PageGraph::class)->build()['nodes'])->keyBy('data.id');
+
+        // Kolejność stron głównych jak w menu, nie jak w bazie.
+        $this->assertSame(0, $nodes['p'.$pierwsza->id]['data']['menu_order']);
+        $this->assertSame(1, $nodes['p'.$druga->id]['data']['menu_order']);
+        $this->assertNull($nodes['p'.$pod->id]['data']['menu_order']);
+        $this->assertSame('p'.$pierwsza->id, $nodes['p'.$pod->id]['data']['parent']);
+        $this->assertNull($nodes['p'.$pierwsza->id]['data']['parent']);
+        $this->assertNull($nodes['p'.$pod->id]['data']['project']);
+        $this->assertSame(route('admin.podstrony.index', ['wybrana' => $pod->id]), $nodes['p'.$pod->id]['data']['tree']);
+    }
 }

@@ -50,7 +50,34 @@ class PageGraphTest extends TestCase
             ->assertOk()
             ->assertSee('Mapa zależności stron')
             ->assertSee('Zależności w tabeli')
-            ->assertSee('cytoscape', false)
+            ->assertSee('role="tree"', false)
+            ->assertSee('Wokół strony')
+            ->assertSee('Szukaj strony')
+            ->assertDontSee('cytoscape', false)
             ->assertSee('O nas');
+    }
+
+    public function test_strona_bez_wejscia_dostaje_rekomendacje_i_mozna_ja_przeniesc_z_mapy(): void
+    {
+        $wspolpraca = Page::create(['title' => 'Zakres współpracy', 'slug' => 'zakres-wspolpracy', 'type' => 'standard', 'is_published' => true, 'show_in_menu' => true]);
+        Page::create(['title' => 'Historia', 'slug' => 'historia', 'type' => 'standard', 'is_published' => true, 'show_in_menu' => true]);
+        $sierota = Page::create(['title' => 'Współpraca z partnerami', 'slug' => 'wspolpraca-z-partnerami', 'type' => 'standard', 'is_published' => true, 'show_in_menu' => false]);
+        $bezPary = Page::create(['title' => 'Samotna', 'slug' => 'samotna', 'type' => 'standard', 'is_published' => true, 'show_in_menu' => false]);
+        // Podstrona sieroty nie może być jej rodzicem (pętla), mimo podobnego tytułu.
+        Page::create(['title' => 'Współpraca — umowy', 'slug' => 'wspolpraca-umowy', 'type' => 'standard', 'is_published' => true, 'parent_id' => $sierota->id]);
+
+        $orphans = collect(app(PageGraph::class)->build()['warnings']['orphans'])->keyBy('id');
+
+        $this->assertSame($wspolpraca->id, $orphans[$sierota->id]['suggest']['id']);
+        $this->assertContains('współpraca', $orphans[$sierota->id]['suggest']['words']);
+        $this->assertNull($orphans[$bezPary->id]['suggest']);
+
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->actingAs($admin)->get(route('admin.podstrony.mapa'))
+            ->assertOk()->assertSee('Proponowane miejsce: pod „Zakres współpracy”', false);
+
+        $this->actingAs($admin)->patch(route('admin.podstrony.przenies', $sierota), ['parent_id' => $wspolpraca->id, 'wroc' => 'mapa'])
+            ->assertRedirect(route('admin.podstrony.mapa'));
+        $this->assertSame($wspolpraca->id, $sierota->fresh()->parent_id);
     }
 }
