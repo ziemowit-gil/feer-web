@@ -10,7 +10,7 @@
         <div class="max-w-2xl">
             <span class="text-xs font-bold uppercase tracking-widest text-brand-dark">Newsletter</span>
             <h3 id="feer-projects-nl-heading" class="mt-1 text-xl font-bold leading-snug">Terminy szkoleń online prosto do Twojej skrzynki</h3>
-            <p class="mt-3 text-sm leading-relaxed">Dołącz do osób, które jako pierwsze dostają terminy szkoleń i webinarów online, nowe bezpłatne materiały i historie zmian, które razem tworzymy. FEERletter wychodzi raz na dwa tygodnie — wypiszesz się jednym kliknięciem.</p>
+            <p class="mt-3 text-sm leading-relaxed">Dołącz do osób, które jako pierwsze dostają terminy szkoleń i webinarów online, nowe bezpłatne materiały i historie zmian, które razem tworzymy. FEERletter wychodzi raz na dwa tygodnie.</p>
         </div>
         <a href="{{ route('newsletter.show') }}"
            class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-brand-dark px-6 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 motion-reduce:transition-none">
