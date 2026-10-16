@@ -189,16 +189,32 @@
         <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="programs-heading">
             <h2 id="programs-heading" class="text-2xl font-bold text-ink md:text-3xl">Działania, które wspierasz</h2>
             <p class="mt-2 max-w-2xl text-muted">Wybierz obszar, który jest Ci najbliższy — zobacz, co w nim robimy.</p>
+            @php
+                // Kafle jak „Nasze działania” na stronie głównej: tła na zmianę jasnoszary / brand-light / ink,
+                // numer, duża ikona kategorii w tle (ozdobnik bez przezroczystości, ukryty przed czytnikami).
+                // [tło + tekst, numer, linki, ikona w tle, obwódka fokusu]; na ink wszystko białe (kontrast ≥ 4,5:1).
+                $programThemes = [
+                    ['bg-gray-100 text-ink', 'text-brand-dark', 'text-brand-dark', 'text-gray-200', 'focus-visible:ring-brand-dark'],
+                    ['bg-brand-light text-ink', 'text-brand-dark', 'text-brand-dark', 'text-white', 'focus-visible:ring-brand-dark'],
+                    ['bg-ink text-white', 'text-white', 'text-white', 'text-[#33332f]', 'focus-visible:ring-white'],
+                ];
+            @endphp
             <ul class="mt-8 grid gap-4 sm:grid-cols-2 {{ $programs->count() >= 3 ? 'lg:grid-cols-3' : '' }}" role="list">
                 @foreach ($programs as $program)
-                    <li class="flex flex-col rounded-lg bg-gray-50 p-6">
-                        <h3 class="text-lg font-bold text-ink">{{ $program->name }}</h3>
-                        <ul class="mt-3 flex-1 space-y-1.5 text-sm" role="list">
+                    @php [$pBg, $pAccent, $pLink, $pIcon, $pRing] = $programThemes[$loop->index % 3]; @endphp
+                    <li class="relative isolate flex flex-col overflow-hidden rounded-md p-6 {{ $pBg }}">
+                        <span class="pointer-events-none absolute -bottom-6 -right-4 -z-10 select-none text-[8.5rem] leading-none {{ $pIcon }}" aria-hidden="true">{!! icon_html($program->iconValue()) !!}</span>
+                        <span class="text-3xl font-bold leading-none {{ $pAccent }}" aria-hidden="true">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                        <h3 class="mt-5 text-xl font-bold leading-snug">{{ $program->name }}</h3>
+                        <ul class="mt-3 flex-1 space-y-2 text-sm" role="list">
                             @foreach ($program->publishedProjects->take(4) as $project)
-                                <li><a href="{{ route('projects.show', $project) }}" class="font-semibold text-brand-dark underline underline-offset-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">{{ $project->title }}</a></li>
+                                <li><a href="{{ route('projects.show', $project) }}" class="font-semibold leading-snug underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 {{ $pLink }} {{ $pRing }}">{{ $project->title }}</a></li>
                             @endforeach
                         </ul>
-                        <a href="{{ site_route('categories.show', $program) }}" class="mt-4 text-sm font-bold text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">Zobacz wszystkie w tym obszarze →</a>
+                        <a href="{{ site_route('categories.show', $program) }}" class="group mt-6 flex items-center justify-between gap-3 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 {{ $pLink }} {{ $pRing }}">
+                            <span class="group-hover:underline group-hover:underline-offset-4">Zobacz wszystkie w tym obszarze<span class="sr-only">: {{ $program->name }}</span></span>
+                            <span class="text-xl transition group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden="true">→</span>
+                        </a>
                     </li>
                 @endforeach
             </ul>

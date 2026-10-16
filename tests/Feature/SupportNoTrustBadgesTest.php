@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\HeroSlide;
+use App\Models\Project;
 use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -63,5 +65,24 @@ class SupportNoTrustBadgesTest extends TestCase
         $this->get(route('support.show'))->assertOk()
             ->assertSee('src="'.$url.'"', false)
             ->assertDontSee('Miejsce na zdjęcie');
+    }
+
+    public function test_dzialania_ktore_wspierasz_jako_kafle_z_ikona_w_tle(): void
+    {
+        $this->template('feer');
+        foreach (['Szkolenia i warsztaty', 'Edukacja i materiały', 'Wsparcie dla organizacji'] as $i => $name) {
+            $category = Category::create(['name' => $name, 'slug' => 'kat-'.$i]);
+            Project::create(['category_id' => $category->id, 'title' => 'Działanie '.$i, 'slug' => 'dzialanie-'.$i, 'is_published' => true]);
+        }
+
+        $html = $this->get(route('support.show'))->assertOk()->getContent();
+        $section = substr($html, strpos($html, 'id="programs-heading"'), 12000);
+        foreach (['Szkolenia i warsztaty', 'Działanie 0', 'Wsparcie dla organizacji', 'Zobacz wszystkie w tym obszarze'] as $text) {
+            $this->assertStringContainsString($text, $section);
+        }
+        $this->assertStringContainsString('>01<', $section);
+        $this->assertStringContainsString('bg-brand-light text-ink', $section);
+        $this->assertStringContainsString('bg-ink text-white', $section);
+        $this->assertStringContainsString('-z-10 select-none text-[8.5rem]', $section, 'ikona kategorii w tle');
     }
 }
