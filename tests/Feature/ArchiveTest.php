@@ -31,6 +31,20 @@ class ArchiveTest extends TestCase
             ->assertSee('może być już nieaktualna');
     }
 
+    public function test_archival_notice_is_flat_in_brand_colors(): void
+    {
+        Page::create(['title' => 'Stary regulamin', 'slug' => 'stary-regulamin', 'type' => 'page', 'is_published' => true, 'is_archived' => true]);
+
+        $html = $this->get('/stary-regulamin')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/<div class="archival-notice ([^"]*)" role="note">/', $html);
+        preg_match('/<div class="archival-notice ([^"]*)" role="note">\s*<i class="([^"]*)"/', $html, $m);
+        $classes = $m[1].' '.$m[2];
+        $this->assertStringNotContainsString('border', $classes);
+        $this->assertStringNotContainsString('amber', $classes);
+        $this->assertStringContainsString('bg-gray-50', $classes);
+        $this->assertStringContainsString('text-brand-dark', $classes);
+    }
+
     public function test_non_archived_page_has_no_notice(): void
     {
         Page::create(['title' => 'Aktualna', 'slug' => 'aktualna', 'type' => 'page', 'is_published' => true, 'is_archived' => false]);
