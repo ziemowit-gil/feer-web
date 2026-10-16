@@ -109,4 +109,19 @@ class ProjectsIndexRenderTest extends TestCase
         $this->assertStringContainsString('alt="Opis zdjęcia"', $html);
         $this->assertStringContainsString('data-lightbox', $html);
     }
+
+    public function test_drzewo_dzialan_ma_menu_kontekstowe(): void
+    {
+        $category = Category::create(['name' => 'Audyty', 'slug' => 'audyty']);
+        $project = Project::create(['title' => 'Audyt B', 'slug' => 'audyt-b', 'is_published' => false, 'category_id' => $category->id]);
+
+        $html = $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]))
+            ->get(route('admin.projekty.index'))->assertOk()->getContent();
+        $this->assertStringContainsString('id="pt-ctx" role="menu"', $html);
+        foreach (['edit', 'view', 'add', 'clone', 'publish', 'move', 'copy-url', 'copy-id', 'delete'] as $act) {
+            $this->assertStringContainsString('data-act="'.$act.'"', $html, $act);
+        }
+        $this->assertMatchesRegularExpression('/data-id="'.$project->id.'"[^>]*data-published="0"[^>]*data-public-url="'.preg_quote(route('projects.show', $project), '/').'"/s', $html);
+        $this->assertStringContainsString('Shift+F10', $html);
+    }
 }

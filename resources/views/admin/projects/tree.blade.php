@@ -18,6 +18,21 @@
         .pt-rot { transform: rotate(90deg); }
         .pt-link { display: flex; flex: 1; min-width: 0; min-height: 2.25rem; align-items: center; gap: .5rem; border-radius: .5rem; padding: .25rem .5rem; font-size: .875rem; color: #1d1d1a; text-decoration: none; }
         .pt-link:hover { background: #f3f4f6; }
+        /* Menu kontekstowe drzewa: „⋯” po najechaniu (na dotyku zawsze), panel z akcjami. */
+        .pt-more { display: inline-flex; width: 1.75rem; flex: none; align-items: center; justify-content: center; border-radius: .375rem; color: #4b5563; font-size: .75rem; opacity: 0; background: transparent; }
+        .pt-row:hover .pt-more, .pt-row.pt-ctx-on .pt-more { opacity: 1; }
+        .pt-more:hover { background: #f3f4f6; color: var(--color-brand-dark); }
+        @media (hover: none) { .pt-more { opacity: 1; } }
+        #pt-ctx { position: fixed; z-index: 60; min-width: 15rem; max-width: calc(100vw - 1rem); border: 1px solid #e5e7eb; border-radius: .5rem; background: #fff; padding: .375rem 0; box-shadow: 0 10px 24px rgba(0,0,0,.15); }
+        #pt-ctx:focus { outline: none; }
+        #pt-ctx .pt-ctx-title { padding: .125rem .75rem .375rem; font-size: .75rem; font-weight: 700; color: #4b5563; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #pt-ctx [role="menuitem"] { display: flex; width: 100%; align-items: center; gap: .625rem; border: 0; background: transparent; padding: .375rem .75rem; text-align: left; font-size: .875rem; color: #1d1d1a; cursor: pointer; }
+        #pt-ctx [role="menuitem"] i { width: 1rem; text-align: center; color: #4b5563; }
+        #pt-ctx [role="menuitem"]:hover { background: #f3f4f6; }
+        #pt-ctx [role="menuitem"]:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: -2px; }
+        #pt-ctx [role="menuitem"].is-danger, #pt-ctx [role="menuitem"].is-danger i { color: #991b1b; }
+        #pt-ctx [role="menuitem"].is-danger:hover { background: #fef2f2; }
+        #pt-ctx [role="separator"] { margin: .25rem 0; border-top: 1px solid #f3f4f6; }
         .pt-link.is-sel { background: var(--color-brand-dark); color: #fff; font-weight: 700; }
         .pt-link:focus-visible, .pt-toggle:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 1px; }
         .pt-ico { flex: none; width: 1rem; text-align: center; font-size: .75rem; opacity: .7; }
@@ -108,6 +123,7 @@
                 <label for="pt-q" class="sr-only">Filtruj drzewo działań</label>
                 <input type="search" id="pt-q" x-model="q" @input="filter()" placeholder="Filtruj drzewo…">
             </div>
+            <p class="sr-only">Shift+F10 lub klawisz Menu na działaniu otwiera menu jego akcji.</p>
             @php $roots = $byParent->get(0, collect()); @endphp
             @if ($roots->isEmpty())
                 <p class="pt-empty" style="margin:.75rem">Brak projektów. Dodaj pierwszy.</p>
@@ -273,4 +289,147 @@
             @endif
         </div>
     </div>
+
+    {{-- ═════════ Menu kontekstowe drzewa działań ═════════
+         Prawy przycisk, „⋯” albo Shift+F10 / klawisz Menu na działaniu. WAI-ARIA menu: strzałki, Home/End,
+         pierwsza litera; Escape i Tab zamykają i oddają fokus wierszowi. --}}
+    <div id="pt-ctx" role="menu" aria-label="Akcje działania" hidden tabindex="-1">
+        <p class="pt-ctx-title" data-ctx-title aria-hidden="true"></p>
+        <button type="button" role="menuitem" tabindex="-1" data-act="edit"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="view"><i class="fa-solid fa-eye" aria-hidden="true"></i> Zobacz na stronie<span class="sr-only"> (nowa karta)</span></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="add"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj poddziałanie</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="clone"><i class="fa-solid fa-clone" aria-hidden="true"></i> Duplikuj</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="publish"><i class="fa-solid fa-eye-slash" aria-hidden="true" data-ctx-publish-icon></i> <span data-ctx-publish>Cofnij publikację</span></button>
+        <div role="separator"></div>
+        <button type="button" role="menuitem" tabindex="-1" data-act="move"><i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i> Przenieś do…</button>
+        <div role="separator"></div>
+        <button type="button" role="menuitem" tabindex="-1" data-act="copy-url"><i class="fa-solid fa-link" aria-hidden="true"></i> Kopiuj adres działania</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="copy-id"><i class="fa-solid fa-hashtag" aria-hidden="true"></i> Kopiuj ID</button>
+        <div role="separator"></div>
+        <button type="button" role="menuitem" tabindex="-1" data-act="delete" class="is-danger"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń</button>
+    </div>
+    <div id="pt-ctx-status" role="status" aria-live="polite" class="sr-only"></div>
+
+    <script>
+        (function () {
+            const tree = document.querySelector('nav[aria-label="Drzewo działań"]');
+            const ctx = document.getElementById('pt-ctx');
+            if (! tree || ! ctx) return;
+            const csrf = document.querySelector('meta[name="csrf-token"]').content;
+            const status = document.getElementById('pt-ctx-status');
+            const routes = {
+                edit: @js(route('admin.projekty.edit', '__ID__')),
+                add: @js(route('admin.projekty.create', ['parent_id' => '__ID__'])),
+                clone: @js(route('admin.projekty.kopiuj', '__ID__')),
+                publish: @js(route('admin.projekty.widocznosc', '__ID__')),
+                destroy: @js(route('admin.projekty.destroy', '__ID__')),
+                select: @js(route('admin.projekty.index', ['wybrana' => '__ID__'])),
+            };
+            const urlFor = (name, id) => routes[name].replace('__ID__', id);
+            const items = () => [...ctx.querySelectorAll('[role=menuitem]')].filter(b => ! b.hidden);
+            const announce = msg => { status.textContent = ''; setTimeout(() => status.textContent = msg, 30); };
+            let li = null;
+
+            function open(node, x, y, focusFirst) {
+                li = node;
+                const d = li.dataset;
+                ctx.querySelector('[data-ctx-title]').textContent = d.label;
+                ctx.setAttribute('aria-label', 'Akcje działania: ' + d.label);
+                ctx.querySelector('[data-act=view]').hidden = d.published !== '1';
+                ctx.querySelector('[data-ctx-publish]').textContent = d.published === '1' ? 'Cofnij publikację' : 'Opublikuj';
+                ctx.querySelector('[data-ctx-publish-icon]').className = 'fa-solid ' + (d.published === '1' ? 'fa-eye-slash' : 'fa-eye');
+                tree.querySelectorAll('.pt-ctx-on').forEach(r => r.classList.remove('pt-ctx-on'));
+                li.querySelector('.pt-row').classList.add('pt-ctx-on');
+                ctx.hidden = false;
+                ctx.style.left = Math.max(8, Math.min(x, window.innerWidth - ctx.offsetWidth - 8)) + 'px';
+                ctx.style.top = Math.max(8, Math.min(y, window.innerHeight - ctx.offsetHeight - 8)) + 'px';
+                (focusFirst ? items()[0] : ctx).focus({ preventScroll: true });
+            }
+
+            function close(back) {
+                if (ctx.hidden) return;
+                ctx.hidden = true;
+                tree.querySelectorAll('.pt-ctx-on').forEach(r => r.classList.remove('pt-ctx-on'));
+                if (back && li) li.querySelector('.pt-link')?.focus();
+            }
+
+            // Formularz z tokenem; data-confirm obsługuje wspólne okno potwierdzenia (app.js).
+            function submit(action, method, confirmText) {
+                const f = document.createElement('form');
+                f.method = 'POST'; f.action = action; f.hidden = true;
+                f.innerHTML = '<input type="hidden" name="_token"><input type="hidden" name="_method">';
+                f.elements._token.value = csrf;
+                f.elements._method.value = method;
+                if (confirmText) f.dataset.confirm = confirmText;
+                document.body.appendChild(f);
+                f.requestSubmit();
+            }
+
+            async function copy(text, what) {
+                try { await navigator.clipboard.writeText(text); announce('Skopiowano ' + what + '.'); }
+                catch (e) { window.prompt('Skopiuj ' + what + ':', text); }
+            }
+
+            function run(act) {
+                const d = li.dataset, id = d.id;
+                close(! ['edit', 'add', 'move', 'view'].includes(act));
+                if (act === 'edit') location.href = urlFor('edit', id);
+                else if (act === 'view') window.open(d.publicUrl, '_blank', 'noopener');
+                else if (act === 'add') location.href = urlFor('add', id);
+                else if (act === 'clone') submit(urlFor('clone', id), 'POST', 'Zduplikować działanie „' + d.label + '”? Kopia zostanie zapisana jako szkic (bez poddziałań).');
+                else if (act === 'publish') submit(urlFor('publish', id), 'PATCH');
+                else if (act === 'delete') submit(urlFor('destroy', id), 'DELETE', 'Usunąć działanie „' + d.label + '”?');
+                // „Przenieś do…”: panel szczegółów ma listę działań nadrzędnych (bez samego działania i jego poddziałań).
+                else if (act === 'move') location.href = urlFor('select', id) + '#pt-parent';
+                else if (act === 'copy-url') copy(d.publicUrl, 'adres działania');
+                else if (act === 'copy-id') copy(id, 'ID działania');
+            }
+
+            tree.addEventListener('contextmenu', e => {
+                const node = e.target.closest('[data-tree-node]');
+                if (! node || ! e.target.closest('.pt-row')) return;
+                e.preventDefault();
+                open(node, e.clientX, e.clientY, false);
+            });
+            tree.addEventListener('click', e => {
+                const btn = e.target.closest('[data-pt-menu-btn]');
+                if (! btn) return;
+                e.preventDefault();
+                const r = btn.getBoundingClientRect();
+                open(btn.closest('[data-tree-node]'), r.left, r.bottom + 4, false);
+            });
+            tree.addEventListener('keydown', e => {
+                if (! (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10'))) return;
+                const link = e.target.closest('.pt-link');
+                if (! link) return;
+                e.preventDefault();
+                const r = link.getBoundingClientRect();
+                open(link.closest('[data-tree-node]'), r.left + 24, r.bottom + 2, true);
+            });
+            ctx.addEventListener('click', e => { const b = e.target.closest('[role=menuitem]'); if (b) run(b.dataset.act); });
+            ctx.addEventListener('keydown', e => {
+                const list = items(), i = list.indexOf(document.activeElement);
+                if (e.key === 'Escape' || e.key === 'Tab') { e.preventDefault(); close(true); }
+                else if (e.key === 'ArrowDown') { e.preventDefault(); list[(i + 1) % list.length].focus(); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); list[(i - 1 + list.length) % list.length].focus(); }
+                else if (e.key === 'Home') { e.preventDefault(); list[0].focus(); }
+                else if (e.key === 'End') { e.preventDefault(); list[list.length - 1].focus(); }
+                else if (e.key.length === 1 && /\S/.test(e.key)) {
+                    const k = e.key.toLowerCase();
+                    const next = [...list.slice(i + 1), ...list.slice(0, i + 1)].find(b => b.textContent.trim().toLowerCase().startsWith(k));
+                    if (next) { e.preventDefault(); next.focus(); }
+                }
+            });
+            document.addEventListener('pointerdown', e => { if (! ctx.hidden && ! ctx.contains(e.target) && ! e.target.closest('[data-pt-menu-btn]')) close(false); });
+            window.addEventListener('resize', () => close(false));
+
+            // Po „Przenieś do…”: rozwinięty panel przenoszenia i fokus na liście działań nadrzędnych.
+            if (location.hash === '#pt-parent') {
+                const sel = document.getElementById('pt-parent');
+                const det = sel?.closest('details');
+                if (det) det.open = true;
+                sel?.focus();
+            }
+        })();
+    </script>
 @endsection

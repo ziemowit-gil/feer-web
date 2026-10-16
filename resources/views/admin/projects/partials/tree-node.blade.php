@@ -4,7 +4,8 @@
     $isSel = $selected && $selected->id === $node->id;
     $isOpen = in_array($node->id, $openIds, true);
 @endphp
-<li data-tree-node data-title="{{ \Illuminate\Support\Str::lower($node->title) }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
+<li data-tree-node data-title="{{ \Illuminate\Support\Str::lower($node->title) }}"
+    data-id="{{ $node->id }}" data-label="{{ $node->title }}" data-published="{{ $node->is_published ? 1 : 0 }}" data-public-url="{{ route('projects.show', $node) }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
     <div class="pt-row">
         @if ($kids->isNotEmpty())
             <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $isOpen ? 'true' : 'false' }}" aria-controls="pt-branch-{{ $node->id }}"
@@ -22,6 +23,8 @@
             @if (! $node->is_published)<i class="fa-solid fa-pen pt-mini" title="Szkic" aria-hidden="true"></i><span class="sr-only">(szkic)</span>@endif
             @if ($kids->isNotEmpty())<span class="pt-count" aria-label="{{ $kids->count() }} poddziałań">{{ $kids->count() }}</span>@endif
         </a>
+        {{-- Akcje działania (mysz i dotyk); z klawiatury Shift+F10 lub klawisz Menu na linku — patrz tree.blade.php. --}}
+        <button type="button" class="pt-more" data-pt-menu-btn tabindex="-1" aria-hidden="true" title="Akcje działania"><i class="fa-solid fa-ellipsis" aria-hidden="true"></i></button>
     </div>
     @if ($kids->isNotEmpty())
         <ul id="pt-branch-{{ $node->id }}" role="list" class="pt-branch" @if ($kids->isNotEmpty()) x-show="open" @unless ($isOpen) style="display:none" @endunless @endif>
