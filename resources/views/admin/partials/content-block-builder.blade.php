@@ -76,7 +76,7 @@
                         + '<div><label class="tb-label" for="bb-co-text">Treść ramki</label><textarea id="bb-co-text" class="tb-input" data-opt="text" rows="4" maxlength="1500">' + esc(d.text) + '</textarea></div>'
                         + '<div style="display:flex;flex-wrap:wrap;gap:1.25rem;align-items:flex-end">'
                         + '<div><span class="tb-label">Kolor</span><span style="display:flex;gap:.5rem">' + sw + '</span></div>'
-                        + '<div><span class="tb-label">Wygląd</span>' + seg('negative', [[0, 'Obwódka'], [1, 'Negatyw']], d.negative ? 1 : 0) + '</div>'
+                        + '<div><span class="tb-label">Wygląd</span>' + seg('negative', [[0, 'Jasne tło'], [1, 'Pełny kolor']], d.negative ? 1 : 0) + '</div>'
                         + '<div><span class="tb-label">Ikona</span><span style="display:flex;gap:.35rem">' + ic + '</span></div></div>'
                         + '<div id="bb-co-prev"></div></div>';
                     renderCalloutPreview();
@@ -135,11 +135,12 @@
             }
             function renderCalloutPreview() {
                 var el = $('bb-co-prev'); if (! el) { return; }
-                var col = { blue: ['{{ \App\Support\ThemePalette::colors()[0] }}', '{{ \App\Support\ThemePalette::colors()[0] }}', '#fff'], gold: ['#a16207', '#f2b705', '#1d1d1a'], red: ['#b91c1c', '#b91c1c', '#fff'], green: ['#166534', '#166534', '#fff'] }[d.variant] || ['{{ \App\Support\ThemePalette::colors()[0] }}', '{{ \App\Support\ThemePalette::colors()[0] }}', '#fff'];
+                // [ikona, jasne tło, pełny kolor, tekst na pełnym kolorze] — jak .cx-frame w partials/blocks/callout.
+                var col = { blue: ['#1752bf', '#e8f0ff', '#1752bf', '#fff'], gold: ['#a16207', '#fdf3e1', '#f2b705', '#1d1d1a'], red: ['#b91c1c', '#fdecec', '#b91c1c', '#fff'], green: ['#166534', '#e9f5ee', '#166534', '#fff'] }[d.variant] || ['#1752bf', '#e8f0ff', '#1752bf', '#fff'];
                 var neg = !! d.negative, ico = icons.filter(function (i) { return i[0] === d.icon; })[0] || icons[0];
-                el.innerHTML = '<span class="tb-label">Podgląd</span><div style="position:relative;padding:.9rem 4.5rem .9rem 1rem;border:2px solid ' + (neg ? col[1] : col[0]) + ';border-radius:.5rem;background:' + (neg ? col[1] : '#fff') + ';color:' + (neg ? col[2] : '#1d1d1a') + ';font-weight:600">'
-                    + (d.title ? '<div style="font-weight:800">' + esc(d.title) + '</div>' : '') + esc(d.text || 'Treść ramki…')
-                    + '<span style="position:absolute;top:50%;right:.9rem;transform:translateY(-50%);width:2.3rem;height:2.3rem;border:2px solid ' + (neg ? col[2] : col[0]) + ';border-radius:9999px;background:' + (neg ? 'transparent' : '#fff') + ';color:' + (neg ? col[2] : col[0]) + ';display:flex;align-items:center;justify-content:center"><i class="fa-solid ' + ico[1] + '" aria-hidden="true"></i></span></div>';
+                el.innerHTML = '<span class="tb-label">Podgląd</span><div style="display:flex;align-items:flex-start;gap:.75rem;padding:.75rem 1rem;border-radius:.5rem;background:' + (neg ? col[2] : col[1]) + ';color:' + (neg ? col[3] : '#1d1d1a') + '">'
+                    + '<i class="fa-solid ' + ico[1] + '" aria-hidden="true" style="margin-top:.3rem;color:' + (neg ? col[3] : col[0]) + '"></i>'
+                    + '<div>' + (d.title ? '<div style="font-weight:800">' + esc(d.title) + '</div>' : '') + esc(d.text || 'Treść ramki…') + '</div></div>';
             }
             function renderRows() { if (state.type === 'callout') { rowsEl.innerHTML = ''; addBtn.style.display = 'none'; return; } addBtn.style.display = ''; rowsEl.innerHTML = d[listKey()].map(rowHtml).join(''); updateHints(); }
             function showError(msg) { errEl.textContent = msg; errEl.classList.toggle('hidden', ! msg); }
