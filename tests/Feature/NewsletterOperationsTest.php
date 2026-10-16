@@ -214,13 +214,19 @@ class NewsletterOperationsTest extends TestCase
             $this->assertFileExists(public_path("vendor/mosaico/templates/{$tpl}/edres/brandHeaderBlock.png"));
         }
 
-        SiteSetting::current()->update(['site_name' => 'Fundacja Testowa']);
+        SiteSetting::current()->update(['site_name' => 'Fundacja Testowa', 'facebook_url' => 'https://facebook.com/fundacjafeer']);
         $admin = $this->admin();
         $this->actingAs($admin)->get(route('admin.newsletter.mosaico'))->assertRedirect();
         $template = \Modules\Newsletter\Models\NewsletterTemplate::first();
         $this->actingAs($admin)->get(route('admin.newsletter.szablony.editor', $template))->assertOk()
             ->assertSee('function insertBrandHeader', false)
-            ->assertSee('"name":"Fundacja Testowa"', false);
+            ->assertSee('"name":"Fundacja Testowa"', false)
+            ->assertSee('"title":"FEERletter"', false)
+            ->assertSee('"fb":"https:\\/\\/facebook.com\\/fundacjafeer"', false)
+            ->assertSee('function fillSocial', false);
+
+        $campaign = $this->actingAs($admin)->post(route('admin.newsletter.kampanie.store'), ['title' => 'Nowa', 'subject' => 'Temat', 'channels' => ['email']]);
+        $this->assertSame('feer-2', \Modules\Newsletter\Models\NewsletterCampaign::latest('id')->value('mosaico_template'));
     }
 
     public function test_zajawki_z_cms_bez_encji_html(): void

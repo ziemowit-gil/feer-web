@@ -67,12 +67,12 @@ class CampaignController extends Controller
         $campaign = new NewsletterCampaign($data + ['site_id' => SiteSetting::current()->id, 'created_by' => auth()->id(), 'status' => NewsletterCampaign::STATUS_DRAFT]);
 
         if ($campaign->template_id && ($tpl = NewsletterTemplate::find($campaign->template_id))) {
-            $campaign->mosaico_template = $tpl->mosaico_template ?: 'feer-1';
+            $campaign->mosaico_template = $tpl->mosaico_template ?: NewsletterTemplate::DEFAULT_MOSAICO;
             $campaign->editor_metadata = $tpl->editor_metadata;
             $campaign->editor_content  = $tpl->editor_content;
             $campaign->html_body       = $tpl->html_body;
         }
-        $campaign->mosaico_template ??= 'feer-1';
+        $campaign->mosaico_template ??= NewsletterTemplate::DEFAULT_MOSAICO;
         $campaign->save();
 
         return redirect()->route('admin.newsletter.kampanie.editor', $campaign)->with('status', 'Kampania utworzona — teraz ułóż treść.');

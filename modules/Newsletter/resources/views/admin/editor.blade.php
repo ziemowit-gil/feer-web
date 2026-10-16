@@ -130,7 +130,7 @@ $(function () {
     @php $tplRel = 'vendor/mosaico/templates/' . $mosaicoTemplate . '/template-' . $mosaicoTemplate . '.html'; @endphp
     var templateUrl = @json(asset($tplRel) . '?v=' . (is_file(public_path($tplRel)) ? filemtime(public_path($tplRel)) : '1'));
     var saved = @json(['metadata' => $subject->editor_metadata, 'content' => $subject->editor_content]);
-    @php $brandSite = \App\Models\SiteSetting::current(); $brandData = ['logo' => $brandSite->logoUrl(), 'name' => (string) $brandSite->site_name, 'title' => (string) ($brandSite->getAttributes()['newsletter_name'] ?? null ?: 'FEERletter'), 'url' => rtrim((string) config('app.url'), '/')]; @endphp
+    @php $brandSite = \App\Models\SiteSetting::current(); $brandData = ['logo' => $brandSite->logoUrl(), 'name' => (string) $brandSite->site_name, 'title' => (string) ($brandSite->getAttributes()['newsletter_name'] ?? null ?: 'FEERletter'), 'social' => array_filter(['fb' => $brandSite->facebook_url, 'inst' => $brandSite->instagram_url, 'you' => $brandSite->youtube_url, 'in' => $brandSite->linkedin_url, 'tw' => $brandSite->twitter_url, 'web' => rtrim((string) config('app.url'), '/')]), 'contact' => trim(implode(' · ', array_filter([(string) $brandSite->site_name, trim(implode(', ', array_filter([$brandSite->contact_address, $brandSite->contact_city])))]))), 'url' => rtrim((string) config('app.url'), '/')]; @endphp
     var brand = @json($brandData);
     var contentUrl = @json(route('admin.newsletter.content.items', ['source' => '__SRC__']));
     var viewModel = null, dirty = false;
@@ -177,6 +177,7 @@ $(function () {
         try {
             block = ko.utils.unwrapObservable(block);
             var type = block && ko.utils.unwrapObservable(block.type);
+            if (type === 'socialBlock' || type === 'bigSocialBlock') { fillSocial(block); return; }
             if (type !== 'logoBlock' && type !== 'brandHeaderBlock') return;
             var img = ko.utils.unwrapObservable(block.image);
             if (img && brand.logo && ko.isObservable(img.src) && !img.src()) {
@@ -190,6 +191,23 @@ $(function () {
             }
         } catch (e) { console.error('Blok logo:', e); }
     }
+    // Bloki społecznościowe: adresy profili z ustawień witryny (Facebook, Instagram…), ikony bez adresu ukryte.
+    // Tylko gdy blok nie ma jeszcze żadnego adresu — ręcznie wpisanych nie nadpisujemy.
+    var SOCIAL_KEYS = ['fb', 'tw', 'gg', 'in', 'pi', 'fl', 'vi', 'web', 'wa', 'tg', 'inst', 'you', 'tt', 'tc'];
+    function fillSocial(block) {
+        var any = SOCIAL_KEYS.some(function (k) { return ko.isObservable(block[k + 'Url']) && block[k + 'Url'](); });
+        if (any || !brand.social) return;
+        SOCIAL_KEYS.forEach(function (k) {
+            var url = brand.social[k] || '';
+            if (ko.isObservable(block[k + 'Url'])) block[k + 'Url'](url);
+            if (ko.isObservable(block[k + 'Visible'])) block[k + 'Visible'](!!url);
+        });
+        if (ko.isObservable(block.longText) && brand.contact) {
+            var cur = (block.longText() || '').replace(/<[^>]*>/g, '').trim();
+            if (!cur || /^Address and Contacts$/i.test(cur)) block.longText('<p>' + $('<div>').text(brand.contact).html() + '</p>');
+        }
+    }
+
     function watchLogoBlocks(vm) {
         if (!vm.content) return;
         var list = vm.content().mainBlocks().blocks;
@@ -209,6 +227,9 @@ $(function () {
             vm.addBlock(def);
             var added = list.pop(); list.unshift(added);
             fillLogo(added);
+            // …i na dół blok z profilami społecznościowymi FEER
+            var social = ko.utils.arrayFirst(ko.utils.unwrapObservable(vm.blocks), function (b) { return ko.utils.unwrapObservable(b.type) === 'socialBlock'; });
+            if (social && brand.social && Object.keys(brand.social).length) { vm.selectedBlock(null); vm.addBlock(social); }
             vm.selectedBlock(null);
         } catch (e) { console.error('Nagłówek z logo:', e); }
     }

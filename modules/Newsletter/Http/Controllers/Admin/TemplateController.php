@@ -22,7 +22,7 @@ class TemplateController extends Controller
 
     public function create()
     {
-        return view('newsletter::admin.templates.form', ['template' => new NewsletterTemplate(['kind' => 'mosaico', 'mosaico_template' => 'feer-1'])]);
+        return view('newsletter::admin.templates.form', ['template' => new NewsletterTemplate(['kind' => 'mosaico', 'mosaico_template' => NewsletterTemplate::DEFAULT_MOSAICO])]);
     }
 
     public function store(Request $request)
@@ -80,7 +80,7 @@ class TemplateController extends Controller
     public function mosaico()
     {
         $template = NewsletterTemplate::whereNull('system_key')->orderByDesc('is_default')->orderBy('id')->first()
-            ?? NewsletterTemplate::create(['site_id' => SiteSetting::current()->id, 'name' => 'Szablon FEER (domyślny)', 'kind' => 'mosaico', 'mosaico_template' => 'feer-1', 'is_default' => true, 'created_by' => auth()->id()]);
+            ?? NewsletterTemplate::create(['site_id' => SiteSetting::current()->id, 'name' => 'Szablon FEER (domyślny)', 'kind' => 'mosaico', 'mosaico_template' => NewsletterTemplate::DEFAULT_MOSAICO, 'is_default' => true, 'created_by' => auth()->id()]);
 
         return redirect()->route('admin.newsletter.szablony.editor', $template);
     }
@@ -91,7 +91,7 @@ class TemplateController extends Controller
         $def = NewsletterTemplate::SYSTEM_MAILS[$key] ?? abort(404);
         $template = NewsletterTemplate::system($key) ?? NewsletterTemplate::create([
             'site_id' => SiteSetting::current()->id, 'name' => $def['name'], 'subject' => $def['subject'], 'kind' => 'mosaico',
-            'system_key' => $key, 'mosaico_template' => 'feer-1', 'created_by' => auth()->id(),
+            'system_key' => $key, 'mosaico_template' => NewsletterTemplate::DEFAULT_MOSAICO, 'created_by' => auth()->id(),
         ]);
 
         return redirect()->route('admin.newsletter.szablony.editor', $template);
@@ -133,7 +133,7 @@ class TemplateController extends Controller
         ]);
         $data['is_default'] = $request->boolean('is_default');
         if ($data['kind'] === 'mosaico') {
-            $data['mosaico_template'] = $data['mosaico_template'] ?: 'feer-1';
+            $data['mosaico_template'] = $data['mosaico_template'] ?: NewsletterTemplate::DEFAULT_MOSAICO;
         }
 
         return $data;
