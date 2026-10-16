@@ -45,7 +45,7 @@
                             @include('newsletter::public._faq')
                         </section>
 
-                        <p class="nls-note nls-section">Masz już subskrypcję? Link do zmiany tematów i wypisu znajdziesz w stopce każdej wiadomości. <a href="{{ route('newsletter.landing', $form) }}">Zobacz, jak wygląda wydanie</a>.</p>
+                        <p class="nls-note nls-section">Masz już subskrypcję? Link do zmiany tematów i wypisu znajdziesz w stopce każdej wiadomości.@if (Route::has('newsletter.landing')) <a href="{{ route('newsletter.landing', $form) }}">Zobacz, jak wygląda wydanie</a>.@endif</p>
                     </div>
 
                     <div class="nls-page__form">

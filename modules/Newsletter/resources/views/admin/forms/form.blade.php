@@ -24,7 +24,7 @@
             </section>
             @if (\Modules\Newsletter\Models\NewsletterForm::supportsLandingTexts())
             <section class="space-y-4 p-6 rounded-md bg-white" aria-labelledby="f-landing"><h2 id="f-landing" class="text-sm font-bold uppercase text-muted">Landing page</h2>
-                <p class="text-xs text-muted">Rozbudowana wersja strony zapisu pod adresem @if ($form->exists)<a href="{{ route('newsletter.landing', $form) }}" target="_blank" rel="noopener" class="font-bold text-brand-dark underline">/newsletter/{{ $form->slug }}/dolacz</a>@else /newsletter/…/dolacz @endif — do kampanii, postów i kodów QR. Nagłówek, tekst wprowadzający, korzyści i pytania bierze z pól powyżej. Puste pole = tekst domyślny (w podpowiedzi).</p>
+                <p class="text-xs text-muted">Rozbudowana wersja strony zapisu pod adresem @if ($form->exists && Route::has('newsletter.landing'))<a href="{{ route('newsletter.landing', $form) }}" target="_blank" rel="noopener" class="font-bold text-brand-dark underline">/newsletter/{{ $form->slug }}/dolacz</a>@else /newsletter/…/dolacz @endif — do kampanii, postów i kodów QR. Nagłówek, tekst wprowadzający, korzyści i pytania bierze z pól powyżej. Puste pole = tekst domyślny (w podpowiedzi).</p>
                 <div class="grid gap-4 sm:grid-cols-2">
                     @foreach (\Modules\Newsletter\Models\NewsletterForm::LANDING_TEXTS as $key => [$label, $default, $max])
                         <div class="{{ $max > 120 ? 'sm:col-span-2' : '' }}">
