@@ -92,4 +92,30 @@ class NavItemsXmlTest extends TestCase
             ->assertSessionHasErrors('xml');
         $this->assertSame(0, NavItem::count());
     }
+
+    public function test_import_pomija_odznaczone_pozycje_razem_z_podpozycjami(): void
+    {
+        $xml = '<?xml version="1.0"?><menu location="main">'
+            .'<item label="A" url="/a"><item label="A1" url="/a1"/><item label="A2" url="/a2"/></item>'
+            .'<item label="B" url="/b"><item label="B1" url="/b1"/></item>'
+            .'<item label="C" url="/c"/></menu>';
+
+        $this->actingAs($this->admin())->post(route('admin.pozycje-menu.import-xml'), ['location' => 'main', 'xml' => $this->xmlFile($xml), 'skip' => ['0.1', '1']])
+            ->assertSessionHas('status', 'Zaimportowano pozycji menu z pliku XML: 3.');
+
+        $this->assertEqualsCanonicalizing(['A', 'A1', 'C'], NavItem::pluck('label')->all());
+        $this->actingAs($this->admin())->post(route('admin.pozycje-menu.import-xml'), ['location' => 'main', 'xml' => $this->xmlFile($xml), 'skip' => ['x; drop']])
+            ->assertSessionHasErrors('skip.0');
+    }
+
+    public function test_dodaj_podpozycje_ma_menu_z_tymi_samymi_opcjami(): void
+    {
+        $parent = NavItem::create(['label' => 'Fundacja', 'url' => '/fundacja', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1]);
+
+        $html = $this->actingAs($this->admin())->get(route('admin.pozycje-menu.index', ['location' => 'main', 'pozycja' => $parent->id]))->assertOk()->getContent();
+        $this->assertStringContainsString('aria-controls="nav-add-sub-menu"', $html);
+        $this->assertStringContainsString('Nowa podpozycja', $html);
+        $this->assertStringContainsString('s.value = &#039;'.$parent->id.'&#039;', $html);
+        $this->assertStringContainsString('name="skip[]"', $html);
+    }
 }

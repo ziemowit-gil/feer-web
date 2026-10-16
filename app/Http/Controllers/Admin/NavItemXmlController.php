@@ -92,6 +92,9 @@ class NavItemXmlController extends Controller
             'location' => ['required', Rule::in(array_keys(NavItem::LOCATIONS))],
             'parent_id' => ['nullable', 'integer', Rule::exists('nav_items', 'id')->whereNull('parent_id')],
             'xml' => ['required', 'file', 'max:1024'],
+            // Podgląd w oknie importu: ścieżki odznaczonych pozycji („0”, „0.2” — indeksy <item> od góry); pomijane razem z podpozycjami.
+            'skip' => ['nullable', 'array', 'max:'.self::MAX_ITEMS],
+            'skip.*' => ['string', 'max:40', 'regex:/^\d+(\.\d+)*$/'],
         ], ['xml.required' => 'Wybierz plik XML ze strukturą menu.']);
 
         $raw = (string) file_get_contents($request->file('xml')->getRealPath());
@@ -119,12 +122,19 @@ class NavItemXmlController extends Controller
         }
 
         $hasHighlight = Schema::hasColumn('nav_items', 'highlight');
+        $skip = array_flip($data['skip'] ?? []);
         $added = 0;
         $first = null;
 
-        DB::transaction(function () use ($xml, $location, $nested, $parentId, $hasHighlight, &$added, &$first) {
-            $create = function (SimpleXMLElement $node, ?int $parent, int $depth) use (&$create, $location, $nested, $hasHighlight, &$added, &$first) {
+        DB::transaction(function () use ($xml, $location, $nested, $parentId, $hasHighlight, $skip, &$added, &$first) {
+            $create = function (SimpleXMLElement $node, ?int $parent, string $path) use (&$create, $location, $nested, $hasHighlight, $skip, &$added, &$first) {
+                $n = 0;
                 foreach ($node->item as $el) {
+                    // Numeracja jak w podglądzie okna importu: indeks <item> wśród rodzeństwa, od zera.
+                    $elPath = ($path === '' ? '' : $path.'.').$n++;
+                    if (isset($skip[$elPath])) {
+                        continue;
+                    }
                     $attrs = $this->sanitize($el, $hasHighlight);
                     if ($attrs === null) {
                         continue;
@@ -134,10 +144,10 @@ class NavItemXmlController extends Controller
                     $first ??= $item;
                     $added++;
                     // Menu główne: dwa poziomy (pozycja + podpozycje); głębsze gałęzie i inne menu — spłaszczone na ten sam poziom.
-                    $create($el, $nested && $parent === null ? $item->id : $parent, $depth + 1);
+                    $create($el, $nested && $parent === null ? $item->id : $parent, $elPath);
                 }
             };
-            $create($xml, $parentId, 0);
+            $create($xml, $parentId, '');
         });
 
         return redirect()->route('admin.pozycje-menu.index', array_filter(['location' => $location, 'pozycja' => $first?->id]))

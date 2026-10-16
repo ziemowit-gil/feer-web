@@ -65,9 +65,7 @@
                 </a>
             @endif
             @if ($canHold)
-                <button type="button" @click="openCreate($event)" data-parent="{{ $item->id }}" data-location="{{ $item->location }}" class="{{ $btn }}" style="{{ $btnStyle }}">
-                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj podpozycję
-                </button>
+                @include('admin.nav-items._add-menu', ['menuId' => 'nav-add-sub-menu', 'location' => $item->location, 'parentId' => $item->id, 'primary' => false, 'btnClass' => $btn, 'btnStyle' => $btnStyle])
             @endif
         </div>
     </div>

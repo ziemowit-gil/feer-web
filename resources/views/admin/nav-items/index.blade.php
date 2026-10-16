@@ -67,35 +67,7 @@
                                 <i class="fa-solid fa-file-export" aria-hidden="true"></i> Eksport XML<span class="sr-only"> — pobierz strukturę tego menu</span>
                             </a>
                         @endif
-                        <div class="relative" x-data="{ addOpen: false, items() { return [...this.$refs.addMenu.querySelectorAll('[role=menuitem]')] }, focusAt(i) { const l = this.items(); l[(i + l.length) % l.length]?.focus() }, openAdd(i) { this.addOpen = true; setTimeout(() => this.focusAt(i), 30) }, closeAdd(back) { this.addOpen = false; if (back) this.$refs.addBtn.focus() } }"
-                            @keydown.escape.stop="if (addOpen) closeAdd(true)" @click.outside="addOpen = false">
-                            <button type="button" x-ref="addBtn" @click="addOpen ? closeAdd(false) : openAdd(0)" @keydown.arrow-down.prevent="openAdd(0)" @keydown.arrow-up.prevent="openAdd(-1)"
-                                aria-haspopup="menu" :aria-expanded="addOpen.toString()" aria-expanded="false" aria-controls="nav-add-menu"
-                                class="inline-flex shrink-0 items-center rounded-md bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
-                                style="min-height:2.25rem;padding:.375rem .875rem;gap:.375rem">
-                                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj<span class="sr-only"> do menu</span>
-                                <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="addOpen && 'rotate-180'" aria-hidden="true"></i>
-                            </button>
-                            <div id="nav-add-menu" x-ref="addMenu" role="menu" aria-label="Dodaj do menu" x-show="addOpen" x-cloak
-                                @keydown.arrow-down.prevent="focusAt(items().indexOf(document.activeElement) + 1)"
-                                @keydown.arrow-up.prevent="focusAt(items().indexOf(document.activeElement) - 1)"
-                                @keydown.home.prevent="focusAt(0)" @keydown.end.prevent="focusAt(-1)" @keydown.tab="addOpen = false"
-                                class="absolute right-0 top-full z-30 mt-1 rounded-lg border border-gray-200 bg-white py-1.5 shadow-xl" style="min-width:15rem">
-                                <button type="button" role="menuitem" tabindex="-1" @click="closeAdd(false); openCreate($event); trigger = $refs.addBtn" data-location="{{ $location }}" class="flex w-full items-center gap-2.5 rounded px-3 py-2 text-left text-sm font-bold text-ink hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none">
-                                    <i class="fa-solid fa-pen w-4 text-center text-gray-500" aria-hidden="true"></i> Nowa pozycja
-                                </button>
-                                @if (Route::has('admin.pozycje-menu.ze-stron'))
-                                    <button type="button" role="menuitem" tabindex="-1" @click="closeAdd(false); document.getElementById('nav-from-pages').showModal()" class="flex w-full items-center gap-2.5 rounded px-3 py-2 text-left text-sm font-bold text-ink hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none">
-                                        <i class="fa-solid fa-sitemap w-4 text-center text-gray-500" aria-hidden="true"></i> Ze stron<span class="sr-only"> — wybierz strony z drzewa stron</span>
-                                    </button>
-                                @endif
-                                @if (Route::has('admin.pozycje-menu.import-xml'))
-                                    <button type="button" role="menuitem" tabindex="-1" @click="closeAdd(false); document.getElementById('nav-import-xml').showModal()" class="flex w-full items-center gap-2.5 rounded px-3 py-2 text-left text-sm font-bold text-ink hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none">
-                                        <i class="fa-solid fa-file-import w-4 text-center text-gray-500" aria-hidden="true"></i> Z pliku XML
-                                    </button>
-                                @endif
-                            </div>
-                        </div>
+                        @include('admin.nav-items._add-menu', ['menuId' => 'nav-add-menu', 'location' => $location, 'parentId' => null, 'primary' => true])
                     </div>
                 </div>
                 <div style="padding:.5rem">
@@ -149,25 +121,84 @@
 
         {{-- ── Okno „Z pliku XML”: import struktury menu (pozycje dopisywane na końcu) ── --}}
         @if (Route::has('admin.pozycje-menu.import-xml'))
-            <dialog id="nav-import-xml" aria-labelledby="nav-import-xml-title" aria-describedby="nav-import-xml-desc" class="m-auto overflow-hidden rounded-md bg-white p-0 text-ink backdrop:bg-black/50" style="width:min(36rem,calc(100vw - 2rem))">
-                <form method="POST" action="{{ route('admin.pozycje-menu.import-xml') }}" enctype="multipart/form-data">
+            {{-- Podgląd: plik czytany w przeglądarce (DOMParser nie wczytuje zewnętrznych encji), drzewo z polami wyboru;
+                 odznaczone pozycje idą jako skip[] (ścieżka indeksów, np. „0.2”) i serwer pomija je razem z podpozycjami.
+                 Serwer i tak sprawdza plik od nowa — podgląd tylko pomaga wybrać. --}}
+            <dialog id="nav-import-xml" aria-labelledby="nav-import-xml-title" aria-describedby="nav-import-xml-desc" class="m-auto overflow-hidden rounded-md bg-white p-0 text-ink backdrop:bg-black/50" style="width:min(40rem,calc(100vw - 2rem))"
+                x-data="{
+                    nodes: [], error: '',
+                    read(e) {
+                        this.nodes = []; this.error = '';
+                        const file = e.target.files[0];
+                        if (! file) return;
+                        file.text().then(txt => {
+                            const doc = new DOMParser().parseFromString(txt, 'application/xml');
+                            if (doc.querySelector('parsererror') || doc.doctype || doc.documentElement.nodeName !== 'menu') {
+                                this.error = 'To nie jest poprawny plik struktury menu (element <menu> z pozycjami <item>, bez DOCTYPE).';
+                                return;
+                            }
+                            const out = [];
+                            const walk = (el, path, depth) => {
+                                [...el.children].filter(c => c.nodeName === 'item').forEach((it, i) => {
+                                    const p = path === '' ? String(i) : path + '.' + i;
+                                    out.push({ path: p, depth, label: (it.getAttribute('label') || '').trim(), url: it.getAttribute('url') || '', hidden: it.getAttribute('is_active') === '0', on: true });
+                                    walk(it, p, depth + 1);
+                                });
+                            };
+                            walk(doc.documentElement, '', 0);
+                            this.nodes = out;
+                            if (! out.length) this.error = 'Plik nie zawiera żadnych pozycji <item>.';
+                        }).catch(() => { this.error = 'Nie udało się odczytać pliku.'; });
+                    },
+                    blocked(n) { return this.nodes.some(o => ! o.on && n.path.startsWith(o.path + '.')); },
+                    get chosen() { return this.nodes.filter(n => n.on && n.label && ! this.blocked(n)).length; },
+                    setAll(v) { this.nodes.forEach(n => { n.on = v; }); },
+                 }">
+                <form method="POST" action="{{ route('admin.pozycje-menu.import-xml') }}" enctype="multipart/form-data" class="flex flex-col" style="max-height:85vh">
                     @csrf
                     <input type="hidden" name="location" value="{{ $location }}">
                     <div class="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
                         <h2 id="nav-import-xml-title" class="text-lg font-bold">Dodaj pozycje z pliku XML</h2>
                         <button type="button" onclick="this.closest('dialog').close()" class="rounded p-2 text-muted hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-xmark" aria-hidden="true"></i><span class="sr-only">Zamknij</span></button>
                     </div>
-                    <div class="space-y-4 px-5 py-4">
+                    <div class="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
                         <p id="nav-import-xml-desc" class="text-sm text-ink">
                             Wczytaj plik z „Eksport XML” (także z innej witryny). Pozycje zostaną <strong>dopisane na końcu</strong> menu „{{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}” — obecne pozostaną bez zmian.
                             @if ($location !== 'main') Podpozycje z pliku trafią na ten sam poziom (to menu nie ma podmenu). @endif
                         </p>
                         <div>
                             <label for="nav-import-file" class="mb-1 block text-sm font-bold">Plik XML</label>
-                            <input id="nav-import-file" type="file" name="xml" accept=".xml,application/xml,text/xml" required
+                            <input id="nav-import-file" type="file" name="xml" accept=".xml,application/xml,text/xml" required @change="read($event)"
                                 class="block w-full text-sm text-ink file:mr-3 file:rounded file:border-0 file:bg-brand-light file:px-3 file:py-2 file:text-sm file:font-bold file:text-brand-dark">
                             @error('xml') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                            <p x-show="error" x-cloak x-text="error" role="alert" class="mt-1 text-sm text-red-700"></p>
                         </div>
+
+                        {{-- Podgląd pozycji z pliku --}}
+                        <fieldset x-show="nodes.length" x-cloak>
+                            <legend class="mb-1 text-sm font-bold">Pozycje z pliku</legend>
+                            <div class="mb-2 flex flex-wrap items-center gap-2 text-xs">
+                                <button type="button" @click="setAll(true)" class="rounded-md bg-gray-100 px-2.5 py-1.5 font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Zaznacz wszystko</button>
+                                <button type="button" @click="setAll(false)" class="rounded-md bg-gray-100 px-2.5 py-1.5 font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Odznacz</button>
+                                <span class="ml-auto font-bold" role="status" aria-live="polite">Do dodania: <span x-text="chosen"></span> z <span x-text="nodes.length"></span></span>
+                            </div>
+                            <ul role="list" class="overflow-y-auto rounded-md bg-gray-50 p-2" style="max-height:18rem">
+                                <template x-for="n in nodes" :key="n.path">
+                                    <li>
+                                        <label class="flex cursor-pointer items-center gap-3 rounded py-1.5 pr-2 hover:bg-white" :style="'padding-left:' + (0.25 + n.depth * 1.25) + 'rem'">
+                                            <input type="checkbox" x-model="n.on" :disabled="blocked(n) || ! n.label" class="h-4 w-4 flex-none rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                            <span class="min-w-0 flex-1">
+                                                <span class="block truncate text-sm font-bold" :class="(n.on && ! blocked(n) && n.label) ? 'text-ink' : 'text-muted'" x-text="n.label || '(bez etykiety — zostanie pominięta)'"></span>
+                                                <span class="block truncate font-mono text-xs text-muted" x-text="n.url"></span>
+                                            </span>
+                                            <span x-show="n.hidden" class="flex-none text-xs font-bold text-ink"><i class="fa-solid fa-eye-slash mr-1 text-muted" aria-hidden="true"></i>ukryta</span>
+                                        </label>
+                                        <template x-if="! n.on"><input type="hidden" name="skip[]" :value="n.path"></template>
+                                    </li>
+                                </template>
+                            </ul>
+                            <p class="mt-1 text-xs text-muted">Odznaczenie pozycji pomija też jej podpozycje.</p>
+                        </fieldset>
                         @if ($location === 'main' && $parentOptions->isNotEmpty())
                             <div>
                                 <label for="nav-import-parent" class="mb-1 block text-sm font-bold">Gdzie dodać</label>
@@ -182,7 +213,7 @@
                         @endif
                     </div>
                     <div class="flex items-center gap-3 border-t border-gray-100 px-5 py-4">
-                        <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Importuj</button>
+                        <button type="submit" :disabled="nodes.length > 0 && chosen === 0" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Importuj<span x-show="nodes.length" x-text="' (' + chosen + ')'"></span></button>
                         <button type="button" onclick="this.closest('dialog').close()" class="rounded px-2 py-2 text-sm text-muted hover:text-brand-dark">Anuluj</button>
                     </div>
                 </form>
