@@ -231,7 +231,7 @@ function start(config) {
         { title: 'Wezwanie do działania', desc: 'Nagłówek, krótki tekst i przycisk.', build: () => [block('heading', { text: 'Dołącz do nas' }), block('paragraph', { text: 'Napisz w jednym, dwóch zdaniach, co zyska osoba, która kliknie przycisk.' }), block('buttons', { items: [{ label: 'Zgłoś się', url: '', variant: 'brand', newTab: false }] })] },
         { title: 'Tekst i zdjęcie obok siebie', desc: 'Dwie kolumny: treść i obraz.', build: () => [block('columns', {}, [block('column', {}, [block('heading', { text: 'Tytuł sekcji', level: 3 }), block('paragraph', { text: 'Treść sekcji…' })]), block('column', {}, [block('image')])])] },
         { title: 'Pytania i odpowiedzi', desc: 'Nagłówek i trzy rozwijane pytania.', build: () => [block('heading', { text: 'Najczęstsze pytania' }), ...[1, 2, 3].map((n) => block('details', { summary: 'Pytanie ' + n }, [block('paragraph', { text: 'Odpowiedź…' })]))] },
-        { title: 'Ważna informacja', desc: 'Niebieska ramka z pogrubionym tytułem.', build: () => [block('callout', { variant: 'important' }, [block('paragraph', { text: '<strong>Ważne</strong>' }), block('paragraph', { text: 'Treść ważnej informacji…' })])] },
+        { title: 'Ważna informacja', desc: 'Ramka na niebieskim tle z pogrubionym tytułem.', build: () => [block('callout', { variant: 'important' }, [block('paragraph', { text: '<strong>Ważne</strong>' }), block('paragraph', { text: 'Treść ważnej informacji…' })])] },
         { title: 'Dokumenty do pobrania', desc: 'Nagłówek i lista plików.', build: () => [block('heading', { text: 'Dokumenty do pobrania' }), block('file'), block('file')] },
         { title: 'Kontakt w sprawie', desc: 'Ramka z osobą do kontaktu.', build: () => [block('callout', { variant: 'box' }, [block('heading', { text: 'Kontakt w sprawie', level: 3 }), block('paragraph', { text: 'Imię Nazwisko<br>tel. <a href="tel:+48000000000">000 000 000</a><br><a href="mailto:adres@feer.org.pl">adres@feer.org.pl</a>' })])] },
     ];
@@ -847,6 +847,7 @@ function start(config) {
                 tbButton('Cofnij', 'rotate-left', undo, { shortcut: mod + '+Z', attrs: { 'aria-disabled': String(!S.past.length) } }),
                 tbButton('Ponów', 'rotate-right', redo, { shortcut: mod + '+Shift+Z', attrs: { 'aria-disabled': String(!S.future.length) } }),
                 tbButton('Widok listy', 'bars-staggered', () => togglePanel('list'), { attrs: { 'aria-pressed': String(S.panel === 'list') } }),
+                config.urls.history ? tbButton('Historia wersji', 'clock-rotate-left', openHistoryDialog) : null,
                 config.urls.templates ? tbButton('Dodaj z szablonu / Zarządzaj szablonami', 'layer-group', openTemplatesDialog) : null,
                 tbButton(config.urls.docx ? 'Importuj z pliku (DOCX, TXT)' : 'Importuj z pliku TXT', 'file-import', () => importInput.click()),
                 h('button', { type: 'button', 'data-key': 'a11y', class: 'be-btn be-a11y-btn' + (count ? ' has-issues' : ''), 'aria-pressed': String(S.panel === 'a11y'), onClick: () => togglePanel('a11y') },
@@ -858,6 +859,7 @@ function start(config) {
             ),
             h('div', { class: 'be-topbar-end' },
                 status,
+                !config.page.is_published && config.urls.preview ? h('a', { href: config.urls.preview, target: '_blank', rel: 'noopener', class: 'be-btn be-btn--ghost', title: 'Podgląd ostatnio zapisanej wersji (link ważny 14 dni)' }, 'Podgląd wersji roboczej', h('span', { class: 'be-sr-only' }, ' (otwiera się w nowej karcie)'), ' ', icon('eye')) : null,
                 h('a', { href: config.urls.view, target: '_blank', rel: 'noopener', class: 'be-btn be-btn--ghost' }, L.view, h('span', { class: 'be-sr-only' }, ' (otwiera się w nowej karcie)'), ' ', icon('arrow-up-right-from-square')),
                 h('button', { type: 'button', 'data-key': 'save', class: 'be-btn be-btn--primary', onClick: save, 'aria-disabled': String(S.saving), title: `Zapisz (${mod}+S)` }, saveLabel),
                 tbButton('Ustawienia', 'gear', () => { S.sidebarOpen = !S.sidebarOpen; renderSidebar(); updateTopbar(); }, { attrs: { 'aria-pressed': String(S.sidebarOpen), 'aria-controls': 'be-sidebar' } }),
@@ -985,6 +987,58 @@ function start(config) {
         load();
     }
 
+    // Historia wersji (jak w klasycznym edytorze): lista zapisanych wersji z podglądem; „Przywróć” wczytuje
+    // wybraną wersję do edytora jako bloki — zapis tworzy z niej nową bieżącą wersję.
+    async function openHistoryDialog() {
+        const n = ++dialogSeq;
+        const trigger = document.activeElement;
+        const listEl = h('ul', { class: 'be-tpl-list', 'aria-label': 'Zapisane wersje' }, h('li', {}, 'Wczytywanie…'));
+        const preview = h('div', { class: 'be-history-preview prose max-w-none', inert: true, 'aria-hidden': 'true' });
+        const label = h('p', { class: 'be-help', role: 'status', 'aria-live': 'polite' }, 'Wybierz wersję, aby zobaczyć podgląd.');
+        const error = h('p', { class: 'be-error', role: 'alert' });
+        const restoreBtn = h('button', { type: 'button', class: 'be-btn be-btn--primary', disabled: true }, icon('rotate-left'), ' Przywróć tę wersję');
+        const dlg = h('dialog', { class: 'be-dialog be-dialog--wide', 'aria-labelledby': `be-hist-title-${n}` });
+        const done = () => { dlg.close(); dlg.remove(); if (trigger?.isConnected) trigger.focus(); };
+        let current = null;
+        restoreBtn.addEventListener('click', () => {
+            if (!current) return;
+            const blocks = htmlToBlocks(current.content || '');
+            done();
+            pushHistory();
+            S.blocks = blocks.length ? blocks : [block('paragraph')];
+            markDirty(); renderCanvas();
+            focusBlock(S.blocks[0].id, 'start');
+            announce(`Wczytano wersję z ${current.label}. Zapisz, aby ją przywrócić (można też cofnąć).`);
+        });
+        dlg.append(
+            h('div', { class: 'be-dialog-head' }, h('h2', { id: `be-hist-title-${n}` }, 'Historia wersji'),
+                h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': 'Zamknij okno', onClick: done }, icon('xmark'))),
+            h('div', { class: 'be-history' }, listEl, h('div', {}, label, preview)),
+            error,
+            h('div', { class: 'be-dialog-actions' }, h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: done }, 'Zamknij'), restoreBtn));
+        dlg.addEventListener('cancel', (e) => { e.preventDefault(); done(); });
+        document.body.append(dlg);
+        dlg.showModal();
+        let versions = [];
+        try {
+            const res = await fetch(config.urls.history, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            versions = await res.json();
+        } catch (e) { error.textContent = 'Nie udało się wczytać historii: ' + e.message; }
+        listEl.replaceChildren(...(versions.length ? versions.map((r) => h('li', {}, h('button', {
+            type: 'button', class: 'be-btn be-btn--ghost be-history-item', 'aria-pressed': 'false',
+            onClick: (e) => {
+                current = r;
+                listEl.querySelectorAll('[aria-pressed]').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+                e.currentTarget.setAttribute('aria-pressed', 'true');
+                preview.replaceChildren(sanitizePreview(r.content));
+                label.textContent = `Wersja z ${r.label} (${r.ago}), autor: ${r.user}, ${r.word_count} ${plural(r.word_count, 'słowo', 'słowa', 'słów')}.`;
+                restoreBtn.disabled = false;
+            },
+        }, h('strong', {}, r.label), h('span', { class: 'be-list-sub' }, r.user + ' · ' + r.ago)))) : [h('li', {}, 'Brak zapisanych wersji.')]));
+        listEl.querySelector('button')?.focus();
+    }
+
     function plural(n, one, few, many) {
         if (n === 1) return one;
         const d = n % 10; const t = n % 100;
@@ -1077,20 +1131,51 @@ function start(config) {
         return [d.title, type, ...(d.keywords || [])].some((s) => s.toLowerCase().includes(q));
     }
 
+    // Zaznaczanie kilku bloków w widoku listy i owijanie ich w ramkę, rozwijaną sekcję albo dwie kolumny.
+    const listChecked = new Set();
+    function wrapChecked(kind) {
+        const picked = S.blocks.filter((b) => listChecked.has(b.id));
+        if (!picked.length) return;
+        pushHistory();
+        const at = S.blocks.indexOf(picked[0]);
+        S.blocks = S.blocks.filter((b) => !listChecked.has(b.id));
+        let wrapper;
+        if (kind === 'columns') {
+            const half = Math.ceil(picked.length / 2);
+            wrapper = block('columns', {}, [block('column', {}, picked.slice(0, half)), block('column', {}, picked.length > 1 ? picked.slice(half) : [block('paragraph')])]);
+        } else wrapper = block(kind, kind === 'details' ? { summary: 'Tytuł sekcji' } : { variant: 'box' }, picked);
+        S.blocks.splice(at, 0, wrapper);
+        listChecked.clear();
+        markDirty(); renderCanvas(); renderPanel();
+        selectBlock(wrapper.id, { focusWrapper: true });
+        announce(`Owinięto ${picked.length} ${plural(picked.length, 'blok', 'bloki', 'bloków')}: ${BLOCKS[wrapper.type].title}`);
+    }
     function renderListView(close) {
         const build = (list, depth) => h('ul', { 'aria-label': depth ? null : 'Bloki: ' + L.contentLabel.toLowerCase() }, ...list.map((b) => {
             const d = BLOCKS[b.type];
             const label = blockLabel(b);
-            return h('li', {},
+            const pick = depth === 0 && b.type !== 'column' ? h('input', { type: 'checkbox', class: 'be-list-check', checked: listChecked.has(b.id), 'aria-label': 'Zaznacz blok: ' + d.title + (label ? ' — ' + label : '') }) : null;
+            pick?.addEventListener('change', () => { pick.checked ? listChecked.add(b.id) : listChecked.delete(b.id); renderPanel(); leftPanel.querySelector(`[data-check-id="${b.id}"]`)?.focus(); });
+            if (pick) pick.dataset.checkId = b.id;
+            return h('li', { class: pick ? 'be-list-row' : null }, pick,
                 h('button', {
                     type: 'button', 'aria-current': b.id === S.selectedId ? 'true' : null, class: 'be-list-item' + (b.id === S.selectedId ? ' is-current' : ''), style: `padding-left:${0.5 + depth * 1}rem`,
                     onClick: () => { selectBlock(b.id, { focusWrapper: true }); wrapperOf(b.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); },
                 }, icon(d.icon), h('span', {}, d.title), label ? h('span', { class: 'be-list-sub' }, label) : null, S.warnings.has(b.id) ? h('span', { class: 'be-list-warn', 'aria-label': 'ma uwagi dostępności' }, icon('triangle-exclamation')) : null),
                 b.inner?.length ? build(b.inner, depth + 1) : null);
         }));
+        [...listChecked].forEach((id) => { if (!S.blocks.some((b) => b.id === id)) listChecked.delete(id); });
+        const n = listChecked.size;
+        const actions = h('div', { class: 'be-list-actions', role: 'group', 'aria-label': 'Zaznaczone bloki' },
+            h('p', { class: 'be-help', 'aria-live': 'polite' }, n ? `Zaznaczono: ${n}. Owiń w:` : 'Zaznacz bloki polami wyboru, aby owinąć je w ramkę, rozwijaną sekcję albo kolumny.'),
+            n ? h('div', { class: 'be-row' },
+                h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: () => wrapChecked('callout') }, icon('rectangle-list'), ' Ramkę'),
+                h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: () => wrapChecked('details') }, icon('caret-down'), ' Rozwijaną sekcję'),
+                h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: () => wrapChecked('columns') }, icon('table-columns'), ' Dwie kolumny'),
+                h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => { listChecked.clear(); renderPanel(); } }, 'Odznacz')) : null);
         leftPanel.setAttribute('aria-label', 'Widok listy');
         leftPanel.replaceChildren(h('div', { class: 'be-panel-head' }, h('h2', {}, 'Widok listy'), close),
-            h('div', { class: 'be-panel-body be-list' }, S.blocks.length ? build(S.blocks, 0) : h('p', { class: 'be-muted' }, L.empty)));
+            h('div', { class: 'be-panel-body be-list' }, actions, S.blocks.length ? build(S.blocks, 0) : h('p', { class: 'be-muted' }, L.empty)));
     }
     function blockLabel(b) {
         const a = b.attrs;
@@ -2175,6 +2260,11 @@ function start(config) {
         const parts = [panelSection('Publikacja',
             tag(pubBox, 'is_published'),
             date,
+            'unpublish_at' in v ? field('Zdejmij z publikacji (opcjonalnie)', (() => {
+                const el = h('input', { type: 'datetime-local', class: 'be-input', value: v.unpublish_at || '' });
+                el.addEventListener('change', () => change({ unpublish_at: el.value || null }));
+                return el;
+            })(), 'Np. koniec naboru — po tym terminie treść przestanie być publiczna (zostanie jako szkic).') : null,
             'is_archived' in v ? checkbox('Treść archiwalna', v.is_archived, (on) => change({ is_archived: on }), 'Baner, że treść może być nieaktualna (zostaje w wyszukiwarce).') : null,
             h('div', { class: 'be-grid-2' },
                 h('button', { type: 'button', class: 'be-btn be-btn--primary', onClick: () => save() }, icon('floppy-disk'), ' Zapisz'),
@@ -2199,9 +2289,59 @@ function start(config) {
                 field('Nadrzędna strona', select(v.parent_id || '', opts(C.parents, '— brak (strona główna) —'), (x) => change({ parent_id: Number(x) || null })), 'Strony z tym samym rodzicem tworzą wspólne podmenu.'),
                 field('Powiąż z działaniem', tag(select(v.project_id || '', opts(C.projects, '— brak —'), (x) => change({ project_id: Number(x) || null }, true)), 'project_id'), 'Strona zachowa adres i pojawi się też na stronie działania.'),
                 v.project_id ? field('Jak pokazać na stronie działania', select(v.project_display, Object.entries(C.projectDisplays), (x) => change({ project_display: x }))) : null,
-                field('Kolejność', order, 'Mniejsza liczba = wyżej w menu i na listach podstron.')));
+                field('Kolejność', order, 'Mniejsza liczba = wyżej w menu i na listach podstron.')),
+            panelSection('Menu i nawigacja',
+                checkbox('Dodaj do menu', v.show_in_menu, (on) => change({ show_in_menu: on }), 'Tylko strony główne (bez rodzica i działania) trafiają do nawigacji.'),
+                checkbox('Ukryj na mapie strony', v.hide_in_sitemap, (on) => change({ hide_in_sitemap: on }), 'Strona działa pod adresem, ale nie ma jej na mapie strony ani w sitemap.xml.'),
+                checkbox('Pokaż menu podstron działu', v.show_side_nav, (on) => change({ show_side_nav: on }, true)),
+                v.show_side_nav ? field('Wygląd menu podstron', select(v.side_nav_style, Object.entries(C.sideNavStyles || {}), (x) => change({ side_nav_style: x })), 'O wyglądzie decyduje strona nadrzędna działu.') : null));
         }
+        if (isNews) parts.push(newsFieldsSection(C, v, change));
+        if ('slug' in v) parts.push(addressSection(C, v, change));
         return parts;
+    }
+
+    // Pola aktualności z formularza: lead, zdjęcie z biblioteki, kategoria, działanie, odbiorcy i kolor akcentu.
+    function newsFieldsSection(C, v, change) {
+        const lead = textInput(v.excerpt, (x) => { typingHistory(); v.excerpt = x; S.settingsDirty = true; markDirty(); leadCount(); }, { multiline: true, rows: 3, maxlength: '255' });
+        const counter = h('span', { class: 'be-counter', 'aria-live': 'polite' });
+        const leadCount = () => { counter.textContent = `${(v.excerpt || '').length} / 255 znaków`; };
+        leadCount();
+        const thumb = v.delete_image ? null : (v.image_preview || v.image_url);
+        const alt = textInput(v.image_alt, (x) => { v.image_alt = x; S.settingsDirty = true; markDirty(); }, { multiline: true, rows: 2, maxlength: '255' });
+        const color = h('input', { type: 'color', class: 'be-input be-color', value: v.accent_color || '#1752bf', 'aria-label': 'Kolor akcentu' });
+        color.addEventListener('change', () => change({ accent_color: color.value }));
+        return panelSection('Aktualność',
+            field('Lead (krótki opis)', lead, 'Wyświetla się na liście aktualności i pod tytułem.'), counter,
+            h('div', { class: 'be-field' }, h('span', { class: 'be-label' }, 'Zdjęcie główne'),
+                thumb ? h('img', { src: thumb, alt: '', class: 'be-thumb' }) : h('p', { class: 'be-muted' }, 'Brak zdjęcia — lista pokaże zdjęcie domyślne.'),
+                h('div', { class: 'be-row' },
+                    h('button', { type: 'button', class: 'be-btn be-btn--secondary', 'data-setting': 'library_media_id', onClick: async () => {
+                        const picked = (await openMediaLibrary())[0];
+                        if (!picked) return;
+                        if (!picked.id) { announce('Wybierz zdjęcie z biblioteki.'); return; }
+                        change({ library_media_id: picked.id, image_preview: picked.url, delete_image: false, image_alt: v.image_alt || picked.alt || '' }, true);
+                    } }, icon('images'), thumb ? ' Zmień zdjęcie' : ' Wybierz z biblioteki'),
+                    thumb ? h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => change({ delete_image: true, library_media_id: null, image_preview: null }, true) }, icon('trash'), ' Usuń zdjęcie') : null)),
+            thumb ? field('Opis zdjęcia (tekst alternatywny)', alt, 'Opisz, co widać i dlaczego to ważne. Nie zaczynaj od „Zdjęcie…”.') : null,
+            field('Kategoria', select(v.news_category_id || '', [['', '— bez kategorii —'], ...(C.categories || []).map((c) => [c.id, c.name])], (x) => change({ news_category_id: Number(x) || null }))),
+            field('Powiąż z działaniem', select(v.project_id || '', [['', '— brak —'], ...(C.projects || []).map((p) => [p.id, p.title])], (x) => change({ project_id: Number(x) || null }))),
+            field('Odbiorcy (kolor)', select(v.audience || 'brand', Object.entries(C.audiences || {}), (x) => change({ audience: x }))),
+            h('div', { class: 'be-field' }, h('label', { for: color.id = 'be-accent-' + TARGET.id }, 'Kolor akcentu'),
+                h('div', { class: 'be-row' }, color, v.accent_color ? h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => change({ accent_color: '' }, true) }, 'Bez koloru') : h('span', { class: 'be-muted' }, 'domyślny')),
+                h('p', { class: 'be-help' }, 'Za jasny kolor zostanie przyciemniony, żeby tekst miał kontrast co najmniej 4,5:1.')));
+    }
+
+    // Adres (slug) z informacją o przekierowaniu starego adresu i tytuł SEO.
+    function addressSection(C, v, change) {
+        const slug = textInput(v.slug, (x) => { v.slug = x.toLowerCase().replace(/\s+/g, '-'); S.settingsDirty = true; markDirty(); }, { placeholder: 'zostanie wygenerowany z tytułu' });
+        if (!v.slug_editable) slug.disabled = true;
+        const metaTitle = textInput(v.meta_title, (x) => { v.meta_title = x; S.settingsDirty = true; markDirty(); }, { maxlength: '255', placeholder: 'domyślnie tytuł strony' });
+        return panelSection('Adres i SEO',
+            field('Adres (slug)', slug, v.slug_editable ? 'Pełny adres: ' + C.publicBase + (v.slug || '…') : 'Adres nadawany automatycznie — nie można go zmienić tutaj.'),
+            C.wasPublished && v.slug_editable ? checkbox('Nie twórz przekierowania ze starego adresu', !!S.skipSlugRedirect, (on) => { S.skipSlugRedirect = on; },
+                'Po zmianie adresu stary (/' + (C.values.slug || '') + ') przekieruje na nowy (301). Zaznacz, jeśli stary adres ma pokazywać inną treść.') : null,
+            field('Tytuł SEO (opcjonalnie)', metaTitle, 'Tytuł w wynikach wyszukiwania i na karcie przeglądarki; najlepiej do 60 znaków.'));
     }
     const countBlocks = () => { let n = 0; walk(S.blocks, () => n++); return n; };
 
@@ -2276,7 +2416,7 @@ function start(config) {
                     a.items.length > 1 ? h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => { set({ items: a.items.filter((_, j) => j !== i) }); renderSidebar(); } }, icon('trash'), ' Usuń przycisk') : null)));
                 break;
             case 'callout':
-                parts.push(panelSection('Rodzaj ramki', field('Styl', select(a.variant, [['box', 'Ramka (kolor marki)'], ['note', 'Notatka / ostrzeżenie (bursztynowa)'], ['important', 'Ważna informacja (niebieska)']], (v) => set({ variant: v })))));
+                parts.push(panelSection('Rodzaj ramki', field('Styl', select(a.variant, [['box', 'Ramka (szare tło)'], ['note', 'Notatka / ostrzeżenie (pomarańczowe tło)'], ['important', 'Ważna informacja (niebieskie tło)']], (v) => set({ variant: v })))));
                 break;
             case 'columns': {
                 const setCount = (n) => {
@@ -2707,7 +2847,7 @@ function start(config) {
                 const res = await fetch(config.urls.upload, { method: 'POST', body: fd, headers: { 'X-CSRF-TOKEN': CSRF, Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
                 const json = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(json.errors?.file?.[0] || json.message || 'Nie udało się przesłać pliku.');
-                out.push({ url: json.url, name: file.name, alt: '' });
+                out.push({ url: json.url, name: file.name, alt: '', id: json.id });
                 mediaCache = null;
             } catch (e) {
                 S.error = e.message;
@@ -2735,8 +2875,8 @@ function start(config) {
                 grid.replaceChildren(...(list.length ? list.map((m) => h('div', { role: 'listitem' }, h('button', {
                     type: 'button', class: 'be-media-item', 'aria-pressed': String(chosen.has(m.url)),
                     onClick: () => {
-                        if (!multiple) { done([{ url: m.url, alt: m.alt || '' }]); return; }
-                        chosen.has(m.url) ? chosen.delete(m.url) : chosen.set(m.url, { url: m.url, alt: m.alt || '' });
+                        if (!multiple) { done([{ url: m.url, alt: m.alt || '', id: m.id }]); return; }
+                        chosen.has(m.url) ? chosen.delete(m.url) : chosen.set(m.url, { url: m.url, alt: m.alt || '', id: m.id });
                         draw();
                     },
                 }, h('img', { src: m.url, alt: '', loading: 'lazy' }), h('span', {}, m.alt || m.file_name)))) : [h('p', { class: 'be-muted' }, 'Brak obrazów.')]));
@@ -2827,7 +2967,7 @@ function start(config) {
                 body: JSON.stringify({
                     title: S.title.trim(), meta_description: S.meta, blocks: serialize(S.blocks),
                     ...(typeForm ? { fields: typeFieldsData() } : {}),
-                    ...(S.settings && (S.settingsDirty || draft) ? { settings: { ...S.settings, draft } } : {}),
+                    ...(S.settings && (S.settingsDirty || draft) ? { settings: { ...S.settings, draft }, skip_slug_redirect: !!S.skipSlugRedirect } : {}),
                 }),
             });
             const json = await res.json().catch(() => ({}));
@@ -2838,7 +2978,10 @@ function start(config) {
             if (json.settings) {
                 const wasRequested = S.settings?.is_published && !draft;
                 S.settings = json.settings;
+                config.settings.values = JSON.parse(JSON.stringify(json.settings));
+                config.settings.wasPublished = json.settings.is_published;
                 S.settingsDirty = false;
+                S.skipSlugRedirect = false;
                 config.page.is_published = json.settings.is_published;
                 if (wasRequested && json.settings.pending_approval) announce('Zapisano. Publikacja czeka na zatwierdzenie.');
                 if (S.sidebarTab === 'page') renderSidebar();
