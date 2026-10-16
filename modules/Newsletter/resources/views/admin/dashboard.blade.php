@@ -5,8 +5,8 @@
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">Kampanie e-mail, push i SMS · subskrybenci z double opt-in</p>
         <div class="flex gap-2">
-            <a href="{{ route('admin.newsletter.kampanie.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowa kampania</a>
-            <a href="{{ route('admin.newsletter.mosaico') }}" class="rounded-md px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-brand-light"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Edytor Mosaico</a>
+            @can('newsletter.campaigns')<a href="{{ route('admin.newsletter.kampanie.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowa kampania</a>@endcan
+            @can('newsletter.templates')<a href="{{ route('admin.newsletter.mosaico') }}" class="rounded-md px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-brand-light"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Edytor Mosaico</a>@endcan
             <a href="{{ route('newsletter.show') }}" target="_blank" rel="noopener" class="rounded-md px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-brand-light">Strona /newsletter <span class="sr-only">(nowe okno)</span></a>
         </div>
     </div>
@@ -14,16 +14,17 @@
     <nav aria-label="Sekcje newslettera" class="mb-6">
         <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             @foreach ([
-                ['Kampanie', 'admin.newsletter.kampanie.index', 'fa-paper-plane', 'Wysyłki e-mail, push i SMS'],
-                ['Subskrybenci', 'admin.newsletter.subskrybenci.index', 'fa-users', 'Lista osób i ich zgody'],
-                ['Listy', 'admin.newsletter.listy.index', 'fa-list', 'Grupy odbiorców do wysyłek'],
-                ['Segmenty', 'admin.newsletter.segmenty.index', 'fa-filter', 'Filtrowane grupy subskrybentów'],
-                ['Tematy', 'admin.newsletter.tematy.index', 'fa-tags', 'Tematy do wyboru przy zapisie'],
-                ['Szablony', 'admin.newsletter.szablony.index', 'fa-file-code', 'Gotowe układy wiadomości'],
-                ['Edytor Mosaico', 'admin.newsletter.mosaico', 'fa-pen-ruler', 'Projektowanie wiadomości'],
-                ['Formularze zapisu', 'admin.newsletter.formularze.index', 'fa-clipboard-list', 'Formularze na stronach i ich wygląd'],
-                ['Ustawienia', 'admin.newsletter.ustawienia.edit', 'fa-gear', 'Nadawca, zgody i integracje'],
-            ] as [$title, $route, $icon, $desc])
+                ['Kampanie', 'admin.newsletter.kampanie.index', 'fa-paper-plane', 'Wysyłki e-mail, push i SMS', 'newsletter.view'],
+                ['Subskrybenci', 'admin.newsletter.subskrybenci.index', 'fa-users', 'Lista osób i ich zgody', 'newsletter.subscribers'],
+                ['Listy', 'admin.newsletter.listy.index', 'fa-list', 'Grupy odbiorców do wysyłek', 'newsletter.subscribers'],
+                ['Segmenty', 'admin.newsletter.segmenty.index', 'fa-filter', 'Filtrowane grupy subskrybentów', 'newsletter.subscribers'],
+                ['Tematy', 'admin.newsletter.tematy.index', 'fa-tags', 'Tematy do wyboru przy zapisie', 'newsletter.subscribers'],
+                ['Szablony', 'admin.newsletter.szablony.index', 'fa-file-code', 'Gotowe układy wiadomości', 'newsletter.templates'],
+                ['Edytor Mosaico', 'admin.newsletter.mosaico', 'fa-pen-ruler', 'Projektowanie wiadomości', 'newsletter.templates'],
+                ['Formularze zapisu', 'admin.newsletter.formularze.index', 'fa-clipboard-list', 'Formularze na stronach i ich wygląd', 'newsletter.subscribers'],
+                ['Ustawienia', 'admin.newsletter.ustawienia.edit', 'fa-gear', 'Nadawca, zgody i integracje', 'newsletter.settings'],
+            ] as [$title, $route, $icon, $desc, $ability])
+                @continue(! auth()->user()->can($ability))
                 <li>
                     <a href="{{ route($route) }}" class="flex h-full items-start gap-3 rounded-md bg-white p-4 hover:bg-gray-50 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
                         <i class="fa-solid {{ $icon }} mt-1 text-brand-dark" aria-hidden="true"></i>
@@ -37,11 +38,12 @@
         </ul>
     </nav>
 
+    @php $canSubscribers = auth()->user()->can('newsletter.subscribers'); $canReports = auth()->user()->can('newsletter.reports'); @endphp
     <dl class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5" role="group" aria-label="Kluczowe wskaźniki">
         @foreach ([
-            ['Aktywni subskrybenci', number_format($active, 0, ',', ' '), 'fa-users', route('admin.newsletter.subskrybenci.index', ['status' => 'confirmed'])],
-            ['Nowi (30 dni)', '+' . number_format($new30, 0, ',', ' ') . ($lost30 ? ' / −' . $lost30 : ''), 'fa-user-plus', route('admin.newsletter.subskrybenci.index', ['since' => now()->subDays(30)->toDateString()])],
-            ['Oczekują na potwierdzenie', number_format($pending, 0, ',', ' '), 'fa-clock', route('admin.newsletter.subskrybenci.index', ['status' => 'pending'])],
+            ['Aktywni subskrybenci', number_format($active, 0, ',', ' '), 'fa-users', $canSubscribers ? route('admin.newsletter.subskrybenci.index', ['status' => 'confirmed']) : null],
+            ['Nowi (30 dni)', '+' . number_format($new30, 0, ',', ' ') . ($lost30 ? ' / −' . $lost30 : ''), 'fa-user-plus', $canSubscribers ? route('admin.newsletter.subskrybenci.index', ['since' => now()->subDays(30)->toDateString()]) : null],
+            ['Oczekują na potwierdzenie', number_format($pending, 0, ',', ' '), 'fa-clock', $canSubscribers ? route('admin.newsletter.subskrybenci.index', ['status' => 'pending']) : null],
             ['Śr. otwarcia (90 dni)', $avgOpen !== null ? $avgOpen . ' %' : '—', 'fa-envelope-open', null],
             ['Śr. kliknięcia (90 dni)', $avgClick !== null ? $avgClick . ' %' : '—', 'fa-arrow-pointer', null],
         ] as [$label, $value, $icon, $href])
@@ -56,14 +58,14 @@
         <section class="lg:col-span-2 rounded-md bg-white" aria-labelledby="recent-h">
             <h2 id="recent-h" class="border-b border-gray-200 px-4 py-3 text-sm font-bold uppercase text-muted">Ostatnie kampanie</h2>
             @if ($recent->isEmpty())
-                <p class="px-4 py-6 text-sm text-muted">Jeszcze nic nie wysłano. <a href="{{ route('admin.newsletter.kampanie.create') }}" class="font-bold text-brand-dark underline">Utwórz pierwszą kampanię</a>.</p>
+                <p class="px-4 py-6 text-sm text-muted">Jeszcze nic nie wysłano.@can('newsletter.campaigns') <a href="{{ route('admin.newsletter.kampanie.create') }}" class="font-bold text-brand-dark underline">Utwórz pierwszą kampanię</a>.@endcan</p>
             @else
             <table class="w-full text-left text-sm">
                 <thead class="bg-gray-100 text-xs font-bold uppercase text-muted"><tr><th class="px-4 py-2">Nazwa</th><th class="px-4 py-2">Wysłano</th><th class="px-4 py-2 text-right">Dost.</th><th class="px-4 py-2 text-right">Otw.</th><th class="px-4 py-2 text-right">Klik.</th><th class="px-4 py-2">Stan</th></tr></thead>
                 <tbody>
                 @foreach ($recent as $c)
                     <tr class="border-t border-gray-100">
-                        <td class="px-4 py-2"><a href="{{ route('admin.newsletter.kampanie.report', $c) }}" class="font-bold text-brand-dark hover:underline">{{ $c->title }}</a></td>
+                        <td class="px-4 py-2"><a href="{{ $canReports ? route('admin.newsletter.kampanie.report', $c) : route('admin.newsletter.kampanie.show', $c) }}" class="font-bold text-brand-dark hover:underline">{{ $c->title }}</a></td>
                         <td class="px-4 py-2 text-muted">{{ $c->started_at?->format('d.m.Y H:i') }}</td>
                         <td class="px-4 py-2 text-right">{{ number_format($c->delivered_count, 0, ',', ' ') }}</td>
                         <td class="px-4 py-2 text-right">{{ $c->rate('opened_unique') !== null ? $c->rate('opened_unique') . ' %' : '—' }}</td>

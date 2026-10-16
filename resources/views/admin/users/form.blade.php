@@ -52,6 +52,14 @@
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
                 Edytor BIP ma dostęp wyłącznie do modułu BIP. Imię i nazwisko są wymagane — widoczne publicznie na stronie BIP.
             </p>
+            <p x-show="role === 'newsletter_editor'" x-cloak class="mt-1.5 rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
+                <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+                Redaktor newslettera ma dostęp tylko do newslettera: tworzy i edytuje kampanie (Mosaico), szablony i maile systemowe, widzi raporty. Nie wysyła kampanii i nie ma dostępu do danych subskrybentów.
+            </p>
+            <p x-show="role === 'newsletter_publisher'" x-cloak class="mt-1.5 rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
+                <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+                Wydawca newslettera może to co redaktor, a do tego wysyła i planuje kampanie oraz zarządza subskrybentami, listami i segmentami (w tym eksport danych). Bez ustawień newslettera.
+            </p>
             <p x-show="role === 'editor'" x-cloak class="mt-1.5 px-3 py-2 text-xs text-gray-700 rounded-md bg-gray-50">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
                 Edytor (grupy) ma dostęp tylko do modułów przypisanych przez grupę poniżej.

@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Modules\Newsletter\Providers;
 
 use App\Models\SiteSetting;
+use App\Models\User;
+use App\Support\NewsletterPermissions;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Modules\Newsletter\Channels\ChannelRegistry;
 use Modules\Newsletter\Channels\EmailChannel;
@@ -47,6 +50,11 @@ final class NewsletterServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
         Blade::component('newsletter-widget', SignupWidget::class);
+
+        // Uprawnienia panelu (trasy: middleware `can:newsletter.*`, widoki: @can). Administrator ma wszystkie.
+        foreach ([...NewsletterPermissions::keys(), NewsletterPermissions::DESIGN] as $ability) {
+            Gate::define($ability, fn (User $user): bool => $user->hasNewsletterPermission($ability));
+        }
 
         $this->applyMailerConfig();
 

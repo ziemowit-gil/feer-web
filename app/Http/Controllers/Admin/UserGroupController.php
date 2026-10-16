@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
 use App\Models\UserGroup;
+use App\Support\NewsletterPermissions;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -67,7 +68,7 @@ class UserGroupController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'modules' => ['sometimes', 'array'],
-            'modules.*' => ['string', Rule::in(array_keys(SiteSetting::MODULES))],
+            'modules.*' => ['string', Rule::in([...array_keys(SiteSetting::MODULES), ...NewsletterPermissions::keys()])],
             'can_approve' => ['sometimes', 'boolean'],
             'own_content_only' => ['sometimes', 'boolean'],
             'project_category_ids' => ['sometimes', 'array'],

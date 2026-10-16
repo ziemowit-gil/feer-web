@@ -17,7 +17,16 @@
         if ($rest) { $moduleSections['Inne'] = $rest; }
         $sections = collect($moduleSections)->map(fn ($keys) => collect($keys)->filter(fn ($k) => isset($allModules[$k]))->mapWithKeys(fn ($k) => [$k => $allModules[$k]])->all())->filter()->all();
 
-        $selectedModules = array_values(old('modules', $group->modules ?? []));
+        $selectedAll = array_values(old('modules', $group->modules ?? []));
+        // Uprawnienia newslettera są zapisywane razem z modułami, ale w formularzu mają osobną sekcję.
+        $nlPermissions = \App\Support\NewsletterPermissions::ALL;
+        $selectedNewsletter = array_values(array_intersect($selectedAll, array_keys($nlPermissions)));
+        $selectedModules = array_values(array_diff($selectedAll, $selectedNewsletter));
+        $nlPresets = [
+            'Redaktor newslettera' => \App\Support\NewsletterPermissions::ROLE_PRESETS[\App\Models\User::ROLE_NEWSLETTER_EDITOR],
+            'Wydawca newslettera' => \App\Support\NewsletterPermissions::ROLE_PRESETS[\App\Models\User::ROLE_NEWSLETTER_PUBLISHER],
+            'Brak' => [],
+        ];
         $selCats = array_map('intval', (array) old('project_category_ids', $group->project_category_ids ?? []));
         $selPages = array_map('intval', (array) old('page_ids', $group->page_ids ?? []));
         // Drzewo stron do wyboru działów (bez stron osób, które mają własny moduł).
@@ -49,6 +58,8 @@
         x-data="{
             name: @js(old('name', $group->name)),
             modules: @js($selectedModules),
+            nl: @js($selectedNewsletter),
+            nlLabels: @js(collect($nlPermissions)->map(fn ($p) => $p[0])->all()),
             own: @js((bool) old('own_content_only', $group->own_content_only ?? false)),
             cats: @js($selCats),
             pages: @js($selPages),
@@ -124,6 +135,36 @@
                 @error('modules') <p class="mt-2 text-sm text-red-700">{{ $message }}</p> @enderror
             </section>
 
+            {{-- ── Newsletter ── --}}
+            <section class="p-6 rounded-md bg-white" aria-labelledby="g-newsletter">
+                <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 id="g-newsletter" class="text-base font-bold text-ink">Newsletter</h2>
+                        <p class="text-sm text-muted">Każde uprawnienie daje wejście do modułu i podgląd kampanii. Wysyłka jest osobno, bo nie da się jej cofnąć.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5" role="group" aria-label="Gotowe zestawy uprawnień newslettera">
+                        @foreach ($nlPresets as $label => $keys)
+                            <button type="button" @click="nl = [...@js($keys)]"
+                                class="rounded-md px-3 py-1.5 text-xs font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark bg-gray-100 hover:bg-brand-light">{{ $label }}</button>
+                        @endforeach
+                    </div>
+                </div>
+                <fieldset class="rounded-md bg-gray-50">
+                    <legend class="sr-only">Uprawnienia newslettera</legend>
+                    <div class="grid gap-x-6 gap-y-3 p-4 sm:grid-cols-2">
+                        @foreach ($nlPermissions as $key => [$label, $desc])
+                            <label class="flex items-start gap-2 text-sm">
+                                <input type="checkbox" name="modules[]" value="{{ $key }}" x-model="nl"
+                                    aria-describedby="nl-desc-{{ $loop->index }}"
+                                    class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                <span><span class="font-bold text-ink">{{ $label }}</span>
+                                    <span id="nl-desc-{{ $loop->index }}" class="block text-xs text-muted">{{ $desc }}</span></span>
+                            </label>
+                        @endforeach
+                    </div>
+                </fieldset>
+            </section>
+
             {{-- ── Zakres treści ── --}}
             <section class="p-6 rounded-md bg-white" aria-labelledby="g-scope">
                 <h2 id="g-scope" class="text-base font-bold text-ink">Zakres treści</h2>
@@ -193,6 +234,10 @@
                             </template>
                         </dd>
                         <dd class="text-xs text-amber-800" x-show="! modules.length" x-cloak>Brak modułów — użytkownicy tej grupy nie zobaczą nic w panelu.</dd>
+                    </div>
+                    <div>
+                        <dt class="font-bold text-ink">Newsletter</dt>
+                        <dd class="text-muted" x-text="nl.length ? nl.map(k => nlLabels[k] || k).join(', ') : 'Brak dostępu'"></dd>
                     </div>
                     <div>
                         <dt class="font-bold text-ink">Zakres</dt>

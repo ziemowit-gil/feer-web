@@ -7,7 +7,7 @@
             <a href="{{ route('admin.newsletter.kampanie.index') }}" class="rounded-full border px-3 py-1 font-bold {{ $status === '' ? 'border-brand-dark bg-brand-dark text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50' }}">Wszystkie</a>
             @foreach ($statuses as $k => $l)<a href="{{ route('admin.newsletter.kampanie.index', ['status' => $k]) }}" class="rounded-full border px-3 py-1 font-bold {{ $status === $k ? 'border-brand-dark bg-brand-dark text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50' }}">{{ $l }}</a>@endforeach
         </div>
-        <a href="{{ route('admin.newsletter.kampanie.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowa kampania</a>
+        @can('newsletter.campaigns')<a href="{{ route('admin.newsletter.kampanie.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowa kampania</a>@endcan
     </div>
     <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
@@ -23,9 +23,9 @@
                     <td class="px-4 py-2 text-right">{{ $c->rate('opened_unique') !== null ? $c->rate('opened_unique') . ' %' : '—' }}</td>
                     <td class="px-4 py-2 text-right">{{ $c->rate('clicked_unique') !== null ? $c->rate('clicked_unique') . ' %' : '—' }}</td>
                     <td class="px-4 py-2 text-right whitespace-nowrap">
-                        @if ($c->isEditable())<a href="{{ route('admin.newsletter.kampanie.editor', $c) }}" class="mr-2 text-muted hover:text-brand-dark" aria-label="Treść {{ $c->title }}"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i></a>@endif
-                        @if ($c->status === 'sent')<a href="{{ route('admin.newsletter.kampanie.report', $c) }}" class="mr-2 text-muted hover:text-brand-dark" aria-label="Raport {{ $c->title }}"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></a>@endif
-                        <form method="POST" action="{{ route('admin.newsletter.kampanie.duplicate', $c) }}" class="inline">@csrf<button class="text-muted hover:text-brand-dark" aria-label="Duplikuj {{ $c->title }}"><i class="fa-solid fa-copy" aria-hidden="true"></i></button></form>
+                        @if ($c->isEditable() && auth()->user()->can('newsletter.campaigns'))<a href="{{ route('admin.newsletter.kampanie.editor', $c) }}" class="mr-2 text-muted hover:text-brand-dark" aria-label="Treść {{ $c->title }}"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i></a>@endif
+                        @if ($c->status === 'sent' && auth()->user()->can('newsletter.reports'))<a href="{{ route('admin.newsletter.kampanie.report', $c) }}" class="mr-2 text-muted hover:text-brand-dark" aria-label="Raport {{ $c->title }}"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></a>@endif
+                        @can('newsletter.campaigns')<form method="POST" action="{{ route('admin.newsletter.kampanie.duplicate', $c) }}" class="inline">@csrf<button class="text-muted hover:text-brand-dark" aria-label="Duplikuj {{ $c->title }}"><i class="fa-solid fa-copy" aria-hidden="true"></i></button></form>@endcan
                     </td>
                 </tr>
             @empty

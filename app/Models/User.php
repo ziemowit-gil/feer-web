@@ -31,6 +31,8 @@ class User extends Authenticatable implements Subscribable
     public const ROLE_BIP_EDITOR_PLUS = 'bip_editor_plus';
     public const ROLE_BIP_EDITOR     = 'bip_editor';
     public const ROLE_EDITOR         = 'editor';
+    public const ROLE_NEWSLETTER_EDITOR    = 'newsletter_editor';
+    public const ROLE_NEWSLETTER_PUBLISHER = 'newsletter_publisher';
 
     public const ROLES = [
         self::ROLE_ADMIN           => 'Administrator',
@@ -39,6 +41,8 @@ class User extends Authenticatable implements Subscribable
         self::ROLE_PR_EDITOR       => 'Redaktor PR',
         self::ROLE_BIP_EDITOR_PLUS => 'Edytor BIP+',
         self::ROLE_BIP_EDITOR      => 'Edytor BIP',
+        self::ROLE_NEWSLETTER_EDITOR    => 'Redaktor newslettera',
+        self::ROLE_NEWSLETTER_PUBLISHER => 'Wydawca newslettera',
         self::ROLE_EDITOR          => 'Edytor (grupy)',
     ];
 
@@ -202,6 +206,11 @@ class User extends Authenticatable implements Subscribable
             return true;
         }
 
+        // Newsletter ma własne, drobniejsze uprawnienia — wejście do modułu daje każde z nich.
+        if ($module === 'newsletter') {
+            return $this->hasNewsletterPermission(\App\Support\NewsletterPermissions::VIEW);
+        }
+
         return match ($this->role) {
             self::ROLE_CONTENT_EDITOR  => true,
             self::ROLE_COORDINATOR     => in_array($module, ['volunteering', 'jobs', 'events', 'materials', 'podcasts'], true),
@@ -211,6 +220,12 @@ class User extends Authenticatable implements Subscribable
             self::ROLE_EDITOR          => $this->group && $this->group->hasModule($module),
             default                    => false,
         };
+    }
+
+    /** Uprawnienie modułu Newsletter (klucz z {@see \App\Support\NewsletterPermissions}). */
+    public function hasNewsletterPermission(string $permission): bool
+    {
+        return \App\Support\NewsletterPermissions::allows($this, $permission);
     }
 
     /**
