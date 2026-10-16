@@ -283,6 +283,8 @@ function start(config) {
 
     // ── Historia (cofnij / ponów) ──────────────────────────────────────────
     const snapshot = () => JSON.stringify({ title: S.title, meta: S.meta, blocks: S.blocks });
+    // Bloki do wysłania na serwer (bez lokalnych id).
+    const serialize = (blocks) => JSON.parse(JSON.stringify(blocks, (key, v) => (key === 'id' ? undefined : v)));
     function pushHistory() {
         S.past.push(snapshot());
         if (S.past.length > 150) S.past.shift();
@@ -305,6 +307,51 @@ function start(config) {
     }
     function undo() { if (!S.past.length) return; S.future.push(snapshot()); restore(S.past.pop()); announce('Cofnięto zmianę'); }
     function redo() { if (!S.future.length) return; S.past.push(snapshot()); restore(S.future.pop()); announce('Przywrócono zmianę'); }
+
+    // ── Pola typu strony (okno #be-type-fields z widoku, te same sekcje co w formularzu) ──
+    const typeDlg = config.typeFields ? document.getElementById('be-type-fields') : null;
+    const typeForm = typeDlg?.querySelector('form') || null;
+    if (typeForm) {
+        typeForm.addEventListener('input', () => markDirty());
+        typeForm.addEventListener('change', () => markDirty());
+        // Dodanie, usunięcie i przeniesienie wiersza repeatera też zmienia dane.
+        typeForm.addEventListener('click', (e) => {
+            if (e.target.closest('[data-repeater-add],[data-repeater-add-section],[data-repeater-remove],[data-repeater-move],[data-td-add],[data-td-remove],[data-schedule-add],[data-schedule-remove]')) setTimeout(markDirty);
+        });
+        typeDlg.addEventListener('close', () => sidebar.querySelector('[data-type-fields-open]')?.focus());
+    }
+    function openTypeFields() {
+        typeDlg.showModal();
+        typeDlg.dispatchEvent(new Event('be-open'));
+        typeForm.querySelector('.be-type-fields-body input:not([type=hidden]), .be-type-fields-body select, .be-type-fields-body textarea')?.focus();
+    }
+    // Pola formularza jako obiekt jak w PHP (a[b][0][c]; przy powtórzonej nazwie wygrywa ostatnie pole).
+    // Indeksy liczbowe zamieniamy na kolejne pozycje listy — kolejność jak na ekranie.
+    function typeFieldsData() {
+        window.tinymce?.triggerSave();
+        const out = {};
+        const slots = new WeakMap();
+        for (const [name, value] of new FormData(typeForm)) {
+            if (typeof value !== 'string') continue;
+            const m = name.match(/^([^[\]]+)((?:\[[^\]]*\])*)$/);
+            if (!m) continue;
+            const keys = [m[1], ...[...m[2].matchAll(/\[([^\]]*)\]/g)].map((x) => x[1])];
+            let node = out;
+            keys.forEach((k, i) => {
+                let key = k;
+                if (Array.isArray(node)) {
+                    if (!slots.has(node)) slots.set(node, new Map());
+                    const map = slots.get(node);
+                    if (k === '') key = node.length;
+                    else { if (!map.has(k)) map.set(k, node.length); key = map.get(k); }
+                }
+                if (i === keys.length - 1) { node[key] = value; return; }
+                if (node[key] === undefined || typeof node[key] !== 'object') node[key] = /^\d*$/.test(keys[i + 1]) ? [] : {};
+                node = node[key];
+            });
+        }
+        return out;
+    }
 
     function markDirty() {
         S.dirty = true;
@@ -745,6 +792,7 @@ function start(config) {
                 tbButton('Cofnij', 'rotate-left', undo, { shortcut: mod + '+Z', attrs: { 'aria-disabled': String(!S.past.length) } }),
                 tbButton('Ponów', 'rotate-right', redo, { shortcut: mod + '+Shift+Z', attrs: { 'aria-disabled': String(!S.future.length) } }),
                 tbButton('Widok listy', 'bars-staggered', () => togglePanel('list'), { attrs: { 'aria-pressed': String(S.panel === 'list') } }),
+                config.urls.templates ? tbButton('Dodaj z szablonu / Zarządzaj szablonami', 'layer-group', openTemplatesDialog) : null,
                 tbButton(config.urls.docx ? 'Importuj z pliku (DOCX, TXT)' : 'Importuj z pliku TXT', 'file-import', () => importInput.click()),
                 h('button', { type: 'button', 'data-key': 'a11y', class: 'be-btn be-a11y-btn' + (count ? ' has-issues' : ''), 'aria-pressed': String(S.panel === 'a11y'), onClick: () => togglePanel('a11y') },
                     icon('universal-access'), h('span', {}, count ? `Dostępność: ${count} ${plural(count, 'uwaga', 'uwagi', 'uwag')}` : 'Dostępność: OK')),
@@ -795,6 +843,92 @@ function start(config) {
         }
     });
     mount.append(importInput);
+
+    // Szablony treści — to samo co „Dodaj z szablonu / Zarządzaj szablonami” w formularzu (admin/szablony).
+    // Szablon z edytora blokowego ma bloki (i HTML do klasycznego); szablon z formularza — HTML zamieniany na bloki.
+    async function templatesRequest(path = '', opts = {}) {
+        const res = await fetch(config.urls.templates.base + path, { ...opts, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) } });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(Object.values(json.errors || {})[0]?.[0] || json.message || 'Błąd serwera (' + res.status + ').');
+        return json;
+    }
+    function openTemplatesDialog() {
+        const T = config.urls.templates;
+        const n = ++dialogSeq;
+        let tab = 'load';
+        let templates = [];
+        const trigger = document.activeElement;
+        const msg = h('p', { class: 'be-help', role: 'status', 'aria-live': 'polite' });
+        const error = h('p', { class: 'be-error', role: 'alert' });
+        const body = h('div', {});
+        const dlg = h('dialog', { class: 'be-dialog', 'aria-labelledby': `be-tpl-title-${n}` });
+        const done = () => { dlg.close(); dlg.remove(); if (trigger?.isConnected) trigger.focus(); };
+        const tabBtn = (key, label, iconName) => h('button', { type: 'button', role: 'tab', class: 'be-tab', id: `be-tpl-tab-${key}-${n}`, 'aria-selected': String(tab === key), 'aria-controls': `be-tpl-panel-${n}`, onClick: () => { tab = key; draw(); dlg.querySelector('[role=tab][aria-selected=true]')?.focus(); } }, icon(iconName), ' ' + label);
+        const tabs = h('div', { class: 'be-tabs', role: 'tablist', 'aria-label': 'Zakładki szablonów' });
+        const apply = async (t, mode) => {
+            error.textContent = '';
+            let data;
+            try { data = await templatesRequest('/' + t.id + '/dane'); } catch (e) { error.textContent = 'Nie udało się załadować szablonu: ' + e.message; return; }
+            const blocks = Array.isArray(data.blocks) ? hydrate(data.blocks) : htmlToBlocks(data.content || '');
+            if (!blocks.length) { error.textContent = 'Szablon nie zawiera treści.'; return; }
+            done();
+            if (mode === 'replace') {
+                pushHistory();
+                S.blocks = blocks;
+                if (data.meta_description && !S.meta) S.meta = String(data.meta_description);
+                markDirty(); renderCanvas(); renderSidebar();
+                focusBlock(blocks[0].id, 'start');
+            } else insertFromPanel(blocks);
+            announce(`Załadowano szablon „${t.name}” (${blocks.length} ${plural(blocks.length, 'blok', 'bloki', 'bloków')})`);
+        };
+        const draw = () => {
+            tabs.replaceChildren(tabBtn('load', 'Dodaj z szablonu', 'file-import'), tabBtn('manage', 'Zarządzaj szablonami', 'list-check'));
+            const list = (rowFor) => templates.length
+                ? h('ul', { class: 'be-tpl-list' }, ...templates.map((t) => h('li', {}, h('span', { class: 'be-tpl-name' }, t.name), ...rowFor(t))))
+                : h('p', { class: 'be-muted' }, tab === 'load' ? 'Brak szablonów tego typu. Zapisz bieżącą treść jako szablon w zakładce „Zarządzaj szablonami”.' : 'Brak zapisanych szablonów.');
+            if (tab === 'load') {
+                body.replaceChildren(
+                    h('p', { class: 'be-help' }, '„Wstaw” dodaje bloki szablonu w miejscu kursora, „Zastąp” zamienia całą treść (można to cofnąć).'),
+                    list((t) => [
+                        h('button', { type: 'button', class: 'be-btn be-btn--secondary', 'aria-label': 'Wstaw szablon: ' + t.name, onClick: () => apply(t, 'insert') }, 'Wstaw'),
+                        h('button', { type: 'button', class: 'be-btn be-btn--primary', 'aria-label': 'Zastąp treść szablonem: ' + t.name, onClick: () => apply(t, 'replace') }, 'Zastąp')]));
+            } else {
+                const name = h('input', { type: 'text', class: 'be-input', id: `be-tpl-name-${n}`, maxlength: '120', placeholder: 'np. Szkolenie FEER — standardowy' });
+                const save = async () => {
+                    error.textContent = '';
+                    if (!name.value.trim()) { error.textContent = 'Podaj nazwę szablonu.'; name.focus(); return; }
+                    try {
+                        const json = await templatesRequest('', { method: 'POST', body: JSON.stringify({ type: T.type, name: name.value.trim(), data: { blocks: serialize(S.blocks), meta_description: S.meta } }) });
+                        msg.textContent = json.status || 'Zapisano szablon.';
+                        await load();
+                    } catch (e) { error.textContent = 'Nie udało się zapisać szablonu: ' + e.message; }
+                };
+                name.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); save(); } });
+                body.replaceChildren(
+                    T.store ? h('section', { class: 'be-tpl-save' },
+                        h('label', { for: name.id }, 'Zapisz bieżącą treść jako szablon'),
+                        h('div', { class: 'be-row' }, name, h('button', { type: 'button', class: 'be-btn be-btn--primary', onClick: save }, icon('floppy-disk'), ' Zapisz'))) : h('p', { class: 'be-muted' }, 'Zapisywanie szablonów nie jest dostępne w tej wersji.'),
+                    h('h3', {}, 'Zapisane szablony'),
+                    list((t) => [h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', 'aria-label': 'Usuń szablon: ' + t.name, onClick: async () => {
+                        if (!window.confirm(`Usunąć szablon „${t.name}”?`)) return;
+                        try { await templatesRequest('/' + t.id, { method: 'DELETE' }); msg.textContent = `Szablon „${t.name}” usunięty.`; await load(); } catch (e) { error.textContent = 'Nie udało się usunąć szablonu: ' + e.message; }
+                    } }, icon('trash'), ' Usuń')]));
+            }
+        };
+        const load = async () => {
+            try { templates = await templatesRequest('?type=' + encodeURIComponent(T.type)); } catch (e) { error.textContent = 'Nie udało się wczytać szablonów: ' + e.message; templates = []; }
+            draw();
+        };
+        dlg.append(
+            h('div', { class: 'be-dialog-head' }, h('h2', { id: `be-tpl-title-${n}` }, 'Szablony treści'),
+                h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': 'Zamknij okno', onClick: done }, icon('xmark'))),
+            tabs, h('div', { role: 'tabpanel', id: `be-tpl-panel-${n}`, class: 'be-mt' }, body), msg, error);
+        dlg.addEventListener('cancel', (e) => { e.preventDefault(); done(); });
+        document.body.append(dlg);
+        dlg.showModal();
+        draw();
+        load();
+    }
 
     function plural(n, one, few, many) {
         if (n === 1) return one;
@@ -1946,6 +2080,9 @@ function start(config) {
                 field(L.title, title),
                 field('Opis dla wyszukiwarek', meta, 'Jedno, dwa zdania o tym, czego dotyczy treść. Najlepiej do 160 znaków.'),
                 counter),
+            typeForm ? panelSection('Pola typu strony',
+                h('p', { class: 'be-help' }, 'Dane typu „' + config.typeFields.name + '” — pokazują się na stronie poza treścią.'),
+                h('button', { type: 'button', class: 'be-btn be-btn--secondary be-w-full', 'data-type-fields-open': true, 'aria-haspopup': 'dialog', onClick: openTypeFields }, icon('list-check'), ' Edytuj pola typu')) : null,
             panelSection('Informacje',
                 h('dl', { class: 'be-dl' },
                     h('dt', {}, L.typeLabel), h('dd', {}, config.page.type),
@@ -2576,7 +2713,10 @@ function start(config) {
             const res = await fetch(config.urls.save, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' },
-                body: JSON.stringify({ title: S.title.trim(), meta_description: S.meta, blocks: JSON.parse(JSON.stringify(S.blocks, (key, v) => (key === 'id' ? undefined : v))) }),
+                body: JSON.stringify({
+                    title: S.title.trim(), meta_description: S.meta, blocks: serialize(S.blocks),
+                    ...(typeForm ? { fields: typeFieldsData() } : {}),
+                }),
             });
             const json = await res.json().catch(() => ({}));
             if (res.status === 419) throw new Error('Sesja wygasła. Skopiuj zmiany i odśwież stronę.');

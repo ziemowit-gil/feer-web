@@ -50,6 +50,12 @@ class ContentTemplateController extends Controller
             'data' => ['present', 'array'],
         ]);
 
+        // Szablon z edytora blokowego: bloki czyścimy i dokładamy z nich HTML, żeby działał też w klasycznym edytorze.
+        if (is_array($data['data']['blocks'] ?? null)) {
+            $data['data']['blocks'] = \App\Support\BlockRenderer::normalize($data['data']['blocks']);
+            $data['data']['content'] = \App\Support\BlockRenderer::render($data['data']['blocks']);
+        }
+
         ContentTemplate::create($data);
 
         $savedName = $data['name'];

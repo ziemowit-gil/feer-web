@@ -11,6 +11,7 @@ use App\Models\SiteSetting;
 use App\Support\BlockRenderer;
 use App\Support\ClassicInserts;
 use App\Support\NewsList;
+use App\Support\PageTypeFields;
 use App\Support\ShortcodeParser;
 use App\Support\SubpageList;
 use Illuminate\Database\Eloquent\Model;
@@ -307,10 +308,16 @@ class BlockEditorController extends Controller
             ? route('admin.podstrony.bloki.update', $record)
             : route('admin.edytor-blokowy.update', [$type, $record->id]);
 
+        // Pola typu strony (wydarzenie, harmonogram, nabór…) — okno „Pola typu strony”, zapis razem z blokami.
+        $typeFieldsHtml = $record instanceof Page ? PageTypeFields::render($record) : null;
+
         return view('admin.pages.block-editor', [
+            'typeFieldsHtml' => $typeFieldsHtml,
             'editorConfig' => [
                 'target' => ['type' => $type, 'id' => $record->id],
-                'labels' => $target['labels'],
+                'labels' => $typeFieldsHtml !== null
+                    ? ['more' => 'Adres, menu, publikacja, dostęp i szablon są w klasycznym formularzu.'] + $target['labels']
+                    : $target['labels'],
                 'page' => [
                     'id' => $record->id,
                     'title' => $record->title,
@@ -322,6 +329,7 @@ class BlockEditorController extends Controller
                 // Działanie: płótno w układzie strony działania (kategoria, „Opis działania”, podgląd menu bocznego).
                 'layout' => $record instanceof Project ? $this->projectLayout($record) : null,
                 'imported' => $imported,
+                'typeFields' => $typeFieldsHtml !== null ? ['name' => PageTypeFields::typeName($record)] : null,
                 // Blok „Lista podstron": strony do wyboru źródła i wyboru ręcznego.
                 'subpages' => [
                     'pages' => SubpageList::pickerOptions(),
@@ -342,6 +350,12 @@ class BlockEditorController extends Controller
                     'upload' => route('admin.multimedia.upload-ajax'),
                     'links' => route('admin.edytor-blokowy.links'),
                     'shortcode' => route('admin.edytor-blokowy.shortcode'),
+                    // Szablony treści („Dodaj z szablonu / Zarządzaj szablonami" jak w formularzu) — strony i aktualności.
+                    'templates' => in_array($type, ['page', 'news'], true) ? [
+                        'type' => $type,
+                        'base' => url('admin/szablony'),
+                        'store' => \App\Support\Edition::allows('content_templates') ? route('admin.szablony.store') : null,
+                    ] : null,
                     // Import treści z Worda (jak „Import → DOCX" klasycznego edytora) — tylko w wersji z tą funkcją.
                     'docx' => \App\Support\Edition::allows('docx_import') ? route('admin.editor.docx.import') : null,
                 ],
@@ -361,8 +375,9 @@ class BlockEditorController extends Controller
         ]);
 
         $blocks = BlockRenderer::normalize($data['blocks']);
+        $typeColumns = $this->typeColumns($request, $record);
 
-        $record->update([
+        $record->update($typeColumns + [
             'title' => $data['title'],
             'meta_description' => $data['meta_description'] ?? null,
             'blocks' => $blocks,
@@ -374,6 +389,31 @@ class BlockEditorController extends Controller
             'blocks' => $blocks,
             'saved_at' => now()->format('H:i'),
         ]);
+    }
+
+    /**
+     * Pola typu strony z okna „Pola typu strony” (klucz `fields`, nazwy jak w formularzu):
+     * walidacja regułami typu i normalizacja jak w formularzu; zapisywane są tylko kolumny
+     * bieżącego typu. Bez klucza `fields` (np. strona bez pól typu) nic się nie zmienia.
+     *
+     * @return array<string, mixed>
+     */
+    private function typeColumns(Request $request, Model $record): array
+    {
+        if (! $record instanceof Page || ! $request->has('fields') || ! PageTypeFields::supports($record)) {
+            return [];
+        }
+
+        $input = (array) $request->input('fields', []);
+        $validator = validator($input, PageTypeFields::rules($record->type));
+        if ($validator->fails()) {
+            throw new HttpResponseException(response()->json([
+                'message' => 'Pola typu strony: '.$validator->errors()->first(),
+                'errors' => $validator->errors()->toArray(),
+            ], 422));
+        }
+
+        return PageTypeFields::columns($record->type, $validator->validated(), $input);
     }
 
     /**

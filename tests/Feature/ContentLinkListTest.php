@@ -260,6 +260,25 @@ class ContentLinkListTest extends TestCase
         $this->assertSame(\App\Support\Edition::allows('docx_import') ? route('admin.editor.docx.import') : null, $config['urls']['docx']);
     }
 
+    public function test_template_saved_from_block_editor_has_blocks_and_html(): void
+    {
+        $page = $this->page('Z szablonem');
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $html = $this->actingAs($admin)->get(route('admin.podstrony.bloki.edit', $page))->getContent();
+        preg_match("~data-config='([^']*)'~", $html, $m);
+        $this->assertSame('page', json_decode($m[1] ?? '', true)['urls']['templates']['type']);
+
+        $this->actingAs($admin)->postJson(route('admin.szablony.store'), [
+            'type' => 'page', 'name' => 'Szkolenie',
+            'data' => ['blocks' => [['type' => 'heading', 'attrs' => ['text' => 'Program', 'level' => 2]], ['type' => 'nieznany']], 'meta_description' => 'Opis'],
+        ])->assertOk();
+
+        $data = \App\Models\ContentTemplate::where('name', 'Szkolenie')->first()->data;
+        $this->assertCount(1, $data['blocks']);
+        $this->assertSame('<h2>Program</h2>', $data['content']);
+    }
+
     public function test_shortcodes_are_detected_and_removed_from_excerpts(): void
     {
         $this->assertTrue(ShortcodeParser::has('<p>[podstrony:poziomy=2]</p>'));
