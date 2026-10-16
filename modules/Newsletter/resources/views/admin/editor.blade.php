@@ -36,6 +36,11 @@
         #nl-news .item img { width: 72px; height: 54px; object-fit: cover; border-radius: 4px; }
         #nl-news .item button { min-height: 36px; padding: 6px 12px; border: 0; border-radius: 6px; background: var(--nl-brand-dark); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
         #nl-news .close { float: right; border: 0; background: none; font-size: 22px; cursor: pointer; }
+        /* wymagane wymiary obrazków przy każdym obrazku w bloku (tylko w edytorze, nie trafia do maila) */
+        #main-wysiwyg-area td.uploadzone { position: relative; }
+        .nl-imgsize { position: absolute; top: 6px; left: 6px; z-index: 5; pointer-events: none; padding: 3px 8px; border-radius: 4px; background: var(--nl-ink); color: #fff; font: 700 12px/1.4 Montserrat, Arial, sans-serif; white-space: nowrap; }
+        body.nl-hide-sizes .nl-imgsize { display: none; }
+        #nl-sizes[aria-pressed="true"] { background: var(--nl-brand); color: #fff; }
     </style>
 </head>
 <body class="mo-standalone">
@@ -50,6 +55,7 @@
     @else
     <button type="button" id="nl-insert-news" title="Wstaw aktualność z CMS jako blok artykułu">📰 Wstaw aktualność</button>
     @endif
+    <button type="button" id="nl-sizes" aria-pressed="true" title="Pokaż przy obrazkach wymagane wymiary w pikselach">📐 Wymiary obrazków</button>
     <button type="button" id="nl-preview" title="Podgląd w nowym oknie">Podgląd</button>
     <span id="nl-status" role="status" aria-live="polite"></span>
     <button type="button" id="nl-save" class="primary">Zapisz</button>
@@ -159,6 +165,34 @@ $(function () {
             var el = document.getElementById('nl-contrast'); if (issues.length) { el.textContent = '⚠ Kontrast poniżej 4,5:1: ' + issues.join(', '); el.classList.add('show'); } else { el.classList.remove('show'); el.textContent = ''; }
         } catch (e) {}
     }
+
+    // ── Wymagane wymiary obrazków: etykieta „szer. × wys. px” przy każdym obrazku ──
+    // Szerokość = atrybut width wyliczony przez Mosaico (zależy od opcji bloku), wysokość = atrybut height, gdy blok ją narzuca.
+    // Etykieta siedzi tylko w DOM edytora; eksport HTML Mosaico renderuje się z modelu, więc nie trafia do maila.
+    function imgSizeLabel(img) {
+        var w = parseInt(img.getAttribute('width'), 10); if (!w) return null;
+        var h = parseInt(img.getAttribute('height'), 10);
+        return h ? { text: w + ' × ' + h + ' px' } : { text: w + ' px szer. · wysokość dowolna' };
+    }
+    function refreshImgSizes() {
+        document.querySelectorAll('#main-wysiwyg-area td.uploadzone').forEach(function (zone) {
+            var img = zone.querySelector('img'), label = zone.querySelector(':scope > .nl-imgsize');
+            var info = img && imgSizeLabel(img);
+            if (!info) { if (label) label.remove(); return; }
+            if (!label) { label = document.createElement('span'); label.className = 'nl-imgsize'; label.setAttribute('aria-hidden', 'true'); zone.appendChild(label); }
+            if (label.textContent !== info.text) label.textContent = info.text;
+        });
+    }
+    var sizeTimer = null;
+    new MutationObserver(function () { clearTimeout(sizeTimer); sizeTimer = setTimeout(refreshImgSizes, 250); })
+        .observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['width', 'height', 'src'] });
+    var sizesBtn = document.getElementById('nl-sizes');
+    try { if (localStorage.getItem('nl-hide-sizes') === '1') { document.body.classList.add('nl-hide-sizes'); sizesBtn.setAttribute('aria-pressed', 'false'); } } catch (e) {}
+    sizesBtn.addEventListener('click', function () {
+        var hide = document.body.classList.toggle('nl-hide-sizes');
+        sizesBtn.setAttribute('aria-pressed', hide ? 'false' : 'true');
+        try { localStorage.setItem('nl-hide-sizes', hide ? '1' : '0'); } catch (e) {}
+    });
 
     // ── Wstawianie aktualności jako blok artykułu ────────────────────────────
     var modal = document.getElementById('nl-news'), list = document.getElementById('nl-list');

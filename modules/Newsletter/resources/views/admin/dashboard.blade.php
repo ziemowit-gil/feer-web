@@ -38,6 +38,43 @@
         </ul>
     </nav>
 
+    @if (! empty($imageSizes))
+    <section class="mb-6 rounded-md bg-white p-5" aria-labelledby="nl-img-sizes">
+        <h2 id="nl-img-sizes" class="text-base font-bold text-ink"><i class="fa-solid fa-ruler-combined mr-1 text-brand-dark" aria-hidden="true"></i> Wymiary obrazków w blokach Mosaico</h2>
+        <p class="mt-1 text-sm text-muted">Wgrywaj obrazy co najmniej w tym rozmiarze — najlepiej dwa razy większe (np. 1068 px zamiast 534 px), żeby były ostre na telefonach. Przy stałej wysokości obraz o innych proporcjach zostanie przycięty. Te same wymiary edytor pokazuje na każdym obrazku (przycisk „Wymiary obrazków”).</p>
+        @foreach ($imageSizes as $tpl => $blocks)
+            <details class="mt-4" @if ($loop->first) open @endif>
+                <summary class="cursor-pointer text-sm font-bold text-ink">Szablon {{ strtoupper($tpl) }}</summary>
+                <div class="mt-2 overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <caption class="sr-only">Wymagane wymiary obrazków w szablonie {{ strtoupper($tpl) }}</caption>
+                        <thead class="bg-gray-100 text-xs font-bold uppercase text-muted"><tr><th scope="col" class="px-3 py-2">Blok</th><th scope="col" class="px-3 py-2">Obraz</th><th scope="col" class="px-3 py-2">Wymiar (szer. × wys.)</th></tr></thead>
+                        <tbody>
+                        @foreach ($blocks as $block)
+                            @foreach ($block['rows'] as $row)
+                                @php
+                                    $w = implode(' lub ', $row['widths']);
+                                    $sizes = collect($row['heights'])->map(fn ($h) => "{$w} × {$h} px (stała wysokość)")->all();
+                                    if ($row['freeHeight']) { $sizes[] = "{$w} px szer. · wysokość dowolna"; }
+                                @endphp
+                                <tr class="border-t border-gray-100">
+                                    @if ($loop->first)<th scope="row" rowspan="{{ count($block['rows']) }}" class="px-3 py-2 align-top font-bold">{{ $block['label'] }}</th>@endif
+                                    <td class="px-3 py-2 align-top">{{ $row['fields'] ? 'każdy: ' . implode(', ', $row['fields']) : 'obraz' }}</td>
+                                    <td class="px-3 py-2 align-top">{!! implode('<br>', array_map('e', $sizes)) !!}
+                                        @if ($row['options'])<span class="block text-xs text-muted">Opcja „Rozmiar obrazu” w bloku zmienia szerokość: {{ implode(' / ', $row['options']) }} px.</span>@endif
+                                        @if (count($row['widths']) > 1)<span class="block text-xs text-muted">Węższa wersja, gdy blok ma marginesy boczne.</span>@endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        @endforeach
+    </section>
+    @endif
+
     @php $canSubscribers = auth()->user()->can('newsletter.subscribers'); $canReports = auth()->user()->can('newsletter.reports'); @endphp
     <dl class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5" role="group" aria-label="Kluczowe wskaźniki">
         @foreach ([

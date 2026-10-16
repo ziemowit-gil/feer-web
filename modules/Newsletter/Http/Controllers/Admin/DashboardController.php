@@ -10,6 +10,7 @@ use App\Models\Subscriber;
 use Illuminate\Support\Facades\DB;
 use Modules\Newsletter\Models\NewsletterCampaign;
 use Modules\Newsletter\Models\NewsletterDelivery;
+use Modules\Newsletter\Services\MosaicoImageSizes;
 
 /**
  * Pulpit newslettera: KPI, ostatnie i zaplanowane kampanie, wzrost bazy, dostarczalność.
@@ -54,6 +55,7 @@ class DashboardController extends Controller
         return view('newsletter::admin.dashboard', compact('active', 'pending', 'new30', 'lost30', 'recent', 'scheduled', 'avgOpen', 'avgClick', 'bounce', 'growth', 'queue', 'failedJobs') + [
             'deliverability' => $this->deliverability($site),
             'site' => $site,
+            'imageSizes' => collect(MosaicoImageSizes::templates())->map(fn ($name, $key) => MosaicoImageSizes::forTemplate($key))->filter()->all(),
         ]);
     }
 
