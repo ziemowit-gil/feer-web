@@ -25,7 +25,7 @@ class AttachmentController extends Controller
         $maxKb = $page->isBrandAssets() ? 102400 : 10240;
         $this->storeFor($request, $page, $maxKb);
 
-        return redirect()->route('admin.podstrony.edit', $page)->with('status', 'Plik został dodany.');
+        return redirect()->route('admin.podstrony.edit', [$page, 'klasyczny' => 1])->with('status', 'Plik został dodany.');
     }
 
     /** Dodaje załącznik do aktualności. */
@@ -33,7 +33,7 @@ class AttachmentController extends Controller
     {
         $this->storeFor($request, $news);
 
-        return redirect()->route('admin.newsy.edit', $news)->with('status', 'Plik został dodany.');
+        return redirect()->route('admin.newsy.edit', [$news, 'klasyczny' => 1])->with('status', 'Plik został dodany.');
     }
 
     /** Dodaje załącznik do ogłoszenia o pracę. */

@@ -99,7 +99,7 @@ class ProjectController extends Controller
             $image->copy($copy, 'image');
         }
 
-        return redirect()->route('admin.projekty.edit', $copy)->with('status', 'Utworzono kopię działania (szkic) — ustaw terminy i etapy nowej edycji.');
+        return redirect()->route('admin.projekty.edit', [$copy, 'klasyczny' => 1])->with('status', 'Utworzono kopię działania (szkic) — ustaw terminy i etapy nowej edycji.');
     }
 
     /** Opublikuj / cofnij publikację działania z widoku drzewa. */
@@ -187,6 +187,11 @@ class ProjectController extends Controller
     /** Wyświetla formularz edycji projektu. */
     public function edit(Project $project)
     {
+        // Domyślny edytor blokowy (Mój profil); ?klasyczny=1 wymusza formularz.
+        if (! request()->boolean('klasyczny') && auth()->user()->prefersBlockEditor()) {
+            return redirect()->route('admin.edytor-blokowy.edit', ['project', $project->id]);
+        }
+
         return view('admin.projects.form', [
             'project' => $project,
             'categories' => $this->categoriesForUser(),
@@ -207,7 +212,7 @@ class ProjectController extends Controller
 
         // Wersja robocza zostaje w edycji — redaktor zwykle wraca do niej od razu.
         if ($request->boolean('draft')) {
-            return redirect()->route('admin.projekty.edit', $project)->with('status', 'Zapisano wersję roboczą — działanie nie jest opublikowane.');
+            return redirect()->route('admin.projekty.edit', [$project, 'klasyczny' => 1])->with('status', 'Zapisano wersję roboczą — działanie nie jest opublikowane.');
         }
 
         return redirect()->route('admin.projekty.index')->with('status', 'Działanie zostało zaktualizowane.' . ContentA11yChecker::saveNotice($project->content));

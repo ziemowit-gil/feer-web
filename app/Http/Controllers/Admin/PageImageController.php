@@ -49,7 +49,7 @@ class PageImageController extends Controller
 
         $image->addMediaFromRequest('image')->toMediaCollection('image');
 
-        return redirect()->route('admin.podstrony.edit', $page)->with('status', 'Zdjęcie zostało dodane do galerii.');
+        return redirect()->route('admin.podstrony.edit', [$page, 'klasyczny' => 1])->with('status', 'Zdjęcie zostało dodane do galerii.');
     }
 
     /** Aktualizuje alt-tekst, podpis, pola slajdu i kolejność zdjęcia. */
@@ -68,7 +68,7 @@ class PageImageController extends Controller
             'order' => $data['order'] ?? $image->order,
         ] + self::slideData($data));
 
-        return redirect()->route('admin.podstrony.edit', $image->page)->with('status', 'Zdjęcie zostało zaktualizowane.');
+        return redirect()->route('admin.podstrony.edit', [$image->page, 'klasyczny' => 1])->with('status', 'Zdjęcie zostało zaktualizowane.');
     }
 
     /** Usuwa zdjęcie z galerii podstrony. */
@@ -77,6 +77,6 @@ class PageImageController extends Controller
         $page = $image->page;
         $image->delete();
 
-        return redirect()->route('admin.podstrony.edit', $page)->with('status', 'Zdjęcie zostało usunięte z galerii.');
+        return redirect()->route('admin.podstrony.edit', [$page, 'klasyczny' => 1])->with('status', 'Zdjęcie zostało usunięte z galerii.');
     }
 }

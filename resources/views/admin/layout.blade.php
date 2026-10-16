@@ -481,6 +481,8 @@
         </div>
     </div>
 
+    @include('admin.partials.default-editor-prompt')
+
     @stack('scripts')
     <script>requestAnimationFrame(function () { requestAnimationFrame(function () { document.documentElement.classList.add('admin-ready'); }); });</script>
 </body>

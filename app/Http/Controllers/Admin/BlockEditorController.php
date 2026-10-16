@@ -304,7 +304,8 @@ class BlockEditorController extends Controller
                 'urls' => [
                     'save' => $updateUrl,
                     'view' => $this->publicUrl($type, $record),
-                    'admin' => $record instanceof ListingSection ? route($target['admin_route']) : route($target['admin_route'], $record),
+                    // ?klasyczny=1 — bez tego domyślny edytor blokowy (Mój profil) odesłałby z formularza z powrotem tutaj.
+                    'admin' => $record instanceof ListingSection ? route($target['admin_route']) : route($target['admin_route'], $record).'?klasyczny=1',
                     'images' => route('admin.multimedia.images'),
                     'upload' => route('admin.multimedia.upload-ajax'),
                     'links' => route('admin.edytor-blokowy.links'),

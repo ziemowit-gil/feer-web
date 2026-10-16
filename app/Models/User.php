@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Revoltify\Subscriptionify\Concerns\InteractsWithSubscriptions;
 use Revoltify\Subscriptionify\Contracts\Subscribable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences'])]
+#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences', 'default_editor'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable implements Subscribable
 {
@@ -44,6 +44,15 @@ class User extends Authenticatable implements Subscribable
         self::ROLE_NEWSLETTER_EDITOR    => 'Redaktor newslettera',
         self::ROLE_NEWSLETTER_PUBLISHER => 'Wydawca newslettera',
         self::ROLE_EDITOR          => 'Edytor (grupy)',
+    ];
+
+    public const EDITOR_CLASSIC = 'classic';
+    public const EDITOR_BLOCKS  = 'blocks';
+
+    /** Domyślny edytor treści stron, aktualności i działań (Mój profil → Domyślny edytor). */
+    public const EDITORS = [
+        self::EDITOR_CLASSIC => 'Klasyczny (formularz)',
+        self::EDITOR_BLOCKS  => 'Blokowy',
     ];
 
     /**
@@ -249,5 +258,28 @@ class User extends Authenticatable implements Subscribable
             $q->where('role', self::ROLE_ADMIN)
                 ->orWhereHas('group', fn ($g) => $g->where('can_approve', true));
         });
+    }
+
+    /** Czy „Edytuj” ma otwierać edytor blokowy (wybrany w profilu i włączony w Ustawienia → Moduły). */
+    public function prefersBlockEditor(): bool
+    {
+        return $this->default_editor === self::EDITOR_BLOCKS
+            && SiteSetting::current()->isModuleEnabled('block_editor');
+    }
+
+    /** Czy zapytać o domyślny edytor: jeszcze go nie wybrał, a ma do czego (edytor blokowy + strony/aktualności/działania). */
+    public function needsDefaultEditorChoice(): bool
+    {
+        if (filled($this->default_editor) || ! SiteSetting::current()->isModuleEnabled('block_editor')) {
+            return false;
+        }
+
+        foreach (['pages', 'news', 'projects'] as $module) {
+            if ($this->canAccessModule($module)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

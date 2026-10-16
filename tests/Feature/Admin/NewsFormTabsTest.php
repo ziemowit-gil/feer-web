@@ -74,7 +74,7 @@ class NewsFormTabsTest extends TestCase
         $this->assertTrue(true);
 
         $this->actingAs($admin)->put(route('admin.newsy.update', $created), ['title' => 'Nowa 2'] + $payload + ['after' => 'stay'])
-            ->assertRedirect(route('admin.newsy.edit', $created));
+            ->assertRedirect(route('admin.newsy.edit', [$created, 'klasyczny' => 1]));
         $this->actingAs($admin)->put(route('admin.newsy.update', $created), ['title' => 'Nowa 3'] + $payload + ['after' => 'close'])
             ->assertRedirect(route('admin.newsy.index'));
         $this->actingAs($admin)->put(route('admin.newsy.update', $created), ['title' => 'Nowa 4'] + $payload)
@@ -99,7 +99,7 @@ class NewsFormTabsTest extends TestCase
 
         $this->actingAs($this->admin())
             ->put(route('admin.newsy.update', $news), ['title' => 'Szkic', 'published_at' => now()->format('Y-m-d\TH:i'), 'is_published' => '1', 'after' => 'draft'])
-            ->assertRedirect(route('admin.newsy.edit', $news))
+            ->assertRedirect(route('admin.newsy.edit', [$news, 'klasyczny' => 1]))
             ->assertSessionHas('status', fn ($status) => str_starts_with($status, 'Zapisano wersję roboczą'));
 
         $this->assertFalse((bool) $news->fresh()->is_published);

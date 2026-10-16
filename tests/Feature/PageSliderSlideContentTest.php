@@ -25,7 +25,7 @@ class PageSliderSlideContentTest extends TestCase
                 'button_label' => 'Kontakt',
                 'button_url' => '/kontakt',
             ])
-            ->assertRedirect(route('admin.podstrony.edit', $page));
+            ->assertRedirect(route('admin.podstrony.edit', [$page, 'klasyczny' => 1]));
 
         $this->assertSame(['Poznaj nas', 'Działamy od 2016 roku.', 'Kontakt', '/kontakt'],
             array_values($image->fresh()->only(['title', 'text', 'button_label', 'button_url'])));

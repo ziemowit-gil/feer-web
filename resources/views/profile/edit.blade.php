@@ -90,6 +90,21 @@
             </div>
             @endif
 
+            {{-- Domyślny edytor --}}
+            @if (\App\Models\SiteSetting::current()->isModuleEnabled('block_editor'))
+            <div id="domyslny-edytor" class="grid gap-8 scroll-mt-6 py-8 md:grid-cols-[220px_1fr]">
+                <div>
+                    <h2 class="text-base font-bold text-ink">Domyślny edytor</h2>
+                    <p class="mt-1 text-sm text-muted">Którym edytorem otwierać strony, aktualności i działania.</p>
+                </div>
+                <div class="rounded-lg border border-gray-200 bg-white p-6">
+                    <div class="max-w-md">
+                        @include('profile.partials.default-editor-form')
+                    </div>
+                </div>
+            </div>
+            @endif
+
             {{-- Powiadomienia --}}
             <div id="powiadomienia" class="grid gap-8 scroll-mt-6 py-8 md:grid-cols-[220px_1fr]">
                 <div>

@@ -551,6 +551,13 @@ class PageController extends Controller
             return $response;
         }
 
+        // Domyślny edytor blokowy (Mój profil) — tylko strony ze swobodną treścią; ?klasyczny=1 wymusza formularz.
+        if (! request()->boolean('klasyczny') && auth()->user()->prefersBlockEditor()
+            && ! $page->isAboutPerson()
+            && ! in_array($page->type, ['about', 'bip_move', 'wspolpraca', 'contact', 'redirect', 'menu_link', 'menu_heading'], true)) {
+            return redirect()->route('admin.podstrony.bloki.edit', $page);
+        }
+
         if ($page->isAboutPerson()) {
             return view('admin.pages.person-form', [
                 'page' => $page,
@@ -808,7 +815,7 @@ class PageController extends Controller
         $clone->is_locked = false;
         $clone->save();
 
-        return redirect()->route('admin.podstrony.edit', $clone)->with('status', "Strona została sklonowana jako „{$clone->title}”. Jest zapisana jako szkic.");
+        return redirect()->route('admin.podstrony.edit', [$clone, 'klasyczny' => 1])->with('status', "Strona została sklonowana jako „{$clone->title}”. Jest zapisana jako szkic.");
     }
 
     /**

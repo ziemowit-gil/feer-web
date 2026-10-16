@@ -147,13 +147,18 @@ class NewsController extends Controller
     private function afterSave(Request $request, News $news): \Illuminate\Http\RedirectResponse
     {
         return in_array($request->input('after'), ['stay', 'draft'], true)
-            ? redirect()->route('admin.newsy.edit', $news)
+            ? redirect()->route('admin.newsy.edit', [$news, 'klasyczny' => 1])
             : redirect()->route('admin.newsy.index');
     }
 
     /** Wyświetla formularz edycji aktualności. */
     public function edit(News $news)
     {
+        // Domyślny edytor blokowy (Mój profil); ?klasyczny=1 wymusza formularz.
+        if (! request()->boolean('klasyczny') && auth()->user()->prefersBlockEditor()) {
+            return redirect()->route('admin.edytor-blokowy.edit', ['news', $news->id]);
+        }
+
         return view('admin.news.form', [
             'news' => $news->load('tags'),
             'newsCategories' => NewsCategory::orderBy('order')->orderBy('name')->get(),
@@ -223,7 +228,7 @@ class NewsController extends Controller
         // Kopiujemy tagi; zdjęcie (media) trzeba wgrać ponownie — jak przy klonowaniu stron.
         $clone->tags()->sync($news->tags->pluck('id')->all());
 
-        return redirect()->route('admin.newsy.edit', $clone)
+        return redirect()->route('admin.newsy.edit', [$clone, 'klasyczny' => 1])
             ->with('status', "News został sklonowany jako „{$clone->title}”. Jest zapisany jako szkic (bez zdjęcia — dodaj je ponownie).");
     }
 
