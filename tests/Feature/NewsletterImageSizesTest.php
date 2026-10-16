@@ -109,4 +109,28 @@ class NewsletterImageSizesTest extends TestCase
         // Blok w mailu nadal ma limit 12.
         $this->assertCount(12, app(\Modules\Newsletter\Services\ContentFeeder::class)->items('news', ['limit' => 30, 'since' => 'all']));
     }
+
+    public function test_wstaw_z_cms_zwraca_aktywne_banery_graficzne(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        \App\Models\Banner::create(['name' => 'Zbiórka 1,5%', 'type' => 'image', 'image_path' => 'banners/a.png', 'image_alt' => 'Przekaż 1,5%', 'width' => 1200, 'height' => 400, 'link_url' => 'https://feer.org.pl/wsparcie', 'is_active' => true]);
+        \App\Models\Banner::create(['name' => 'Wyłączony', 'type' => 'image', 'image_path' => 'banners/b.png', 'is_active' => false]);
+        \App\Models\Banner::create(['name' => 'Wygasły', 'type' => 'image', 'image_path' => 'banners/c.png', 'is_active' => true, 'ends_at' => now()->subDay()]);
+        \App\Models\Banner::create(['name' => 'HTML', 'type' => 'html', 'html_content' => '<p>x</p>', 'is_active' => true]);
+
+        $items = $this->actingAs($admin)->getJson(route('admin.newsletter.content.items', ['source' => 'banners']))->assertOk()->json('items');
+
+        $this->assertCount(1, $items);
+        $this->assertSame('Zbiórka 1,5%', $items[0]['title']);
+        $this->assertSame('Przekaż 1,5%', $items[0]['image_alt']);
+        $this->assertSame('https://feer.org.pl/wsparcie', $items[0]['url']);
+        $this->assertStringEndsWith('/storage/banners/a.png', $items[0]['image']);
+        $this->assertStringContainsString('1200 × 400 px', $items[0]['category']);
+        $this->assertTrue($items[0]['banner']);
+
+        $this->actingAs($admin)->get(route('admin.newsletter.mosaico'));
+        $template = \Modules\Newsletter\Models\NewsletterTemplate::first();
+        $this->actingAs($admin)->get(route('admin.newsletter.szablony.editor', $template))->assertOk()
+            ->assertSee('<option value="banners">Banery</option>', false)->assertSee('function insertBanner', false);
+    }
 }

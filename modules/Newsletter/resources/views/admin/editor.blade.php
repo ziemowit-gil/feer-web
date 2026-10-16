@@ -89,7 +89,7 @@
     <input id="nl-subject" type="text" value="{{ $mailSubject }}" placeholder="Temat wiadomości" style="min-height:40px;min-width:260px;padding:6px 10px;border-radius:8px;border:2px solid #6B6B67;font:inherit;font-weight:400">
     <button type="button" id="nl-tags" title="Tagi do wstawienia w treści i w adresach przycisków"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H7a2 2 0 00-2 2v5a2 2 0 01-2 2 2 2 0 012 2v5a2 2 0 002 2h1M16 3h1a2 2 0 012 2v5a2 2 0 002 2 2 2 0 00-2 2v5a2 2 0 01-2 2h-1"/></svg>Tagi</button>
     @else
-    <button type="button" id="nl-insert-news" title="Wstaw aktualność z CMS jako blok artykułu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg><span class="nl-hide-narrow">Wstaw </span>aktualność</button>
+    <button type="button" id="nl-insert-news" title="Wstaw aktualność, wydarzenie, materiał albo baner z CMS"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg><span class="nl-hide-narrow">Wstaw z </span>CMS</button>
     @endif
     <button type="button" id="nl-sizes" aria-pressed="true" title="Pokaż przy obrazkach wymagane wymiary w pikselach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21L21 3"/><path d="M3 15v6h6M21 9V3h-6"/></svg>Wymiary<span class="nl-hide-narrow"> obrazków</span></button>
     <button type="button" id="nl-preview" title="Podgląd w nowym oknie"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Podgląd</button>
@@ -115,9 +115,9 @@
 <div id="nl-news" role="dialog" aria-modal="true" aria-labelledby="nl-news-h">
     <div class="box">
         <button type="button" class="close" aria-label="Zamknij" data-close>×</button>
-        <h2 id="nl-news-h">Wstaw aktualność</h2>
+        <h2 id="nl-news-h">Wstaw z CMS</h2>
         <div class="row">
-            <select id="nl-src" aria-label="Źródło">@foreach (\Modules\Newsletter\Services\ContentFeeder::SOURCES as $k => $l)<option value="{{ $k }}">{{ $l }}</option>@endforeach</select>
+            <select id="nl-src" aria-label="Źródło">@foreach (\Modules\Newsletter\Services\ContentFeeder::SOURCES as $k => $l)<option value="{{ $k }}">{{ $l }}</option>@endforeach<option value="banners">Banery</option></select>
             <select id="nl-cat" aria-label="Kategoria"><option value="">Wszystkie kategorie</option>@foreach ($newsCategories ?? [] as $slug => $name)<option value="{{ $slug }}">{{ $name }}</option>@endforeach</select>
             <select id="nl-sort" aria-label="Sortowanie"><option value="category" selected>Według kategorii</option><option value="newest">Od najnowszych</option><option value="oldest">Od najstarszych</option></select>
             <input id="nl-q" type="search" placeholder="Szukaj w tytule…" aria-label="Szukaj">
@@ -338,10 +338,13 @@ $(function () {
     var modal = document.getElementById('nl-news'), list = document.getElementById('nl-list');
     function loadNews() {
         var src = document.getElementById('nl-src').value, cat = document.getElementById('nl-cat').value, sort = document.getElementById('nl-sort').value, q = document.getElementById('nl-q').value;
+        var isBanner = src === 'banners';
+        document.getElementById('nl-cat').hidden = isBanner || src !== 'news'; document.getElementById('nl-sort').hidden = isBanner;
+        if (isBanner) sort = 'newest';
         list.innerHTML = '<p>Wczytywanie…</p>';
         fetch(contentUrl.replace('__SRC__', src) + '?limit=' + (sort === 'category' ? 30 : 12) + '&since=all&sort=' + encodeURIComponent(sort) + '&category=' + encodeURIComponent(cat) + '&q=' + encodeURIComponent(q), { headers: { 'Accept': 'application/json' } })
             .then(function (r) { return r.json(); }).then(function (d) {
-                list.innerHTML = d.items.length ? '' : '<p>Brak pozycji.</p>';
+                list.innerHTML = d.items.length ? '' : (isBanner ? '<p>Brak aktywnych banerów graficznych. Dodasz je w panelu: Bannery.</p>' : '<p>Brak pozycji.</p>');
                 var lastCat = null;
                 d.items.forEach(function (it) {
                     if (sort === 'category') {
@@ -350,12 +353,29 @@ $(function () {
                     }
                     var div = document.createElement('div'); div.className = 'item';
                     div.innerHTML = (it.image ? '<img src="' + it.image + '" alt="">' : '<span></span>') + '<div><strong>' + esc(it.title) + '</strong><br><small>' + esc((it.date || '') + (it.category ? ' · ' + it.category : '')) + '</small></div><button type="button">Wstaw</button>';
-                    div.querySelector('button').addEventListener('click', function () { insertArticle(it); modal.classList.remove('open'); });
+                    div.querySelector('button').addEventListener('click', function () { (it.banner ? insertBanner : insertArticle)(it); modal.classList.remove('open'); });
                     list.appendChild(div);
                 });
             }).catch(function () { list.innerHTML = '<p>Nie udało się pobrać listy.</p>'; });
     }
     function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    // Baner z modułu Bannery → blok „Obraz” (grafika, alt, link).
+    function insertBanner(it) {
+        if (!viewModel || !viewModel.blocks) return;
+        try {
+            var def = ko.utils.arrayFirst(ko.utils.unwrapObservable(viewModel.blocks), function (b) { return ko.utils.unwrapObservable(b.type) === 'imageBlock'; });
+            if (!def) { alert('W tym szablonie brak bloku „Obraz”.'); return; }
+            viewModel.addBlock(def);
+            var added = viewModel.selectedBlock();
+            var img = added && ko.utils.unwrapObservable(added.image);
+            if (img) {
+                if (ko.isObservable(img.src)) img.src(it.image);
+                if (ko.isObservable(img.alt)) img.alt(it.image_alt || it.title);
+                if (ko.isObservable(img.url) && it.url) img.url(it.url);
+            }
+            setStatus('Wstawiono baner: ' + it.title);
+        } catch (e) { console.error(e); alert('Nie udało się wstawić banera. Dodaj blok „Obraz” z zakładki Bloki i wgraj grafikę.'); }
+    }
     function insertArticle(it) {
         if (!viewModel || !viewModel.blocks) return;
         try {
