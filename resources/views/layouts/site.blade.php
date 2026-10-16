@@ -104,8 +104,14 @@
         @include('partials.preview-bar')
     @endif
 
-    @php $siteTemplate = $siteSettings->site_template ?? 'default'; @endphp
-    @hasSection('minimal_header')
+    @php
+        $siteTemplate = $siteSettings->site_template ?? 'default';
+        // Podgląd menu w panelu (Menu nawigacji → „Podgląd menu na stronie”): tylko nagłówek albo tylko stopka.
+        $menuPreview = trim($__env->yieldContent('menu_preview'));
+    @endphp
+    @if ($menuPreview === 'footer')
+        {{-- Podgląd stopki: bez nagłówka. --}}
+    @elseif ($__env->hasSection('minimal_header'))
         {{-- Uproszczony nagłówek (np. BIP): samo logo organizacji, bez górnego menu i paska. --}}
         @include('partials.header-minimal')
     @elseif ($siteTemplate === 'municipality')
@@ -143,6 +149,14 @@
         </header>
     @endif
 
+    @if ($menuPreview)
+        {{-- Wolne miejsce pod nagłówkiem, żeby rozwijane panele menu mieściły się w ramce podglądu. --}}
+        @if ($menuPreview === 'footer')
+            @include('partials.footer')
+        @else
+            <main id="main-content" style="min-height:26rem"></main>
+        @endif
+    @else
     <main id="main-content" class="flex-1">
         @hasSection('breadcrumbs')
             @yield('breadcrumbs')
@@ -198,6 +212,7 @@
             document.getElementById('push-prompt')?.classList.remove('hidden');
         }
     </script>
+    @endif
     <script>
         (function () {
             function checkAdminReload() {

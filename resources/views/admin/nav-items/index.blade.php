@@ -101,20 +101,19 @@
 
         {{-- ── Podgląd menu na stronie: prawdziwa strona w ramce, odświeżana po zmianach ── --}}
         @if (in_array($location, ['main', 'footer'], true))
-            <details class="mt-5 rounded-md bg-white" x-data @nav-preview-refresh.window="if ($refs.frame.src) $refs.frame.src = $refs.frame.dataset.src + '?podglad=' + Date.now()" @toggle="if ($el.open && ! $refs.frame.src) $refs.frame.src = $refs.frame.dataset.src">
+            <details class="mt-5 rounded-md bg-white" x-data @nav-preview-refresh.window="if ($refs.frame.src) $refs.frame.src = $refs.frame.dataset.src + ($refs.frame.dataset.src.includes('?') ? '&' : '?') + 'podglad=' + Date.now()" @toggle="if ($el.open && ! $refs.frame.src) $refs.frame.src = $refs.frame.dataset.src">
                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 text-sm font-bold text-ink [&::-webkit-details-marker]:hidden">
                     <span><i class="fa-solid fa-eye mr-1.5 text-brand-dark" aria-hidden="true"></i>Podgląd menu na stronie</span>
                     <i class="fa-solid fa-chevron-down text-xs text-muted" aria-hidden="true"></i>
                 </summary>
                 <div class="border-t border-gray-100 p-3">
                     <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
-                        <p class="text-xs text-ink">Strona główna serwisu — tak menu widzą odwiedzający. Po przeciągnięciu pozycji podgląd odświeża się sam.</p>
+                        <p class="text-xs text-ink">{{ $location === 'footer' ? 'Stopka serwisu' : 'Nagłówek serwisu' }} — tak menu widzą odwiedzający (najedź na pozycję, aby zobaczyć rozwijane panele). Po przeciągnięciu pozycji podgląd odświeża się sam.</p>
                         <button type="button" @click="$refs.frame.src = $refs.frame.dataset.src + (($refs.frame.dataset.src.includes('?') ? '&' : '?') + 'podglad=' + Date.now())"
                             class="inline-flex min-h-9 items-center gap-1.5 rounded-md bg-gray-100 px-3 text-xs font-bold text-ink hover:bg-brand-light"><i class="fa-solid fa-rotate" aria-hidden="true"></i> Odśwież</button>
                     </div>
-                    <iframe x-ref="frame" data-src="{{ route('home') }}" title="Podgląd strony głównej z menu"
-                        @load="@if ($location === 'footer') try { $el.contentWindow.scrollTo(0, $el.contentDocument.body.scrollHeight) } catch (e) {} @endif"
-                        class="h-[26rem] w-full rounded border border-gray-200 bg-white"></iframe>
+                    <iframe x-ref="frame" data-src="{{ Route::has('admin.pozycje-menu.podglad') ? route('admin.pozycje-menu.podglad', ['location' => $location]) : route('home') }}" title="{{ $location === 'footer' ? 'Podgląd stopki serwisu' : 'Podgląd nagłówka serwisu z menu' }}"
+                        class="w-full rounded border border-gray-200 bg-white" style="height:{{ $location === 'footer' ? '18rem' : '34rem' }}"></iframe>
                 </div>
             </details>
         @endif
