@@ -9,6 +9,7 @@ use App\Models\Page;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use App\PageTypes\PageTypeRegistry;
+use App\Support\PageTypeFields;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -553,8 +554,7 @@ class PageController extends Controller
 
         // Domyślny edytor blokowy (Mój profil) — tylko strony ze swobodną treścią; ?klasyczny=1 wymusza formularz.
         if (! request()->boolean('klasyczny') && auth()->user()->prefersBlockEditor()
-            && ! $page->isAboutPerson()
-            && ! in_array($page->type, ['about', 'bip_move', 'wspolpraca', 'contact', 'redirect', 'menu_link', 'menu_heading'], true)) {
+            && PageTypeFields::hasFreeContent($page)) {
             return redirect()->route('admin.podstrony.bloki.edit', $page);
         }
 
@@ -916,19 +916,6 @@ class PageController extends Controller
             'tiles.*.cols' => ['nullable', 'integer', 'in:1,2,3'],
             'tiles.*.is_negative' => ['nullable', 'boolean'],
             'tiles.*.strip' => ['nullable', 'boolean'],
-            'legacy_name' => ['nullable', 'string', 'max:255'],
-            'legacy_intro' => ['nullable', 'string', 'max:2000'],
-            'event_mode' => ['nullable', Rule::in(array_keys(Page::EVENT_MODES))],
-            'event_when' => ['nullable', 'string', 'max:255'],
-            'event_location' => ['nullable', 'string', 'max:255'],
-            'event_how_to_join' => ['nullable', 'string', 'max:2000'],
-            'event_registration_url' => ['nullable', 'url', 'max:255'],
-            'schedule_change_notice' => ['nullable', 'string', 'max:2000'],
-            'schedule_items' => ['nullable', 'array'],
-            'schedule_items.*.date' => ['nullable', 'string', 'max:255'],
-            'schedule_items.*.time' => ['nullable', 'string', 'max:255'],
-            'schedule_items.*.location' => ['nullable', 'string', 'max:255'],
-            'schedule_items.*.note' => ['nullable', 'string', 'max:500'],
             'about_motto' => ['nullable', 'string', 'max:1000'],
             'about_motto_author' => ['nullable', 'string', 'max:255'],
             'about_intro' => ['nullable', 'string', 'max:5000'],
@@ -988,22 +975,8 @@ class PageController extends Controller
             'layout_data.about_stats_asof' => ['nullable', 'string', 'max:60'],
             'layout_data.about_registry' => ['nullable', 'boolean'],
             'layout_data.about_help_tax' => ['nullable', 'boolean'],
-            'faq_intro' => ['nullable', 'string', 'max:2000'],
-            'faq_items' => ['nullable', 'array'],
-            'faq_items.*.question' => ['nullable', 'string', 'max:255'],
-            'faq_items.*.answer' => ['nullable', 'string', 'max:20000'],
             'bip_move_url' => ['nullable', 'url', 'max:255'],
             'bip_move_note' => ['nullable', 'string', 'max:2000'],
-            'training_manager_name' => ['nullable', 'string', 'max:255'],
-            'training_manager_title' => ['nullable', 'string', 'max:255'],
-            'training_ris_number' => ['nullable', 'string', 'max:100'],
-            'training_bur_number' => ['nullable', 'string', 'max:100'],
-            'training_extra_info' => ['nullable', 'string', 'max:10000'],
-            'training_bur_note' => ['nullable', 'string', 'max:2000'],
-            'brand_brandbook_url' => ['nullable', 'url', 'max:500'],
-            'brand_sections' => ['nullable', 'array'],
-            'brand_sections.*.title' => ['nullable', 'string', 'max:120'],
-            'brand_sections.*.key' => ['nullable', 'string', 'max:80'],
             'is_featured' => ['nullable', 'boolean'],
             'founder_image' => ['nullable', 'string', 'max:1000'],
             'founder_image_file' => ['nullable', 'image', 'max:8192'],
@@ -1059,8 +1032,9 @@ class PageController extends Controller
             'cooperation_data.form_title' => ['nullable', 'string', 'max:150'],
             'cooperation_data.form_subtitle' => ['nullable', 'string', 'max:400'],
             'cooperation_data.form_confirmation' => ['nullable', 'string', 'max:400'],
-            // Pola `type_data.*` deklarują klasy typów (app/PageTypes/Types) — scalone w rejestrze.
-        ] + PageTypeRegistry::rules());
+            // Pola `type_data.*` deklarują klasy typów (app/PageTypes/Types) — scalone w rejestrze;
+            // pola typów z własnymi kolumnami (wydarzenie, harmonogram, FAQ…) — PageTypeFields.
+        ] + PageTypeRegistry::rules() + PageTypeFields::allColumnRules());
 
         $data['parent_id'] = $data['parent_id'] ?: null;
         $data['project_id'] = ($data['project_id'] ?? null) ?: null;
@@ -1110,46 +1084,9 @@ class PageController extends Controller
             ? (trim((string) ($data['wip_message'] ?? '')) ?: null)
             : null;
 
-        // Event details only apply to event pages; clear them otherwise so a
-        // page switched back to "standard" doesn't keep stale event data.
-        if ($data['type'] !== 'event') {
-            $data['event_mode'] = null;
-            $data['event_when'] = null;
-            $data['event_location'] = null;
-            $data['event_how_to_join'] = null;
-            $data['event_registration_url'] = null;
-        }
-
-        // Schedule details only apply to schedule pages. Build the ordered list
-        // of entries, dropping rows where every field is empty, and clear
-        // everything when the page is not a schedule.
-        if ($data['type'] === 'schedule') {
-            $items = [];
-            foreach ((array) $request->input('schedule_items', []) as $row) {
-                $date = trim((string) ($row['date'] ?? ''));
-                $time = trim((string) ($row['time'] ?? ''));
-                $location = trim((string) ($row['location'] ?? ''));
-                $note = trim((string) ($row['note'] ?? ''));
-
-                if ($date === '' && $time === '' && $location === '' && $note === '') {
-                    continue;
-                }
-
-                $items[] = [
-                    'date' => $date,
-                    'time' => $time,
-                    'location' => $location,
-                    'note' => $note,
-                    'changed' => ! empty($row['changed']),
-                ];
-            }
-            $data['schedule_items'] = $items ?: null;
-            $data['schedule_pending'] = $request->boolean('schedule_pending');
-        } else {
-            $data['schedule_items'] = null;
-            $data['schedule_change_notice'] = null;
-            $data['schedule_pending'] = false;
-        }
+        // Pola typów z własnymi kolumnami (wydarzenie, harmonogram, FAQ, poprzednik, marka):
+        // porządkuje bieżący typ, czyści pozostałe — wspólne z edytorem blokowym.
+        $data = PageTypeFields::apply($data['type'], $data, $request->all());
 
         // "O organizacji" details only apply to about pages. Build the repeater
         // sections (dropping fully-empty rows) and clear everything otherwise.
@@ -1206,14 +1143,6 @@ class PageController extends Controller
             $data['about_press_intro'] = null;
             $data['about_labels'] = null;
             $data['about_press'] = null;
-        }
-
-        // FAQ: lista par pytanie/odpowiedź (puste wiersze pomijane); poza typem FAQ czyścimy.
-        if ($data['type'] === 'faq') {
-            $data['faq_items'] = $this->compactRows($request->input('faq_items', []), ['question', 'answer']);
-        } else {
-            $data['faq_intro'] = null;
-            $data['faq_items'] = null;
         }
 
         // Bip-Move: komunikat o przeniesieniu do BIP; poza typem czyścimy pola.
@@ -1353,36 +1282,6 @@ class PageController extends Controller
         $data['founder_image_alt'] = trim((string) ($data['founder_image_alt'] ?? '')) ?: null;
         unset($data['founder_image_file'], $data['remove_founder_image']);
 
-        // „Prezentacja tego, co było": nazwa poprzednika + wstęp; poza typem czyścimy.
-        if ($data['type'] === 'legacy') {
-            $data['legacy_name'] = trim((string) ($data['legacy_name'] ?? '')) ?: null;
-            $data['legacy_intro'] = trim((string) ($data['legacy_intro'] ?? '')) ?: null;
-        } else {
-            $data['legacy_name'] = null;
-            $data['legacy_intro'] = null;
-        }
-
-        // Marka — identyfikacja wizualna: brandbook URL + sekcje; poza typem czyścimy.
-        if ($data['type'] === 'brand_assets') {
-            $data['brand_brandbook_url'] = trim((string) ($data['brand_brandbook_url'] ?? '')) ?: null;
-            $sections = [];
-            foreach ((array) $request->input('brand_sections', []) as $row) {
-                $title = trim((string) ($row['title'] ?? ''));
-                $key   = trim((string) ($row['key'] ?? ''));
-                if ($title === '') {
-                    continue;
-                }
-                if ($key === '') {
-                    $key = \Illuminate\Support\Str::slug($title);
-                }
-                $sections[] = ['key' => $key, 'title' => $title];
-            }
-            $data['brand_sections'] = $sections ?: null;
-        } else {
-            $data['brand_brandbook_url'] = null;
-            $data['brand_sections'] = null;
-        }
-
         if ($data['type'] === 'wspolpraca') {
             $cd = (array) $request->input('cooperation_data', []);
             $sectors = [];
@@ -1474,18 +1373,7 @@ class PageController extends Controller
      */
     private function compactRows($rows, array $keys): ?array
     {
-        $out = [];
-        foreach ((array) $rows as $row) {
-            $clean = [];
-            foreach ($keys as $key) {
-                $clean[$key] = trim((string) ($row[$key] ?? ''));
-            }
-            if (implode('', $clean) !== '') {
-                $out[] = $clean;
-            }
-        }
-
-        return $out ?: null;
+        return PageTypeFields::compactRows($rows, $keys);
     }
 
     /**

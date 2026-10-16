@@ -51,8 +51,9 @@
     };
 @endphp
 
+{{-- $onlyType (edytor blokowy, okno „Pola typu strony”): tylko sekcja tego typu. --}}
 @foreach (\App\PageTypes\PageTypeRegistry::all() as $pageType)
-    @if ($pageType->adminView())
+    @if ($pageType->adminView() && (! isset($onlyType) || $pageType->key() === $onlyType))
         @include($pageType->adminView())
     @endif
 @endforeach
@@ -60,8 +61,11 @@
 <script>
     // Repeater dla pól type_data: klonuje <template>, podstawia kolejny indeks,
     // usuwa wiersze. Bez przeliczania nazw — kolejność w JSON = kolejność w DOM.
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('[data-td-repeater]').forEach(function (rep) {
+    // Edytor blokowy wstawia sekcję po załadowaniu strony — wtedy sam wywołuje window.initTdRepeaters.
+    window.initTdRepeaters = function (root) {
+        (root || document).querySelectorAll('[data-td-repeater]').forEach(function (rep) {
+            if (rep.dataset.tdReady) return;
+            rep.dataset.tdReady = '1';
             var rows = rep.querySelector('[data-td-rows]');
             var template = rep.querySelector('[data-td-template]');
             var addBtn = rep.querySelector('[data-td-add]');
@@ -79,5 +83,6 @@
                 if (btn && rep.contains(btn)) { btn.closest('[data-td-row]')?.remove(); addBtn.focus(); }
             });
         });
-    });
+    };
+    document.addEventListener('DOMContentLoaded', function () { window.initTdRepeaters(document); });
 </script>
