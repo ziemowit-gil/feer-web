@@ -199,8 +199,8 @@ class ContentFeeder
         }
 
         return $q->take($take)->get()->map(fn (News $n) => new FeedItem(
-            source: 'news', id: (int) $n->id, title: (string) $n->title,
-            excerpt: trim(strip_tags((string) ($n->excerpt ?: Str::limit(strip_tags((string) $n->content), 200)))),
+            source: 'news', id: (int) $n->id, title: self::plain($n->title),
+            excerpt: self::plain($n->excerpt) ?: self::plain($n->content, 200),
             url: $this->absolute(route('news.show', ['news' => $n->slug], false)),
             imageUrl: $n->imageUrlOrDefault(), imageAlt: (string) ($n->image_alt ?: $n->title),
             publishedAt: $n->published_at, category: $n->category?->name, categorySlug: $n->category?->slug,
@@ -217,8 +217,8 @@ class ContentFeeder
             ->where('starts_at', '>=', now()->startOfDay())->orderBy('starts_at');
 
         return $q->take($take)->get()->map(fn (Event $e) => new FeedItem(
-            source: 'events', id: (int) $e->id, title: (string) $e->title,
-            excerpt: trim(strip_tags((string) ($e->lead ?: Str::limit(strip_tags((string) $e->description), 200)))) . ($e->starts_at ? ' (' . $e->starts_at->format('d.m.Y, H:i') . ')' : ''),
+            source: 'events', id: (int) $e->id, title: self::plain($e->title),
+            excerpt: (self::plain($e->lead) ?: self::plain($e->description, 200)) . ($e->starts_at ? ' (' . $e->starts_at->format('d.m.Y, H:i') . ')' : ''),
             url: $this->absolute(route('events.show', ['event' => $e->slug], false)),
             imageUrl: method_exists($e, 'getFirstMediaUrl') ? ($e->getFirstMediaUrl('image') ?: null) : null, imageAlt: (string) $e->title,
             publishedAt: $e->starts_at, category: $e->type ? Str::ucfirst((string) $e->type) : null, topic: 'events',
@@ -237,8 +237,8 @@ class ContentFeeder
             }
 
             return $q->take($take)->get()->map(fn ($a) => new FeedItem(
-                source: 'blog', id: (int) $a->id, title: (string) $a->title,
-                excerpt: trim(strip_tags((string) ($a->excerpt ?: Str::limit(strip_tags((string) $a->body), 200)))),
+                source: 'blog', id: (int) $a->id, title: self::plain($a->title),
+                excerpt: self::plain($a->excerpt) ?: self::plain($a->body, 200),
                 url: $this->absolute(route('blog.show', ['article' => $a->slug], false)),
                 imageUrl: null, imageAlt: (string) $a->title, publishedAt: $a->published_at, category: 'Wiem FEER', topic: 'blog',
             ));
@@ -261,8 +261,8 @@ class ContentFeeder
         }
 
         return $q->take($take)->get()->map(fn (EducationalMaterial $m) => new FeedItem(
-            source: 'materials', id: (int) $m->id, title: (string) $m->title,
-            excerpt: trim(strip_tags((string) $m->description)),
+            source: 'materials', id: (int) $m->id, title: self::plain($m->title),
+            excerpt: self::plain($m->description),
             url: $this->absolute(route('materials.index', [], false) . '#material-' . $m->id),
             imageUrl: null, imageAlt: (string) $m->title, publishedAt: $m->created_at,
             category: $m->category ? (string) $m->category : null, topic: 'materials',
@@ -328,5 +328,19 @@ class ContentFeeder
     private function absolute(string $path): string
     {
         return preg_match('#^https?://#', $path) ? $path : rtrim((string) config('app.url'), '/') . '/' . ltrim($path, '/');
+    }
+
+    /**
+     * Zwykły tekst z HTML treści: bez znaczników, z rozkodowanymi encjami (&ndash; → –, &oacute; → ó)
+     * i jedną spacją między słowami; skracanie dopiero po rozkodowaniu, żeby nie ciąć encji w połowie.
+     */
+    public static function plain(?string $html, ?int $limit = null): string
+    {
+        $text = (string) $html;
+        $text = preg_replace('#<(br|/p|/div|/li|/h[1-6])\b[^>]*>#i', ' ', $text) ?? $text;
+        $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = trim((string) preg_replace('/[\s\x{00A0}]+/u', ' ', $text));
+
+        return $limit ? Str::limit($text, $limit) : $text;
     }
 }
