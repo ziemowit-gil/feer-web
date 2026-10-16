@@ -2,8 +2,8 @@
 
 @section('title', 'Wesprzyj nas — ' . $siteSettings->site_name)
 @section('meta_description', 'Wesprzyj działania ' . $siteSettings->siteNameGenitive() . '.')
-@if ($siteSettings->supportImageUrl())
-    @section('og_image', $siteSettings->supportImageUrl())
+@if ($siteSettings->supportHeroPhotoUrl())
+    @section('og_image', $siteSettings->supportHeroPhotoUrl())
 @endif
 
 @section('breadcrumbs')
@@ -33,14 +33,14 @@
     @endphp
 
     {{-- ══ Nagłówek: zachęta + miejsce na zdjęcie (z prawej); zbiórka pod tekstem ══ --}}
-    @php $heroPhoto = $siteSettings->supportImageUrl(); $isAdminView = auth()->check() && auth()->user()->isAdmin(); @endphp
+    @php $heroPhoto = $siteSettings->supportHeroPhotoUrl(); $isAdminView = auth()->check() && auth()->user()->isAdmin(); @endphp
     <style>
         .sp-hero { display: grid; gap: 2.5rem; align-items: center; max-width: 72rem; margin: 0 auto; padding: 3rem 1rem; }
         @media (min-width: 1024px) { .sp-hero.has-photo { grid-template-columns: minmax(0, 1fr) 26rem; } }
-        .sp-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; border: 3px solid #1d1d1a; }
-        .sp-photo-empty { display: flex; aspect-ratio: 4 / 3; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; padding: 1.5rem; border: 3px dashed #4b5563; border-radius: .5rem; color: #1d1d1a; text-align: center; font-size: .9rem; }
+        .sp-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; }
+        .sp-photo-empty { display: flex; aspect-ratio: 4 / 3; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; padding: 1.5rem; border-radius: .5rem; background: #e8f0ff; color: #1d1d1a; text-align: center; font-size: .9rem; }
         .sp-photo-empty i { font-size: 2rem; color: var(--color-brand-dark); }
-        .sp-fund { margin-top: 2rem; padding: 1.5rem; border: 2px solid #1d1d1a; border-radius: .5rem; background: #fff; }
+        .sp-fund { margin-top: 2rem; padding: 1.5rem; border-radius: .5rem; background: #fff; }
     </style>
     <section id="wesprzyj-hero" class="bg-gray-50">
         <div class="sp-hero {{ ($heroPhoto || $isAdminView) ? 'has-photo' : '' }}">
@@ -52,11 +52,6 @@
                     <a href="{{ route('donation.show') }}" class="{{ $btnPrimary }}">Wpłać darowiznę online</a>
                     <a href="#sposoby" class="{{ $btnGhost }}">Zobacz inne sposoby pomocy</a>
                 </div>
-                <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink" role="list" aria-label="Dlaczego możesz nam zaufać">
-                    <li>Bezpieczna płatność (Przelewy24)</li>
-                    @if ($siteSettings->krs_number)<li>KRS {{ $siteSettings->krs_number }}</li>@endif
-                    <li>Możesz wpłacić anonimowo</li>
-                </ul>
 
                 @if ($hasFundraiser)
                     <div class="sp-fund">

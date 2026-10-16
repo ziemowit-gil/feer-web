@@ -2,8 +2,8 @@
 
 @section('title', 'Wesprzyj nas — ' . $siteSettings->site_name)
 @section('meta_description', 'Wesprzyj działania ' . $siteSettings->siteNameGenitive() . '.')
-@if ($siteSettings->supportImageUrl())
-    @section('og_image', $siteSettings->supportImageUrl())
+@if ($siteSettings->supportHeroPhotoUrl())
+    @section('og_image', $siteSettings->supportHeroPhotoUrl())
 @endif
 
 @section('breadcrumbs')
@@ -18,7 +18,7 @@
     @if ($feer)
         {{-- Szablon FEER: jasny, płaski nagłówek (ink na szarym 16:1), przyciski i sygnały zaufania jako zwykły tekst --}}
         <section id="wesprzyj-hero" class="mb-14 bg-gray-50">
-            <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 md:py-16 {{ $siteSettings->supportImageUrl() ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
+            <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 md:py-16 {{ $siteSettings->supportHeroPhotoUrl() ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : '' }}">
                 <div class="min-w-0">
                     <p class="mb-3 text-xs font-bold uppercase tracking-widest text-brand-dark">{{ $siteSettings->supportText('support_hero_badge') }}</p>
                     <h1 class="max-w-2xl text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $siteSettings->supportText('support_hero_title') }}</h1>
@@ -27,21 +27,16 @@
                         <a href="{{ route('donation.show') }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Wpłać darowiznę online</a>
                         <a href="#sposoby" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-gray-200 px-5 text-sm font-bold text-ink transition hover:bg-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">Zobacz inne sposoby pomocy</a>
                     </div>
-                    <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink" role="list" aria-label="Dlaczego możesz nam zaufać">
-                        <li>Bezpieczna płatność (Przelewy24)</li>
-                        @if ($siteSettings->krs_number)<li>KRS {{ $siteSettings->krs_number }}</li>@endif
-                        <li>Możesz wpłacić anonimowo</li>
-                    </ul>
                 </div>
-                @if ($siteSettings->supportImageUrl())
-                    <img src="{{ $siteSettings->supportImageUrl() }}" alt="" class="aspect-[4/3] w-full rounded-lg object-cover">
+                @if ($siteSettings->supportHeroPhotoUrl())
+                    <img src="{{ $siteSettings->supportHeroPhotoUrl() }}" alt="" class="aspect-[4/3] w-full rounded-lg object-cover">
                 @endif
             </div>
         </section>
     @else
     <section id="wesprzyj-hero" class="relative mb-14 flex min-h-[14rem] items-end overflow-hidden bg-brand bg-linear-to-br from-brand to-brand-dark text-white md:min-h-[17rem]"
-        @if ($siteSettings->supportImageUrl())
-            style="background-image: linear-gradient(0deg, rgba(0,0,0,.7), rgba(0,0,0,.2)), url('{{ $siteSettings->supportImageUrl() }}'); background-size: cover; background-position: center;"
+        @if ($siteSettings->supportHeroPhotoUrl())
+            style="background-image: linear-gradient(0deg, rgba(0,0,0,.7), rgba(0,0,0,.2)), url('{{ $siteSettings->supportHeroPhotoUrl() }}'); background-size: cover; background-position: center;"
         @endif>
         <div class="relative mx-auto w-full max-w-5xl px-4 py-12 md:py-16">
             <span class="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-bold backdrop-blur">
@@ -56,13 +51,6 @@
             <a href="#sposoby" class="mt-6 inline-flex min-h-11 items-center gap-2 rounded border-2 border-white/80 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
                 Zobacz inne sposoby pomocy <i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i>
             </a>
-            <ul class="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/90" role="list" aria-label="Dlaczego możesz nam zaufać">
-                <li class="inline-flex items-center gap-1.5"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Bezpieczna płatność (Przelewy24)</li>
-                @if ($siteSettings->krs_number)
-                    <li class="inline-flex items-center gap-1.5"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i> KRS {{ $siteSettings->krs_number }}</li>
-                @endif
-                <li class="inline-flex items-center gap-1.5"><i class="fa-solid fa-user-lock" aria-hidden="true"></i> Możesz wpłacić anonimowo</li>
-            </ul>
         </div>
     </section>
     @endif

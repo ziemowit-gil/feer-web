@@ -2124,6 +2124,26 @@ class SiteSetting extends Model implements HasMedia
         return $this->getFirstMediaUrl('support_image') ?: null;
     }
 
+    /**
+     * Zdjęcie do nagłówka strony „Wesprzyj nas”: własne zdjęcie wsparcia, a gdy go brak —
+     * zdjęcie zastępcze z serwisu (pierwsze z galerii wsparcia, zdjęcie misji, slajd strony głównej).
+     */
+    public function supportHeroPhotoUrl(): ?string
+    {
+        if ($url = $this->supportImageUrl()) {
+            return $url;
+        }
+        if ($first = $this->supportGalleryImages()->first()) {
+            return $first->getUrl();
+        }
+        if ($url = $this->missionSlideImageUrl()) {
+            return $url;
+        }
+        $slide = HeroSlide::query()->orderBy('order')->get()->first(fn ($s) => $s->hasMedia('image'));
+
+        return $slide?->getFirstMediaUrl('image') ?: null;
+    }
+
     public function brandColorDark(): string
     {
         return $this->shade($this->brand_color, -0.25);

@@ -40,8 +40,8 @@
 @section('content')
 <div class="{{ ($siteSettings->site_template ?? 'default') === 'feer' ? 'feer-flat' : '' }}">
 <div class="mx-auto max-w-[1200px] px-4 py-10 lg:py-14">
-    {{-- ── Nagłówek: korzyść darczyńcy, krótki opis i sygnały zaufania ─────── --}}
-    <header class="mb-10 grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-end">
+    {{-- ── Nagłówek: korzyść darczyńcy i krótki opis ─────── --}}
+    <header class="mb-10">
         <div>
             <p class="mb-3 inline-flex items-center gap-2 rounded-full bg-brand-light px-3 py-1 text-xs font-bold uppercase tracking-wide text-brand">
                 <i class="fa-solid fa-heart" aria-hidden="true"></i> Darowizna jednorazowa
@@ -53,27 +53,6 @@
                 @endforeach
             </div>
         </div>
-
-        <ul class="grid gap-3 text-sm text-ink sm:grid-cols-3 lg:grid-cols-1" role="list" aria-label="Dlaczego możesz nam zaufać">
-            <li class="flex items-start gap-3 rounded-2xl border border-gray-200 bg-white p-4">
-                <i class="fa-solid fa-shield-halved mt-0.5 text-lg text-brand" aria-hidden="true"></i>
-                <span><strong class="block">Bezpieczna płatność</strong>Obsługuje ją Przelewy24 — BLIK, szybki przelew lub karta.</span>
-            </li>
-            <li class="flex items-start gap-3 rounded-2xl border border-gray-200 bg-white p-4">
-                <i class="fa-solid fa-scale-balanced mt-0.5 text-lg text-brand" aria-hidden="true"></i>
-                <span>
-                    <strong class="block">Organizacja pozarządowa</strong>
-                    @if ($siteSettings->krs_number) KRS {{ $siteSettings->krs_number }}@endif
-                    @if ($siteSettings->krs_number && $siteSettings->nip_number), @endif
-                    @if ($siteSettings->nip_number) NIP {{ $siteSettings->nip_number }}@endif
-                    @unless ($siteSettings->krs_number || $siteSettings->nip_number) Dane rejestrowe znajdziesz w stopce strony. @endunless
-                </span>
-            </li>
-            <li class="flex items-start gap-3 rounded-2xl border border-gray-200 bg-white p-4">
-                <i class="fa-solid fa-user-lock mt-0.5 text-lg text-brand" aria-hidden="true"></i>
-                <span><strong class="block">Ty decydujesz o widoczności</strong>Możesz wpłacić anonimowo — imię na liście wpłat jest opcjonalne.</span>
-            </li>
-        </ul>
     </header>
 
     <div class="grid gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
@@ -215,7 +194,7 @@
                         <legend class="{{ $display }} mb-3 flex items-center gap-3 text-base text-ink"><span class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-brand text-sm text-white" aria-hidden="true">3</span> Zgody</legend>
                         <div class="space-y-3 text-xs leading-relaxed text-muted">
                             <p>
-                                Administratorem danych osobowych jest {{ $siteSettings->site_name }}@if ($siteSettings->contact_address) z siedzibą: {{ $siteSettings->contact_address }}, {{ $siteSettings->contact_city }}@endif{{ $siteSettings->krs_number ? ', KRS: ' . $siteSettings->krs_number : '' }}.
+                                Administratorem danych osobowych jest {{ $siteSettings->site_name }}@if ($siteSettings->contact_address) z siedzibą: {{ $siteSettings->contact_address }}, {{ $siteSettings->contact_city }}@endif.
                                 Dane przetwarzamy w celu przyjęcia i rozliczenia darowizny oraz — jeśli wyrazisz zgodę — wysyłki newslettera.
                             </p>
                         </div>
