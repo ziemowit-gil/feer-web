@@ -38,7 +38,8 @@ class SiteController extends Controller
     {
         $data = $this->validated($request);
         $data['parent_site_id'] = SiteSetting::current()->id;
-        $data['site_template'] = SiteSetting::current()->site_template;
+        // Szablon wybrany w formularzu; bez wyboru — jak witryna nadrzędna.
+        $data['site_template'] = $data['site_template'] ?? SiteSetting::current()->site_template;
         // Kolor marki jest opcjonalny w formularzu, ale kolumna jest NOT NULL: pusta wartość oznacza
         // „dziedzicz od witryny nadrzędnej” (a gdy i ona go nie ma — kolor domyślny), nie NULL.
         $data['brand_color'] = $data['brand_color'] ?? (SiteSetting::current()->brand_color ?: SiteSetting::DEFAULT_BRAND_COLOR);
@@ -75,6 +76,9 @@ class SiteController extends Controller
         // Puste pole nie kasuje koloru (kolumna NOT NULL) — zostaje dotychczasowy.
         if (blank($data['brand_color'] ?? null)) {
             unset($data['brand_color']);
+        }
+        if (blank($data['site_template'] ?? null)) {
+            unset($data['site_template']);
         }
         // Główna witryna zostaje zwykłą witryną — rodzaj „BIP" mają tylko sub-witryny.
         if ($site->parent_site_id === null) {
@@ -141,6 +145,21 @@ class SiteController extends Controller
                 },
             ],
             'site_name' => ['required', 'string', 'max:255'],
+            'site_template' => [
+                'nullable', Rule::in(array_keys(SiteSetting::SITE_TEMPLATES)),
+                // Jak w Ustawieniach → Szablon: bez szablonów zablokowanych dla instalacji i płatnych w wersji darmowej
+                // (obecny szablon edytowanej witryny pozostaje dozwolony).
+                function ($attribute, $value, $fail) use ($site) {
+                    if ($value === $site?->site_template) {
+                        return;
+                    }
+                    if (in_array($value, SiteSetting::current()->blocked_options['site_templates'] ?? [], true)) {
+                        $fail('Ten szablon jest wyłączony w tej instalacji.');
+                    } elseif (! \App\Support\Edition::allowsTemplate((string) $value)) {
+                        $fail('Ten szablon jest dostępny w wersji płatnej weCMS.');
+                    }
+                },
+            ],
             'tagline' => ['nullable', 'string', 'max:255'],
             'brand_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'slug' => [

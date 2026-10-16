@@ -50,6 +50,25 @@
             @error('brand_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        {{-- Szablon witryny: domyślnie jak witryna nadrzędna; lista jak w Ustawieniach → Szablon (blokady instalacji, wersja płatna). --}}
+        <div>
+            @php
+                $tplCurrent = old('site_template', $site->exists ? ($site->site_template ?? 'default') : (\App\Models\SiteSetting::current()->site_template ?? 'default'));
+                $tplBlocked = \App\Models\SiteSetting::current()->blocked_options['site_templates'] ?? [];
+            @endphp
+            <label for="site_template" class="mb-1 block text-sm font-bold">Szablon witryny</label>
+            <select id="site_template" name="site_template" aria-describedby="site_template_help"
+                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                @foreach (\App\Models\SiteSetting::SITE_TEMPLATES as $tplValue => $tplLabel)
+                    @continue(in_array($tplValue, $tplBlocked, true) && $tplValue !== $tplCurrent)
+                    @php $tplLocked = ! \App\Support\Edition::allowsTemplate($tplValue) && $tplValue !== ($site->site_template ?? null); @endphp
+                    <option value="{{ $tplValue }}" @selected($tplCurrent === $tplValue) @disabled($tplLocked)>{{ $tplLabel }}{{ $tplLocked ? ' — wersja płatna' : '' }}</option>
+                @endforeach
+            </select>
+            <p id="site_template_help" class="mt-1 text-xs text-muted">{{ $site->exists ? 'Zmiana szablonu nie usuwa treści witryny. Szczegóły szablonu ustawisz po przełączeniu się na witrynę (Ustawienia → Szablon).' : 'Domyślnie taki jak witryny nadrzędnej. Szczegóły szablonu ustawisz po przełączeniu się na nową witrynę (Ustawienia → Szablon).' }}</p>
+            @error('site_template') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
         @if (! $site->exists || $site->parent_site_id)
             @php
                 $siteKind = old('site_kind', $site->site_kind ?? 'standard');
