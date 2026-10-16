@@ -198,6 +198,12 @@ function start(config) {
         form: { as: 'shortcode', title: 'Formularz', icon: 'rectangle-list', cat: 'modules', desc: 'Formularz z modułu Formularze.', keywords: ['formularz', 'zapisy', 'zgłoszenie'], hidden: !(CI.forms || []).length, create: () => ({ code: firstCode(CI.forms, (v) => '[formularz:' + v + ']') }) },
         tileset: { as: 'shortcode', title: 'Zestaw kafelków', icon: 'table-cells-large', cat: 'modules', desc: 'Kafelki z kreatora — wybierz istniejący zestaw albo utwórz nowy.', keywords: ['kafelki', 'kafle', 'zestaw'], create: () => ({ code: firstCode(CI.tileSets, (v) => '[kafelki-zestaw:' + v + ']') }) },
         contentblock: { as: 'shortcode', title: 'Blok z kreatora', icon: 'cubes', cat: 'modules', desc: 'Przyciski CTA, akordeon, ramka informacyjna albo cennik z kreatora bloków.', keywords: ['cta', 'akordeon', 'ramka', 'cennik', 'blok'], create: () => ({ code: firstCode(CI.contentBlocks, (v) => '[blok:' + v + ']') }) },
+        // Nowe moduły z kreatora jako osobne bloki: wstawienie od razu otwiera kreator, zapis wpisuje shortcode.
+        newtileset: { as: 'shortcode', title: 'Nowy zestaw kafelków', icon: 'table-cells-large', cat: 'modules', desc: 'Tworzy nowy zestaw kafelków w kreatorze i wstawia go tutaj.', keywords: ['kafelki', 'kafle', 'zestaw', 'nowy'], create: () => ({ code: '', builder: 'tileset' }) },
+        newcta: { as: 'shortcode', title: 'Nowe przyciski CTA', icon: 'hand-pointer', cat: 'modules', desc: 'Tworzy nowe przyciski CTA w kreatorze bloków i wstawia je tutaj.', keywords: ['cta', 'przyciski', 'nowy'], hidden: !(CI.newBlockTypes || []).includes('cta'), create: () => ({ code: '', builder: 'cta' }) },
+        newaccordion: { as: 'shortcode', title: 'Nowy akordeon', icon: 'bars-staggered', cat: 'modules', desc: 'Tworzy nowy akordeon w kreatorze bloków i wstawia go tutaj.', keywords: ['akordeon', 'faq', 'nowy'], hidden: !(CI.newBlockTypes || []).includes('accordion'), create: () => ({ code: '', builder: 'accordion' }) },
+        newcallout: { as: 'shortcode', title: 'Nowa ramka informacyjna', icon: 'circle-info', cat: 'modules', desc: 'Tworzy nową ramkę informacyjną w kreatorze bloków i wstawia ją tutaj.', keywords: ['ramka', 'informacja', 'uwaga', 'nowy'], hidden: !(CI.newBlockTypes || []).includes('callout'), create: () => ({ code: '', builder: 'callout' }) },
+        newpricing: { as: 'shortcode', title: 'Nowy cennik', icon: 'tags', cat: 'modules', desc: 'Tworzy nowy cennik w kreatorze bloków i wstawia go tutaj.', keywords: ['cennik', 'ceny', 'nowy'], hidden: !(CI.newBlockTypes || []).includes('pricing'), create: () => ({ code: '', builder: 'pricing' }) },
         tilesgrid: { as: 'shortcode', title: 'Siatka kafelków', icon: 'border-all', cat: 'modules', desc: 'Kafelki ze strony typu „Siatka kafelków”.', keywords: ['kafelki', 'siatka'], hidden: !(CI.tilesGrids || []).length, create: () => ({ code: firstCode(CI.tilesGrids, (v) => '[kafelki:' + v + ']') }) },
         band: { as: 'shortcode', title: 'Pasek FEER', icon: 'grip-lines', cat: 'modules', desc: 'Pasek z modułu „FEER Paski” (tytuł, tekst, przyciski).', keywords: ['pasek', 'baner', 'band'], hidden: !(CI.bands || []).length, create: () => ({ code: firstCode(CI.bands, (v) => '[pasek:' + v + ']') }) },
         gdpr: { as: 'shortcode', title: 'Klauzule RODO', icon: 'user-shield', cat: 'modules', desc: 'Lista klauzul informacyjnych RODO z SZO.', keywords: ['rodo', 'klauzule', 'gdpr'], create: () => ({ code: '[klauzule-rodo]' }) },
@@ -1867,23 +1873,33 @@ function start(config) {
             ...groups.map(([label, opts]) => h('optgroup', { label }, ...opts.map(([v, l]) => h('option', { value: v, selected: v === b.attrs.code ? true : null }, l)))));
         pick.addEventListener('change', () => { if (pick.value) setCode(pick.value); });
         const tools = h('div', { class: 'be-row be-mt' });
+        // Kreator nowego zestawu kafelków ('tileset') albo bloku (cta, accordion, callout, pricing); zapis wpisuje shortcode.
+        const openNew = (kind, trigger) => {
+            if (kind === 'tileset') {
+                if (!window.TilesBuilder) return;
+                window.TilesBuilder.open({ id: null, trigger, onSave: (set) => {
+                    if (!(CI.tileSets ||= []).some((x) => x.value === set.id)) CI.tileSets.push({ value: set.id, label: set.name });
+                    setCode('[kafelki-zestaw:' + set.id + ']');
+                } });
+                return;
+            }
+            if (!window.BlockBuilder) return;
+            window.BlockBuilder.open({ type: kind, id: null, trigger, onSave: (nb) => {
+                if (!(CI.contentBlocks ||= []).some((x) => x.value === nb.id)) CI.contentBlocks.push({ value: nb.id, type: nb.type, label: ((CI.blockTypes || {})[nb.type] || nb.type) + ': ' + nb.name });
+                setCode('[blok:' + nb.id + ']');
+            } });
+        };
         const renderTools = () => {
             const code = b.attrs.code || '';
             const btn = (label, iconName, onClick) => h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: (e) => onClick(e.currentTarget) }, icon(iconName), ' ' + label);
             const items = [];
             if (window.TilesBuilder) {
-                items.push(btn('Nowy zestaw kafelków…', 'plus', (t) => window.TilesBuilder.open({ id: null, trigger: t, onSave: (set) => {
-                    if (!(CI.tileSets ||= []).some((x) => x.value === set.id)) CI.tileSets.push({ value: set.id, label: set.name });
-                    setCode('[kafelki-zestaw:' + set.id + ']');
-                } })));
+                items.push(btn('Nowy zestaw kafelków…', 'plus', (t) => openNew('tileset', t)));
                 const m = code.match(/^\[kafelki-zestaw:(\d+)\]$/);
                 if (m) items.push(btn('Edytuj zestaw', 'pen', (t) => window.TilesBuilder.open({ id: Number(m[1]), trigger: t, onSave: () => { shortcodePreviewCache.delete(code); load(); } })));
             }
             if (window.BlockBuilder) {
-                (CI.newBlockTypes || []).forEach((bt) => items.push(btn({ cta: 'Nowe przyciski CTA…', accordion: 'Nowy akordeon…', callout: 'Nowa ramka informacyjna…', pricing: 'Nowy cennik…' }[bt] || bt, 'plus', (t) => window.BlockBuilder.open({ type: bt, id: null, trigger: t, onSave: (nb) => {
-                    if (!(CI.contentBlocks ||= []).some((x) => x.value === nb.id)) CI.contentBlocks.push({ value: nb.id, type: nb.type, label: ((CI.blockTypes || {})[nb.type] || nb.type) + ': ' + nb.name });
-                    setCode('[blok:' + nb.id + ']');
-                } }))));
+                (CI.newBlockTypes || []).forEach((bt) => items.push(btn({ cta: 'Nowe przyciski CTA…', accordion: 'Nowy akordeon…', callout: 'Nowa ramka informacyjna…', pricing: 'Nowy cennik…' }[bt] || bt, 'plus', (t) => openNew(bt, t))));
                 const m = code.match(/^\[blok:(\d+)\]$/);
                 const cb = m && (CI.contentBlocks || []).find((x) => x.value === Number(m[1]));
                 if (cb) items.push(btn('Edytuj blok', 'pen', (t) => window.BlockBuilder.open({ type: cb.type, id: cb.value, trigger: t, onSave: () => { shortcodePreviewCache.delete(code); load(); } })));
@@ -1891,6 +1907,12 @@ function start(config) {
             tools.replaceChildren(...items);
         };
         renderTools();
+        // Blok wstawiony jako „Nowy …” (np. „Nowa ramka informacyjna”) — od razu otwiera kreator.
+        if (b.attrs.builder) {
+            const kind = b.attrs.builder;
+            delete b.attrs.builder;
+            setTimeout(() => openNew(kind, input), 0);
+        }
         input.addEventListener('input', () => {
             typingHistory();
             b.attrs.code = input.value.trim();
