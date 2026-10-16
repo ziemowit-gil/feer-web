@@ -35,7 +35,13 @@
         @else
             <div class="grid gap-10 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-14">
 
-                <nav aria-label="Kategorie działań" class="lg:sticky lg:top-6 lg:self-start">
+                @php
+                    // Dowolne bloki pod menu kategorii (edytor blokowy, Ustawienia: link „Dodaj bloki pod menu”).
+                    $sidebarBlocks = \App\Models\ListingSection::html('projects_sidebar');
+                    $canEditSidebar = auth()->check() && auth()->user()->isAdmin() && $siteSettings->isModuleEnabled('block_editor');
+                @endphp
+                <div class="min-w-0 space-y-8 lg:self-start {{ $sidebarBlocks ? '' : 'lg:sticky lg:top-6' }}">
+                <nav aria-label="Kategorie działań">
                     <p class="mb-3 text-xs font-bold uppercase tracking-widest text-muted">Kategorie</p>
                     <ul class="feer-pills-row flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0" role="list">
                         @foreach ($filled as $cat)
@@ -52,6 +58,16 @@
                         <a href="{{ route('projects.archive') }}" class="mt-4 inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">To już zrobiliśmy →</a>
                     @endif
                 </nav>
+
+                @if ($sidebarBlocks)
+                    <div class="prose prose-sm max-w-none text-ink" data-listing-blocks="projects_sidebar">@shortcodes($sidebarBlocks)</div>
+                @endif
+                @if ($canEditSidebar)
+                    <a href="{{ route('admin.edytor-blokowy.listing', 'projects_sidebar') }}" class="inline-flex min-h-9 items-center gap-1.5 text-sm font-bold text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>{{ $sidebarBlocks ? 'Edytuj bloki pod menu' : 'Dodaj bloki pod menu' }}
+                    </a>
+                @endif
+                </div>
 
                 <div class="min-w-0 space-y-14">
                     @foreach ($filled as $category)

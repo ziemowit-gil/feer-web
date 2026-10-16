@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ListingSection;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Project;
@@ -99,6 +100,28 @@ class BlockEditorController extends Controller
                 'noscript' => 'Przejdź do klasycznego formularza działania',
             ],
         ],
+        'listing' => [
+            'model' => ListingSection::class,
+            'module' => 'projects',
+            'admin_route' => 'admin.projekty.index',
+            'labels' => [
+                'kind' => 'Bloki na stronie listy',
+                'title' => 'Nazwa miejsca (tylko w panelu)',
+                'back' => 'Wróć do listy działań',
+                'view' => 'Zobacz stronę Działania',
+                'form' => 'Otwórz listę działań w panelu',
+                'typeLabel' => 'Miejsce',
+                'published' => 'widoczne',
+                'publishedLong' => 'Widoczne na stronie',
+                'draftLong' => 'Ukryte',
+                'contentLabel' => 'Bloki pod menu kategorii',
+                'more' => 'Bloki pokazują się na stronie „Działania” w wąskiej lewej kolumnie, pod menu kategorii — najlepiej sprawdzą się krótkie: tekst, przycisk, zdjęcie, kontakt. Usuń wszystkie bloki, aby nic się tam nie pokazywało.',
+                'imported' => 'To miejsce miało wcześniej treść HTML',
+                'empty' => 'Pod menu kategorii nie ma jeszcze bloków.',
+                'titleRequired' => 'Nazwa miejsca nie może być pusta.',
+                'noscript' => 'Przejdź do listy działań w panelu',
+            ],
+        ],
     ];
 
     /** Maksymalna liczba podpowiedzi w wyborze odnośnika wewnętrznego. */
@@ -117,6 +140,17 @@ class BlockEditorController extends Controller
     }
 
     // ── Trasy ogólne: admin/edytor-blokowy/{type}/{id} ──────────────────────
+
+    /** Wejście z panelu/strony: tworzy (przy pierwszym razie) miejsce na bloki i otwiera edytor. */
+    public function editListing(string $key)
+    {
+        abort_unless(isset(ListingSection::PLACES[$key]), 404);
+        $module = ListingSection::PLACES[$key]['module'];
+        abort_unless(auth()->user()->canAccessModule($module), 403);
+        abort_unless(SiteSetting::current()->isModuleEnabled($module), 404);
+
+        return redirect()->route('admin.edytor-blokowy.edit', ['listing', ListingSection::place($key)->id]);
+    }
 
     public function edit(string $type, int $id)
     {
@@ -270,7 +304,7 @@ class BlockEditorController extends Controller
                 'urls' => [
                     'save' => $updateUrl,
                     'view' => $this->publicUrl($type, $record),
-                    'admin' => route($target['admin_route'], $record),
+                    'admin' => $record instanceof ListingSection ? route($target['admin_route']) : route($target['admin_route'], $record),
                     'images' => route('admin.multimedia.images'),
                     'upload' => route('admin.multimedia.upload-ajax'),
                     'links' => route('admin.edytor-blokowy.links'),
@@ -347,6 +381,7 @@ class BlockEditorController extends Controller
             $record instanceof Page => Page::types()[$record->type] ?? (string) $record->type,
             $record instanceof News => $record->category?->name ? 'Aktualność · '.$record->category->name : 'Aktualność',
             $record instanceof Project => $record->category?->name ? 'Działanie · '.$record->category->name : 'Działanie',
+            $record instanceof ListingSection => 'Działania · pod menu kategorii',
             default => self::TARGETS[$type]['labels']['kind'],
         };
     }
@@ -357,6 +392,7 @@ class BlockEditorController extends Controller
             $record instanceof Page => $record->publicUrl(),
             $record instanceof News => route('news.show', $record),
             $record instanceof Project => route('projects.show', $record),
+            $record instanceof ListingSection => $record->publicUrl(),
         };
     }
 
