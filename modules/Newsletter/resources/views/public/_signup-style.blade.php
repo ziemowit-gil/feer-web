@@ -2,7 +2,7 @@
 {{-- Style stron zapisu (/newsletter, /newsletter/{slug}, /newsletter/{slug}/dolacz). Własny CSS, bo push nie przebudowuje Tailwinda.
      Płasko: grupowanie tłem, bez ramek i cieni; obramowania mają tylko pola formularza (WCAG 1.4.11). Kontrast tekstu ≥ 4,5:1. --}}
 <style>
-.nls{--ink:#1D1D1A;--muted:#4A4A47;--brand:#1E6DFF;--brand-dark:#1752BF;--brand-deep:#123F94;--tint:#E8F0FF;--soft:#F3F6FB;--field:#6B6B67;--error:#B3261E;--error-bg:#FCEBEA;--ok:#0F5132;--ok-bg:#E6F4EA;font-family:Montserrat,Arial,Helvetica,sans-serif;color:var(--ink)}
+.nls{--ink:#1D1D1A;--muted:#4A4A47;--brand:#1E6DFF;--brand-dark:#1E6DFF;--brand-deep:#1D1D1A;--tint:#E8F0FF;--soft:#F3F6FB;--field:#6B6B67;--error:#B3261E;--error-bg:#FCEBEA;--ok:#0F5132;--ok-bg:#E6F4EA;font-family:Montserrat,Arial,Helvetica,sans-serif;color:var(--ink)}
 .nls *{box-sizing:border-box}
 .nls a{color:var(--brand-dark);font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .nls a:hover{color:var(--ink)}
