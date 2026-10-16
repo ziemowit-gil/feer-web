@@ -118,4 +118,41 @@ class SlidersTest extends TestCase
             Storage::disk('public')->assertExists($slide->getFirstMedia('image')->getPathRelativeToRoot());
         }
     }
+
+    public function test_slajd_widoczny_tylko_w_terminie_od_do(): void
+    {
+        $slider = Slider::create(['name' => 'Nabory']);
+        HeroSlide::create(['slider_id' => $slider->id, 'title' => 'Zawsze widoczny', 'order' => 0]);
+        HeroSlide::create(['slider_id' => $slider->id, 'title' => 'Nabór trwa', 'order' => 1, 'starts_at' => now()->subDay(), 'ends_at' => now()->addDay()]);
+        HeroSlide::create(['slider_id' => $slider->id, 'title' => 'Nabór zakończony', 'order' => 2, 'ends_at' => now()->subHour()]);
+        HeroSlide::create(['slider_id' => $slider->id, 'title' => 'Nabór od jutra', 'order' => 3, 'starts_at' => now()->addDay()]);
+        $page = Page::create(['title' => 'Nabory', 'slug' => 'nabory-x', 'type' => 'standard', 'is_published' => true, 'content' => '<p>Treść</p>',
+            'layout_data' => ['hero_slider_id' => $slider->id]]);
+
+        $this->get($page->publicUrl())->assertOk()
+            ->assertSee('Zawsze widoczny')->assertSee('Nabór trwa')
+            ->assertDontSee('Nabór zakończony')->assertDontSee('Nabór od jutra');
+
+        // Panel pokazuje wszystkie slajdy z informacją o terminie.
+        $this->actingAs($this->admin())->get(route('admin.slidery.show', $slider))->assertOk()
+            ->assertSee('Nabór zakończony')->assertSee('Zakończony — niewidoczny')->assertSee('Zaplanowany')->assertSee('Widoczny');
+    }
+
+    public function test_formularz_slajdu_zapisuje_termin_i_pilnuje_kolejnosci_dat(): void
+    {
+        $admin = $this->admin();
+        $slider = Slider::create(['name' => 'Główny']);
+        $slide = HeroSlide::create(['slider_id' => $slider->id, 'title' => 'Wydarzenie', 'order' => 0]);
+
+        $this->actingAs($admin)->get(route('admin.hero.edit', $slide))->assertOk()->assertSee('Widoczny w terminie');
+
+        $this->actingAs($admin)->put(route('admin.hero.update', $slide), ['title' => 'Wydarzenie', 'slider_id' => $slider->id, 'starts_at' => '2026-11-01T08:00', 'ends_at' => '2026-11-30T20:00'])
+            ->assertSessionHasNoErrors();
+        $slide->refresh();
+        $this->assertSame('2026-11-01 08:00', $slide->starts_at->format('Y-m-d H:i'));
+        $this->assertSame('2026-11-30 20:00', $slide->ends_at->format('Y-m-d H:i'));
+
+        $this->actingAs($admin)->put(route('admin.hero.update', $slide), ['title' => 'Wydarzenie', 'slider_id' => $slider->id, 'starts_at' => '2026-11-30T08:00', 'ends_at' => '2026-11-01T08:00'])
+            ->assertSessionHasErrors('ends_at');
+    }
 }

@@ -159,7 +159,9 @@ class HomeController extends Controller
                 ? HeroSlide::forCurrentSite()
                     ->where(fn ($q) => $q->whereNull('slider_id')->orWhere('slider_id', \App\Models\Slider::forPlacement('home')?->id ?? 0))
                     ->orderBy('order')->orderBy('id')->get()
-                : HeroSlide::forCurrentSite()->orderBy('order')->get());
+                : HeroSlide::forCurrentSite()->orderBy('order')->get())
+                // Slajdy z terminem (od–do) poza nim pomijamy.
+                ->filter(fn (HeroSlide $slide) => $slide->isVisibleNow())->values();
 
         if ($settings->hero_mission_slide && $slides->isNotEmpty()) {
             $mottoTtl    = $settings->cacheEnabled('pages') ? $settings->cacheTtl('page_item', 3600) : 0;

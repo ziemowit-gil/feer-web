@@ -49,12 +49,18 @@ class HeroSlideController extends Controller
             'button_url' => ['nullable', 'required_with:button_label', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
+            'starts_at' => ['nullable', 'date'],
+            'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'image' => ['required_without_all:unsplash_full_url,image_library_id', 'nullable', 'image', 'max:4096'],
             'image_library_id' => $this->libraryMediaRule(),
             'slider_id' => ['nullable', 'integer'],
         ] + UnsplashImport::rules(), ['image.required_without_all' => 'Wgraj zdjęcie, wybierz je z biblioteki albo z Unsplash.']);
 
         $data['order'] = $data['order'] ?? 0;
+        // Przed migracją kolumn dat (push bez deploy.sh) zapis nie może padać.
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('hero_slides', 'starts_at')) {
+            unset($data['starts_at'], $data['ends_at']);
+        }
         unset($data['image'], $data['image_library_id'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 
         $data['slider_id'] = $this->targetSliderId($request);
@@ -84,12 +90,18 @@ class HeroSlideController extends Controller
             'button_url' => ['nullable', 'required_with:button_label', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
+            'starts_at' => ['nullable', 'date'],
+            'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'image' => ['nullable', 'image', 'max:4096'],
             'image_library_id' => $this->libraryMediaRule(),
             'slider_id' => ['nullable', 'integer'],
         ] + UnsplashImport::rules());
 
         $data['order'] = $data['order'] ?? 0;
+        // Przed migracją kolumn dat (push bez deploy.sh) zapis nie może padać.
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('hero_slides', 'starts_at')) {
+            unset($data['starts_at'], $data['ends_at']);
+        }
         unset($data['image'], $data['image_library_id'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 
         $data['slider_id'] = $this->targetSliderId($request) ?? $heroSlide->slider_id;

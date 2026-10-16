@@ -6,7 +6,7 @@
     $slider = $slider ?? (filled($sliderId ?? null) && \Illuminate\Support\Facades\Schema::hasTable('sliders')
         ? \App\Models\Slider::query()->forCurrentSite()->with('slides.media')->find((int) $sliderId)
         : null);
-    $sliderSlides = $slider ? $slider->slides->filter(fn ($s) => $s->title || $s->image_url)->values() : collect();
+    $sliderSlides = $slider ? $slider->slides->filter(fn ($s) => ($s->title || $s->image_url) && $s->isVisibleNow())->values() : collect();
 @endphp
 @if ($sliderSlides->isNotEmpty())
     <div class="not-prose mb-8 overflow-hidden rounded-md">

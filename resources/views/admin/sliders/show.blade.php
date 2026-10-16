@@ -41,6 +41,13 @@
                                 <p class="text-xs font-bold uppercase tracking-widest text-muted">Slajd {{ $loop->iteration }}</p>
                                 <h2 class="truncate font-bold text-ink">{{ $slide->title }}</h2>
                                 @if ($slide->text)<p class="line-clamp-2 text-sm text-ink">{{ $slide->text }}</p>@endif
+                                @if ($slideState = $slide->scheduleState())
+                                    <p class="mt-1 text-xs font-bold {{ $slideState === 'active' ? 'text-ink' : 'text-muted' }}">
+                                        <i class="fa-solid {{ ['scheduled' => 'fa-clock', 'active' => 'fa-calendar-check', 'expired' => 'fa-calendar-xmark'][$slideState] }} mr-1 text-brand-dark" aria-hidden="true"></i>
+                                        {{ ['scheduled' => 'Zaplanowany', 'active' => 'Widoczny', 'expired' => 'Zakończony — niewidoczny'][$slideState] }}:
+                                        <span class="font-normal">{{ $slide->starts_at ? 'od '.$slide->starts_at->format('d.m.Y H:i') : '' }}{{ $slide->starts_at && $slide->ends_at ? ' ' : '' }}{{ $slide->ends_at ? 'do '.$slide->ends_at->format('d.m.Y H:i') : '' }}</span>
+                                    </p>
+                                @endif
                             </div>
                             <div class="flex flex-none flex-wrap items-center gap-2">
                                 <form method="POST" action="{{ route('admin.slidery.move', [$slider, $slide]) }}">

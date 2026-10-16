@@ -149,7 +149,7 @@ class PortalController extends Controller
     {
         if ($category->portal_slider_id && Schema::hasTable('sliders')) {
             $slider = \App\Models\Slider::query()->forCurrentSite()->with('slides.media')->find($category->portal_slider_id);
-            $slides = $slider ? $slider->slides->filter(fn ($s) => $s->title || $s->image_url)->values() : collect();
+            $slides = $slider ? $slider->slides->filter(fn ($s) => ($s->title || $s->image_url) && $s->isVisibleNow())->values() : collect();
             if ($slides->isNotEmpty()) {
                 return $slides;
             }

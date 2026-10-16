@@ -67,6 +67,26 @@
             </div>
         </div>
 
+        {{-- Termin wyświetlania: poza nim slajd znika ze strony sam (np. nabór, wydarzenie). --}}
+        <fieldset class="rounded-md bg-gray-50 p-4">
+            <legend class="px-1 text-sm font-bold">Widoczny w terminie <span class="font-normal text-muted">(opcjonalnie)</span></legend>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div>
+                    <label for="starts_at" class="mb-1 block text-sm font-bold">Od</label>
+                    <input type="datetime-local" id="starts_at" name="starts_at" value="{{ old('starts_at', $heroSlide->starts_at?->format('Y-m-d\TH:i')) }}"
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    @error('starts_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="ends_at" class="mb-1 block text-sm font-bold">Do</label>
+                    <input type="datetime-local" id="ends_at" name="ends_at" value="{{ old('ends_at', $heroSlide->ends_at?->format('Y-m-d\TH:i')) }}"
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    @error('ends_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+            <p class="mt-2 text-xs text-muted">Puste pola = slajd widoczny zawsze. Przed datą „Od” i po dacie „Do” slajd nie pokazuje się na stronie, ale zostaje w sliderze.</p>
+        </fieldset>
+
         <div class="flex items-center gap-3 border-t border-gray-100 pt-5">
             <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz</button>
             <a href="{{ $heroSlide->slider_id && Route::has('admin.slidery.show') ? route('admin.slidery.show', $heroSlide->slider_id) : route('admin.hero.index') }}" class="text-sm text-muted hover:text-brand-dark">Anuluj</a>
