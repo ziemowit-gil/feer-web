@@ -108,6 +108,15 @@
 
     <button type="submit" class="nls-btn" aria-describedby="{{ $uid }}-next" data-nls-submit><span data-nls-label>{{ $form->button_label ?: 'Zapisz się' }}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
     <p class="nls-status" role="status" aria-live="polite" data-nls-status></p>
+
+    <div class="nls-rodo" id="{{ $uid }}-rodo">
+      <p>Administratorem danych jest {{ $siteSettings->site_name }}. Adres e-mail{{ $form->ask_name ? ' i imię' : '' }} przetwarzamy tylko po to, by wysyłać newsletter, na podstawie Twojej zgody (art. 6 ust. 1 lit. a RODO), do czasu jej wycofania. Masz prawo dostępu do danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia, sprzeciwu i wycofania zgody w każdej chwili oraz prawo skargi do Prezesa UODO.</p>
+      <details>
+        <summary>Pełna klauzula informacyjna</summary>
+        @foreach ($form->gdprInfoParagraphs() as $paragraph)<p>{{ $paragraph }}</p>@endforeach
+      </details>
+      @if ($form->privacy_url)<p><a href="{{ $form->privacy_url }}">Polityka prywatności</a></p>@endif
+    </div>
   </form>
 
   <div class="nls-done" tabindex="-1" hidden data-nls-done>

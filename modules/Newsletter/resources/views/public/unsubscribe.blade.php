@@ -14,7 +14,11 @@
                 <a href="{{ route('newsletter.show') }}" class="np__btn np__btn--ghost">Zapisz się ponownie</a>
                 <a href="{{ route('home') }}" class="np__btn np__btn--primary">Strona główna <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
             </div>
-            <p class="np__foot" style="margin:0">Chcesz usunąć wszystkie dane? <a href="{{ route('newsletter.preferences', ['token' => $subscriber->token]) }}" class="np__link">Przejdź do swoich danych</a>.</p>
+        </section>
+        <section class="np__card np__rodo" aria-labelledby="np-rights" style="margin-top:20px">
+            <h2 id="np-rights" class="np__h2">Twoje dane i prawa (RODO)</h2>
+            <p class="np__hint">Zgoda na newsletter została wycofana. Zachowujemy tylko informację o udzieleniu i wycofaniu zgody. Adres możesz też usunąć całkowicie. Masz prawo do:</p>
+            @include('newsletter::public._rights')
         </section>
     @else
         <section class="np__hero" aria-labelledby="np-h">
@@ -39,6 +43,11 @@
                     <a href="{{ route('newsletter.preferences', ['token' => $subscriber->token]) }}" class="np__btn np__btn--primary">Wolę zmienić tematy <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
                 </div>
             </form>
+        </section>
+        <section class="np__card np__rodo" aria-labelledby="np-rights" style="margin-top:20px">
+            <h2 id="np-rights" class="np__h2">Twoje dane i prawa (RODO)</h2>
+            <p class="np__hint">Wypis to wycofanie zgody. Niezależnie od tego masz prawo do:</p>
+            @include('newsletter::public._rights')
         </section>
     @endif
 </div>

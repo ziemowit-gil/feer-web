@@ -123,7 +123,11 @@ class NewsletterSignupPageTest extends TestCase
 
         $consent = NewsletterConsent::where('subscriber_id', $subscriber->id)->first();
         $this->assertSame('doi_pending', $consent->method);
-        $this->assertSame($form->consent_text, $consent->clause_text);
+        $this->assertStringStartsWith($form->consent_text, $consent->clause_text);
+        $this->assertStringContainsString('Klauzula informacyjna', $consent->clause_text);
+        $this->assertSame($form->clauseVersion(), $consent->clause_version);
+        $this->assertNotNull($consent->ip_hash);
+        $this->assertNotNull($consent->granted_at);
         $this->assertNull($consent->confirmed_at);
 
         Queue::assertPushed(SendDoubleOptIn::class);
@@ -148,6 +152,63 @@ class NewsletterSignupPageTest extends TestCase
             'source' => 'landing_bottom', 'email' => 'zly-adres', 'topics' => [], 'consent' => null,
         ]))->assertRedirect($landing)->assertSessionHasErrors(['email', 'topics', 'consent']);
         $this->assertSame(0, Subscriber::count());
+    }
+
+    public function test_zapis_bez_zgody_konczy_sie_bledem(): void
+    {
+        $form = $this->form();
+
+        $this->postJson(route('newsletter.subscribe'), $this->payload($form, ['consent' => null]))
+            ->assertStatus(422)->assertJsonPath('errors.consent.0', 'Zaznacz zgodę, aby się zapisać.');
+        $this->assertSame(0, Subscriber::count());
+        $this->assertSame(0, NewsletterConsent::count());
+    }
+
+    public function test_formularz_ma_niezaznaczona_zgode_i_klauzule_informacyjna(): void
+    {
+        $form = $this->form(['gdpr_dpo' => 'Anna Nowak, iod@example.org']);
+        $html = $this->get(route('newsletter.form', $form))->assertOk()
+            ->assertSee('art. 6 ust. 1 lit. a RODO')
+            ->assertSee('Pełna klauzula informacyjna')
+            ->assertSee('Prezesa Urzędu Ochrony Danych Osobowych')
+            ->assertSee('Inspektor ochrony danych: Anna Nowak, iod@example.org')
+            ->assertSee('Polityka prywatności')
+            ->getContent();
+
+        $this->assertMatchesRegularExpression('/<input id="nls-main-consent" type="checkbox" name="consent" value="1" required aria-required="true" aria-describedby="nls-main-consent-err"\s+data-nls-consent>/', $html);
+    }
+
+    public function test_zmiana_tresci_klauzuli_podbija_wersje_zapisywana_przy_zgodzie(): void
+    {
+        $form = $this->form();
+        $before = $form->clauseVersion();
+
+        $form->update(['heading' => 'Inny nagłówek']);
+        $this->assertSame($before, $form->fresh()->clauseVersion()); // zmiana innych pól nie zmienia wersji
+
+        $form->update(['gdpr_info' => "Administratorem jest {administrator}.\n\nNowa treść."]);
+        $after = $form->fresh()->clauseVersion();
+        $this->assertNotSame($before, $after);
+
+        $this->postJson(route('newsletter.subscribe'), $this->payload($form->fresh()))->assertOk();
+        $consent = NewsletterConsent::first();
+        $this->assertSame($after, $consent->clause_version);
+        $this->assertStringContainsString('Nowa treść.', $consent->clause_text);
+    }
+
+    public function test_wypis_i_preferencje_pokazuja_prawa_i_linki_do_danych(): void
+    {
+        $subscriber = Subscriber::create(['email' => 'ala@example.com', 'site_id' => SiteSetting::current()->id, 'status' => Subscriber::STATUS_CONFIRMED,
+            'confirmed_at' => now(), 'topics' => ['news'], 'token' => Subscriber::generateToken()]);
+
+        foreach ([route('newsletter.unsubscribe', $subscriber->token), route('newsletter.preferences', $subscriber->token)] as $url) {
+            $this->get($url)->assertOk()
+                ->assertSee(route('newsletter.preferences.export', ['token' => $subscriber->token]), false)
+                ->assertSee(route('newsletter.preferences.destroy', ['token' => $subscriber->token]), false)
+                ->assertSee('Prezesa Urzędu Ochrony Danych Osobowych');
+        }
+
+        $this->get(route('newsletter.preferences.export', ['token' => $subscriber->token]))->assertOk();
     }
 
     public function test_zla_odpowiedz_na_pytanie_kontrolne_pokazuje_blad(): void
@@ -207,9 +268,12 @@ class NewsletterSignupPageTest extends TestCase
             'name' => $form->name, 'slug' => $form->slug, 'heading' => $form->heading, 'consent_text' => $form->consent_text,
             'button_label' => 'Zapisz się', 'success_message' => $form->success_message, 'style' => 'band', 'is_active' => '1', 'is_default' => '1',
             'landing' => ['sample_title' => 'Zajrzyj do środka', 'cta_title' => ''],
+            'gdpr_info' => 'Moja klauzula {administrator}.', 'gdpr_dpo' => 'iod@example.org',
         ])->assertSessionHasNoErrors()->assertRedirect();
 
         $this->assertSame(['sample_title' => 'Zajrzyj do środka'], $form->fresh()->landing);
         $this->assertSame('Dołącz teraz', $form->fresh()->landingText('cta_title'));
+        $this->assertSame('Moja klauzula {administrator}.', $form->fresh()->gdpr_info);
+        $this->assertSame('iod@example.org', $form->fresh()->gdpr_dpo);
     }
 }

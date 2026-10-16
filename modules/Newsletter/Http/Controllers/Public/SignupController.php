@@ -11,6 +11,7 @@ use App\Support\SpamGuard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Modules\Newsletter\Jobs\SendDoubleOptIn;
 use Modules\Newsletter\Jobs\SyncSubscriberToCrm;
@@ -67,7 +68,9 @@ class SignupController extends Controller
 
         $topicKeys = array_keys($form->topicOptions());
 
-        $data = $request->validate([
+        // Walidacja ręczna: aplikacja renderuje JSON z błędami tylko dla api/*, a widget i strona zapisu wysyłają
+        // formularz przez fetch — bez tego dostałyby przekierowanie (200 po podążeniu) i pokazały fałszywy sukces.
+        $validator = Validator::make($request->all(), [
             'email'    => ['required', 'email:rfc', 'max:255'],
             'name'     => ['nullable', 'string', 'max:100'],
             'phone'    => ['nullable', 'string', 'max:30', 'regex:/^\+?[0-9 \-]{7,20}$/'],
@@ -83,6 +86,12 @@ class SignupController extends Controller
             'consent.accepted' => 'Zaznacz zgodę, aby się zapisać.',
             'phone.regex'    => 'Numer telefonu może zawierać tylko cyfry, spacje, myślniki i znak +.',
         ]);
+        if ($validator->fails()) {
+            return $request->expectsJson()
+                ? response()->json(['ok' => false, 'errors' => $validator->errors()->toArray()], 422)
+                : back()->withErrors($validator)->withInput();
+        }
+        $data = $validator->validated();
 
         // Antyspam: honeypot + żeton czasowy + zadanie tekstowe. Bot dostaje zwykłe potwierdzenie.
         $spam = SpamGuard::inspect($request, [$data['email'], $data['name'] ?? ''], 'newsletter');
@@ -218,8 +227,9 @@ class SignupController extends Controller
             'subscriber_id'  => $s->id,
             'channel'        => $channel,
             'clause_id'      => $form->clause_id,
-            'clause_version' => (string) ($form->updated_at?->format('YmdHi') ?: '1'),
-            'clause_text'    => $text ?: $form->consent_text,
+            'clause_version' => $form->clauseVersion(),
+            // Treść zgody + klauzula informacyjna z chwili zapisu (dowód, co dokładnie zobaczyła osoba).
+            'clause_text'    => ($text ?: $form->consent_text) . "\n\nKlauzula informacyjna (" . $form->clauseVersion() . "):\n" . $form->gdprInfoText(),
             'source'         => $source,
             'method'         => $confirmed ? 'preferences' : 'doi_pending',
             'ip_hash'        => Subscriber::hashIp($request->ip()),

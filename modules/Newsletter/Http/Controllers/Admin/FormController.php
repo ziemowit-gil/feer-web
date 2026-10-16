@@ -118,6 +118,12 @@ class FormController extends Controller
         $data['faq'] = NewsletterForm::parseFaq($request->input('faq'));
         $data['proof'] = trim((string) $request->input('proof')) ?: null;
 
+        if (NewsletterForm::supportsGdprInfo()) {
+            $gdpr = $request->validate(['gdpr_info' => ['nullable', 'string', 'max:6000'], 'gdpr_dpo' => ['nullable', 'string', 'max:255']]);
+            $data['gdpr_info'] = trim((string) ($gdpr['gdpr_info'] ?? '')) ?: null;
+            $data['gdpr_dpo'] = trim((string) ($gdpr['gdpr_dpo'] ?? '')) ?: null;
+        }
+
         if (NewsletterForm::supportsLandingTexts()) {
             $landing = [];
             foreach (NewsletterForm::LANDING_TEXTS as $key => [$label, $default, $max]) {

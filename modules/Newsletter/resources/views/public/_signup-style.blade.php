@@ -78,6 +78,11 @@
 .nls-summary a{color:var(--error)}
 .nls-status{margin:0;font-size:15px;font-weight:700;color:var(--error)}
 .nls-status:empty{display:none}
+.nls-rodo{display:grid;gap:8px;font-size:13px;line-height:1.55;color:var(--muted)}
+.nls-rodo p{margin:0}
+.nls-rodo summary{cursor:pointer;width:fit-content;font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:3px;border-radius:4px}
+.nls-rodo details[open] summary{margin-bottom:8px}
+.nls-rodo details p+p{margin-top:8px}
 .nls-hp{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
 .nls-done{display:grid;gap:14px}
 .nls-done__title{font-size:24px}

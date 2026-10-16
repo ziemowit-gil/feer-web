@@ -18,7 +18,7 @@ class NewsletterForm extends Model
     protected $fillable = [
         'site_id', 'name', 'slug', 'eyebrow', 'heading', 'lead', 'ask_name', 'ask_phone', 'show_topics', 'topics',
         'default_topics', 'offer_webpush', 'offer_sms', 'consent_text', 'clause_id', 'privacy_url', 'button_label',
-        'success_message', 'style', 'accent_color', 'theme', 'benefits', 'faq', 'proof', 'landing', 'list_ids', 'szo_form_slug', 'is_default', 'is_active', 'submissions_count',
+        'success_message', 'style', 'accent_color', 'theme', 'benefits', 'faq', 'proof', 'landing', 'gdpr_info', 'gdpr_dpo', 'list_ids', 'szo_form_slug', 'is_default', 'is_active', 'submissions_count',
     ];
 
     protected $casts = [
@@ -100,6 +100,57 @@ class NewsletterForm extends Model
         static $has;
 
         return $has ??= \Illuminate\Support\Facades\Schema::hasColumn('newsletter_forms', 'landing');
+    }
+
+    /** Czy baza ma już kolumny klauzuli RODO (kod działa też przed migracją). */
+    public static function supportsGdprInfo(): bool
+    {
+        static $has;
+
+        return $has ??= \Illuminate\Support\Facades\Schema::hasColumn('newsletter_forms', 'gdpr_info');
+    }
+
+    /**
+     * Domyślna klauzula informacyjna (art. 13 RODO). Znaczniki: {administrator}, {kontakt}, {iod}, {polityka}.
+     * Akapity oddziela pusta linia.
+     */
+    public const GDPR_INFO_DEFAULT = "Administratorem Twoich danych osobowych jest {administrator}. Kontakt: {kontakt}.{iod}\n\n"
+        . "Przetwarzamy adres e-mail oraz — jeśli je podasz — imię i wybrane tematy wyłącznie po to, by wysyłać Ci newsletter. Podstawą jest Twoja zgoda (art. 6 ust. 1 lit. a RODO). Podanie danych jest dobrowolne, ale bez adresu e-mail nie możemy wysyłać newslettera.\n\n"
+        . "Dane przechowujemy do czasu wycofania zgody (wypisu). Zapis niepotwierdzony linkiem z e-maila usuwamy automatycznie. Po wypisie zachowujemy jedynie informację o udzieleniu i wycofaniu zgody, aby móc wykazać zgodność z prawem — do czasu przedawnienia ewentualnych roszczeń.\n\n"
+        . "Odbiorcami danych mogą być wyłącznie firmy, które pomagają nam technicznie wysyłać wiadomości i utrzymywać serwis (hosting, poczta), na podstawie umów powierzenia. Nie przekazujemy danych do państw spoza Europejskiego Obszaru Gospodarczego ani nie profilujemy Cię w sposób wywołujący skutki prawne.\n\n"
+        . "Masz prawo dostępu do swoich danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia oraz sprzeciwu. Zgodę możesz wycofać w każdej chwili (link w stopce każdej wiadomości) — nie wpływa to na zgodność z prawem przetwarzania przed jej wycofaniem. Przysługuje Ci też skarga do Prezesa Urzędu Ochrony Danych Osobowych (ul. Stawki 2, 00-193 Warszawa, uodo.gov.pl).\n\n"
+        . "Więcej informacji: {polityka}.";
+
+    /** Pełna klauzula informacyjna z podstawionymi danymi administratora (tekst; akapity rozdziela pusta linia). */
+    public function gdprInfoText(): string
+    {
+        $site = \App\Models\SiteSetting::current();
+        $template = trim((string) (self::supportsGdprInfo() ? $this->gdpr_info : '')) ?: self::GDPR_INFO_DEFAULT;
+        $address = trim(implode(', ', array_filter([$site->contact_address, $site->contact_city])));
+        $contact = implode(', ', array_filter([$address ?: null, $site->contact_email ? 'e-mail ' . $site->contact_email : null])) ?: 'dane kontaktowe na stronie Kontakt';
+        $dpo = trim((string) (self::supportsGdprInfo() ? $this->gdpr_dpo : ''));
+
+        return strtr($template, [
+            '{administrator}' => (string) $site->site_name,
+            '{kontakt}' => $contact,
+            '{iod}' => $dpo !== '' ? ' Inspektor ochrony danych: ' . $dpo . '.' : '',
+            '{polityka}' => $this->privacy_url ? 'polityka prywatności (' . url($this->privacy_url) . ')' : 'polityka prywatności serwisu',
+        ]);
+    }
+
+    /** Akapity klauzuli do wyświetlenia. */
+    public function gdprInfoParagraphs(): array
+    {
+        return array_values(array_filter(array_map('trim', preg_split('/\R\s*\R/', $this->gdprInfoText()))));
+    }
+
+    /**
+     * Wersja klauzuli zapisywana przy zgodzie: skrót treści zgody i klauzuli informacyjnej.
+     * Każda zmiana któregokolwiek tekstu daje nową wersję (inne zmiany formularza — nie).
+     */
+    public function clauseVersion(): string
+    {
+        return 'v' . substr(sha1($this->consent_text . "\n--\n" . $this->gdprInfoText()), 0, 10);
     }
 
     public static function defaultFor(?int $siteId = null): ?static

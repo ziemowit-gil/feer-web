@@ -82,8 +82,13 @@
 
             <section class="np__card np__rodo" aria-labelledby="np-rodo">
                 <h2 id="np-rodo" class="np__h2"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span>Twoje prawa (RODO)</h2>
-                <p class="np__hint">Przechowujemy tylko to, co widzisz na tej stronie, oraz historię wysyłek. Możesz to pobrać albo usunąć.</p>
-                <p style="margin:0 0 12px"><a href="{{ route('newsletter.preferences.export', ['token' => $subscriber->token]) }}" class="np__link">Pobierz moje dane (JSON)</a></p>
+                <p class="np__hint">Przechowujemy tylko to, co widzisz na tej stronie, historię wysyłek i rejestr Twoich zgód. Masz prawo do:</p>
+                <ul style="margin:0 0 12px;padding-left:20px;font-size:14px;line-height:1.6">
+                    <li>dostępu i kopii danych — <a href="{{ route('newsletter.preferences.export', ['token' => $subscriber->token]) }}" class="np__link">pobierz moje dane (JSON)</a>,</li>
+                    <li>sprostowania (zmienisz je powyżej), usunięcia — przycisk pod formularzem, ograniczenia przetwarzania, przenoszenia i sprzeciwu,</li>
+                    <li>wycofania zgody w każdej chwili (<a href="{{ route('newsletter.unsubscribe', ['token' => $subscriber->token]) }}" class="np__link">wypisz się</a>) — bez wpływu na przetwarzanie sprzed wycofania,</li>
+                    <li>skargi do Prezesa Urzędu Ochrony Danych Osobowych (uodo.gov.pl).</li>
+                </ul>
                 <p style="margin:0;font-size:14px;color:var(--np-muted)">Usunięcie danych jest nieodwracalne: adres, imię i telefon zostaną zanonimizowane, a na 30 dni trafią na listę blokad, byśmy przypadkiem nic nie wysłali.</p>
             </section>
         </aside>
