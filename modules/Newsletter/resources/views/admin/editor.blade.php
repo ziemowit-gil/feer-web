@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=1024, initial-scale=1">
     <title>{{ $title }} — edytor newslettera</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="{{ asset('vendor/mosaico/rs/mosaico-libs-and-tinymce.min.js') }}?v=0.18.11"></script>
     <script src="{{ asset('vendor/mosaico/rs/mosaico.min.js') }}?v=0.18.11"></script>
     <link rel="stylesheet" href="{{ asset('vendor/mosaico/rs/mosaico-libs-and-tinymce.min.css') }}?v=0.18.11">
-    <link rel="stylesheet" href="{{ asset('vendor/mosaico/rs/mosaico-material.min.css') }}?v=0.18.11">
+    <link rel="stylesheet" href="{{ asset('vendor/mosaico/feer/mosaico-feer.min.css') }}?v={{ filemtime(public_path('vendor/mosaico/feer/mosaico-feer.min.css')) }}">
     <style>
         :root { --nl-brand: #1E6DFF; --nl-brand-dark: #1752BF; --nl-ink: #1D1D1A; --nl-accent: #EA8F00; }
         html, body { height: 100%; margin: 0; }
@@ -107,6 +107,9 @@ $(function () {
         // kontrola kontrastu: nasłuch zmian modelu
         if (typeof vm.content === 'function') { ko.computed(function () { try { var json = vm.exportJSON(); dirty = true; checkContrast(json); } catch (e) {} }).extend({ rateLimit: 800 }); }
     }];
+
+    // Paleta próbnika kolorów = kolory marki z brandbooku (+ ciemniejszy niebieski do linków, 4,5:1 na białym)
+    if ($.evol && $.evol.colorpicker) { $.evol.colorpicker.prototype.options.customTheme = ['#1E6DFF', '#1752BF', '#1D1D1A', '#EA8F00', '#CBD5E7', '#E8F0FF', '#FFFFFF']; }
 
     var ok = Mosaico.init({
         imgProcessorBackend: @json(route('admin.newsletter.mosaico.image')),

@@ -23,6 +23,12 @@ class NewsletterTemplate extends Model
 
     public const KINDS = ['mosaico' => 'Edytor Mosaico', 'html' => 'Własny HTML'];
 
+    /** Szablony bazowe Mosaico (katalogi w public/vendor/mosaico/templates/). */
+    public const MOSAICO_TEMPLATES = [
+        'feer-1' => 'FEER klasyczny — ciemnoniebieskie przyciski, szare tło',
+        'feer-2' => 'FEER — kolory marki (niebieski #1E6DFF, pomarańczowe przyciski, tło #CBD5E7)',
+    ];
+
     /** Maile systemowe, które można przeprojektować w Mosaico (puste = wbudowany widok Blade). */
     public const SYSTEM_MAILS = [
         'double_opt_in' => [

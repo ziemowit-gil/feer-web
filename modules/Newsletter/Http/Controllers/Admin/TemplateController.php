@@ -125,7 +125,7 @@ class TemplateController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'kind' => ['required', Rule::in(array_keys(NewsletterTemplate::KINDS))],
-            'mosaico_template' => ['nullable', 'string', 'max:64'],
+            'mosaico_template' => ['nullable', Rule::in(array_keys(NewsletterTemplate::MOSAICO_TEMPLATES))],
             'html_body' => ['nullable', 'string'],
             'is_default' => ['nullable', 'boolean'],
         ]);
