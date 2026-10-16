@@ -64,6 +64,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
             Route::get('subskrybenci/import', [AdminSubscriberController::class, 'importForm'])->name('subskrybenci.import');
             Route::post('subskrybenci/import', [AdminSubscriberController::class, 'import'])->name('subskrybenci.import.store');
             Route::post('subskrybenci/import/mailerlite', [AdminSubscriberController::class, 'importMailerLite'])->name('subskrybenci.import.mailerlite');
+            Route::post('subskrybenci/import/getresponse', [AdminSubscriberController::class, 'importGetResponse'])->name('subskrybenci.import.getresponse');
             Route::get('subskrybenci/import/{import}', [AdminSubscriberController::class, 'importShow'])->name('subskrybenci.import.show');
             Route::put('subskrybenci/import/{import}', [AdminSubscriberController::class, 'importUpdate'])->name('subskrybenci.import.update');
             Route::get('subskrybenci/import/{import}/postep', [AdminSubscriberController::class, 'importProgress'])->name('subskrybenci.import.progress');

@@ -15,8 +15,8 @@ use Modules\Newsletter\Models\NewsletterSuppression;
 use RuntimeException;
 
 /**
- * Import subskrybentów: odczyt pliku (CSV/JSON, także eksport MailerLite) z mapowaniem
- * kolumn, normalizacja rekordów z API MailerLite, podgląd i zapis pojedynczego rekordu.
+ * Import subskrybentów: odczyt pliku (CSV/JSON, także eksport MailerLite i GetResponse) z mapowaniem
+ * kolumn, normalizacja rekordów z API MailerLite i GetResponse, podgląd i zapis pojedynczego rekordu.
  *
  * Import jest idempotentny po adresie e-mail (ślepy indeks `email_hash`): ponowny import
  * aktualizuje rekord, nie dubluje go, a zgody z importu powstają tylko raz.
@@ -46,9 +46,9 @@ class SubscriberImporter
         'last_name' => ['lastname', 'surname', 'nazwisko', 'last'],
         'phone' => ['phone', 'phonenumber', 'telefon', 'tel'],
         'status' => ['status', 'stan', 'subscriberstatus'],
-        'subscribed_at' => ['optedinat', 'optedin', 'subscribedat', 'subscribed', 'datazapisu', 'signupdate', 'dateadded', 'createdat', 'created'],
-        'ip' => ['optinip', 'signupip', 'subscribedip', 'ipaddress', 'ip', 'adresip'],
-        'groups' => ['groups', 'group', 'grupy', 'grupa', 'listy'],
+        'subscribed_at' => ['optedinat', 'optedin', 'subscribedat', 'createdon', 'subscribed', 'datazapisu', 'signupdate', 'dateadded', 'createdat', 'created'],
+        'ip' => ['optinip', 'signupip', 'subscribedip', 'ipaddress', 'ip', 'adresip', 'subscriptionip'],
+        'groups' => ['groups', 'group', 'grupy', 'grupa', 'listy', 'campaign', 'campaignname', 'listname', 'list', 'lista'],
         'topics' => ['topics', 'tematy'],
         'unsubscribed_at' => ['unsubscribedat', 'unsubscribed', 'datawypisu'],
     ];
@@ -57,7 +57,7 @@ class SubscriberImporter
     private const STATUS_MAP = [
         'active' => Subscriber::STATUS_CONFIRMED, 'subscribed' => Subscriber::STATUS_CONFIRMED, 'confirmed' => Subscriber::STATUS_CONFIRMED, 'aktywny' => Subscriber::STATUS_CONFIRMED,
         'unconfirmed' => Subscriber::STATUS_PENDING, 'pending' => Subscriber::STATUS_PENDING, 'oczekujacy' => Subscriber::STATUS_PENDING, 'oczekujący' => Subscriber::STATUS_PENDING,
-        'unsubscribed' => Subscriber::STATUS_UNSUBSCRIBED, 'wypisany' => Subscriber::STATUS_UNSUBSCRIBED,
+        'unsubscribed' => Subscriber::STATUS_UNSUBSCRIBED, 'wypisany' => Subscriber::STATUS_UNSUBSCRIBED, 'blocklisted' => Subscriber::STATUS_UNSUBSCRIBED, 'blacklisted' => Subscriber::STATUS_UNSUBSCRIBED, 'removed' => Subscriber::STATUS_UNSUBSCRIBED,
         'bounced' => Subscriber::STATUS_BOUNCED, 'odbity' => Subscriber::STATUS_BOUNCED,
         'junk' => Subscriber::STATUS_COMPLAINED, 'spam' => Subscriber::STATUS_COMPLAINED, 'complained' => Subscriber::STATUS_COMPLAINED,
     ];
@@ -201,6 +201,32 @@ class SubscriberImporter
         ];
     }
 
+    /** Kontakt z API GetResponse (kontakt = adres na jednej liście/„kampanii”) → rekord kanoniczny. */
+    public function fromGetResponse(array $contact): array
+    {
+        $campaign = $contact['campaign'] ?? [];
+
+        return [
+            'email' => (string) ($contact['email'] ?? ''),
+            'name' => $contact['name'] ?? null,
+            'last_name' => null,
+            'phone' => null,
+            'status' => 'active',
+            'subscribed_at' => $contact['createdOn'] ?? null,
+            'ip' => $contact['ipAddress'] ?? null,
+            'groups' => isset($campaign['campaignId']) ? [(string) $campaign['campaignId'] => (string) ($campaign['name'] ?? $campaign['campaignId'])] : [],
+            'topics' => [],
+            'unsubscribed_at' => null,
+        ];
+    }
+
+    /** Wpis czarnej listy GetResponse (adres e-mail) → rekord wypisanego. */
+    public function fromGetResponseBlocklist(string $email): array
+    {
+        return ['email' => $email, 'name' => null, 'last_name' => null, 'phone' => null, 'status' => 'blocklisted', 'subscribed_at' => null,
+            'ip' => null, 'groups' => [], 'topics' => [], 'unsubscribed_at' => null];
+    }
+
     // ── Podgląd ─────────────────────────────────────────────────────────────
 
     /** Podgląd pliku: liczby wg statusu docelowego, grupy, błędne adresy, duplikaty, rekordy już w bazie. */
@@ -270,7 +296,7 @@ class SubscriberImporter
             throw new RuntimeException('niepoprawny adres e-mail „'.mb_substr($email, 0, 80).'”');
         }
 
-        $mailerLite = $import->isMailerLite();
+        $provider = $import->provider();
         $target = $this->mapStatus($row['status'] ?? null, (string) $import->option('default_status', Subscriber::STATUS_PENDING));
         $hash = Subscriber::hashEmail($email);
         $s = Subscriber::where('email_hash', $hash)->first();
@@ -290,13 +316,13 @@ class SubscriberImporter
                 return 'skipped:na liście tłumienia';
             }
         } elseif ($target === Subscriber::STATUS_UNSUBSCRIBED && $old === Subscriber::STATUS_CONFIRMED && $s->confirmed_at && $unsubscribedAt && $s->confirmed_at->greaterThan($unsubscribedAt)) {
-            // Wypisał się z MailerLite, a potem zapisał u nas — nowsza zgoda wygrywa.
+            // Wypisał się u dostawcy, a potem zapisał u nas — nowsza zgoda wygrywa.
             return 'skipped:zapisany ponownie po wypisaniu';
         }
 
         $isNew = ! $s;
         $s ??= new Subscriber([
-            'email' => $email, 'site_id' => $import->site_id, 'source' => $mailerLite ? 'mailerlite' : 'import', 'status' => Subscriber::STATUS_PENDING,
+            'email' => $email, 'site_id' => $import->site_id, 'source' => $provider ?? 'import', 'status' => Subscriber::STATUS_PENDING,
         ]);
 
         $name = trim(trim((string) ($row['name'] ?? '')).' '.trim((string) ($row['last_name'] ?? '')));
@@ -333,8 +359,8 @@ class SubscriberImporter
             } else {
                 $s->status = Subscriber::STATUS_PENDING;
                 // Plik „inny system” ze statusem oczekującym zawsze idzie przez double opt-in;
-                // z MailerLite — tylko gdy zaznaczono ponowne potwierdzenie.
-                $sendDoi = ($isNew || $old !== Subscriber::STATUS_PENDING) && ($resend || ! $mailerLite);
+                // z MailerLite/GetResponse — tylko gdy zaznaczono ponowne potwierdzenie.
+                $sendDoi = ($isNew || $old !== Subscriber::STATUS_PENDING) && ($resend || ! $provider);
             }
         }
 
@@ -346,9 +372,9 @@ class SubscriberImporter
 
         if ($blocking) {
             if ($old !== $target) {
-                $s->consents()->whereNull('revoked_at')->update(['revoked_at' => $unsubscribedAt ?? now(), 'revoked_via' => $mailerLite ? 'mailerlite' : 'import']);
+                $s->consents()->whereNull('revoked_at')->update(['revoked_at' => $unsubscribedAt ?? now(), 'revoked_via' => $provider ?? 'import']);
             }
-            NewsletterSuppression::firstOrCreate(['email_hash' => $hash], ['reason' => ($mailerLite ? 'mailerlite_' : 'import_').$target, 'expires_at' => null]);
+            NewsletterSuppression::firstOrCreate(['email_hash' => $hash], ['reason' => ($provider ?? 'import').'_'.$target, 'expires_at' => null]);
         } elseif ($target === Subscriber::STATUS_CONFIRMED && ! $import->option('resend_doi', false)) {
             $this->recordConsent($import, $s, $subscribedAt, $row['ip'] ?? null);
         }
@@ -367,9 +393,10 @@ class SubscriberImporter
     /** Zgoda z importu — jedna na subskrybenta i źródło (ponowny import jej nie dubluje). */
     private function recordConsent(NewsletterImport $import, Subscriber $s, ?CarbonImmutable $subscribedAt, ?string $ip): void
     {
-        $mailerLite = $import->isMailerLite();
-        $source = $mailerLite ? 'import MailerLite' : 'import';
-        $method = $mailerLite ? 'mailerlite_import' : 'admin_import';
+        $provider = $import->provider();
+        $label = $import->providerLabel();
+        $source = $provider ? 'import '.$label : 'import';
+        $method = $provider ? $provider.'_import' : 'admin_import';
 
         if ($s->consents()->where('source', $source)->where('method', $method)->whereNull('revoked_at')->exists()) {
             return;
@@ -381,8 +408,8 @@ class SubscriberImporter
         NewsletterConsent::create([
             'subscriber_id' => $s->id,
             'channel' => 'email',
-            'clause_text' => $mailerLite
-                ? 'Zgoda na newsletter zebrana w MailerLite (data zapisu i IP z MailerLite)'.($note !== '' ? ': '.$note : '').'.'
+            'clause_text' => $provider
+                ? "Zgoda na newsletter zebrana w {$label} (data zapisu i IP z {$label})".($note !== '' ? ': '.$note : '').'.'
                 : 'Zgoda udokumentowana poza systemem: '.($note !== '' ? $note : 'import pliku'),
             'source' => $source,
             'method' => $method,

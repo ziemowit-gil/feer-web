@@ -4,8 +4,12 @@
     @include('newsletter::admin.partials.flash')
     @php
         $summary = $import->summary ?? [];
-        $isApi = $import->source === \Modules\Newsletter\Models\NewsletterImport::SOURCE_MAILERLITE_API;
-        $mlStatuses = ['active' => 'Aktywni', 'unconfirmed' => 'Niepotwierdzeni', 'unsubscribed' => 'Wypisani', 'bounced' => 'Odbici', 'junk' => 'Spam (junk)'];
+        $isApi = $import->isApi();
+        $isMlApi = $import->source === \Modules\Newsletter\Models\NewsletterImport::SOURCE_MAILERLITE_API;
+        $isGrApi = $import->source === \Modules\Newsletter\Models\NewsletterImport::SOURCE_GETRESPONSE_API;
+        $mlStatuses = $isGrApi
+            ? ['active' => 'Kontakty na listach (adres na każdej liście liczony osobno)', 'blocklisted' => 'Czarna lista konta']
+            : ['active' => 'Aktywni', 'unconfirmed' => 'Niepotwierdzeni', 'unsubscribed' => 'Wypisani', 'bounced' => 'Odbici', 'junk' => 'Spam (junk)'];
         $opt = fn (string $k, $d = null) => old($k, $import->option($k, $d));
     @endphp
 
@@ -20,7 +24,7 @@
         <section aria-labelledby="preview-heading" class="mb-6 max-w-5xl rounded-md bg-white p-6">
             <h2 id="preview-heading" class="mb-3 text-lg font-bold">Podgląd: {{ number_format((int) ($summary['total'] ?? 0), 0, ',', ' ') }} rekordów</h2>
             @if ($isApi)
-                <h3 class="mb-2 text-sm font-bold">Statusy w MailerLite</h3>
+                <h3 class="mb-2 text-sm font-bold">Statusy w {{ $import->providerLabel() }}</h3>
                 <ul class="mb-4 flex flex-wrap gap-2 text-sm">
                     @foreach ($mlStatuses as $k => $label)
                         <li class="rounded-md bg-gray-100 px-3 py-1">{{ $label }}: <strong>{{ number_format((int) ($summary['source_status'][$k] ?? 0), 0, ',', ' ') }}</strong></li>
@@ -85,7 +89,7 @@
                         </div>
                     @endif
                 </section>
-            @else
+            @elseif ($isMlApi)
                 <section aria-labelledby="fields-heading" class="rounded-md bg-white p-6">
                     <h2 id="fields-heading" class="mb-1 text-lg font-bold">Pola MailerLite</h2>
                     <p class="mb-4 text-sm text-muted">Które pola MailerLite przenieść do danych subskrybenta.</p>
@@ -148,12 +152,15 @@
                         <label class="mt-2 flex items-start gap-2 text-sm"><input type="radio" name="default_status" value="confirmed" @checked($opt('default_status') === 'confirmed') class="mt-1 border-gray-500 text-brand-dark focus:ring-brand-dark"> <span><strong>Aktywny</strong> — tylko z udokumentowaną zgodą.</span></label>
                     </fieldset>
                 @endunless
-                <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="resend_doi" value="1" @checked($opt('resend_doi')) class="mt-1 rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> <span><strong>Poproś aktywnych i niepotwierdzonych o ponowne potwierdzenie (double opt-in).</strong> Domyślnie aktywni z {{ $import->isMailerLite() ? 'MailerLite' : 'pliku' }} zostają aktywni bez wysyłki — ich zgoda trafia do rejestru zgód{{ $import->isMailerLite() ? ' ze źródłem „import MailerLite”, datą zapisu i IP' : '' }}.</span></label>
-                <div class="space-y-3 rounded-md {{ $import->isMailerLite() ? 'bg-gray-100' : 'bg-amber-50' }} p-4">
-                    @unless ($import->isMailerLite())
+                @if ($isGrApi)
+                    <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="import_blocklist" value="1" @checked($opt('import_blocklist', true)) class="mt-1 rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> <span><strong>Przenieś czarną listę GetResponse</strong> — adresy z niej zapiszemy jako wypisane i dodamy do listy tłumienia (maski całych domen pomijamy).</span></label>
+                @endif
+                <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="resend_doi" value="1" @checked($opt('resend_doi')) class="mt-1 rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> <span><strong>Poproś aktywnych i niepotwierdzonych o ponowne potwierdzenie (double opt-in).</strong> Domyślnie aktywni z {{ $import->isExternal() ? $import->providerLabel() : 'pliku' }} zostają aktywni bez wysyłki — ich zgoda trafia do rejestru zgód{{ $import->isExternal() ? ' ze źródłem „import ' . $import->providerLabel() . '”, datą zapisu i IP' : '' }}.</span></label>
+                <div class="space-y-3 rounded-md {{ $import->isExternal() ? 'bg-gray-100' : 'bg-amber-50' }} p-4">
+                    @unless ($import->isExternal())
                         <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="has_consent" value="1" @checked($opt('has_consent')) class="mt-1 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @error('has_consent') aria-invalid="true" @enderror> <span>Oświadczam, że dla aktywnych adresów organizacja posiada ważną zgodę na otrzymywanie newslettera.</span></label>
                     @endunless
-                    <div><label for="consent_source" class="mb-1 block text-sm font-bold">Źródło zgody {{ $import->isMailerLite() ? '(opcjonalny opis)' : '' }}</label><input id="consent_source" name="consent_source" value="{{ $opt('consent_source') }}" maxlength="120" placeholder="{{ $import->isMailerLite() ? 'np. formularz na stronie, konto MailerLite FEER' : 'np. baza SZO, eksport 2026-09' }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark"></div>
+                    <div><label for="consent_source" class="mb-1 block text-sm font-bold">Źródło zgody {{ $import->isExternal() ? '(opcjonalny opis)' : '' }}</label><input id="consent_source" name="consent_source" value="{{ $opt('consent_source') }}" maxlength="120" placeholder="{{ $import->isExternal() ? 'np. formularz na stronie, konto ' . $import->providerLabel() . ' FEER' : 'np. baza SZO, eksport 2026-09' }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark"></div>
                     <div><label for="consent_date" class="mb-1 block text-sm font-bold">Data zgody, gdy brak daty zapisu (opcjonalnie)</label><input id="consent_date" name="consent_date" type="date" value="{{ $opt('consent_date') }}" class="rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark"></div>
                 </div>
             </section>

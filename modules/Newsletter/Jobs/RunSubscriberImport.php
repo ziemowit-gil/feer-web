@@ -10,13 +10,14 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Modules\Newsletter\Models\NewsletterImport;
+use Modules\Newsletter\Services\GetResponseClient;
 use Modules\Newsletter\Services\MailerLiteClient;
 use Modules\Newsletter\Services\SubscriberImporter;
 use RuntimeException;
 use Throwable;
 
 /**
- * Jedna porcja importu subskrybentów (strona API MailerLite albo fragment pliku).
+ * Jedna porcja importu subskrybentów (strona API MailerLite/GetResponse albo fragment pliku).
  * Po porcji zapisuje postęp (kursor/pozycję) i kolejkuje następną — dzięki temu duże
  * bazy mieszczą się w limicie czasu workera (co minutę, --max-time=50).
  */
@@ -56,6 +57,27 @@ class RunSubscriberImport implements ShouldQueue
             $import->position = $n;
             $import->cursor = $page['next_cursor'];
             $more = $page['next_cursor'] !== null && $page['data'] !== [];
+        } elseif ($import->source === NewsletterImport::SOURCE_GETRESPONSE_API) {
+            // Najpierw kontakty strona po stronie („contacts:<strona>”), potem czarna lista konta („blocklist:<przesunięcie>”).
+            $client = GetResponseClient::fromSettings() ?? throw new RuntimeException('Brak klucza API GetResponse.');
+            [$phase, $at] = explode(':', $import->cursor ?: 'contacts:1') + [1 => '1'];
+            $n = $import->position;
+            if ($phase === 'contacts') {
+                $page = $client->contactsPage((int) $at, self::API_PAGE);
+                foreach ($page['data'] as $contact) {
+                    $this->one($importer, $import, ++$n, $importer->fromGetResponse($contact));
+                }
+                $import->cursor = $page['more'] ? 'contacts:'.((int) $at + 1) : ($import->option('import_blocklist', true) ? 'blocklist:0' : null);
+                $more = $import->cursor !== null;
+            } else {
+                $emails = array_slice($client->blocklist(), (int) $at, self::API_PAGE);
+                foreach ($emails as $email) {
+                    $this->one($importer, $import, ++$n, $importer->fromGetResponseBlocklist($email));
+                }
+                $import->cursor = 'blocklist:'.((int) $at + count($emails));
+                $more = count($emails) === self::API_PAGE;
+            }
+            $import->position = $n;
         } else {
             $count = 0;
             foreach ($importer->fileRows($import, $import->position, self::FILE_CHUNK) as $n => $row) {

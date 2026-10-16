@@ -76,6 +76,12 @@ return [
         'url'   => env('MAILERLITE_API_URL', 'https://connect.mailerlite.com/api'),
     ],
 
+    // Import subskrybentów newslettera z GetResponse (klucz można też podać w panelu).
+    'getresponse' => [
+        'token' => env('GETRESPONSE_API_KEY'),
+        'url'   => env('GETRESPONSE_API_URL', 'https://api.getresponse.com/v3'),
+    ],
+
     // Asystent AI w panelu (Claude API) — klucz zapasowy, gdy nie podano go w Ustawienia → Treści.
     'anthropic' => [
         'key' => env('ANTHROPIC_API_KEY'),

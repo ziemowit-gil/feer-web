@@ -17,6 +17,7 @@ use Modules\Newsletter\Models\NewsletterImport;
 use Modules\Newsletter\Models\NewsletterList;
 use Modules\Newsletter\Models\NewsletterSegment;
 use Modules\Newsletter\Models\NewsletterSuppression;
+use Modules\Newsletter\Services\GetResponseClient;
 use Modules\Newsletter\Services\MailerLiteClient;
 use Modules\Newsletter\Services\SubscriberImporter;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -175,11 +176,14 @@ class SubscriberController extends Controller
 
     public function importForm()
     {
-        $token = MailerLiteClient::token();
+        $site = SiteSetting::current();
+        $mask = fn (?string $t) => $t ? '••••' . substr($t, -4) : null;
 
         return view('newsletter::admin.subscribers.import', [
-            'tokenMask'  => $token ? '••••' . substr($token, -4) : null,
-            'tokenInDb'  => filled(SiteSetting::current()->newsletter_mailerlite_token),
+            'tokenMask'  => $mask(MailerLiteClient::token($site)),
+            'tokenInDb'  => filled($site->newsletter_mailerlite_token),
+            'grMask'     => $mask(GetResponseClient::token($site)),
+            'grInDb'     => filled($site->newsletter_getresponse_token),
             'imports'    => NewsletterImport::latest()->limit(10)->get(),
         ]);
     }
@@ -189,7 +193,7 @@ class SubscriberController extends Controller
     {
         $data = $request->validate([
             'file'   => ['required', 'file', 'mimes:csv,txt,json', 'max:20480'],
-            'source' => ['nullable', Rule::in([NewsletterImport::SOURCE_FILE, NewsletterImport::SOURCE_MAILERLITE_CSV])],
+            'source' => ['nullable', Rule::in([NewsletterImport::SOURCE_FILE, NewsletterImport::SOURCE_MAILERLITE_CSV, NewsletterImport::SOURCE_GETRESPONSE_CSV])],
         ]);
 
         $import = NewsletterImport::create([
@@ -265,6 +269,49 @@ class SubscriberController extends Controller
         return redirect()->route('admin.newsletter.subskrybenci.import.show', $import);
     }
 
+    /** Krok 1 (API GetResponse): zapis klucza, test połączenia, liczba kontaktów, listy i czarna lista. */
+    public function importGetResponse(Request $request)
+    {
+        $data = $request->validate(['token' => ['nullable', 'string', 'max:2000'], 'forget_token' => ['nullable', 'boolean']]);
+        $site = SiteSetting::current();
+
+        if ($request->boolean('forget_token')) {
+            $site->forceFill(['newsletter_getresponse_token' => null])->save();
+
+            return back()->with('status', 'Klucz API GetResponse usunięty z ustawień.');
+        }
+        if (filled($data['token'] ?? null)) {
+            $site->forceFill(['newsletter_getresponse_token' => trim($data['token'])])->save();
+        }
+
+        $client = GetResponseClient::fromSettings($site);
+        if (! $client) {
+            return back()->withErrors(['gr_token' => 'Podaj klucz API GetResponse (Narzędzia → Integracje i API → API).']);
+        }
+
+        try {
+            $contacts = $client->count();
+            $campaigns = $client->campaigns();
+            $blocked = count($client->blocklist());
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['gr_token' => $e->getMessage()]);
+        }
+
+        $import = NewsletterImport::create([
+            'site_id' => $site->id, 'user_id' => auth()->id(), 'source' => NewsletterImport::SOURCE_GETRESPONSE_API,
+            'status'  => NewsletterImport::STATUS_PREVIEW, 'total' => $contacts + $blocked,
+            'options' => $this->defaultImportOptions() + ['import_blocklist' => true],
+            'summary' => [
+                'total'         => $contacts + $blocked,
+                'source_status' => ['active' => $contacts, 'blocklisted' => $blocked],
+                'by_status'     => array_filter([Subscriber::STATUS_CONFIRMED => $contacts, Subscriber::STATUS_UNSUBSCRIBED => $blocked]),
+                'groups'        => array_map(fn ($c) => ['key' => $c['id'], 'name' => $c['name'], 'count' => $c['total']], $campaigns),
+            ],
+        ]);
+
+        return redirect()->route('admin.newsletter.subskrybenci.import.show', $import);
+    }
+
     /** Krok 2: podgląd i mapowanie (przed uruchomieniem) albo postęp i raport. */
     public function importShow(NewsletterImport $import)
     {
@@ -300,6 +347,7 @@ class SubscriberController extends Controller
             'topics'         => ['nullable', 'array'],
             'topics.*'       => [Rule::in(array_keys(Subscriber::availableTopics(false)))],
             'tag'            => ['nullable', 'string', 'max:40'],
+            'import_blocklist' => ['nullable', 'boolean'],
         ]);
 
         $groupMap = [];
@@ -319,9 +367,10 @@ class SubscriberController extends Controller
             'list_id'        => $data['list_id'] ?? null,
             'topics'         => $data['topics'] ?? [],
             'tag'            => $data['tag'] ?? null,
-        ] + ($import->source === NewsletterImport::SOURCE_MAILERLITE_API ? ['field_map' => array_filter((array) ($data['field_map'] ?? []))] : []));
+        ] + ($import->source === NewsletterImport::SOURCE_MAILERLITE_API ? ['field_map' => array_filter((array) ($data['field_map'] ?? []))] : [])
+          + ($import->source === NewsletterImport::SOURCE_GETRESPONSE_API ? ['import_blocklist' => $request->boolean('import_blocklist')] : []));
 
-        if ($import->source !== NewsletterImport::SOURCE_MAILERLITE_API) {
+        if (! $import->isApi()) {
             $mapping = array_map('intval', array_filter((array) ($data['mapping'] ?? []), fn ($v) => $v !== null && $v !== ''));
             $import->mapping = array_intersect_key($mapping, SubscriberImporter::FIELDS);
             $import->summary = $importer->previewFile($import);
@@ -332,15 +381,15 @@ class SubscriberController extends Controller
             return redirect()->route('admin.newsletter.subskrybenci.import.show', $import)->with('status', 'Podgląd przeliczony.');
         }
 
-        if (! isset($import->mapping['email']) && $import->source !== NewsletterImport::SOURCE_MAILERLITE_API) {
+        if (! isset($import->mapping['email']) && ! $import->isApi()) {
             return back()->withErrors(['mapping.email' => 'Wskaż kolumnę z adresem e-mail.']);
         }
         $activeRows = (int) ($import->summary['by_status'][Subscriber::STATUS_CONFIRMED] ?? 0);
-        // Z MailerLite zgody są już udokumentowane (data zapisu i IP) — oświadczenie tylko dla plików z innych systemów.
-        if ($activeRows > 0 && ! $import->isMailerLite() && ! $import->option('resend_doi') && ! $import->option('has_consent')) {
+        // Z MailerLite i GetResponse zgody są już udokumentowane (data zapisu i IP) — oświadczenie tylko dla plików z innych systemów.
+        if ($activeRows > 0 && ! $import->isExternal() && ! $import->option('resend_doi') && ! $import->option('has_consent')) {
             return back()->withErrors(['has_consent' => "Import obejmuje {$activeRows} aktywnych adresów bez ponownego potwierdzenia — potwierdź, że masz udokumentowane zgody, albo zaznacz ponowne potwierdzenie (double opt-in)."]);
         }
-        if ($activeRows > 0 && ! $import->isMailerLite() && ! $import->option('resend_doi') && blank($import->option('consent_source'))) {
+        if ($activeRows > 0 && ! $import->isExternal() && ! $import->option('resend_doi') && blank($import->option('consent_source'))) {
             return back()->withErrors(['consent_source' => 'Podaj źródło zgody — trafi do rejestru zgód.']);
         }
 
@@ -348,15 +397,15 @@ class SubscriberController extends Controller
         foreach ($groupMap as $key => $target) {
             if ($target === 'new_list') {
                 $name = (string) (collect($import->summary['groups'] ?? [])->firstWhere('key', $key)['name'] ?? $key);
-                $groupMap[$key] = 'list:' . $this->listForGroup($name)->id;
+                $groupMap[$key] = 'list:' . $this->listForGroup($name, $import->providerLabel())->id;
             }
         }
         $options = $import->options;
         $options['group_map'] = $groupMap;
         $import->forceFill(['options' => $options, 'status' => NewsletterImport::STATUS_QUEUED, 'position' => 0, 'cursor' => null])->save();
 
-        // Mały plik — od razu, z raportem po przeładowaniu; większe i API MailerLite — w kolejce.
-        $small = $import->source !== NewsletterImport::SOURCE_MAILERLITE_API && (int) ($import->summary['total'] ?? 0) <= RunSubscriberImport::FILE_CHUNK;
+        // Mały plik — od razu, z raportem po przeładowaniu; większe i import przez API — w kolejce.
+        $small = ! $import->isApi() && (int) ($import->summary['total'] ?? 0) <= RunSubscriberImport::FILE_CHUNK;
         if (! $small) {
             RunSubscriberImport::dispatch($import->id);
         } else {
@@ -482,9 +531,9 @@ class SubscriberController extends Controller
         return ['default_status' => Subscriber::STATUS_PENDING, 'topics' => ['news'], 'tag' => 'import-' . now()->format('Y-m-d'), 'resend_doi' => false];
     }
 
-    private function listForGroup(string $name): NewsletterList
+    private function listForGroup(string $name, string $from): NewsletterList
     {
-        $name = mb_substr(trim($name) ?: 'MailerLite', 0, 120);
+        $name = mb_substr(trim($name) ?: $from, 0, 120);
         $existing = NewsletterList::where('name', $name)->first();
         if ($existing) {
             return $existing;
@@ -496,6 +545,6 @@ class SubscriberController extends Controller
             $slug = $base . '-' . $i++;
         }
 
-        return NewsletterList::create(['site_id' => SiteSetting::current()->id, 'name' => $name, 'slug' => $slug, 'description' => 'Grupa zaimportowana z MailerLite.']);
+        return NewsletterList::create(['site_id' => SiteSetting::current()->id, 'name' => $name, 'slug' => $slug, 'description' => 'Grupa zaimportowana z ' . ($from === 'plik' ? 'pliku' : $from) . '.']);
     }
 }

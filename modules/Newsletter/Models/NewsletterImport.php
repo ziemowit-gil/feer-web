@@ -18,10 +18,19 @@ class NewsletterImport extends Model
 
     public const SOURCE_MAILERLITE_API = 'mailerlite_api';
 
+    public const SOURCE_GETRESPONSE_CSV = 'getresponse_csv';
+
+    public const SOURCE_GETRESPONSE_API = 'getresponse_api';
+
+    /** Dostawcy zewnętrzni: klucz => nazwa (do zgód, źródła subskrybenta i powodu tłumienia). */
+    public const PROVIDERS = ['mailerlite' => 'MailerLite', 'getresponse' => 'GetResponse'];
+
     public const SOURCES = [
         self::SOURCE_FILE => 'Plik CSV/JSON',
         self::SOURCE_MAILERLITE_CSV => 'Plik CSV z MailerLite',
         self::SOURCE_MAILERLITE_API => 'MailerLite (API)',
+        self::SOURCE_GETRESPONSE_CSV => 'Plik CSV z GetResponse',
+        self::SOURCE_GETRESPONSE_API => 'GetResponse (API)',
     ];
 
     public const STATUS_PREVIEW = 'preview';
@@ -63,9 +72,28 @@ class NewsletterImport extends Model
         'finished_at' => 'datetime',
     ];
 
-    public function isMailerLite(): bool
+    /** Import z MailerLite lub GetResponse (API albo eksport) — zgody udokumentowane u dostawcy. */
+    public function isExternal(): bool
     {
-        return $this->source !== self::SOURCE_FILE;
+        return $this->provider() !== null;
+    }
+
+    /** @return 'mailerlite'|'getresponse'|null */
+    public function provider(): ?string
+    {
+        $provider = strstr((string) $this->source, '_', true);
+
+        return isset(self::PROVIDERS[$provider]) ? $provider : null;
+    }
+
+    public function providerLabel(): string
+    {
+        return self::PROVIDERS[$this->provider()] ?? 'plik';
+    }
+
+    public function isApi(): bool
+    {
+        return str_ends_with((string) $this->source, '_api');
     }
 
     public function isFinished(): bool

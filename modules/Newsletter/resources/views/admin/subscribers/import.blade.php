@@ -4,7 +4,7 @@
     @include('newsletter::admin.partials.flash')
     <p class="mb-4 max-w-3xl text-sm text-ink">Import przebiega w dwóch krokach: najpierw zobaczysz podgląd (liczby wg statusu, mapowanie kolumn i grup), dopiero potem uruchomisz zapis. Import jest bezpieczny do powtórzenia — rekordy łączymy po adresie e-mail, więc ponowny import aktualizuje dane zamiast tworzyć duplikaty.</p>
 
-    <div class="grid max-w-5xl gap-6 lg:grid-cols-2">
+    <div class="grid max-w-6xl gap-6 lg:grid-cols-3">
         <section aria-labelledby="import-file-heading" class="space-y-4 rounded-md bg-white p-6">
             <h2 id="import-file-heading" class="text-lg font-bold">Z pliku CSV lub JSON</h2>
             <form method="POST" action="{{ route('admin.newsletter.subskrybenci.import.store') }}" enctype="multipart/form-data" class="space-y-4">
@@ -18,6 +18,7 @@
                     <legend class="mb-1 text-sm font-bold">Skąd pochodzi plik?</legend>
                     <label class="flex items-start gap-2 text-sm"><input type="radio" name="source" value="file" checked class="mt-1 border-gray-500 text-brand-dark focus:ring-brand-dark"> <span>Z innego systemu lub arkusza</span></label>
                     <label class="mt-2 flex items-start gap-2 text-sm"><input type="radio" name="source" value="mailerlite_csv" class="mt-1 border-gray-500 text-brand-dark focus:ring-brand-dark"> <span>Eksport z MailerLite — data zapisu i IP trafią do rejestru zgód ze źródłem „import MailerLite”</span></label>
+                    <label class="mt-2 flex items-start gap-2 text-sm"><input type="radio" name="source" value="getresponse_csv" class="mt-1 border-gray-500 text-brand-dark focus:ring-brand-dark"> <span>Eksport z GetResponse — data zapisu i IP trafią do rejestru zgód ze źródłem „import GetResponse”</span></label>
                 </fieldset>
                 <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink">Dalej: podgląd</button>
             </form>
@@ -44,6 +45,31 @@
                     @csrf
                     <input type="hidden" name="forget_token" value="1">
                     <button type="submit" class="rounded-md bg-gray-100 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-brand-light">Usuń zapisany token</button>
+                </form>
+            @endif
+        </section>
+
+        <section aria-labelledby="import-gr-heading" class="space-y-4 rounded-md bg-white p-6">
+            <h2 id="import-gr-heading" class="text-lg font-bold">Z GetResponse przez API</h2>
+            <p class="text-sm text-ink">Pobierzemy kontakty ze wszystkich list (listy przeniesiesz na listy lub tematy newslettera) oraz czarną listę konta — te adresy trafią na listę tłumienia.</p>
+            @if ($grMask)
+                <p class="text-sm"><strong>Klucz:</strong> {{ $grMask }} {{ $grInDb ? '(zapisany w panelu, zaszyfrowany)' : '(z pliku .env — GETRESPONSE_API_KEY)' }}</p>
+            @endif
+            <form method="POST" action="{{ route('admin.newsletter.subskrybenci.import.getresponse') }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label for="gr_token" class="mb-1 block text-sm font-bold">{{ $grMask ? 'Nowy klucz API (opcjonalnie)' : 'Klucz API GetResponse' }}</label>
+                    <input id="gr_token" name="token" type="password" autocomplete="off" spellcheck="false" aria-describedby="gr-token-help" @if(! $grMask) required @endif class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark" @error('gr_token') aria-invalid="true" @enderror>
+                    <p id="gr-token-help" class="mt-1 text-xs text-muted">GetResponse → Narzędzia → Integracje i API → API → Generuj klucz API. Zapisujemy go zaszyfrowanego; puste pole = użyj zapisanego.</p>
+                    @error('gr_token')<p class="mt-1 text-sm font-bold text-red-900" role="alert">{{ $message }}</p>@enderror
+                </div>
+                <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink">Połącz i pokaż podgląd</button>
+            </form>
+            @if ($grInDb)
+                <form method="POST" action="{{ route('admin.newsletter.subskrybenci.import.getresponse') }}">
+                    @csrf
+                    <input type="hidden" name="forget_token" value="1">
+                    <button type="submit" class="rounded-md bg-gray-100 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-brand-light">Usuń zapisany klucz</button>
                 </form>
             @endif
         </section>
