@@ -126,6 +126,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
         // Raporty kampanii (zawierają adresy odbiorców).
         Route::middleware('can:newsletter.reports')->group(function (): void {
             Route::get('kampanie/{campaign}/raport', [AdminCampaignController::class, 'report'])->name('kampanie.report');
+            Route::post('kampanie/{campaign}/ponow-nieudane', [AdminCampaignController::class, 'retryFailed'])->name('kampanie.retry');
             Route::get('kampanie/{campaign}/raport.csv', [AdminCampaignController::class, 'reportCsv'])->name('kampanie.report.csv');
         });
 

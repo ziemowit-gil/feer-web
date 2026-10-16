@@ -2,6 +2,7 @@
 @section('title', 'Newsletter — pulpit')
 @section('content')
     @include('newsletter::admin.partials.flash')
+    @include('newsletter::admin.partials.queue-alert')
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-muted">Kampanie e-mail, push i SMS · subskrybenci z double opt-in</p>
         <div class="flex gap-2">
@@ -127,7 +128,10 @@
             <section class="p-4 rounded-md bg-white" aria-labelledby="queue-h">
                 <h2 id="queue-h" class="mb-2 text-sm font-bold uppercase text-muted">Kolejka i dostarczalność</h2>
                 <ul class="space-y-1 text-sm text-ink">
-                    <li><i class="fa-solid fa-layer-group text-muted" aria-hidden="true"></i> Jobów w kolejce <code>newsletter</code>: <strong>{{ $queue }}</strong>@if($failedJobs) · <span class="font-bold text-red-700">nieudanych: {{ $failedJobs }}</span>@endif</li>
+                    <li><i class="fa-solid fa-layer-group text-muted" aria-hidden="true"></i> W kolejce: <strong>{{ $queueHealth['pending'] }}</strong>@foreach ($queueHealth['queues'] as $qName => $q) <span class="text-muted">({{ $qName }}: {{ $q['pending'] }})</span>@endforeach</li>
+                    <li><i class="fa-solid fa-hourglass-half text-muted" aria-hidden="true"></i> Najstarsze gotowe zadanie: <strong>{{ $queueHealth['oldest']?->diffForHumans() ?? '—' }}</strong></li>
+                    <li><i class="fa-solid fa-heart-pulse text-muted" aria-hidden="true"></i> Worker ostatnio pracował: <strong>{{ $queueHealth['worker']?->diffForHumans() ?? 'brak danych' }}</strong></li>
+                    <li><i class="fa-solid fa-circle-xmark text-muted" aria-hidden="true"></i> Nieudane zadania: <strong class="{{ $queueHealth['failed'] ? 'text-red-800' : '' }}">{{ $queueHealth['failed'] }}</strong>@if ($queueHealth['failed_recent']) <span class="font-bold text-red-800">(w ostatniej dobie: {{ $queueHealth['failed_recent'] }})</span>@endif</li>
                     <li><i class="fa-solid fa-triangle-exclamation text-muted" aria-hidden="true"></i> Odbicia (90 dni): <strong>{{ $bounce !== null ? $bounce . ' %' : '—' }}</strong> {{ $bounce !== null && $bounce > 2 ? '— powyżej normy (2 %)' : '' }}</li>
                     @if ($deliverability['domain'])
                     <li class="pt-2 text-xs text-muted">Domena nadawcy: <strong class="text-ink">{{ $deliverability['domain'] }}</strong></li>
@@ -136,7 +140,7 @@
                     <li>DMARC: {!! $deliverability['dmarc'] ? '<span class="font-bold text-green-800">✔ ' . e(\Illuminate\Support\Str::limit($deliverability['dmarc'], 40)) . '</span>' : '<span class="font-bold text-red-700">✘ brak</span>' !!}</li>
                     @endif
                 </ul>
-                <p class="mt-3 text-xs text-muted">Worker: <code>php84 artisan queue:work database --queue=newsletter,default</code></p>
+                <p class="mt-3 text-xs text-muted">Worker startuje co minutę z harmonogramu (<code>schedule:run</code>) i obsługuje kolejki <code>newsletter</code> i <code>default</code>.</p>
             </section>
         </div>
     </div>

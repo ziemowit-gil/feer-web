@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Modules\Newsletter\Channels\ChannelRegistry;
+use Modules\Newsletter\Services\Deliverability;
+use Modules\Newsletter\Services\SendWindow;
 use Modules\Newsletter\Channels\OutboundMessage;
 use Modules\Newsletter\Mail\CampaignMail;
 
@@ -18,7 +20,7 @@ class SettingsController extends Controller
 {
     public const MAILERS = ['' => 'Domyślny mailer aplikacji (MAIL_MAILER)', 'msgraph' => 'Microsoft Graph', 'ses' => 'Amazon SES', 'mailgun' => 'Mailgun', 'postmark' => 'Postmark', 'smtp' => 'SMTP'];
 
-    public function edit(ChannelRegistry $channels)
+    public function edit(Request $request, ChannelRegistry $channels, Deliverability $deliverability)
     {
         $site = SiteSetting::current();
 
@@ -28,6 +30,8 @@ class SettingsController extends Controller
             'channels' => $channels->all(),
             'szoConfigured' => (bool) config('szo.enabled') && filled(config('szo.url')) && filled(config('szo.token')),
             'vapidConfigured' => filled(config('webpush.vapid.public_key')),
+            'sendWindow' => SendWindow::fromSettings($site),
+            'dns' => $deliverability->check($site, fresh: $request->boolean('odswiez-dns')),
             'webhookUrls' => collect(['ses', 'mailgun', 'postmark', 'generic'])->mapWithKeys(fn ($p) => [$p => route('newsletter.webhook', ['provider' => $p])]),
         ]);
     }
@@ -67,7 +71,16 @@ class SettingsController extends Controller
             'newsletter_crm_webhook_url' => ['nullable', 'url', 'max:500'],
             'newsletter_crm_webhook_secret' => ['nullable', 'string', 'max:255'],
             'newsletter_code' => ['nullable', 'string'],
+            'send_window' => ['nullable', 'array'],
+            'send_window.days' => ['nullable', 'array'],
+            'send_window.days.*' => ['integer', 'between:1,7'],
+            'send_window.from' => ['nullable', 'date_format:H:i'],
+            'send_window.to' => ['nullable', 'date_format:H:i'],
         ]);
+        // Okno wysyłki: JSON bez rzutowania w modelu (forceFill — kolumna spoza $fillable SiteSetting).
+        $window = SendWindow::normalize(['enabled' => $request->boolean('send_window.enabled')] + (array) ($data['send_window'] ?? []));
+        unset($data['send_window']);
+        $site->forceFill(['newsletter_send_window' => json_encode($window)]);
 
         foreach (['newsletter_track_opens', 'newsletter_track_clicks', 'newsletter_webpush_enabled', 'newsletter_szo_sync', 'newsletter_crm_sync', 'newsletter_require_approval'] as $b) {
             $data[$b] = $request->boolean($b);

@@ -17,6 +17,8 @@ use Modules\Newsletter\Channels\ChannelRegistry;
 use Modules\Newsletter\Models\NewsletterCampaign;
 use Modules\Newsletter\Models\NewsletterDelivery;
 use Modules\Newsletter\Models\NewsletterSuppression;
+use Modules\Newsletter\Services\SendWindow;
+use App\Models\SiteSetting;
 
 /** Wysyła jedną dostawę. Sprawdza stan subskrybenta i kampanii tuż przed wysłaniem. */
 class SendDelivery implements ShouldQueue
@@ -31,6 +33,15 @@ class SendDelivery implements ShouldQueue
     public function backoff(): array
     {
         return [60, 300, 1800];
+    }
+
+    /**
+     * Odłożenia (limit na minutę, okno wysyłki, limit dzienny) nie mogą zjadać prób —
+     * o porażce decyduje licznik prób samej dostawy ($delivery->attempts), nie licznik joba.
+     */
+    public function retryUntil(): \DateTimeInterface
+    {
+        return now()->addDays(10);
     }
 
     public function middleware(): array
@@ -65,6 +76,25 @@ class SendDelivery implements ShouldQueue
             return;
         }
 
+        // Okno wysyłki (np. dni robocze 8–18) — poza nim czekamy do najbliższego otwarcia.
+        $window = SendWindow::fromSettings();
+        if ($next = $window->nextOpening()) {
+            $this->release(max(60, (int) now()->diffInSeconds($next, true) + random_int(0, 300)));
+
+            return;
+        }
+
+        // Limit dzienny (dzielenie dużej kampanii na części) — po jego wyczerpaniu reszta wychodzi następnego dnia.
+        $perDay = (int) (SiteSetting::current()->newsletter_rate_per_day ?? 0);
+        if ($perDay > 0 && $delivery->channel === 'email'
+            && NewsletterDelivery::where('channel', 'email')->where('sent_at', '>=', now()->startOfDay())->count() >= $perDay) {
+            $tomorrow = now()->addDay()->startOfDay();
+            $open = $window->nextOpening($tomorrow) ?? $tomorrow;
+            $this->release(max(60, (int) now()->diffInSeconds($open, true) + random_int(0, 600)));
+
+            return;
+        }
+
         $driver = $channels->get($delivery->channel);
         if (! $driver || ! $subscriber || ! $driver->supports($subscriber) || NewsletterSuppression::contains($subscriber->email_hash)) {
             $delivery->forceFill(['status' => NewsletterDelivery::STATUS_SKIPPED, 'error_message' => 'Odbiorca nie spełnia warunków (status, zgoda, lista tłumienia)'])->save();
@@ -88,7 +118,7 @@ class SendDelivery implements ShouldQueue
             return;
         }
 
-        if ($result->permanent || $this->attempts() >= $this->tries) {
+        if ($result->permanent || $delivery->attempts >= $this->tries) {
             $status = $result->permanent && $delivery->channel === 'email' ? NewsletterDelivery::STATUS_HARD_BOUNCED : NewsletterDelivery::STATUS_FAILED;
             $delivery->forceFill([
                 'status' => $status, 'provider' => $result->provider, 'error_code' => $result->errorCode, 'error_message' => $result->errorMessage,
@@ -105,6 +135,6 @@ class SendDelivery implements ShouldQueue
         }
 
         $delivery->forceFill(['error_code' => $result->errorCode, 'error_message' => $result->errorMessage])->save();
-        $this->release($this->backoff()[min($this->attempts() - 1, 2)]);
+        $this->release($this->backoff()[min(max($delivery->attempts, 1) - 1, 2)]);
     }
 }

@@ -8,6 +8,7 @@ use App\Models\SiteSetting;
 use App\Models\User;
 use App\Support\NewsletterPermissions;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -20,6 +21,8 @@ use Modules\Newsletter\Console\ExpirePendingSubscribers;
 use Modules\Newsletter\Console\PruneNewsletterData;
 use Modules\Newsletter\Console\RunRecurringCampaigns;
 use Modules\Newsletter\Console\SyncSubscribersToCrm;
+use Modules\Newsletter\Console\CheckQueueHealth;
+use Modules\Newsletter\Services\QueueHealth;
 use Modules\Newsletter\View\Components\SignupWidget;
 
 /**
@@ -58,6 +61,9 @@ final class NewsletterServiceProvider extends ServiceProvider
 
         $this->applyMailerConfig();
 
+        // Tętno workera kolejki — pulpit i alert (newsletter:queue-health) wiedzą, czy worker pracuje.
+        Queue::looping(fn () => QueueHealth::beat());
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 DispatchDueCampaigns::class,
@@ -65,6 +71,7 @@ final class NewsletterServiceProvider extends ServiceProvider
                 ExpirePendingSubscribers::class,
                 PruneNewsletterData::class,
                 SyncSubscribersToCrm::class,
+                CheckQueueHealth::class,
             ]);
 
             $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
@@ -73,6 +80,7 @@ final class NewsletterServiceProvider extends ServiceProvider
                 $schedule->command('newsletter:expire-pending')->dailyAt('03:10');
                 $schedule->command('newsletter:prune')->dailyAt('03:30');
                 $schedule->command('newsletter:sync-crm')->everyFifteenMinutes()->withoutOverlapping();
+                $schedule->command('newsletter:queue-health')->everyFiveMinutes()->withoutOverlapping();
             });
         }
     }

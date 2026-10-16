@@ -7,9 +7,10 @@ namespace Modules\Newsletter\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
 use App\Models\Subscriber;
-use Illuminate\Support\Facades\DB;
 use Modules\Newsletter\Models\NewsletterCampaign;
 use Modules\Newsletter\Models\NewsletterDelivery;
+use Modules\Newsletter\Services\Deliverability;
+use Modules\Newsletter\Services\QueueHealth;
 use Modules\Newsletter\Services\MosaicoImageSizes;
 
 /**
@@ -49,35 +50,12 @@ class DashboardController extends Controller
             $growth[] = ['label' => $from->format('d.m'), 'value' => Subscriber::where('confirmed_at', '<', $from->copy()->endOfWeek())->whereIn('status', [Subscriber::STATUS_CONFIRMED])->count()];
         }
 
-        $queue = DB::table('jobs')->where('queue', 'newsletter')->count();
-        $failedJobs = DB::table('failed_jobs')->where('payload', 'like', '%Newsletter%')->count();
+        $queueHealth = app(QueueHealth::class)->snapshot();
 
-        return view('newsletter::admin.dashboard', compact('active', 'pending', 'new30', 'lost30', 'recent', 'scheduled', 'avgOpen', 'avgClick', 'bounce', 'growth', 'queue', 'failedJobs') + [
-            'deliverability' => $this->deliverability($site),
+        return view('newsletter::admin.dashboard', compact('active', 'pending', 'new30', 'lost30', 'recent', 'scheduled', 'avgOpen', 'avgClick', 'bounce', 'growth', 'queueHealth') + [
+            'deliverability' => app(Deliverability::class)->check($site),
             'site' => $site,
             'imageSizes' => collect(MosaicoImageSizes::templates())->map(fn ($name, $key) => MosaicoImageSizes::forTemplate($key))->filter()->all(),
         ]);
-    }
-
-    /** SPF / DKIM / DMARC dla domeny nadawcy (tylko odczyt DNS). */
-    private function deliverability(SiteSetting $site): array
-    {
-        $from = (string) ($site->newsletter_from_address ?: config('mail.from.address'));
-        $domain = strtolower((string) substr(strrchr($from, '@') ?: '', 1));
-        if ($domain === '' || in_array($domain, ['example.com', 'localhost'], true)) {
-            return ['domain' => $domain, 'spf' => null, 'dmarc' => null, 'dkim' => null];
-        }
-        $txt = fn (string $host) => collect(@dns_get_record($host, DNS_TXT) ?: [])->pluck('txt')->all();
-        $spf   = collect($txt($domain))->first(fn ($t) => str_starts_with((string) $t, 'v=spf1'));
-        $dmarc = collect($txt('_dmarc.' . $domain))->first(fn ($t) => str_starts_with((string) $t, 'v=DMARC1'));
-        $dkim  = null;
-        foreach (['default', 'selector1', 'selector2', 'mailgun', 'k1', 'pm', 'amazonses', 'google'] as $sel) {
-            if (@dns_get_record($sel . '._domainkey.' . $domain, DNS_TXT | DNS_CNAME)) {
-                $dkim = $sel;
-                break;
-            }
-        }
-
-        return ['domain' => $domain, 'spf' => $spf, 'dmarc' => $dmarc, 'dkim' => $dkim];
     }
 }

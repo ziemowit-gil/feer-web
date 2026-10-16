@@ -25,12 +25,41 @@
             <div x-show="mailer === 'smtp'" class="grid gap-4 sm:grid-cols-5"><div class="sm:col-span-2"><label for="newsletter_smtp_host" class="mb-1 block text-sm font-bold">Host</label><input id="newsletter_smtp_host" name="newsletter_smtp_host" value="{{ old('newsletter_smtp_host', $s->newsletter_smtp_host) }}" class="{{ $inp }}"></div><div><label for="newsletter_smtp_port" class="mb-1 block text-sm font-bold">Port</label><input id="newsletter_smtp_port" name="newsletter_smtp_port" type="number" value="{{ old('newsletter_smtp_port', $s->newsletter_smtp_port ?: 587) }}" class="{{ $inp }}"></div><div><label for="newsletter_smtp_username" class="mb-1 block text-sm font-bold">Login</label><input id="newsletter_smtp_username" name="newsletter_smtp_username" value="{{ old('newsletter_smtp_username', $s->newsletter_smtp_username) }}" class="{{ $inp }}" autocomplete="off"></div><div><label for="newsletter_smtp_password" class="mb-1 block text-sm font-bold">Hasło</label><input id="newsletter_smtp_password" name="newsletter_smtp_password" type="password" value="" placeholder="{{ $s->newsletter_smtp_password ? '••••' : '' }}" class="{{ $inp }}" autocomplete="new-password"></div><div><label for="newsletter_smtp_encryption" class="mb-1 block text-sm font-bold">Szyfrowanie</label><select id="newsletter_smtp_encryption" name="newsletter_smtp_encryption" class="{{ $inp }}">@foreach (['tls' => 'TLS (STARTTLS)', 'ssl' => 'SSL', 'none' => 'brak'] as $k => $l)<option value="{{ $k }}" @selected(old('newsletter_smtp_encryption', $s->newsletter_smtp_encryption ?: 'tls') === $k)>{{ $l }}</option>@endforeach</select></div></div>
             <div class="grid gap-4 sm:grid-cols-3">
                 <div><label for="newsletter_rate_per_minute" class="mb-1 block text-sm font-bold">Limit wysyłki / minutę</label><input id="newsletter_rate_per_minute" name="newsletter_rate_per_minute" type="number" min="1" value="{{ old('newsletter_rate_per_minute', $s->newsletter_rate_per_minute ?: 60) }}" class="{{ $inp }}"><p class="mt-1 text-xs text-muted">SES ~600, Mailgun ~300, Graph ~30, SMTP współdzielony 10–30.</p></div>
-                <div><label for="newsletter_rate_per_day" class="mb-1 block text-sm font-bold">Limit dzienny (opcjonalnie)</label><input id="newsletter_rate_per_day" name="newsletter_rate_per_day" type="number" min="1" value="{{ old('newsletter_rate_per_day', $s->newsletter_rate_per_day) }}" class="{{ $inp }}"></div>
+                <div><label for="newsletter_rate_per_day" class="mb-1 block text-sm font-bold">Limit dzienny (opcjonalnie)</label><input id="newsletter_rate_per_day" name="newsletter_rate_per_day" type="number" min="1" value="{{ old('newsletter_rate_per_day', $s->newsletter_rate_per_day) }}" aria-describedby="rate_day_help" class="{{ $inp }}"><p id="rate_day_help" class="mt-1 text-xs text-muted">Duża kampania wyjdzie w częściach — po wyczerpaniu limitu reszta następnego dnia (w oknie wysyłki).</p></div>
                 <div class="space-y-2 pt-6 text-sm">
                     <label class="flex items-center gap-2"><input type="hidden" name="newsletter_track_opens" value="0"><input type="checkbox" name="newsletter_track_opens" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(old('newsletter_track_opens', $s->newsletter_track_opens ?? true))> Śledź otwarcia (piksel)</label>
                     <label class="flex items-center gap-2"><input type="hidden" name="newsletter_track_clicks" value="0"><input type="checkbox" name="newsletter_track_clicks" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(old('newsletter_track_clicks', $s->newsletter_track_clicks ?? true))> Śledź kliknięcia</label>
                     <label class="flex items-center gap-2"><input type="hidden" name="newsletter_require_approval" value="0"><input type="checkbox" name="newsletter_require_approval" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(old('newsletter_require_approval', $s->newsletter_require_approval))> Zapisuj, kto zatwierdził wysyłkę</label>
                 </div>
+            </div>
+            @php $win = $sendWindow->config; @endphp
+            <fieldset class="rounded-md bg-gray-50 p-4">
+                <legend class="px-1 text-sm font-bold">Okno wysyłki</legend>
+                <label class="flex items-center gap-2 text-sm"><input type="hidden" name="send_window[enabled]" value="0"><input type="checkbox" name="send_window[enabled]" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(old('send_window.enabled', $win['enabled']))> Wysyłaj tylko w wybrane dni i godziny</label>
+                <p class="mt-1 text-xs text-muted">Poza oknem dostawy czekają w kolejce do najbliższego otwarcia (np. kampania zaplanowana na piątek 17:50 dokończy się w poniedziałek o 8:00). Teraz: <strong class="text-ink">{{ $sendWindow->describe() }}</strong>.</p>
+                <div class="mt-3 flex flex-wrap gap-x-4 gap-y-2" role="group" aria-label="Dni tygodnia">
+                    @foreach (\Modules\Newsletter\Services\SendWindow::DAYS as $d => $label)
+                        <label class="inline-flex items-center gap-1.5 text-sm"><input type="checkbox" name="send_window[days][]" value="{{ $d }}" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(in_array($d, array_map('intval', (array) old('send_window.days', $win['days'])), true))> {{ $label }}</label>
+                    @endforeach
+                </div>
+                <div class="mt-3 grid max-w-sm grid-cols-2 gap-4">
+                    <div><label for="send_window_from" class="mb-1 block text-sm font-bold">Od</label><input id="send_window_from" name="send_window[from]" type="time" value="{{ old('send_window.from', $win['from']) }}" class="{{ $inp }}"></div>
+                    <div><label for="send_window_to" class="mb-1 block text-sm font-bold">Do</label><input id="send_window_to" name="send_window[to]" type="time" value="{{ old('send_window.to', $win['to']) }}" class="{{ $inp }}"></div>
+                </div>
+            </fieldset>
+
+            <div class="rounded-md bg-gray-50 p-4" aria-labelledby="dns-h">
+                <div class="flex flex-wrap items-center justify-between gap-2"><h2 id="dns-h" class="text-sm font-bold">Dostarczalność domeny nadawcy: {{ $dns['domain'] ?: '—' }}</h2>
+                    <a href="{{ route('admin.newsletter.ustawienia.edit', ['odswiez-dns' => 1]) }}" class="text-sm font-bold text-brand-dark underline">Sprawdź ponownie</a></div>
+                <dl class="mt-2 grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[6rem_1fr]">
+                    <dt class="font-bold">SPF</dt><dd>@if ($dns['spf_ok'])<span class="font-bold text-green-800">✔ poprawny</span>@elseif ($dns['spf'])<span class="font-bold text-red-800">✘ do poprawy</span>@else<span class="font-bold text-red-800">✘ brak</span>@endif @if ($dns['spf'])<code class="block break-all text-xs text-muted">{{ $dns['spf'] }}</code>@endif</dd>
+                    <dt class="font-bold">DKIM</dt><dd>@if ($dns['dkim'])<span class="font-bold text-green-800">✔ selektor „{{ $dns['dkim'] }}”</span>@else<span class="font-bold text-amber-800">? nie znaleziono pod typowymi selektorami</span>@endif</dd>
+                    <dt class="font-bold">DMARC</dt><dd>@if ($dns['dmarc_ok'])<span class="font-bold text-green-800">✔ polityka {{ $dns['dmarc_policy'] ?? '?' }}</span><code class="block break-all text-xs text-muted">{{ $dns['dmarc'] }}</code>@else<span class="font-bold text-red-800">✘ brak</span>@endif</dd>
+                    <dt class="font-bold">Wypis</dt><dd><span class="font-bold text-green-800">✔ nagłówki List-Unsubscribe i wypis jednym kliknięciem w każdym mailu</span></dd>
+                </dl>
+                @if ($dns['advice'])
+                <ul class="mt-2 list-disc space-y-0.5 pl-5 text-sm">@foreach ($dns['advice'] as $a)<li>{{ $a }}</li>@endforeach</ul>
+                @endif
             </div>
         </section>
 

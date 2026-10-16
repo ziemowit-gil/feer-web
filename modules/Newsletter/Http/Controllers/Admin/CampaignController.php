@@ -14,6 +14,7 @@ use Illuminate\Validation\Rule;
 use Modules\Newsletter\Channels\ChannelRegistry;
 use Modules\Newsletter\Channels\OutboundMessage;
 use Modules\Newsletter\Jobs\DispatchCampaign;
+use Modules\Newsletter\Jobs\SendDelivery;
 use Modules\Newsletter\Mail\CampaignMail;
 use Modules\Newsletter\Models\NewsletterCampaign;
 use Modules\Newsletter\Models\NewsletterClick;
@@ -22,6 +23,7 @@ use Modules\Newsletter\Models\NewsletterList;
 use Modules\Newsletter\Models\NewsletterOpen;
 use Modules\Newsletter\Models\NewsletterSegment;
 use Modules\Newsletter\Models\NewsletterTemplate;
+use Modules\Newsletter\Services\QueueHealth;
 use Modules\Newsletter\Services\AudienceResolver;
 use Modules\Newsletter\Services\CampaignRenderer;
 use Modules\Newsletter\Services\ContentFeeder;
@@ -91,7 +93,35 @@ class CampaignController extends Controller
             'segments'  => NewsletterSegment::whereIn('id', (array) ($campaign->audience['segments'] ?? []))->pluck('name'),
             'topics'    => array_intersect_key(Subscriber::availableTopics(), array_flip((array) ($campaign->audience['topics'] ?? []))),
             'batchProgress' => $campaign->batch_id ? Bus::findBatch($campaign->batch_id) : null,
+            'errorGroups' => NewsletterDelivery::where('campaign_id', $campaign->id)
+                ->whereIn('status', [NewsletterDelivery::STATUS_FAILED, NewsletterDelivery::STATUS_HARD_BOUNCED, NewsletterDelivery::STATUS_SKIPPED])
+                ->selectRaw('status, COALESCE(error_message, ?) reason, COUNT(*) c', ['(brak opisu)'])->groupBy('status', 'reason')->orderByDesc('c')->limit(20)->get(),
+            'failedDeliveries' => NewsletterDelivery::with('subscriber:id,email')->where('campaign_id', $campaign->id)
+                ->whereIn('status', [NewsletterDelivery::STATUS_FAILED, NewsletterDelivery::STATUS_HARD_BOUNCED])->latest('updated_at')->limit(25)->get(),
+            'queueHealth' => app(QueueHealth::class)->snapshot(),
         ]);
+    }
+
+    /**
+     * Ponawia dostawy ze statusem „Błąd” (przejściowe błędy serwera pocztowego, przekroczone próby).
+     * Odbicia twarde i pominięte (brak zgody, lista tłumienia) nie są ponawiane — to nie błąd techniczny.
+     */
+    public function retryFailed(NewsletterCampaign $campaign)
+    {
+        abort_if($campaign->status === NewsletterCampaign::STATUS_CANCELLED, 403);
+
+        $ids = NewsletterDelivery::where('campaign_id', $campaign->id)->where('status', NewsletterDelivery::STATUS_FAILED)->pluck('id');
+        if ($ids->isEmpty()) {
+            return back()->with('status', 'Brak nieudanych dostaw do ponowienia.');
+        }
+
+        NewsletterDelivery::whereIn('id', $ids)->update(['status' => NewsletterDelivery::STATUS_QUEUED, 'attempts' => 0, 'error_code' => null, 'error_message' => null, 'queued_at' => now()]);
+        foreach ($ids as $id) {
+            SendDelivery::dispatch($id)->onQueue('newsletter');
+        }
+        $campaign->refreshCounters();
+
+        return back()->with('status', 'Ponowiono ' . $ids->count() . ' ' . ($ids->count() === 1 ? 'dostawę' : 'dostaw(y)') . '. Wyjdą w ciągu kilku minut.');
     }
 
     public function edit(NewsletterCampaign $campaign)
@@ -172,13 +202,22 @@ class CampaignController extends Controller
 
     public function sendTest(Request $request, NewsletterCampaign $campaign, CampaignRenderer $renderer)
     {
-        $data = $request->validate(['emails' => ['required', 'string']]);
-        $emails = array_slice(array_values(array_filter(array_map('trim', preg_split('/[,;\s]+/', $data['emails'])), fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL))), 0, 5);
+        $data = $request->validate(['emails' => ['required', 'string'], 'as_subscriber' => ['nullable', 'email']]);
+        $emails = array_slice(array_values(array_unique(array_filter(array_map('trim', preg_split('/[,;\s]+/', $data['emails'])), fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL)))), 0, 10);
         if ($emails === []) {
-            return back()->with('error', 'Podaj przynajmniej jeden poprawny adres.');
+            return back()->withInput()->with('error', 'Podaj przynajmniej jeden poprawny adres.');
         }
 
+        // Dane prawdziwego subskrybenta (imię, tematy…), ale z tokenem „test”, żeby linki wypisu/preferencji z testu nie działały na jego konto.
         $sample = new Subscriber(['email' => $emails[0], 'name' => auth()->user()->name ?? 'Test', 'topics' => ['news'], 'token' => 'test']);
+        if (filled($data['as_subscriber'] ?? null)) {
+            $real = Subscriber::whereRaw('LOWER(email) = ?', [mb_strtolower(trim($data['as_subscriber']))])->first();
+            if (! $real) {
+                return back()->withInput()->with('error', 'Nie znaleziono subskrybenta ' . $data['as_subscriber'] . '.');
+            }
+            $sample = $real->replicate();
+            $sample->token = 'test';
+        }
         $r = $renderer->render($campaign, $sample, null, track: false);
         $msg = new OutboundMessage('email', '[TEST] ' . $r['subject'], $r['html'], $r['text']);
 
@@ -190,7 +229,7 @@ class CampaignController extends Controller
             return back()->with('error', 'Wysyłka testowa nie powiodła się: ' . $e->getMessage());
         }
 
-        return back()->with('status', 'Test wysłany na: ' . implode(', ', $emails));
+        return back()->with('status', 'Test wysłany na: ' . implode(', ', $emails) . (filled($data['as_subscriber'] ?? null) ? ' (z danymi ' . $data['as_subscriber'] . ')' : ''));
     }
 
     public function audienceCount(Request $request, AudienceResolver $audience)
