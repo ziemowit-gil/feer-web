@@ -147,15 +147,13 @@
                             @endif
                             @if ($ppFeer)<span class="mt-4 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
 
-                            <div class="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-md bg-gray-50 px-4 py-3">
-                                <p class="text-sm text-muted">
-                                    {{ $ppReadMin }} min czytania
-                                </p>
+                            {{-- Narzędzia strony bez czasu czytania i bez szarego paska — same przyciski (jasnoszare, widoczne na bieli). --}}
+                            <div class="mt-4 flex flex-wrap items-center gap-4">
                                 <div class="flex flex-wrap items-center gap-3 no-print print:hidden">
                                     {{-- Odczyt treści na głos (Web Speech API, bez zewnętrznej usługi) — tylko gdy przeglądarka to obsługuje. --}}
                                     <button type="button" x-data="audioPlayer('page-text')" x-show="supported" x-cloak
                                         @click="play()" :aria-pressed="playing.toString()"
-                                        :class="playing ? 'bg-ink text-white hover:bg-ink' : 'bg-white text-ink hover:bg-gray-200'"
+                                        :class="playing ? 'bg-ink text-white hover:bg-ink' : 'bg-gray-100 text-ink hover:bg-gray-200'"
                                         class="inline-flex h-11 items-center gap-2 rounded-md px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2" title="Posłuchaj treści strony">
                                         <i class="fa-solid" :class="playing ? 'fa-stop' : 'fa-volume-high'" aria-hidden="true"></i>
                                         <span x-text="playing ? 'Zatrzymaj' : 'Posłuchaj'">Posłuchaj</span>
@@ -166,7 +164,7 @@
                                             <button type="button" @click="setSize('{{ $key }}')"
                                                 aria-pressed="{{ $key === 'normal' ? 'true' : 'false' }}"
                                                 :aria-pressed="(size === '{{ $key }}').toString()"
-                                                :class="size === '{{ $key }}' ? 'bg-ink text-white hover:bg-ink' : 'bg-white text-ink hover:bg-gray-200'"
+                                                :class="size === '{{ $key }}' ? 'bg-ink text-white hover:bg-ink' : 'bg-gray-100 text-ink hover:bg-gray-200'"
                                                 class="{{ $ppSizeBtn }} {{ $opt['class'] }}"
                                                 title="{{ $opt['label'] }}">
                                                 <span aria-hidden="true">A</span><span class="sr-only">{{ $opt['label'] }}</span>
