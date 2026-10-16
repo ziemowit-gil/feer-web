@@ -2,7 +2,7 @@
 @section('title', 'Raport: ' . $campaign->title)
 @section('content')
     @include('newsletter::admin.partials.flash')
-    <p class="mb-3 text-sm text-muted"><a href="{{ route('admin.newsletter.kampanie.show', $campaign) }}" class="hover:underline">← Kampania</a> · wysłano {{ $campaign->started_at?->format('d.m.Y H:i') }} · <a href="{{ route('admin.newsletter.kampanie.report.csv', $campaign) }}" class="font-bold text-brand-dark underline">Eksport CSV</a></p>
+    <p class="mb-3 text-sm text-muted"><a href="{{ route('admin.newsletter.kampanie.show', $campaign) }}" class="hover:underline">← Kampania</a> · wysłano {{ $campaign->started_at?->format('d.m.Y H:i') }} · <a href="{{ route('admin.newsletter.kampanie.report.csv', $campaign) }}" class="font-bold text-brand-dark underline">Eksport CSV</a> · <a href="{{ route('admin.newsletter.kampanie.report.pdf', $campaign) }}" class="font-bold text-brand-dark underline">Raport PDF</a> · <a href="{{ route('admin.newsletter.raporty.index') }}" class="font-bold text-brand-dark underline">Porównanie kampanii</a></p>
     @php $d = max(1, $campaign->delivered_count); @endphp
     <dl class="mb-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-6" role="group" aria-label="Wskaźniki kampanii">
         @foreach ([

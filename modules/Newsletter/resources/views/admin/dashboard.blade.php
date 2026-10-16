@@ -23,6 +23,7 @@
                 ['Szablony', 'admin.newsletter.szablony.index', 'fa-file-code', 'Gotowe układy wiadomości', 'newsletter.templates'],
                 ['Edytor Mosaico', 'admin.newsletter.mosaico', 'fa-pen-ruler', 'Projektowanie wiadomości', 'newsletter.templates'],
                 ['Formularze zapisu', 'admin.newsletter.formularze.index', 'fa-clipboard-list', 'Formularze na stronach i ich wygląd', 'newsletter.subscribers'],
+                ['Porównanie kampanii', 'admin.newsletter.raporty.index', 'fa-chart-line', 'Wyniki w czasie, eksport CSV i PDF', 'newsletter.reports'],
                 ['Ustawienia', 'admin.newsletter.ustawienia.edit', 'fa-gear', 'Nadawca, zgody i integracje', 'newsletter.settings'],
             ] as [$title, $route, $icon, $desc, $ability])
                 @continue(! auth()->user()->can($ability))

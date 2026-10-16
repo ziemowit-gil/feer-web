@@ -9,6 +9,7 @@ use Modules\Newsletter\Http\Controllers\Admin\DashboardController as AdminDashbo
 use Modules\Newsletter\Http\Controllers\Admin\FormController as AdminFormController;
 use Modules\Newsletter\Http\Controllers\Admin\ListController as AdminListController;
 use Modules\Newsletter\Http\Controllers\Admin\MosaicoController as AdminMosaicoController;
+use Modules\Newsletter\Http\Controllers\Admin\ReportController as AdminReportController;
 use Modules\Newsletter\Http\Controllers\Admin\SegmentController as AdminSegmentController;
 use Modules\Newsletter\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use Modules\Newsletter\Http\Controllers\Admin\SubscriberController as AdminSubscriberController;
@@ -133,6 +134,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
             Route::get('kampanie/{campaign}/raport', [AdminCampaignController::class, 'report'])->name('kampanie.report');
             Route::post('kampanie/{campaign}/ponow-nieudane', [AdminCampaignController::class, 'retryFailed'])->name('kampanie.retry');
             Route::get('kampanie/{campaign}/raport.csv', [AdminCampaignController::class, 'reportCsv'])->name('kampanie.report.csv');
+            Route::get('kampanie/{campaign}/raport.pdf', [AdminReportController::class, 'campaignPdf'])->name('kampanie.report.pdf');
+            Route::get('raporty', [AdminReportController::class, 'index'])->name('raporty.index');
+            Route::get('raporty.csv', [AdminReportController::class, 'csv'])->name('raporty.csv');
+            Route::get('raporty.pdf', [AdminReportController::class, 'pdf'])->name('raporty.pdf');
         });
 
         Route::middleware('can:newsletter.settings')->group(function (): void {

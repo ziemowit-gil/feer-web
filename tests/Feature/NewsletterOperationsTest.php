@@ -181,4 +181,27 @@ class NewsletterOperationsTest extends TestCase
         $this->assertSame('queued', $d->fresh()->status);
         $this->assertSame(0, (int) $d->fresh()->attempts);
     }
+
+    public function test_porownanie_kampanii_i_eksporty(): void
+    {
+        $admin = $this->admin();
+        foreach ([[30, 100, 40, 10, 1], [5, 200, 50, 20, 2]] as $i => [$daysAgo, $delivered, $opened, $clicked, $unsub]) {
+            $c = $this->campaign();
+            $c->forceFill(['title' => 'Wydanie ' . ($i + 1), 'finished_at' => now()->subDays($daysAgo), 'started_at' => now()->subDays($daysAgo), 'recipients_count' => $delivered,
+                'sent_count' => $delivered, 'delivered_count' => $delivered, 'opened_unique' => $opened, 'clicked_unique' => $clicked, 'unsubscribed_count' => $unsub])->save();
+        }
+
+        $this->actingAs($admin)->get(route('admin.newsletter.raporty.index'))->assertOk()
+            ->assertSee('Wydanie 1')->assertSee('Wydanie 2')
+            ->assertSee('30,0 %') // otwarcia razem: 90 / 300
+            ->assertSee('Trend miesięczny');
+
+        $csv = $this->actingAs($admin)->get(route('admin.newsletter.raporty.csv'))->assertOk()->streamedContent();
+        $this->assertStringContainsString('"Wydanie 2";', $csv);
+        $this->assertStringContainsString('"RAZEM / ŚREDNIO";;300;300;90;30;30;10;', $csv);
+        $this->assertStringNotContainsString('@', $csv); // bez adresów
+
+        $this->actingAs($admin)->get(route('admin.newsletter.raporty.pdf'))->assertOk()->assertHeader('content-type', 'application/pdf');
+        $this->actingAs($admin)->get(route('admin.newsletter.kampanie.report.pdf', NewsletterCampaign::first()))->assertOk()->assertHeader('content-type', 'application/pdf');
+    }
 }
