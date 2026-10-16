@@ -42,17 +42,17 @@ class FeerProjectsNewsletterCtaTest extends TestCase
         $this->project();
         $html = $this->home(true);
 
-        $this->assertStringContainsString('Bądź pierwszą osobą, która dowie się o nowym szkoleniu', $html);
+        $this->assertStringContainsString('Terminy szkoleń online prosto do Twojej skrzynki', $html);
         $this->assertStringContainsString('href="'.route('newsletter.show').'"', $html);
         $this->assertStringContainsString('Zapisuję się na newsletter', $html);
         // Zaraz po liście kafli, przed kolejną sekcją.
-        $this->assertGreaterThan(strpos($html, 'Wsparcie IT'), strpos($html, 'Bądź pierwszą osobą'));
+        $this->assertGreaterThan(strpos($html, 'Wsparcie IT'), strpos($html, 'Terminy szkoleń online'));
     }
 
     public function test_bez_modulu_newsletter_nie_ma_zachety(): void
     {
         $this->project();
 
-        $this->assertStringNotContainsString('Bądź pierwszą osobą, która dowie się o nowym szkoleniu', $this->home(false));
+        $this->assertStringNotContainsString('Terminy szkoleń online prosto do Twojej skrzynki', $this->home(false));
     }
 }
