@@ -16,11 +16,56 @@
         $onMysql = in_array($driver, ['mysql', 'mariadb'], true);
     @endphp
 
+    @php
+        $dbRows = $onMysql ? rescue(fn () => (new \App\Support\HealthDashboard)->database()['rows'], [], false) : [];
+        // Znaczki baz w kolorach obu systemów (biały tekst: SQLite #044a64 ≈ 10:1, MySQL #00618a ≈ 6,3:1) — bez kopiowania logotypów.
+        $engines = [
+            'sqlite' => ['name' => 'SQLite', 'bg' => '#044a64', 'stripe' => '#0f80cc', 'desc' => 'jeden plik na serwerze'],
+            'mysql' => ['name' => 'MySQL', 'bg' => '#00618a', 'stripe' => '#e48e00', 'desc' => 'serwer bazy danych'],
+        ];
+        $active = $onMysql ? 'mysql' : 'sqlite';
+    @endphp
+
     <div class="mb-6 max-w-3xl">
         <h1 class="text-lg font-bold text-ink">Baza MySQL</h1>
-        <p class="text-sm text-muted">Przeniesienie bazy głównej z SQLite do MySQL lub MariaDB: tabele powstają z migracji, dane są kopiowane tabela po tabeli, a na końcu porównujemy liczbę wierszy. Baza bloga zostaje w osobnym pliku SQLite.</p>
-        <p class="mt-2 text-sm text-ink">Obecnie serwis działa na: <strong>{{ $onMysql ? 'MySQL' : ($driver === 'sqlite' ? 'SQLite' : $driver) }}</strong>.</p>
+        <p class="text-sm text-ink">Przeniesienie bazy głównej z SQLite do MySQL lub MariaDB: tabele powstają z migracji, dane są kopiowane tabela po tabeli, a na końcu porównujemy liczbę wierszy. Baza bloga zostaje w osobnym pliku SQLite.</p>
     </div>
+
+    {{-- Schemat przejścia SQLite → MySQL z oznaczeniem bieżącej bazy. --}}
+    <section aria-labelledby="h-engines" class="mb-6 max-w-3xl rounded-md bg-white p-6">
+        <h2 id="h-engines" class="sr-only">Bieżąca baza danych</h2>
+        <div class="flex flex-wrap items-center gap-4">
+            @foreach ($engines as $key => $e)
+                @if (! $loop->first)
+                    <span class="text-2xl text-muted" aria-hidden="true"><i class="fa-solid fa-arrow-right-long"></i></span>
+                @endif
+                <div class="flex min-w-[13rem] flex-1 items-center gap-3 rounded-md p-3 {{ $active === $key ? 'bg-brand-light' : 'bg-gray-50' }}">
+                    <span class="relative inline-flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-lg text-xl text-white" style="background: {{ $e['bg'] }}" aria-hidden="true">
+                        <i class="fa-solid fa-database"></i>
+                        <span class="absolute inset-x-0 bottom-0 h-1.5" style="background: {{ $e['stripe'] }}"></span>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-base font-bold text-ink">{{ $e['name'] }}</p>
+                        <p class="text-sm text-ink">{{ $e['desc'] }}</p>
+                        <p class="mt-0.5 text-sm font-bold {{ $active === $key ? 'text-brand-dark' : 'text-muted' }}">
+                            @if ($active === $key)
+                                <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Serwis działa na tej bazie
+                            @else
+                                {{ $key === 'sqlite' ? 'Poprzednia baza (zapas)' : 'Cel konwersji' }}
+                            @endif
+                        </p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+        @if ($dbRows)
+            <dl class="mt-4 grid gap-x-6 gap-y-2 border-t border-gray-100 pt-4 text-sm sm:grid-cols-3">
+                @foreach (array_intersect_key($dbRows, array_flip(['Baza', 'Rozmiar', 'Baza bloga (SQLite)'])) as $label => $value)
+                    <div><dt class="text-muted">{{ $label }}</dt><dd class="font-bold text-ink">{{ $value }}</dd></div>
+                @endforeach
+            </dl>
+        @endif
+    </section>
 
     @if (session('status'))
         <div role="status" class="mb-4 max-w-3xl rounded-md bg-brand-light p-3 text-sm text-ink">

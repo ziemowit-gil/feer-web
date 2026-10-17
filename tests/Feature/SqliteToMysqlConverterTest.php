@@ -178,7 +178,7 @@ class SqliteToMysqlConverterTest extends TestCase
         $this->actingAs($editor)->get(route('admin.baza-mysql.index'))->assertForbidden();
 
         $this->actingAs($admin)->get(route('admin.baza-mysql.index'))->assertOk()
-            ->assertSee('Baza MySQL')->assertSee('Obecnie serwis działa na: <strong>SQLite</strong>', false)
+            ->assertSee('Baza MySQL')->assertSee('Serwis działa na tej bazie')->assertSee('Cel konwersji')
             ->assertSee('<label for="db-password"', false)->assertSee('Konwertuj do MySQL');
 
         $this->actingAs($admin)->from(route('admin.baza-mysql.index'))->post(route('admin.baza-mysql.check'), ['host' => '', 'port' => 'x', 'database' => 'zła baza!', 'username' => ''])
