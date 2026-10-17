@@ -130,6 +130,11 @@
         .tm-sub { margin: .5rem .5rem .125rem; font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #4b5563; }
         .tm-sub:first-child { margin-top: .25rem; }
         .admin-sidebar.is-collapsed .tm-panel, .admin-sidebar.is-collapsed .nav-search { display: none !important; }
+        /* Moduły premium (AdminMenu::PREMIUM_*): niebieska obwódka w kolorze marki (brand-dark ≥ 3:1 dla obramowań). */
+        .tm-head.tm-premium { box-shadow: inset 0 0 0 2px var(--color-brand-dark); }
+        .admin-joomla .tm-head.tm-premium { border-color: var(--color-brand-dark); }
+        .tm-panel .tm-premium-item { box-shadow: inset 0 0 0 2px var(--color-brand-dark); }
+        .nav-flyout .tm-premium-item { margin: .125rem .5rem; border-radius: .375rem; box-shadow: inset 0 0 0 2px var(--color-brand-dark); }
         /* Szeroki ekran: grupy wysuwane w prawo zamiast akordeonu (navItem.flyIn); strzałka wskazuje w prawo. */
         @media (min-width: 1024px) {
             .admin-sidebar .tm-panel { display: none !important; }
@@ -211,11 +216,11 @@
                     @mouseenter="flyIn($el)" @mouseleave="flyOut()" @focusin="flyIn($el)" @focusout="flyOut($event)"
                     @keydown.escape.stop="if (fly) { fly = false; $el.querySelector('.tm-head')?.focus(); }">
 
-                    <button type="button" class="tm-head nav-link relative" @click="clickHead($el.closest('li'), @js($group['key']), (k) => toggle(k))"
+                    <button type="button" class="tm-head nav-link relative {{ ($group['premium'] ?? false) ? 'tm-premium' : '' }}" @click="clickHead($el.closest('li'), @js($group['key']), (k) => toggle(k))"
                             :aria-expanded="($store.adminNav.flyout() ? fly : openKey === @js($group['key'])).toString()" aria-controls="{{ $gid }}"
-                            title="{{ $group['label'] }}">
+                            title="{{ $group['label'] }}{{ ($group['premium'] ?? false) ? ' — moduł premium' : '' }}">
                         <span class="tm-icon" aria-hidden="true"><i class="fa-solid {{ $group['icon'] }}"></i></span>
-                        <span class="nav-label min-w-0 flex-1 truncate">{{ $group['label'] }}</span>
+                        <span class="nav-label min-w-0 flex-1 truncate">{{ $group['label'] }}@if ($group['premium'] ?? false)<span class="sr-only"> (moduł premium)</span>@endif</span>
                         @if ($group['badge'])
                             <span class="tm-badge nav-badge inline-flex h-5 min-w-5 flex-none items-center justify-center rounded-full bg-brand-dark px-1.5 text-[11px] font-bold leading-none text-white"
                                   aria-label="{{ $group['badge'] }} do obsłużenia">{{ $group['badge'] > 99 ? '99+' : $group['badge'] }}</span>
@@ -231,7 +236,7 @@
                                 @foreach ($block['items'] as $item)
                                     @php $hasChildren = $item['children'] !== []; $childrenId = 'nav-children-' . $item['key']; @endphp
                                     <li x-data="{ open: {{ $hasChildren && $item['active'] ? 'true' : 'false' }} }">
-                                        <div class="relative flex items-center gap-2 rounded-lg px-2 {{ $item['active'] ? 'bg-brand-light text-brand-dark' : 'text-ink hover:bg-gray-100 hover:text-ink' }}" style="min-height: 2rem">
+                                        <div class="relative flex items-center gap-2 rounded-lg px-2 {{ ($item['premium'] ?? false) ? 'tm-premium-item' : '' }} {{ $item['active'] ? 'bg-brand-light text-brand-dark' : 'text-ink hover:bg-gray-100 hover:text-ink' }}" style="min-height: 2rem" @if ($item['premium'] ?? false) title="Moduł premium" @endif>
                                             <a href="{{ $item['url'] }}" class="flex min-w-0 flex-1 items-center gap-2.5 py-1 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-1 rounded"
                                                @if ($item['active'] && ! $hasChildren) aria-current="page" @endif>
                                                 <i class="fa-solid {{ $item['icon'] }} w-4 flex-none text-center text-[0.8rem] {{ $item['active'] ? 'text-brand-dark' : 'text-gray-400' }}" aria-hidden="true"></i>
@@ -282,10 +287,10 @@
                         @foreach ($group['blocks'] as $block)
                             @if ($block['heading'])<p class="px-3 pt-2 text-[10px] font-bold uppercase tracking-wider text-muted">{{ $block['heading'] }}</p>@endif
                             @foreach ($block['items'] as $item)
-                                <a href="{{ $item['url'] }}" @if ($item['active']) aria-current="page" @endif
-                                   class="flex items-center gap-2 px-3 py-1.5 text-[13px] hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none {{ $item['active'] ? 'font-semibold text-brand-dark' : 'text-ink hover:text-ink' }}">
+                                <a href="{{ $item['url'] }}" @if ($item['active']) aria-current="page" @endif @if ($item['premium'] ?? false) title="Moduł premium" @endif
+                                   class="flex items-center gap-2 px-3 py-1.5 text-[13px] hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none {{ ($item['premium'] ?? false) ? 'tm-premium-item' : '' }} {{ $item['active'] ? 'font-semibold text-brand-dark' : 'text-ink hover:text-ink' }}">
                                     <i class="fa-solid {{ $item['icon'] }} w-4 flex-none text-center text-[0.75rem] text-gray-400" aria-hidden="true"></i>
-                                    <span class="truncate">{{ $item['label'] }}</span>
+                                    <span class="truncate">{{ $item['label'] }}@if ($item['premium'] ?? false)<span class="sr-only"> (moduł premium)</span>@endif</span>
                                     @if ($item['badge'])<span class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-none {{ $item['badge_tone'] === 'muted' ? 'bg-gray-200 text-gray-700' : 'bg-brand-dark text-white' }}">{{ $item['badge'] > 99 ? '99+' : $item['badge'] }}</span>@endif
                                 </a>
                                 @foreach ($item['children'] as $child)

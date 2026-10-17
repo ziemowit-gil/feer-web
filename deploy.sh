@@ -194,6 +194,8 @@ TS="${DEPLOY_TS:-$(date +%Y%m%d-%H%M%S)}"
 mkdir -p storage/logs
 LOG="storage/logs/deploy-$TS.log"
 touch "$LOG"
+# Znaczniki dla pulpitu „Kondycja serwisu” (HealthDashboard::parseDeployLog): start i wynik w czasie epoki.
+grep -q '^# start:' "$LOG" 2>/dev/null || printf '# start: %s\n' "$DEPLOY_START" >> "$LOG"
 RUN_MARK=0
 
 # run polecenie… — wyjście do logu (przy --verbose także na ekran); kod wyjścia polecenia.
@@ -292,7 +294,7 @@ die() {
     for _line in "$@"; do info "$_line"; done
     if [ "$RUN_MARK" -gt 0 ] || [ -s "$LOG" ]; then
         local tail_lines
-        tail_lines="$(last_output | grep -v '^\s*$' | tail -n 20)"
+        tail_lines="$(last_output | grep -v '^\s*$' | tail -n 20 || true)"
         if [ -n "$tail_lines" ] && [ "$VERBOSE" -ne 1 ]; then
             echo ""
             info "Ostatnie linie wyjścia:"
@@ -324,6 +326,7 @@ _na_wyjscie() {
         echo ""
         printf "  ${RED}${BLD}✗ Wdrożenie NIEUDANE${NC} — krok %s/%s „%s” (kod %s, %s)\n" \
             "$CURRENT_N" "$NSTEPS" "$CURRENT_STEP" "$code" "$(since "$DEPLOY_START")"
+        printf '\n# wynik: NIEUDANE | krok: %s | czas: %s | koniec: %s\n' "$CURRENT_STEP" "$(since "$DEPLOY_START")" "$(date +%s)" >> "$LOG"
         info "Pełny log:    $LOG"
         info "Stan systemu: $PHP_BIN artisan system:sprawdz"
         info "Po poprawce uruchom ./deploy.sh ponownie."
@@ -471,7 +474,8 @@ if ! run git pull origin "$BRANCH"; then
     die "git pull nie powiódł się — bazy przywrócone z kopii." \
         "Sprawdź: git status (konflikty / lokalne zmiany)."
 fi
-_stat="$(last_output | grep -E 'files? changed' | tail -n 1 | sed 's/^ *//')"
+# Skróty z wyjścia narzędzi: brak dopasowania (np. „Już aktualne”) nie może przerwać skryptu (set -e + pipefail).
+_stat="$(last_output | grep -E 'files? changed' | tail -n 1 | sed 's/^ *//' || true)"
 [ -n "$_stat" ] && info "$HEAD_BEFORE → $(git rev-parse --short HEAD): $_stat"
 
 if [ -n "$BACKUP" ]; then
@@ -518,7 +522,7 @@ fi
 [ -f vendor/autoload.php ] || die "Brak vendor/autoload.php po Composerze."
 run "$PHP_BIN" artisan --version \
     || die "Aplikacja nie startuje po Composerze ($PHP_BIN artisan --version)." "Sprawdź: $PHP_BIN artisan --version"
-_cs="$(grep -E 'Nothing to install|Installing|Updating|Removing|Package operations' "$LOG" | tail -n 1 | sed 's/^ *//; s/^- //')"
+_cs="$(grep -E 'Nothing to install|Installing|Updating|Removing|Package operations' "$LOG" | tail -n 1 | sed 's/^ *//; s/^- //' || true)"
 ok "Zależności zainstalowane${_cs:+ — $_cs}."
 mark ok "Composer $COMPOSER_CMD"
 
@@ -551,7 +555,7 @@ else
 fi
 info "Zależności npm zainstalowane."
 run "$NPM_BIN" run build || die "npm run build nie powiodło się — assety NIE są aktualne." "Uruchom ręcznie: $NPM_BIN run build"
-_built="$(last_output | grep -oE 'built in [0-9.]+ ?m?s' | tail -n 1)"
+_built="$(last_output | grep -oE 'built in [0-9.]+ ?m?s' | tail -n 1 || true)"
 ok "Assety zbudowane${_built:+ (vite: $_built)}."
 mark ok "npm ci + npm run build"
 
@@ -643,5 +647,6 @@ DEPLOY_DONE=1
 print_summary
 echo ""
 printf "  ${GRN}${BLD}✓ Wdrożenie zakończone${NC} — %s w %s\n" "$(git rev-parse --short HEAD)" "$(since "$DEPLOY_START")"
+printf '\n# wynik: OK | commit: %s | czas: %s | koniec: %s\n' "$(git rev-parse --short HEAD)" "$(since "$DEPLOY_START")" "$(date +%s)" >> "$LOG"
 info "Pełny log: $LOG"
 echo ""

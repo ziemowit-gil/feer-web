@@ -114,13 +114,28 @@ class HealthDashboard
     /** @return array{at: ?Carbon, result: string, commit: ?string, duration: ?string, failed_step: ?string} */
     public static function parseDeployLog(string $path): array
     {
-        $at = preg_match('/deploy-(\d{8}-\d{6})\.log$/', $path, $m) ? Carbon::createFromFormat('Ymd-His', $m[1], config('app.timezone')) : null;
         $text = (string) @file_get_contents($path);
         $text = preg_replace('/\e\[[0-9;]*m/', '', $text) ?? $text; // kolory terminala
+        // Czas: znacznik „# start: <epoka>” z deploy.sh (strefa serwera ≠ strefa aplikacji), inaczej nazwa pliku w strefie serwera.
+        if (preg_match('/^# start: (\d+)/m', $text, $m)) {
+            $at = Carbon::createFromTimestamp((int) $m[1])->timezone(config('app.timezone'));
+        } else {
+            $at = preg_match('/deploy-(\d{8}-\d{6})\.log$/', $path, $m)
+                ? Carbon::createFromFormat('Ymd-His', $m[1], date_default_timezone_get() === 'UTC' ? 'Europe/Warsaw' : date_default_timezone_get())->timezone(config('app.timezone'))
+                : null;
+        }
         $result = 'unknown';
         $commit = null;
         $duration = null;
         $failed = null;
+
+        // Wynik zapisany przez deploy.sh w logu („# wynik: OK | commit: … | czas: …”).
+        if (preg_match('/^# wynik: OK \| commit: (\S+) \| czas: ([^|]+)/m', $text, $m)) {
+            return ['at' => $at, 'result' => 'ok', 'commit' => $m[1], 'duration' => trim($m[2]), 'failed_step' => null];
+        }
+        if (preg_match('/^# wynik: NIEUDANE \| krok: ([^|]+) \| czas: ([^|]+)/m', $text, $m)) {
+            return ['at' => $at, 'result' => 'fail', 'commit' => null, 'duration' => trim($m[2]), 'failed_step' => trim($m[1])];
+        }
 
         if (preg_match('/Wdrożenie zakończone\S*\s+—\s+(\S+)\s+w\s+(.+)$/mu', $text, $m)) {
             [$result, $commit, $duration] = ['ok', $m[1], trim($m[2])];

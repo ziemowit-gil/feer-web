@@ -91,7 +91,8 @@ class HealthDashboardTest extends TestCase
 
         $a = HealthDashboard::parseDeployLog($ok);
         $this->assertSame(['ok', 'a39d41c', '2 min 41 s'], [$a['result'], $a['commit'], $a['duration']]);
-        $this->assertSame('2026-10-17 17:05', $a['at']->format('Y-m-d H:i'));
+        // Bez „# start:” godzina z nazwy pliku to czas serwera (Europe/Warsaw), przeliczony na strefę aplikacji.
+        $this->assertSame(\Illuminate\Support\Carbon::createFromFormat('Ymd-His', '20261017-170524', 'Europe/Warsaw')->timezone(config('app.timezone'))->format('Y-m-d H:i'), $a['at']->format('Y-m-d H:i'));
 
         $b = HealthDashboard::parseDeployLog($fail);
         $this->assertSame(['fail', 'Budowanie assetów (npm)'], [$b['result'], $b['failed_step']]);

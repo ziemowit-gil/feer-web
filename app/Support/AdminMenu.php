@@ -38,6 +38,11 @@ use Illuminate\Support\Facades\Route;
  */
 final class AdminMenu
 {
+    /** Moduły premium oznaczane w menu niebieską obwódką: grupy i pozycje. */
+    public const PREMIUM_GROUPS = ['activity', 'docs'];
+
+    public const PREMIUM_ITEMS = ['reports'];
+
     /**
      * Menu skupione na blogu, gdy w panelu aktywna jest witryna „Wiem FEER” (BlogAdmin::isBlogSiteActive()):
      * lista dozwolonych sekcji roboczych → klucze pozycji (null = wszystkie pozycje sekcji).
@@ -383,6 +388,7 @@ final class AdminMenu
             'icon'   => $icon,
             'active' => $all->contains(fn (array $i) => $i['active']),
             'badge'  => ($sum = (int) $all->sum(fn (array $i) => (int) ($i['badge'] ?? 0))) > 0 ? $sum : null,
+            'premium' => in_array($key, self::PREMIUM_GROUPS, true),
             'blocks' => $blocks,
         ];
     }
@@ -517,6 +523,7 @@ final class AdminMenu
             'active'     => $isActive,
             'badge'      => $count > 0 ? $count : null,
             'badge_tone' => $badgeTone,
+            'premium'    => in_array($key, self::PREMIUM_ITEMS, true),
             'children'   => $children,
         ];
     }

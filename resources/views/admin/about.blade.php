@@ -10,7 +10,7 @@
 @section('content')
     @php
         $isAdmin = auth()->user()->isAdmin();
-        $version = config('cms.version');
+        $version = \App\Support\CmsVersion::get();
         // Nowe w tej wersji: [ikona, tytuł, opis, trasa (tylko dla administratora) albo null].
         $whatsNew = [
             ['fa-heart-pulse', 'Kondycja serwisu', 'Jedna strona z harmonogramem, kolejką, ostatnim wdrożeniem, kopiami zapasowymi, bazą i błędami z ostatniej doby — bez logowania na serwer.', 'admin.health.index'],
