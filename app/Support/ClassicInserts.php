@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Models\Banner;
+use App\Models\BannerZone;
 use App\Models\ContentBlock;
 use App\Models\Event;
 use App\Models\FeerBand;
@@ -87,6 +89,71 @@ class ClassicInserts
             'snippets' => collect(self::SNIPPETS)->map(fn ($s, $key) => ['key' => $key] + $s)->values()->all(),
             'events' => Event::where('is_published', true)->orderByDesc('starts_at')->limit(30)->get()
                 ->map(fn (Event $e) => ['title' => $e->title, 'html' => self::eventBox($e)])->all(),
+            // Moduł Banery: strefy ([banery:slug]) i pojedyncze banery ([baner:ID]).
+            'bannerZones' => self::bannerZones(),
+            'banners' => self::banners(),
+            // Diagnoza modułów w bloku „Shortcode”: kod => nazwa, adres edycji, stan (szkic, pusty, wyłączony), statystyki.
+            'diagnostics' => self::diagnostics(),
         ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public static function bannerZones(): array
+    {
+        return BannerZone::withCount(['banners as active_count' => fn ($q) => $q->where('is_active', true)])->orderBy('label')->get()
+            ->map(fn (BannerZone $z) => ['value' => $z->slug, 'label' => $z->label, 'count' => (int) $z->active_count])->all();
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public static function banners(): array
+    {
+        return Banner::orderBy('name')->get(['id', 'name', 'is_active', 'starts_at', 'ends_at'])
+            ->map(fn (Banner $b) => ['value' => $b->id, 'label' => $b->name.($b->statusLabel() !== 'aktywny' ? ' ('.$b->statusLabel().')' : '')])->all();
+    }
+
+    /**
+     * Stan elementów osadzanych shortcodem — edytor pokazuje przy module link „Otwórz do edycji”,
+     * informację o szkicu / wyłączeniu i (dla banerów) wyświetlenia i kliknięcia.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function diagnostics(): array
+    {
+        $out = [];
+        foreach (Page::where('type', 'tiles_grid')->get(['id', 'slug', 'title', 'is_published', 'tiles']) as $p) {
+            $tiles = collect($p->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->count();
+            $out['[kafelki:'.$p->slug.']'] = [
+                'name' => $p->title, 'editUrl' => route('admin.podstrony.edit', $p),
+                'state' => ! $p->is_published ? 'draft' : ($tiles === 0 ? 'empty' : 'ok'),
+                'publishUrl' => ! $p->is_published ? route('admin.edytor-blokowy.publish', $p) : null,
+                'note' => $tiles === 0 ? 'Siatka nie ma kafelków z nazwą i adresem.' : null,
+            ];
+        }
+        foreach (FormDefinition::get(['id', 'slug', 'title', 'is_active']) as $f) {
+            $out['[formularz:'.$f->slug.']'] = ['name' => $f->title, 'editUrl' => route('admin.formularze.edit', $f), 'state' => $f->is_active ? 'ok' : 'disabled'];
+        }
+        foreach (FeerBand::forCurrentSite()->get(['id', 'title', 'is_active']) as $b) {
+            $out['[pasek:'.$b->id.']'] = ['name' => (string) $b->title, 'editUrl' => route('admin.feer-paski.edit', $b), 'state' => $b->is_active ? 'ok' : 'disabled'];
+        }
+        foreach (BannerZone::with(['banners' => fn ($q) => $q->select('banners.id', 'is_active', 'starts_at', 'ends_at', 'impressions', 'clicks')])->get() as $z) {
+            $active = $z->banners->filter(fn (Banner $b) => $b->statusLabel() === 'aktywny');
+            $out['[banery:'.$z->slug.']'] = [
+                'name' => $z->label, 'editUrl' => route('admin.banery.index', ['strefa' => $z->slug]),
+                'state' => $active->isEmpty() ? 'empty' : 'ok',
+                'note' => $active->isEmpty() ? 'Strefa nie ma teraz aktywnych banerów.' : 'Aktywne banery: '.$active->count().' (pokazywane do '.$z->max_concurrent.' naraz).',
+                'stats' => ['impressions' => (int) $z->banners->sum('impressions'), 'clicks' => (int) $z->banners->sum('clicks')],
+            ];
+        }
+        foreach (Banner::get(['id', 'name', 'is_active', 'starts_at', 'ends_at', 'impressions', 'clicks']) as $b) {
+            $status = $b->statusLabel();
+            $out['[baner:'.$b->id.']'] = [
+                'name' => $b->name, 'editUrl' => route('admin.banery.edit', $b),
+                'state' => $status === 'aktywny' ? 'ok' : 'disabled',
+                'note' => $status === 'aktywny' ? null : 'Baner jest '.$status.' — nie pokazuje się na stronie.',
+                'stats' => ['impressions' => (int) $b->impressions, 'clicks' => (int) $b->clicks],
+            ];
+        }
+
+        return $out;
     }
 }

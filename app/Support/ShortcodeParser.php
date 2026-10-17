@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\View;
  *   [formularz:slug] — osadza formularz o podanym identyfikatorze
  *   [kafelki:slug]   — osadza siatkę kafelków ze strony typu tiles_grid
  *   [pasek:ID]       — wstawia pasek z modułu „FEER Paski” (tytuł, tekst, przyciski)
+ *   [banery:slug]    — strefa z modułu Banery (aktywne banery strefy, kolejność wg priorytetu, statystyki)
+ *   [materialy]      — karty materiałów edukacyjnych (grupa, typ, liczba); opcje w App\Support\MaterialList
+ *   [baner:ID]       — pojedynczy baner z modułu Banery (z harmonogramem i statystykami)
  *   [klauzule-rodo]  — lista klauzul informacyjnych RODO zaimportowanych z SZO
  *                      ([klauzule-rodo:en] — wersje angielskie)
  *   [nabory]         — lista naborów (strony typu „Rekrutacja do projektu") z filtrem
@@ -66,6 +69,18 @@ class ShortcodeParser
         );
 
         $content = preg_replace_callback(
+            '/(?:<p>\s*)?\[banery:([a-z0-9_\-]+)\](?:\s*<\/p>)?/i',
+            fn ($matches) => static::renderBannerZone(strtolower($matches[1])),
+            $content,
+        );
+
+        $content = preg_replace_callback(
+            '/(?:<p>\s*)?\[baner:(\d+)\](?:\s*<\/p>)?/i',
+            fn ($matches) => static::renderBanner((int) $matches[1]),
+            $content,
+        );
+
+        $content = preg_replace_callback(
             '/(?:<p>\s*)?\[klauzule-rodo(?::([a-z]{2}))?\](?:\s*<\/p>)?/i',
             fn ($matches) => static::renderGdprClauses(strtolower($matches[1] ?? '') ?: 'pl'),
             $content,
@@ -90,6 +105,12 @@ class ShortcodeParser
             $content,
         );
 
+        $content = preg_replace_callback(
+            '~(?:<p\b[^>]*>\s*)?\[materialy(?::([^\]\r\n<]{0,200}))?\](?:\s*</p>)?~i',
+            fn ($matches) => MaterialList::render(MaterialList::parse($matches[1] ?? '')),
+            $content,
+        );
+
         return $content;
     }
 
@@ -99,7 +120,7 @@ class ShortcodeParser
      */
     private static function unwrapBlockShortcodes(string $content): string
     {
-        $blocks = '(?:(?:kafelki-zestaw|kafelki|blok|formularz):[a-z0-9_\-]+|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci)(?::[^\]\r\n<]*)?)';
+        $blocks = '(?:(?:kafelki-zestaw|kafelki|blok|formularz|banery|baner):[a-z0-9_\-]+|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]*)?)';
 
         return preg_replace_callback(
             '~<(blockquote|div class="content-(?:box|note|important)")[^>]*>((?:(?!</?(?:blockquote|div)\b).)*?)</(?:blockquote|div)>~is',
@@ -109,7 +130,7 @@ class ShortcodeParser
     }
 
     /** Wzorzec wszystkich shortcodów — do wykrywania (np. wyłączenie edycji inline). */
-    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci)(?::[^\]\r\n<]{0,200})?)\]/i';
+    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|banery:[a-z0-9_\-]+|baner:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]{0,200})?)\]/i';
 
     public static function has(?string $content): bool
     {
@@ -236,6 +257,24 @@ class ShortcodeParser
         }
 
         return View::make('partials.blocks.'.(in_array($block->type, ['accordion', 'callout', 'pricing'], true) ? $block->type : 'cta'), ['block' => $block])->render();
+    }
+
+    /** Strefa z modułu Banery ([banery:slug]) — ten sam komponent co w szablonach (<x-banner-zone>). */
+    private static function renderBannerZone(string $slug): string
+    {
+        return trim(\Illuminate\Support\Facades\Blade::renderComponent(new \App\View\Components\BannerZone($slug)));
+    }
+
+    /** Pojedynczy baner z modułu Banery ([baner:ID]) — tylko aktywny i w oknie czasowym. */
+    private static function renderBanner(int $id): string
+    {
+        $banner = \App\Models\Banner::find($id);
+        if (! $banner || ! $banner->is_active || $banner->isScheduled() || $banner->isExpired()) {
+            return '';
+        }
+
+        return '<div class="banner-zone banner-zone--single not-prose flex flex-col items-center gap-4">'
+            .View::make('components.banner-item', ['banner' => $banner])->render().'</div>';
     }
 
     /** Zestaw kafelków z kreatora edytora ([kafelki-zestaw:ID]). */

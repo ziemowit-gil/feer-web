@@ -13,6 +13,9 @@ class BannerZone extends Component
 {
     public Collection $banners;
 
+    /** Nazwa strefy jako etykieta regionu dla czytników ekranu (np. „Na skróty”). */
+    public ?string $label = null;
+
     public function __construct(public string $name)
     {
         $maxConcurrent = Cache::remember(
@@ -31,6 +34,11 @@ class BannerZone extends Component
         }
 
         $this->banners = $cached;
+        $this->label = Cache::remember(
+            "banner_zone_label_{$name}",
+            now()->addHour(),
+            fn () => BannerZoneModel::where('slug', $name)->value('label') ?? ''
+        ) ?: null;
     }
 
     public function render(): View

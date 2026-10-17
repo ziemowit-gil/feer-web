@@ -230,6 +230,20 @@ class BlockEditorController extends Controller
     }
 
     /**
+     * Publikuje siatkę kafelków (strona typu tiles_grid) wskazaną w bloku „Shortcode” — przycisk „Opublikuj”
+     * przy komunikacie „Siatka jest szkicem”. Tylko dla osób z dostępem do stron i tylko dla siatek.
+     */
+    public function publishTilesGrid(Request $request, Page $page): JsonResponse
+    {
+        abort_unless($request->user()->canAccessModule('pages'), 403);
+        abort_unless($page->type === 'tiles_grid', 404);
+
+        $page->update(['is_published' => true]);
+
+        return response()->json(['ok' => true, 'message' => 'Opublikowano siatkę „'.$page->title.'”.']);
+    }
+
+    /**
      * Podgląd shortcode'u (blok „Shortcode”) albo HTML-a z shortcode'ami (blok
      * „Własny HTML”) — ten sam renderer co na stronie publicznej. Edytor wstawia
      * wynik w nieaktywny kontener podglądu, bez skryptów.

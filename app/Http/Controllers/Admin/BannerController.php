@@ -22,11 +22,15 @@ use Illuminate\View\View;
 class BannerController extends Controller
 {
     /** Wyświetla listę banerów z przypisanymi strefami. */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $banners = Banner::with('zones')->latest()->paginate(20);
+        // ?strefa=slug — banery jednej strefy (link „Zarządzaj strefą” z edytora treści).
+        $zone = $request->filled('strefa') ? BannerZone::where('slug', (string) $request->query('strefa'))->first() : null;
+        $banners = Banner::with('zones')
+            ->when($zone, fn ($q) => $q->whereHas('zones', fn ($z) => $z->whereKey($zone->id)))
+            ->latest()->paginate(20)->withQueryString();
 
-        return view('admin.banners.index', compact('banners'));
+        return view('admin.banners.index', compact('banners', 'zone'));
     }
 
     /** Wyświetla formularz tworzenia nowego banera. */

@@ -9,6 +9,13 @@
         </div>
     @endif
 
+    @if ($zone ?? null)
+        <div class="mb-4 flex flex-wrap items-center gap-3 rounded-md bg-gray-50 px-4 py-3 text-sm text-ink">
+            <p class="m-0">Banery w strefie <strong>{{ $zone->label }}</strong> <code class="font-mono text-xs text-muted">[banery:{{ $zone->slug }}]</code> — kolejność ustawiasz priorytetem w edycji banera.</p>
+            <a href="{{ route('admin.banery.index') }}" class="inline-flex min-h-11 items-center font-bold text-brand-dark underline underline-offset-4 hover:no-underline">Pokaż wszystkie banery</a>
+        </div>
+    @endif
+
     <form id="bulk-form" method="POST" action="{{ route('admin.banery.bulk') }}">
     @csrf
     <input type="hidden" name="action" id="bulk-action">

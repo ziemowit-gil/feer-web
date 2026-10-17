@@ -328,6 +328,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     // Edytor blokowy — strony, aktualności i działania (dostęp do modułu weryfikowany w kontrolerze).
     Route::get('edytor-blokowy/linki', [\App\Http\Controllers\Admin\BlockEditorController::class, 'links'])->name('edytor-blokowy.links');
     Route::post('edytor-blokowy/podglad-shortcode', [\App\Http\Controllers\Admin\BlockEditorController::class, 'shortcodePreview'])->name('edytor-blokowy.shortcode');
+    Route::post('edytor-blokowy/opublikuj-siatke/{page}', [\App\Http\Controllers\Admin\BlockEditorController::class, 'publishTilesGrid'])->whereNumber('page')->name('edytor-blokowy.publish');
     Route::get('edytor-blokowy/{type}/{id}', [\App\Http\Controllers\Admin\BlockEditorController::class, 'edit'])->whereIn('type', ['page', 'news', 'project', 'listing'])->whereNumber('id')->name('edytor-blokowy.edit');
     Route::put('edytor-blokowy/{type}/{id}', [\App\Http\Controllers\Admin\BlockEditorController::class, 'update'])->whereIn('type', ['page', 'news', 'project', 'listing'])->whereNumber('id')->name('edytor-blokowy.update');
     Route::get('edytor-blokowy/miejsce/{key}', [\App\Http\Controllers\Admin\BlockEditorController::class, 'editListing'])->where('key', '[a-z_]+')->name('edytor-blokowy.listing');
