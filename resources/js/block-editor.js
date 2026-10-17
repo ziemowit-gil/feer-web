@@ -189,7 +189,7 @@ function start(config) {
         file: { title: 'Plik do pobrania', icon: 'file-arrow-down', cat: 'media', desc: 'Odnośnik do dokumentu (PDF, DOCX…).', keywords: ['pdf', 'dokument', 'załącznik', 'pobierz'], create: () => ({ url: '', label: '', description: '' }) },
         buttons: { title: 'Przyciski', icon: 'hand-pointer', cat: 'design', desc: 'Wezwanie do działania — jeden lub kilka przycisków.', keywords: ['cta', 'przycisk', 'link', 'zapisz się'], align: true, create: () => ({ align: 'left', items: [{ label: 'Dowiedz się więcej', url: '', variant: 'brand', newTab: false }] }) },
         banner: { title: 'Baner sekcji', icon: 'panorama', cat: 'design', desc: 'Szeroki pasek z grafiką po lewej i tytułem sekcji, np. „Nasze media społecznościowe”. Może prowadzić do strony.', keywords: ['baner', 'banner', 'pasek', 'sekcja', 'tytuł', 'nagłówek', 'grafika'], create: () => ({ title: '', level: 2, url: '', alt: '', decorative: true, size: 'large', tone: 'gray', href: '' }) },
-        imagebanner: { title: 'Baner graficzny', icon: 'rectangle-ad', cat: 'design', desc: 'Gotowa grafika z tekstem na całą szerokość, zwykle jako link (np. „Zarezerwuj termin”). Kilka pod rzędem tworzy listę banerów.', keywords: ['baner', 'banner', 'grafika', 'reklama', 'link', 'kafel', 'promocja'], create: () => ({ url: '', alt: '', href: '', newTab: false }) },
+        imagebanner: { title: 'Baner graficzny', icon: 'rectangle-ad', cat: 'design', desc: 'Gotowa grafika z tekstem na całą szerokość, zwykle jako link (np. „Zarezerwuj termin”). Kilka pod rzędem tworzy listę banerów.', keywords: ['baner', 'banner', 'grafika', 'reklama', 'link', 'kafel', 'promocja'], create: () => ({ url: '', alt: '', href: '', newTab: false, width: 0, height: 0 }) },
         // Stara ramka (content-box/-note/-important): nie do wstawiania — zastąpiła ją „Ramka informacyjna” z kreatora;
         // zostaje, by istniejące ramki dało się dalej edytować i rozgrupować.
         callout: { title: 'Ramka (stara)', icon: 'rectangle-list', cat: 'design', desc: 'Wyróżniona treść: ramka, notatka/ostrzeżenie albo ważna informacja.', keywords: ['ważne', 'uwaga', 'notatka', 'ostrzeżenie', 'box'], hidden: true, container: true, create: () => ({ variant: 'box' }), inner: () => [block('paragraph')] },
@@ -668,7 +668,7 @@ function start(config) {
             } else if (tag === 'DIV' && cls.contains('content-imagebanner') && n.querySelector('img')) {
                 const img = n.querySelector('img');
                 const link = n.querySelector('a');
-                out.push(block('imagebanner', { url: img.getAttribute('src') || '', alt: img.getAttribute('alt') || '', href: link?.getAttribute('href') || '', newTab: link?.target === '_blank' }));
+                out.push(block('imagebanner', { url: img.getAttribute('src') || '', alt: img.getAttribute('alt') || '', href: link?.getAttribute('href') || '', newTab: link?.target === '_blank', width: Number(img.getAttribute('width')) || 0, height: Number(img.getAttribute('height')) || 0 }));
             } else if (tag === 'DIV' && cls.contains('content-banner')) {
                 const img = n.querySelector('.content-banner-media img');
                 const titleEl = n.querySelector('.content-banner-title');
@@ -1286,6 +1286,8 @@ function start(config) {
                 case 'imagebanner':
                     if (a.url && !a.alt.trim()) w.push('Przepisz tekst z grafiki do tekstu alternatywnego — bez niego czytnik ekranu nie odczyta banera ani linku.');
                     if (a.url && !a.href) w.push('Baner graficzny nie ma adresu — zwykle prowadzi do strony lub serwisu.');
+                    if (a.width && a.width < 1000) w.push(`Grafika ma tylko ${a.width} px szerokości — na szerokim ekranie będzie nieostra. Zalecane 1200 × 120 px lub 2400 × 240 px.`);
+                    if (a.width && a.height && a.width / a.height < 5) w.push(`Grafika jest wysoka (${a.width} × ${a.height} px) — baner zajmie dużo miejsca, a na stronie zostanie ograniczony do 16rem wysokości. Zalecane proporcje 10:1.`);
                     break;
                 case 'banner':
                     if (!a.title.trim()) w.push('Baner nie ma tytułu — bez niego nie pojawi się na stronie.');
@@ -1827,11 +1829,22 @@ function start(config) {
             ...media, h('div', { class: 'content-banner-title' }, title));
     }
 
+    // Zalecane wymiary banerów (jak w app.css): graficzny 1200 × 120 px (10:1), grafika banera sekcji 1200 × 240 px.
+    const BANNER_SIZE_HINT = 'Zalecany rozmiar: 1200 × 120 px (proporcje 10:1), a dla ostrości na ekranach o dużej gęstości 2400 × 240 px. Ważny tekst trzymaj z dala od krawędzi.';
+    const SECTION_BANNER_HINT = 'Zalecana grafika: 1200 × 240 px. Baner ma stałą wysokość, więc grafika jest kadrowana do swojej części — nie umieszczaj na niej tekstu.';
+    const imageSize = (url) => new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        img.onerror = () => resolve({ width: 0, height: 0 });
+        img.src = url;
+    });
+
     // Grafika z tekstem: opis alternatywny jest obowiązkowy (przepisany tekst z grafiki) — bez opcji „dekoracyjna”.
     async function setImageBanner(b, url, alt = '') {
         let cur = find(b.id)?.block;
         if (!cur) return;
-        updateAttrs(cur, { url, alt: alt || cur.attrs.alt || '' });
+        updateAttrs(cur, { url, alt: alt || cur.attrs.alt || '', ...(await imageSize(url)) });
+        scheduleWarnings();
         const r = await promptAltText({ url, alt: alt || cur.attrs.alt || '', allowDecorative: false });
         cur = find(b.id)?.block;
         if (!cur) return;
@@ -1843,13 +1856,16 @@ function start(config) {
         const a = b.attrs;
         if (!a.url) {
             return mediaPlaceholder({
-                iconName: 'rectangle-ad', title: 'Baner graficzny', desc: 'Prześlij grafikę banera, wybierz ją z biblioteki albo przeciągnij tutaj. Potem przepisz tekst z grafiki i dodaj adres.', accept: 'image/*',
+                iconName: 'rectangle-ad', title: 'Baner graficzny', desc: 'Prześlij grafikę banera, wybierz ją z biblioteki albo przeciągnij tutaj. Potem przepisz tekst z grafiki i dodaj adres. ' + BANNER_SIZE_HINT, accept: 'image/*',
                 onFiles: async (files) => { const up = await uploadFiles(files.slice(0, 1)); if (up[0]) await setImageBanner(b, up[0].url); },
                 onLibrary: async () => { const picked = await openMediaLibrary(); if (picked[0]) await setImageBanner(b, picked[0].url, picked[0].alt || ''); },
                 onUrl: async (url) => { if (safeUrl(url)) await setImageBanner(b, url); else announce('Nieprawidłowy adres obrazu'); },
             });
         }
-        return h('div', { class: 'content-imagebanner' }, h('img', { src: a.url, alt: a.alt }));
+        const img = h('img', { src: a.url, alt: a.alt, width: a.width || null, height: a.height || null });
+        // Starsze banery bez zapisanych wymiarów — uzupełniamy je po wczytaniu grafiki (zapiszą się przy następnym zapisie).
+        if (!a.width) img.addEventListener('load', () => { a.width = img.naturalWidth; a.height = img.naturalHeight; scheduleWarnings(); }, { once: true });
+        return h('div', { class: 'content-imagebanner' }, img);
     }
 
     function bannerLines() {
@@ -2676,6 +2692,7 @@ function start(config) {
                     field('Poziom nagłówka', select(a.level, [[2, 'H2 — sekcja'], [3, 'H3 — podsekcja'], [4, 'H4 — szczegół']], (v) => set({ level: Number(v) })), 'Tytuł banera jest nagłówkiem — nie pomijaj poziomów.')),
                 panelSection('Grafika',
                     a.url ? h('img', { src: a.url, alt: '', class: 'be-thumb' }) : h('p', { class: 'be-help' }, 'Bez grafiki baner pokazuje sam tytuł.'),
+                    h('p', { class: 'be-help' }, SECTION_BANNER_HINT),
                     a.url ? checkbox('Grafika dekoracyjna', a.decorative, (v) => set({ decorative: v }), 'Zwykle tak — nazwę sekcji niesie tytuł. Odznacz, jeśli grafika przekazuje coś ważnego.') : null,
                     a.url && !a.decorative ? field('Opis grafiki', textInput(a.alt, (v) => updateAttrs(b, { alt: v }, { typing: true, rerender: false }), { multiline: true, rows: 3 }), 'Opisz, co widać i dlaczego to ważne. Tekst z grafiki przepisz w całości.') : null,
                     h('div', { class: 'be-row' },
@@ -2693,6 +2710,7 @@ function start(config) {
                     parts.push(panelSection('Tekst z grafiki',
                         field('Tekst alternatywny', textInput(a.alt, (v) => { updateAttrs(b, { alt: v.replace(/\s+/g, ' ') }, { typing: true, rerender: false }); scheduleWarnings(); }, { multiline: true, rows: 3 }), 'Przepisz cały tekst widoczny na grafice, np. „Zarezerwuj termin w punkcie paszportowym”. To także nazwa linku dla czytnika ekranu.'),
                         h('img', { src: a.url, alt: '', class: 'be-thumb' }),
+                        h('p', { class: 'be-help' }, (a.width ? `Ta grafika: ${a.width} × ${a.height} px. ` : '') + BANNER_SIZE_HINT),
                         h('div', { class: 'be-row' },
                             h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: async () => { const picked = await openMediaLibrary(); if (picked[0]) await setImageBanner(b, picked[0].url, picked[0].alt || ''); renderSidebar(); } }, icon('photo-film'), ' Zmień grafikę'),
                             h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => { set({ url: '', alt: '' }); renderSidebar(); } }, icon('trash'), ' Usuń grafikę'))),

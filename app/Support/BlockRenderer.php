@@ -182,6 +182,9 @@ class BlockRenderer
                 'alt' => preg_replace('/\s+/u', ' ', $str('alt', 500)),
                 'href' => self::url($str('href')),
                 'newTab' => (bool) ($a['newTab'] ?? false),
+                // Wymiary grafiki w pikselach (odczytane w edytorze) — atrybuty width/height, by strona nie „skakała” przy ładowaniu.
+                'width' => max(0, min(10000, (int) ($a['width'] ?? 0))),
+                'height' => max(0, min(10000, (int) ($a['height'] ?? 0))),
             ],
             'html' => ['html' => mb_substr((string) ($a['html'] ?? ''), 0, 500000)],
             'subpages' => self::subpagesAttrs($a),
@@ -385,7 +388,8 @@ class BlockRenderer
                 if ($a['url'] === '') {
                     return '';
                 }
-                $img = '<img src="'.e($a['url']).'" alt="'.e($a['alt']).'" loading="lazy">';
+                $size = $a['width'] > 0 && $a['height'] > 0 ? ' width="'.$a['width'].'" height="'.$a['height'].'"' : '';
+                $img = '<img src="'.e($a['url']).'" alt="'.e($a['alt']).'"'.$size.' loading="lazy">';
                 if ($a['href'] !== '') {
                     $target = $a['newTab'] ? ' target="_blank" rel="noopener"' : '';
                     $sr = $a['newTab'] ? '<span class="sr-only"> (otwiera się w nowej karcie)</span>' : '';

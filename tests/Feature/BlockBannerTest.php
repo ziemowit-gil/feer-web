@@ -101,6 +101,19 @@ class BlockBannerTest extends TestCase
         );
     }
 
+    public function test_baner_graficzny_ma_wymiary_grafiki_i_zalecenia_rozmiaru(): void
+    {
+        $html = BlockRenderer::render([['type' => 'imagebanner', 'attrs' => ['url' => '/b.webp', 'alt' => 'Kalendarz badań', 'width' => 2400, 'height' => 240]]]);
+        $this->assertSame('<div class="content-imagebanner"><img src="/b.webp" alt="Kalendarz badań" width="2400" height="240" loading="lazy"></div>', $html);
+
+        $this->assertStringNotContainsString('width=', BlockRenderer::render([['type' => 'imagebanner', 'attrs' => ['url' => '/b.webp', 'alt' => 'X', 'width' => -5, 'height' => 'abc']]]));
+
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('min-height: 7rem; margin: 1.5rem 0;', $css); // równa wysokość banerów sekcji
+        $this->assertStringContainsString('.content-imagebanner { max-width: 1200px; }', $css);
+        $this->assertStringContainsString('1200 × 120 px (proporcje 10:1)', file_get_contents(resource_path('js/block-editor.js')));
+    }
+
     public function test_edytor_zna_blok_banera_i_style_sa_w_css(): void
     {
         $js = file_get_contents(resource_path('js/block-editor.js'));
