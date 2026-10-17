@@ -46,7 +46,8 @@ class AdminColorSchemeTest extends TestCase
         $admin = $this->admin(['admin_scheme' => 'pierwotny']);
 
         $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()
-            ->assertSee('<body data-scheme="pierwotny" class="bg-gray-100 flex', false);
+            ->assertSee('<body data-scheme="pierwotny" class="admin-joomla flex', false)
+            ->assertSee('.admin-joomla[data-scheme="pierwotny"]', false);
 
         $this->actingAs($admin)->from(route('profile.edit'))->patch(route('profile.scheme'), ['admin_scheme' => 'neon'])
             ->assertSessionHasErrors('admin_scheme');

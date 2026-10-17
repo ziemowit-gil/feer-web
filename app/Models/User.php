@@ -57,14 +57,14 @@ class User extends Authenticatable implements Subscribable
 
     /**
      * Schematy kolorów panelu (Mój profil → Wygląd panelu): klucz => [nazwa, opis, próbki kolorów].
-     * Style w admin/partials/theme-joomla (atrybut data-scheme na <body>); „pierwotny” = panel sprzed motywu Joomla.
+     * Style w admin/partials/theme-joomla (atrybut data-scheme na <body>); „pierwotny” = kolory dawnego panelu.
      */
     public const ADMIN_SCHEMES = [
-        'krem' => ['Krem', 'Ciepłe, jasne tło i kremowe pasy — jak klasyczny panel Joomla.', ['#f4f4ee', '#f7f7e8', '#d6d6c2']],
+        'krem' => ['Krem', 'Ciepłe, jasne tło i kremowe pasy.', ['#f4f4ee', '#f7f7e8', '#d6d6c2']],
         'szary' => ['Szary', 'Neutralne, chłodne szarości — spokojnie i bez koloru.', ['#f3f4f6', '#f9fafb', '#d1d5db']],
         'niebieski' => ['Niebieski', 'Jasne błękity w kolorze marki FEER.', ['#eef3fb', '#f3f7ff', '#c9d6ee']],
         'szalwia' => ['Szałwiowy', 'Delikatna, przygaszona zieleń.', ['#f1f5f1', '#f5f9f4', '#cddbcb']],
-        'pierwotny' => ['Pierwotny', 'Wygląd panelu sprzed motywu Joomla — białe karty na szarym tle.', ['#f3f4f6', '#ffffff', '#e5e7eb']],
+        'pierwotny' => ['Pierwotny', 'Kolory dawnego panelu — białe karty na szarym tle.', ['#f3f4f6', '#ffffff', '#e5e7eb']],
     ];
 
     public const DEFAULT_ADMIN_SCHEME = 'krem';
