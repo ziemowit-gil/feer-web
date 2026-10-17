@@ -10,7 +10,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('site_settings', function (Blueprint $table) {
-            $table->string('news_layout', 20)->default('grid')->after('news_default_image');
+            // Bez ->after('news_default_image'): to kolekcja mediów, nie kolumna — MySQL odrzuciłby ALTER (SQLite ignoruje after()).
+            $table->string('news_layout', 20)->default('grid');
             $table->string('volunteer_layout', 20)->default('grid')->after('news_layout');
         });
     }

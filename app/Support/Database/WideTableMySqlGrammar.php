@@ -13,11 +13,26 @@ use Illuminate\Support\Fluent;
  * Tam kolumny string bez indeksu tworzymy jako TEXT (poza limitem wiersza), a wartość domyślną
  * zapisujemy wyrażeniem ('…') — tak TEXT z domyślną wartością przyjmują MySQL 8.0.13+ i MariaDB 10.2+.
  * Kolumny z indeksem zostają VARCHAR (TEXT w indeksie wymagałby długości prefiksu).
+ * Pomija też after()/first() — kolejność kolumn w nowej bazie jest bez znaczenia.
  */
 class WideTableMySqlGrammar extends MySqlGrammar
 {
     /** @var list<string> */
     public array $wideTables = [];
+
+    /**
+     * Kolejność kolumn nie ma znaczenia dla danych, a SQLite ignoruje after()/first() — w historii migracji
+     * bywa after() na kolumnę, której nigdy nie było (np. news_default_image), co w MySQL przerywa ALTER.
+     */
+    protected function modifyAfter(Blueprint $blueprint, Fluent $column)
+    {
+        return null;
+    }
+
+    protected function modifyFirst(Blueprint $blueprint, Fluent $column)
+    {
+        return null;
+    }
 
     protected function getColumn(Blueprint $blueprint, $column)
     {

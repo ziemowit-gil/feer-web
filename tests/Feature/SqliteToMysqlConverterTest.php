@@ -158,6 +158,15 @@ class SqliteToMysqlConverterTest extends TestCase
         $this->assertStringContainsString('modify `tagline` text null', $change);
     }
 
+    public function test_konwersja_pomija_after_na_nieistniejaca_kolumne(): void
+    {
+        $sql = $this->mysqlSql(fn ($t) => $t->string('news_layout', 20)->default('grid')->after('news_default_image'), 'pages', false);
+
+        $this->assertStringContainsString("alter table `pages` add `news_layout` varchar(20) not null default 'grid'", $sql);
+        $this->assertStringNotContainsString('after', $sql);
+        $this->assertStringNotContainsString("->default('grid')->after('news_default_image')", file_get_contents(database_path('migrations/2026_07_30_100000_add_layout_options_to_site_settings.php')));
+    }
+
     public function test_wykrywa_szerokie_tabele_w_zrodle(): void
     {
         $this->assertSame(['site_settings'], $this->converter()->wideTables());
