@@ -27,6 +27,13 @@ class SqliteToMysqlConverter
 
     public const CHUNK = 500;
 
+    /**
+     * Tabele kopiowane bez danych. Cache: magazyn bazodanowy Laravela na SQLite koduje w base64 wartości
+     * z bajtem NUL, a na MySQL nie dekoduje — skopiowane wpisy dawały „unserialize(): Error at offset 0”
+     * (błąd 500 na stronie). Cache odbuduje się sam.
+     */
+    public const SKIP_DATA = ['cache', 'cache_locks'];
+
     /** Klucze .env zmieniane przy przełączeniu na MySQL. */
     public const ENV_KEYS = ['DB_CONNECTION', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD'];
 
@@ -185,6 +192,12 @@ class SqliteToMysqlConverter
             foreach ($sourceTables as $table) {
                 if (! in_array($table, $targetTables, true)) {
                     $skipped[] = $table;
+
+                    continue;
+                }
+                if (in_array($table, self::SKIP_DATA, true)) {
+                    $report[] = ['table' => $table, 'source' => $this->src()->table($table)->count(), 'target' => 0, 'ok' => true,
+                        'note' => 'Bez danych — cache odbuduje się sam (wpisy z SQLite są w formacie nieczytelnym dla MySQL).'];
 
                     continue;
                 }

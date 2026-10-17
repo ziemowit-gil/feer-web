@@ -118,6 +118,20 @@ class SqliteToMysqlConverterTest extends TestCase
         $this->assertSame(1, DB::connection(SqliteToMysqlConverter::TARGET)->table('activity_log')->where('description', 'w trakcie konwersji')->count());
     }
 
+    public function test_cache_bez_danych_bo_format_sqlite_jest_nieczytelny_dla_mysql(): void
+    {
+        DB::table('cache')->insert(['key' => 'banner_zone_footer', 'value' => base64_encode(serialize(collect())), 'expiration' => time() + 600]);
+
+        $report = $this->converter()->convert();
+
+        $row = collect($report['tables'])->firstWhere('table', 'cache');
+        $this->assertTrue($report['ok']);
+        $this->assertTrue($row['ok']);
+        $this->assertSame(0, $row['target']);
+        $this->assertStringContainsString('cache odbuduje się sam', $row['note']);
+        $this->assertSame(0, DB::connection(SqliteToMysqlConverter::TARGET)->table('cache')->count());
+    }
+
     public function test_niepusta_baza_docelowa_wymaga_zastapienia(): void
     {
         $this->converter()->convert();
