@@ -38,8 +38,6 @@ Route::middleware('guest')->group(function () {
     Route::get('auth/microsoft/redirect', [MicrosoftAuthController::class, 'redirect'])
         ->name('auth.microsoft.redirect');
 
-    Route::get('auth/microsoft/callback', [MicrosoftAuthController::class, 'callback'])
-        ->name('auth.microsoft.callback');
 
     Route::get('auth/google/redirect', [GoogleAuthController::class, 'redirect'])
         ->name('auth.google.redirect');
@@ -90,6 +88,11 @@ Route::middleware('auth')->group(function () {
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
         ->name('password.confirm');
 
+    // Potwierdzenie tożsamości przez Microsoft 365 zamiast hasła (wynik: auth.microsoft.callback).
+    Route::get('auth/microsoft/potwierdz', [MicrosoftAuthController::class, 'confirm'])
+        ->middleware('throttle:10,1')
+        ->name('auth.microsoft.confirm');
+
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
@@ -110,3 +113,8 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
+
+// Powrót z Microsoft 365 — poza grupą „guest”, bo obsługuje też potwierdzenie tożsamości zalogowanej osoby
+// (zalogowanych poza tym trybem kontroler przekierowuje do panelu). Ten sam adres zwrotny co w Azure.
+Route::get('auth/microsoft/callback', [MicrosoftAuthController::class, 'callback'])
+    ->name('auth.microsoft.callback');

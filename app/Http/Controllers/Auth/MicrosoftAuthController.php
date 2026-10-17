@@ -33,16 +33,47 @@ class MicrosoftAuthController extends Controller
         return Socialite::driver('microsoft')->redirect();
     }
 
+    /** Klucz sesji: kto potwierdza tożsamość przez Microsoft 365 zamiast hasła (strona „Potwierdź hasło”). */
+    public const CONFIRM_SESSION_KEY = 'microsoft_confirm_user_id';
+
     /**
-     * Obsłuż powrót z Microsoft 365 i zaloguj użytkownika do panelu.
+     * Potwierdzenie tożsamości zalogowanej osoby przez Microsoft 365 (zamiast hasła) przed wrażliwą operacją.
+     * Microsoft wymusza ponowne zalogowanie (prompt=login); wynik obsługuje ten sam callback co logowanie.
+     */
+    public function confirm(): RedirectResponse
+    {
+        if (! SiteSetting::current()->microsoftLoginEnabled()) {
+            return redirect()->route('password.confirm')->with('error', 'Logowanie przez Microsoft 365 jest obecnie wyłączone.');
+        }
+
+        request()->session()->put(self::CONFIRM_SESSION_KEY, Auth::id());
+        $this->applyMicrosoftConfig();
+
+        return Socialite::driver('microsoft')->with(['prompt' => 'login'])->redirect();
+    }
+
+    /**
+     * Obsłuż powrót z Microsoft 365 i zaloguj użytkownika do panelu — albo, w trybie potwierdzenia,
+     * potwierdź tożsamość zalogowanej osoby (konto Microsoft musi należeć do niej).
      */
     public function callback(): RedirectResponse
     {
+        $confirmFor = request()->session()->pull(self::CONFIRM_SESSION_KEY);
+
+        // Zalogowana osoba poza trybem potwierdzenia — jak wcześniej middleware „guest”.
+        if (Auth::check() && ! $confirmFor) {
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
+
         if (! SiteSetting::current()->microsoftLoginEnabled()) {
             return redirect()->route('login')->with('error', 'Logowanie przez Microsoft 365 jest obecnie wyłączone.');
         }
 
         $this->applyMicrosoftConfig();
+
+        if ($confirmFor && Auth::check()) {
+            return $this->confirmCallback((int) $confirmFor);
+        }
 
         try {
             $microsoftUser = Socialite::driver('microsoft')->user();
@@ -73,6 +104,31 @@ class MicrosoftAuthController extends Controller
         request()->session()->regenerate();
         // MS365 ma własne MFA — logowanie przez SSO pomija nasze 2FA.
         request()->session()->put('login_method', 'microsoft');
+
+        return redirect()->intended(route('dashboard', absolute: false));
+    }
+
+    /** Tryb potwierdzenia: konto Microsoft (ID albo e-mail) musi należeć do zalogowanej osoby. */
+    private function confirmCallback(int $userId): RedirectResponse
+    {
+        $user = Auth::user();
+        try {
+            $microsoftUser = Socialite::driver('microsoft')->user();
+        } catch (\Throwable $e) {
+            Log::warning('Potwierdzenie przez Microsoft 365 nie powiodło się.', ['exception' => $e->getMessage()]);
+
+            return redirect()->route('password.confirm')->with('error', 'Potwierdzenie przez Microsoft 365 nie powiodło się. Spróbuj ponownie.');
+        }
+
+        $matches = $user->id === $userId && (
+            ($user->microsoft_id && hash_equals((string) $user->microsoft_id, (string) $microsoftUser->getId()))
+            || (! $user->microsoft_id && $microsoftUser->getEmail() && mb_strtolower($microsoftUser->getEmail()) === mb_strtolower((string) $user->email))
+        );
+        if (! $matches) {
+            return redirect()->route('password.confirm')->with('error', 'To konto Microsoft 365 nie należy do zalogowanej osoby — zaloguj się w Microsoft na swoje konto.');
+        }
+
+        request()->session()->put('auth.password_confirmed_at', time());
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
