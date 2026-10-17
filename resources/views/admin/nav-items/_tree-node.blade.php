@@ -19,6 +19,8 @@
             class="flex min-w-0 flex-1 items-center gap-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark {{ $isSel ? 'font-bold text-brand-dark' : 'text-ink' }}"
             style="min-height: 2.5rem; padding: .375rem .625rem">
             <i class="fa-solid {{ $icon }} w-4 flex-none text-center text-xs {{ $isSel ? 'text-brand-dark' : 'text-gray-400' }}" aria-hidden="true"></i>
+            {{-- „M” = strona z modułu (lista aktualności, materiały…), puste = zwykła strona CMS albo link zewnętrzny. --}}
+            <span class="w-4 flex-none text-center text-[11px] font-bold {{ $isSel ? 'text-brand-dark' : 'text-ink' }}" @if ($item->isModuleLink()) title="Strona z modułu" @else aria-hidden="true" @endif>@if ($item->isModuleLink())M<span class="sr-only"> — strona z modułu</span>@endif</span>
             <span class="min-w-0 flex-1 truncate">{{ $item->label }}</span>
             @unless ($item->is_active)<span class="flex-none text-[10px] font-bold text-ink"><i class="fa-solid fa-eye-slash mr-1 text-muted" aria-hidden="true"></i>ukryta</span>@endunless
             @if ($item->is_mega && $level === 1)<span class="flex-none text-[10px] font-bold text-ink" title="Mega menu"><i class="fa-solid fa-circle-info mr-1 text-brand-dark" aria-hidden="true"></i>mega</span>@endif

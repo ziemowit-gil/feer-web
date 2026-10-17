@@ -139,6 +139,45 @@ class NavItem extends Model
      * podstronami. Zwraca null dla przycisków CTA, linków zewnętrznych, kotwic
      * oraz adresów, które nie odpowiadają istniejącej opublikowanej stronie.
      */
+    /** Typy pozycji, które same budują listę z modułu (działania, wolontariat, wydarzenia, FAQ). */
+    public const MODULE_TYPES = ['projects', 'volunteering', 'events', 'faq'];
+
+    /**
+     * Czy pozycja prowadzi do strony modułu (lista aktualności, materiały, wydarzenia…), a nie do zwykłej strony CMS —
+     * w drzewie menu oznaczamy ją „M”. Strony CMS, strona główna i linki zewnętrzne: false.
+     */
+    public function isModuleLink(): bool
+    {
+        if (filled($this->module) || in_array($this->type, self::MODULE_TYPES, true)) {
+            return true; // pozycja przypięta do modułu (chowa się po jego wyłączeniu)
+        }
+        if ($this->type !== 'link' || $this->is_button || blank($this->url) || Str::startsWith($this->url, '#')) {
+            return false;
+        }
+
+        $url = $this->url;
+        if (Str::startsWith($url, ['http://', 'https://'])) {
+            if (! Str::startsWith($url, url('/'))) {
+                return false;
+            }
+            $url = Str::after($url, rtrim(url('/'), '/'));
+        }
+        $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
+        if ($path === '' || $this->editablePage()) {
+            return false; // strona główna albo zwykła strona CMS
+        }
+
+        try {
+            $route = app('router')->getRoutes()->match(\Illuminate\Http\Request::create('/'.$path, 'GET'));
+        } catch (\Throwable) {
+            return false;
+        }
+        $name = (string) $route->getName();
+
+        return $name !== '' && ! Str::startsWith($name, ['page.', 'site.page']) && ! str_contains($name, '.page.')
+            && ! in_array($name, ['home', 'site.home'], true);
+    }
+
     public function linkedPage(): ?Page
     {
         if ($this->type !== 'link' || $this->is_button || blank($this->url)) {
