@@ -240,6 +240,36 @@ function start(config) {
         return b;
     }
 
+    // Wypunktowania pisane ręcznie („- a”, „– b”, „• c”, „* d” — w osobnych akapitach albo w liniach jednego akapitu
+    // rozdzielonych <br>) zamieniamy na prawdziwe listy: czytnik ekranu ogłasza wtedy listę i liczbę punktów.
+    const DASH_ITEM = /^\s*[-–—•*]\s+(?=\S)/;
+    let dashConverted = 0;
+    function dashLines(html) {
+        const lines = String(html || '').split(/<br\s*\/?>/i).filter((l) => textOf(l));
+        return lines.length && lines.every((l) => DASH_ITEM.test(textOf(l))) ? lines.map((l) => l.trim().replace(/^((?:<(?:strong|b|em|i|span)[^>]*>)*)(?:\s|&nbsp;)*[-–—•*](?:&nbsp;|\s)*/i, '$1')) : null;
+    }
+    // Pojedyncza linia „– …” to zwykle dialog, nie wypunktowanie — zamieniamy dopiero od dwóch punktów
+    // (dwie linie w akapicie albo co najmniej dwa akapity „- …” pod rzędem).
+    function dashLists(list) {
+        const out = [];
+        // Akapity zaczynające się od półpauzy/pauzy (dialogi) łączymy w listę tylko, gdy mają kilka linii.
+        const found = list.map((b) => {
+            const items = b.type === 'paragraph' ? dashLines(b.attrs.text) : null;
+            return items && items.length === 1 && /^\s*[–—]/.test(textOf(b.attrs.text)) ? null : items;
+        });
+        list.forEach((b, i) => {
+            if (b.inner) b.inner = dashLists(b.inner);
+            const items = found[i];
+            if (!items || (items.length < 2 && !found[i - 1] && !found[i + 1])) { out.push(b); return; }
+            const last = out[out.length - 1];
+            // Kolejne akapity „- …” trafiają do jednej listy.
+            if (last && last.type === 'list' && !last.attrs.ordered && last._dash) last.attrs.items.push(...items);
+            else out.push(Object.defineProperty({ id: b.id || uid(), type: 'list', attrs: { ...BLOCKS.list.create(), items } }, '_dash', { value: true, enumerable: false }));
+            dashConverted++;
+        });
+        return out;
+    }
+
     // Bloki z serwera: dokładamy id i brakujące atrybuty.
     function hydrate(list) {
         return (list || []).filter((b) => BLOCKS[b?.type] && !BLOCKS[b.type].as).map((b) => {
@@ -274,7 +304,8 @@ function start(config) {
     const S = {
         title: config.page.title || '',
         meta: config.page.meta_description || '',
-        blocks: hydrate(config.blocks),
+        blocks: dashLists(hydrate(config.blocks)),
+        dashConverted,
         selectedId: null,
         panel: null,            // 'inserter' | 'list' | 'a11y' | null
         sidebarOpen: window.innerWidth >= 1100,
@@ -285,7 +316,7 @@ function start(config) {
         // Ustawienia z panelu bocznego formularza (publikacja, miejsce w serwisie) — wysyłane tylko po zmianie.
         settings: config.settings ? JSON.parse(JSON.stringify(config.settings.values)) : null,
         settingsDirty: false,
-        dirty: false,
+        dirty: dashConverted > 0,
         saving: false,
         savedAt: null,
         error: null,
@@ -716,8 +747,8 @@ function start(config) {
                 out.push(block('html', { html: n.outerHTML }));
             }
         }
-        // Sąsiadujące bloki HTML łączymy w jeden.
-        return out.reduce((acc, b) => {
+        // Sąsiadujące bloki HTML łączymy w jeden; akapity „- …” stają się listami.
+        return dashLists(out).reduce((acc, b) => {
             const last = acc[acc.length - 1];
             if (last && last.type === 'html' && b.type === 'html') last.attrs.html += '\n' + b.attrs.html;
             else acc.push(b);
@@ -954,7 +985,8 @@ function start(config) {
             } else {
                 const text = await file.text();
                 blocks = text.replace(/\r\n?/g, '\n').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
-                    .map((p) => block('paragraph', { text: escapeHtml(p).replace(/\n/g, '<br>') }));
+                    .map((p) => block('paragraph', { text: escapeHtml(dashes(p)).replace(/\n/g, '<br>') }));
+                blocks = dashLists(blocks);
             }
             if (!blocks.length) { announce('Plik nie zawiera treści do zaimportowania.'); return; }
             insertFromPanel(blocks);
@@ -1424,6 +1456,13 @@ function start(config) {
                 h('button', { type: 'button', class: 'be-btn be-btn--primary', onClick: () => { S.imported = false; convertHtmlBlock(htmlBlock); } }, icon('wand-magic-sparkles'), ' Przekształć w bloki'),
                 h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => { S.imported = false; renderNotices(); } }, 'Nie teraz')));
         }
+        if (S.dashConverted) {
+            items.push(h('div', { class: 'be-notice', role: 'note' },
+                icon('list-ul'),
+                h('p', {}, `Zamieniono ${S.dashConverted} ${plural(S.dashConverted, 'wypunktowanie', 'wypunktowania', 'wypunktowań')} pisane myślnikami („- …”) na listy. Zapisz stronę, aby zachować zmianę.`),
+                h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => { pushHistory(); S.blocks = hydrate(config.blocks); S.dashConverted = 0; S.dirty = false; renderCanvas(); renderNotices(); updateTopbar(); announce('Przywrócono akapity z myślnikami'); } }, 'Cofnij'),
+                h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => { S.dashConverted = 0; renderNotices(); } }, 'OK')));
+        }
         const draft = draftOffer;
         if (draft) {
             items.push(h('div', { class: 'be-notice be-notice--warn', role: 'note' },
@@ -1450,7 +1489,8 @@ function start(config) {
         el.innerHTML = b.attrs[key] || '';
         const sync = () => el.classList.toggle('is-empty', isEmptyEl(el));
         sync();
-        el.addEventListener('input', () => {
+        el.addEventListener('input', (e) => {
+            if (e.inputType === 'insertText' && e.data === ' ') typeEnDash();
             typingHistory();
             b.attrs[key] = el.innerHTML;
             sync();
@@ -1544,11 +1584,16 @@ function start(config) {
         if (!text) return;
         const paras = text.split(/\r?\n\s*\r?\n/).map((t) => t.trim()).filter(Boolean);
         if (opts.split && paras.length > 1) {
-            pasteBlocks(b, el, key, paras.map((p) => block('paragraph', { text: escapeHtml(p).replace(/\r?\n/g, '<br>') })));
+            pasteBlocks(b, el, key, dashLists(paras.map((p) => block('paragraph', { text: escapeHtml(dashes(p)).replace(/\r?\n/g, '<br>') }))));
             return;
         }
-        document.execCommand('insertText', false, text);
+        // Jeden akapit z liniami „- …” → lista.
+        const lines = opts.split ? dashLines(escapeHtml(text.trim()).replace(/\r?\n/g, '<br>')) : null;
+        if (lines && lines.length > 1) { pasteBlocks(b, el, key, [block('list', { items: lines.map(dashes) })]); return; }
+        document.execCommand('insertText', false, dashes(text));
     }
+    // „ - ” między słowami → półpauza „ – ” (polska typografia); dywiz w wyrazach („biało-czerwony”) zostaje.
+    const dashes = (t) => String(t).replace(/(\S)([ \u00a0])-(?=[ \u00a0]\S)/g, '$1$2–');
     function pasteBlocks(b, el, key, blocks) {
         const [before, after] = splitAtCaret(el);
         pushHistory();
@@ -1563,8 +1608,24 @@ function start(config) {
         announce(`Wklejono ${blocks.length} ${plural(blocks.length, 'blok', 'bloki', 'bloków')}`);
     }
 
+    // Po spacji: „słowo - ” → „słowo – ” (półpauza tuż przed kursorem).
+    function typeEnDash() {
+        const sel = window.getSelection();
+        if (!sel || !sel.isCollapsed || sel.anchorNode?.nodeType !== 3) return;
+        const node = sel.anchorNode, o = sel.anchorOffset;
+        if (o < 4 || !/\S[ \u00a0]-[ \u00a0]$/.test(node.data.slice(0, o))) return;
+        node.data = node.data.slice(0, o - 2) + '–' + node.data.slice(o - 1);
+        sel.collapse(node, o);
+    }
     // Skróty Markdown w pustym akapicie: „## ”, „- ”, „1. ”, „> ”, „---”.
     function handleMarkdown(b, el) {
+        // „- ” dopisane na początku akapitu z tekstem → lista z tym tekstem jako pierwszym punktem.
+        const sel = window.getSelection();
+        if (b.type === 'paragraph' && sel?.isCollapsed && sel.anchorNode === el.firstChild && sel.anchorNode?.nodeType === 3 && sel.anchorOffset === 2
+            && /^[-*•][ \u00a0]\S/.test(el.firstChild.data)) {
+            replaceBlock(b.id, [block('list', { items: [el.innerHTML.replace(/^\s*[-*•](?:&nbsp;|\s)/, '')] })]);
+            return;
+        }
         if (el.querySelector(':not(br)')) return;
         const t = el.textContent.replace(/ /g, ' ');
         let m;
