@@ -107,7 +107,8 @@ final class AdminMenu
 
             // BIP jako osobna „witryna”: boczne menu BIP i rejestr dokumentów.
             $this->section('bipsite', 'BIP', [
-                $isAdmin ? $this->item('bip-menu', 'Menu BIP', 'admin.pozycje-menu.index', 'fa-bars',
+                // Menu BIP tylko przy włączonym module BIP (wyłączony BIP chowa całą grupę „Dokumenty i BIP”).
+                $isAdmin && $this->bipEnabled() ? $this->item('bip-menu', 'Menu BIP', 'admin.pozycje-menu.index', 'fa-bars',
                     active: fn () => request()->routeIs('admin.pozycje-menu.*') && request('location') === 'bip', params: ['location' => 'bip']) : null,
                 $this->can('bip') ? $this->item('bip', 'Dokumenty BIP', 'admin.bip-dokumenty.index', 'fa-landmark', active: 'admin.bip-dokumenty.*') : null,
             ]),
@@ -300,11 +301,13 @@ final class AdminMenu
                 ['Działania', 'content', ['projects', 'coordinators', 'help-map', 'organizations']],
                 ['Oferta', 'content', ['events', 'materials', 'shop']],
                 ['Zaangażowanie', 'content', ['volunteering', 'jobs']],
+                // Bez modułu BIP sprawozdania są tutaj — grupy „Dokumenty i BIP” wtedy nie ma.
+                ...($this->bipEnabled() ? [] : [['Sprawozdawczość', 'content', ['reports']]]),
             ]),
-            $this->group($byKey, 'docs', 'Dokumenty i BIP', 'fa-landmark', [
+            $this->bipEnabled() ? $this->group($byKey, 'docs', 'Dokumenty i BIP', 'fa-landmark', [
                 ['Biuletyn (BIP)', 'bipsite'],
                 ['Sprawozdawczość', 'content', ['reports']],
-            ]),
+            ]) : null,
             $this->group($byKey, 'comms', 'Komunikacja', 'fa-comments', [
                 ['Skrzynka', ['inbox', 'content'], ['contact', 'meetings', 'barriers', 'cooperation']],
                 ['Formularze i ankiety', 'content', ['forms', 'polls']],
@@ -571,6 +574,11 @@ final class AdminMenu
             ] : [],
             params: ['formularz' => $form->id],
         );
+    }
+
+    private function bipEnabled(): bool
+    {
+        return $this->modules->get('bip') !== null ? $this->modules->isActive('bip') : $this->site->isModuleEnabled('bip');
     }
 
     private function can(string $module): bool

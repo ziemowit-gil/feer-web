@@ -134,7 +134,9 @@
         @media (min-width: 1024px) {
             .admin-sidebar .tm-panel { display: none !important; }
             .admin-sidebar .tm-chevron { transform: rotate(-90deg) !important; }
-            .nav-flyout a { min-height: 2.25rem; }
+            .nav-flyout a { min-height: 2.5rem; font-size: .9375rem !important; }
+            .nav-flyout > p { font-size: 1rem !important; }
+            .nav-flyout > p.uppercase { font-size: .75rem !important; }
             .nav-flyout a:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: -2px; }
         }
         .admin-sidebar.is-collapsed .tm-head { justify-content: center; padding-left: .25rem; padding-right: .25rem; }
