@@ -107,7 +107,12 @@ fi
 
 if [ "$MODE" = "dry" ]; then
     echo "Różnica (bez zapisu):"
-    diff <(printf '%s\n' "$CURRENT") <(printf '%s\n' "$NEW") || true
+    # Pliki tymczasowe zamiast <(…) — na części serwerów bash nie ma /dev/fd.
+    tmp_old="$(mktemp)"; tmp_new="$(mktemp)"
+    printf '%s\n' "$CURRENT" > "$tmp_old"
+    printf '%s\n' "$NEW" > "$tmp_new"
+    diff "$tmp_old" "$tmp_new" || true
+    rm -f "$tmp_old" "$tmp_new"
     exit 0
 fi
 

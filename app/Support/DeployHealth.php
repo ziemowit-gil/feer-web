@@ -236,9 +236,27 @@ class DeployHealth
 
     // ─── Harmonogram ──────────────────────────────────────────────────────
 
+    /** Plik ze znacznikiem — przetrwa `cache:clear` w deploy.sh (inaczej każdy deploy dawał fałszywe „brak sygnału”). */
+    public static function heartbeatFile(): string
+    {
+        return storage_path('framework/scheduler-heartbeat');
+    }
+
     public static function recordHeartbeat(): void
     {
-        Cache::put(self::HEARTBEAT_KEY, now()->getTimestamp(), now()->addDay());
+        $now = now()->getTimestamp();
+        Cache::put(self::HEARTBEAT_KEY, $now, now()->addDay());
+        @file_put_contents(self::heartbeatFile(), (string) $now);
+    }
+
+    public static function lastHeartbeat(): ?int
+    {
+        $last = Cache::get(self::HEARTBEAT_KEY);
+        if (! is_numeric($last) && is_file(self::heartbeatFile())) {
+            $last = trim((string) @file_get_contents(self::heartbeatFile()));
+        }
+
+        return is_numeric($last) ? (int) $last : null;
     }
 
     public function checkScheduler(): array
@@ -246,13 +264,14 @@ class DeployHealth
         $row = ['key' => 'harmonogram', 'name' => 'Harmonogram (schedule:run)'];
 
         try {
-            $last = Cache::get(self::HEARTBEAT_KEY);
+            $last = self::lastHeartbeat();
         } catch (\Throwable $e) {
             return $row + ['status' => 'warning', 'detail' => 'nie można odczytać cache: '.$e->getMessage()];
         }
 
-        if (! is_numeric($last)) {
-            return $row + ['status' => 'warning', 'detail' => 'brak sygnału — sprawdź crona: * * * * * php84 artisan schedule:run'];
+        if ($last === null) {
+            // Alias php84 w cronie nie działa — podpowiadamy pełną ścieżkę i skrypt, który wpis dodaje.
+            return $row + ['status' => 'warning', 'detail' => 'brak sygnału — uruchom scripts/cron.sh (wpis: * * * * * cd '.base_path().' && '.\App\Support\CronTab::phpBinary().' artisan schedule:run)'];
         }
 
         $minutes = (int) floor((now()->getTimestamp() - (int) $last) / 60);

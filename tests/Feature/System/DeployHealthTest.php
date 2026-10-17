@@ -158,13 +158,22 @@ class DeployHealthTest extends TestCase
 
     public function test_scheduler_heartbeat(): void
     {
-        $this->assertSame('warning', $this->health()->checkScheduler()['status']);
+        @unlink(DeployHealth::heartbeatFile());
+        $missing = $this->health()->checkScheduler();
+        $this->assertSame('warning', $missing['status']);
+        $this->assertStringContainsString('scripts/cron.sh', $missing['detail']);
+        $this->assertStringNotContainsString('php84 artisan', $missing['detail']);
 
         DeployHealth::recordHeartbeat();
         $this->assertSame('ok', $this->health()->checkScheduler()['status']);
 
+        // cache:clear w deploy.sh nie kasuje sygnału — zostaje w pliku.
+        Cache::flush();
+        $this->assertSame('ok', $this->health()->checkScheduler()['status']);
+
         Cache::put(DeployHealth::HEARTBEAT_KEY, now()->subMinutes(11)->getTimestamp());
         $this->assertSame('warning', $this->health()->checkScheduler()['status']);
+        @unlink(DeployHealth::heartbeatFile());
     }
 
     public function test_heartbeat_is_scheduled_every_minute(): void
