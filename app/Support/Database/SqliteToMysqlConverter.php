@@ -59,7 +59,7 @@ class SqliteToMysqlConverter
             'username' => $c['username'],
             'password' => (string) ($c['password'] ?? ''),
             'unix_socket' => '',
-            // Przy kopiowaniu: bez trybu ścisłego, żeby różnice typów nie przerywały konwersji (liczbę wierszy i tak porównujemy).
+            // sql_mode ustawiamy sami przy kopiowaniu (ścisły, z NO_AUTO_VALUE_ON_ZERO) — patrz withoutForeignKeys().
             'strict' => false,
             'options' => (config('database.connections.mysql.options') ?? []) + (extension_loaded('pdo_mysql') ? [\PDO::ATTR_TIMEOUT => 5] : []),
         ]);
@@ -135,6 +135,15 @@ class SqliteToMysqlConverter
         // starsze migracje zapisujące modele w nowej bazie wpisałyby kolumny, których tam jeszcze nie ma.
         $say('Tworzenie tabel w bazie docelowej (migracje)…');
         Once::flush();
+        if ($this->isMysql()) {
+            // site_settings ma ponad 150 kolumn string — jako VARCHAR(255) przekroczyłyby limit wiersza MySQL.
+            $grammar = new WideTableMySqlGrammar($this->dst());
+            $grammar->wideTables = $this->wideTables();
+            $this->dst()->setSchemaGrammar($grammar);
+            if ($grammar->wideTables) {
+                $say('Szerokie tabele (kolumny tekstowe jako TEXT): '.implode(', ', $grammar->wideTables));
+            }
+        }
         try {
             $exit = Artisan::call($fresh ? 'migrate:fresh' : 'migrate', ['--database' => self::TARGET, '--force' => true]);
         } finally {
@@ -210,7 +219,8 @@ class SqliteToMysqlConverter
     {
         if ($this->isMysql()) {
             $this->dst()->statement('SET FOREIGN_KEY_CHECKS=0');
-            $this->dst()->statement("SET SESSION sql_mode = 'NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION'");
+            // Tryb ścisły: za długa wartość (SQLite nie pilnuje długości) to błąd z nazwą kolumny w raporcie, a nie ciche ucięcie.
+            $this->dst()->statement("SET SESSION sql_mode = 'STRICT_ALL_TABLES,NO_AUTO_VALUE_ON_ZERO,NO_ENGINE_SUBSTITUTION'");
         } else {
             $this->dst()->statement('PRAGMA foreign_keys = OFF');
         }
@@ -227,6 +237,27 @@ class SqliteToMysqlConverter
     private function isMysql(): bool
     {
         return in_array($this->dst()->getDriverName(), ['mysql', 'mariadb'], true);
+    }
+
+    /**
+     * Tabele, w których kolumny tekstowe jako VARCHAR(255) utf8mb4 (do 1020 B każda) przekroczyłyby
+     * bezpieczny próg 48 KB z limitu 64 KB na wiersz.
+     *
+     * @return list<string>
+     */
+    public function wideTables(): array
+    {
+        $wide = [];
+        foreach ($this->sourceTables() as $table) {
+            $strings = collect(Schema::connection($this->source)->getColumns($table))
+                ->filter(fn ($c) => preg_match('/^(varchar|char|string)/i', (string) ($c['type_name'] ?? $c['type'] ?? '')))
+                ->count();
+            if ($strings * 1020 > 48 * 1024) {
+                $wide[] = $table;
+            }
+        }
+
+        return $wide;
     }
 
     /** @return list<string> */

@@ -122,6 +122,47 @@ class SqliteToMysqlConverterTest extends TestCase
         $this->actingAs($admin)->post(route('admin.baza-mysql.switch'), ['confirm' => '1'])->assertSessionHasErrors('switch');
     }
 
+    /** SQL MySQL bez serwera: połączenie bez PDO wystarczy do skompilowania schematu. */
+    private function mysqlSql(callable $define, string $table, bool $create = true): string
+    {
+        $conn = new \Illuminate\Database\MySqlConnection(fn () => null, 'x', '', ['driver' => 'mysql', 'name' => 'x']);
+        $grammar = new \App\Support\Database\WideTableMySqlGrammar($conn);
+        $grammar->wideTables = ['site_settings'];
+        $conn->setSchemaGrammar($grammar);
+        $bp = new \Illuminate\Database\Schema\Blueprint($conn, $table);
+        if ($create) {
+            $bp->create();
+        }
+        $define($bp);
+
+        return implode(";\n", $bp->toSql());
+    }
+
+    public function test_szeroka_tabela_ma_kolumny_text_zamiast_varchar_z_domyslna_wartoscia_jako_wyrazenie(): void
+    {
+        $sql = $this->mysqlSql(function ($t) {
+            $t->id();
+            $t->string('site_name')->default("Fundacja 'FEER'");
+            $t->string('slug')->nullable()->unique();
+            $t->string('kod', 20)->nullable();
+        }, 'site_settings');
+
+        $this->assertStringContainsString("`site_name` text not null default ('Fundacja ''FEER''')", $sql);
+        $this->assertStringContainsString('`slug` varchar(255) null', $sql); // z indeksem — zostaje VARCHAR
+        $this->assertStringContainsString('`kod` text null', $sql);
+
+        $other = $this->mysqlSql(fn ($t) => $t->string('title')->default('x'), 'pages');
+        $this->assertStringContainsString("`title` varchar(255) not null default 'x'", $other);
+
+        $change = $this->mysqlSql(fn ($t) => $t->string('tagline')->nullable()->default(null)->change(), 'site_settings', false);
+        $this->assertStringContainsString('modify `tagline` text null', $change);
+    }
+
+    public function test_wykrywa_szerokie_tabele_w_zrodle(): void
+    {
+        $this->assertSame(['site_settings'], $this->converter()->wideTables());
+    }
+
     public function test_polecenie_konsoli_zglasza_blad_polaczenia(): void
     {
         $this->artisan('db:konwertuj-mysql', ['--host' => '127.0.0.1', '--port' => 1, '--database' => 'feer', '--username' => 'u', '--password' => 'x', '--sprawdz' => true])
