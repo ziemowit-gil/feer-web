@@ -132,4 +132,25 @@ class HealthDashboardTest extends TestCase
         $this->assertSame('1 błąd w 1 rodzaju', $section['summary']);
         $this->assertSame('Coś poszło nie tak', $section['table']['rows'][0][0]);
     }
+
+    public function test_wyczysc_log_archiwizuje_i_oproznia(): void
+    {
+        $log = $this->dir.'/laravel.log';
+        file_put_contents($log, '['.now()->format('Y-m-d H:i:s')."] local.ERROR: Błąd do wyczyszczenia\n");
+        for ($i = 0; $i < 7; $i++) {
+            touch($this->dir.'/laravel-archiwum-2026010'.$i.'-000000.log.gz');
+        }
+
+        $r = LogDigest::clear($log);
+
+        $this->assertSame('', file_get_contents($log));
+        $this->assertStringContainsString('Błąd do wyczyszczenia', gzdecode(file_get_contents($r['archive'])));
+        $this->assertCount(LogDigest::KEEP_ARCHIVES, glob($this->dir.'/laravel-archiwum-*.log.gz'));
+        $this->assertSame(0, LogDigest::read($log)['total']);
+        $this->assertSame(['archive' => null, 'bytes' => 0], LogDigest::clear($log));
+
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->actingAs($admin)->get(route('admin.health.index'))->assertOk()
+            ->assertSee(route('admin.health.clear-log'), false)->assertSee('Wyczyść log');
+    }
 }

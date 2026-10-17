@@ -94,6 +94,13 @@
                     @foreach ($sec['notes'] as $note)
                         <p class="mt-3 text-sm text-muted">{{ $note }}</p>
                     @endforeach
+                    @if ($sec['key'] === 'errors')
+                        <form method="POST" action="{{ route('admin.health.clear-log') }}" class="mt-3" onsubmit="return confirm('Wyczyścić log błędów? Bieżący log zostanie zapisany jako skompresowane archiwum.')">
+                            @csrf
+                            <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-broom" aria-hidden="true"></i> Wyczyść log</button>
+                            <p class="mt-1 text-xs text-muted">Bieżący laravel.log trafi do skompresowanego archiwum w storage/logs (zostaje {{ \App\Support\LogDigest::KEEP_ARCHIVES }} ostatnich), a licznik błędów zacznie od zera.</p>
+                        </form>
+                    @endif
                     @if ($sec['link'])
                         <a href="{{ $sec['link']['url'] }}" class="mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline">{{ $sec['link']['label'] }} <span aria-hidden="true">→</span></a>
                     @endif

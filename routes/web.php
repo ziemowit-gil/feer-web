@@ -763,6 +763,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
             ->middleware('edition:invitations');
 
         Route::get('health', [AdminHealthCheckController::class, 'index'])->name('health.index');
+        Route::post('health/wyczysc-log', [AdminHealthCheckController::class, 'clearLog'])->name('health.clear-log');
         Route::get('cache', [AdminCacheController::class, 'index'])->name('cache.index');
         Route::put('cache', [AdminCacheController::class, 'update'])->name('cache.update');
         Route::post('cache/{group}/flush', [AdminCacheController::class, 'flush'])->name('cache.flush');

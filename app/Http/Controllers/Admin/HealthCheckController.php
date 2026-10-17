@@ -38,6 +38,23 @@ class HealthCheckController extends Controller
         return view('admin.health.index', compact('checks', 'deploy', 'sections', 'overall'));
     }
 
+    /** „Wyczyść” w sekcji błędów: archiwizuje i opróżnia laravel.log. */
+    public function clearLog(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
+    {
+        try {
+            $r = \App\Support\LogDigest::clear();
+        } catch (\Throwable $e) {
+            return back()->with('error', $e->getMessage());
+        }
+        if (function_exists('activity') && $r['archive']) {
+            activity('system')->causedBy($request->user())->event('deleted')->withProperties(['archive' => basename($r['archive'])])->log('Wyczyszczono log błędów (laravel.log)');
+        }
+
+        return redirect()->to(route('admin.health.index').'#sec-errors')->with('status', $r['archive']
+            ? 'Wyczyszczono log ('.\App\Support\HealthDashboard::bytes($r['bytes']).'). Archiwum: storage/logs/'.basename($r['archive']).'.'
+            : 'Log był pusty.');
+    }
+
     private function checkDatabase(): array
     {
         try {

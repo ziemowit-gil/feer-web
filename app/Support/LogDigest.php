@@ -76,6 +76,46 @@ class LogDigest
         ];
     }
 
+    /** Ile archiwów wyczyszczonego logu trzymamy (storage/logs/laravel-archiwum-*.log.gz). */
+    public const KEEP_ARCHIVES = 5;
+
+    /**
+     * „Wyczyść” na pulpicie: zapisuje bieżący log jako skompresowane archiwum obok i opróżnia plik
+     * (opróżnienie, nie usunięcie — procesy z otwartym plikiem piszą dalej). Zostawia KEEP_ARCHIVES ostatnich archiwów.
+     *
+     * @return array{archive: ?string, bytes: int}
+     */
+    public static function clear(?string $path = null): array
+    {
+        $path ??= storage_path('logs/laravel.log');
+        if (! is_file($path) || filesize($path) === 0) {
+            return ['archive' => null, 'bytes' => 0];
+        }
+
+        $bytes = (int) filesize($path);
+        $archive = dirname($path).'/'.pathinfo($path, PATHINFO_FILENAME).'-archiwum-'.now()->format('Ymd-His').'.log.gz';
+        $in = fopen($path, 'rb');
+        $out = gzopen($archive, 'wb6');
+        if (! $in || ! $out) {
+            throw new \RuntimeException('Nie udało się zapisać archiwum logu — niczego nie wyczyszczono.');
+        }
+        while (! feof($in)) {
+            gzwrite($out, (string) fread($in, 1 << 20));
+        }
+        fclose($in);
+        gzclose($out);
+
+        file_put_contents($path, '');
+
+        $archives = glob(dirname($path).'/'.pathinfo($path, PATHINFO_FILENAME).'-archiwum-*.log.gz') ?: [];
+        rsort($archives);
+        foreach (array_slice($archives, self::KEEP_ARCHIVES) as $old) {
+            @unlink($old);
+        }
+
+        return ['archive' => $archive, 'bytes' => $bytes];
+    }
+
     /** Ostatnie $bytes bajtów pliku, od początku pełnej linii. */
     private static function tail(string $path, int $size, int $bytes): string
     {
