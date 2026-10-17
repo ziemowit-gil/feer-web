@@ -65,11 +65,7 @@
                                         <button type="submit" class="rounded-md px-3 py-1.5 text-xs font-bold text-muted hover:text-brand-dark bg-white hover:bg-brand-light">Przełącz się</button>
                                     </form>
                                     <a href="{{ route('admin.witryny.edit', $sub) }}" class="text-muted hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
-                                    <form method="POST" action="{{ route('admin.witryny.destroy', $sub) }}" onsubmit="return confirm('Usunąć witrynę „{{ $sub->site_name }}”?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-muted hover:text-red-600" title="Usuń" aria-label="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
-                                    </form>
+                                    <a href="{{ route('admin.witryny.confirm-destroy', $sub) }}" class="inline-flex h-11 w-11 items-center justify-center rounded text-muted hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" title="Usuń"><i class="fa-solid fa-trash" aria-hidden="true"></i><span class="sr-only">Usuń witrynę {{ $sub->site_name }}</span></a>
                                 </div>
                             </div>
                         @endforeach

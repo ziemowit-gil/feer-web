@@ -673,6 +673,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
             ->parameters(['witryny' => 'site']);
         Route::post('witryny/{site}/przelacz', [\App\Http\Controllers\Admin\ActiveSiteController::class, 'switch'])
             ->name('witryny.przelacz');
+        Route::get('witryny/{site}/usun', [\App\Http\Controllers\Admin\SiteController::class, 'confirmDestroy'])
+            ->middleware('edition:multisite')->name('witryny.confirm-destroy');
     });
 
     Route::middleware('admin')->group(function () {

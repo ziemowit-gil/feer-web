@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\SiteSetting;
+use App\Support\Backup\BackupManager;
 use App\Support\BipSite;
+use App\Support\SiteRemoval;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -97,20 +99,64 @@ class SiteController extends Controller
         return redirect()->route('admin.witryny.index')->with('status', 'Zapisano zmiany witryny „'.$site->site_name.'".');
     }
 
-    public function destroy(SiteSetting $site)
+    /** Strona potwierdzenia usunięcia: ile treści ma witryna, podwitryny, opcja usunięcia razem z treścią. */
+    public function confirmDestroy(SiteSetting $site)
     {
         abort_if($site->parent_site_id === null, 403, 'Nie można usunąć głównej witryny.');
 
-        $tables = ['news', 'pages', 'gallery_images', 'events', 'partners', 'quick_actions', 'polls', 'hero_slides', 'bip_documents'];
-        foreach ($tables as $table) {
-            if (\Illuminate\Support\Facades\DB::table($table)->where('site_id', $site->id)->exists()) {
-                return back()->with('error', 'Nie można usunąć witryny „'.$site->site_name.'" — ma jeszcze przypisaną treść. Przenieś lub usuń ją najpierw.');
+        return view('admin.sites.destroy', [
+            'site' => $site,
+            'counts' => SiteRemoval::contentCounts($site),
+            'subsites' => $site->subsites()->get(),
+        ]);
+    }
+
+    public function destroy(Request $request, SiteSetting $site)
+    {
+        abort_if($site->parent_site_id === null, 403, 'Nie można usunąć głównej witryny.');
+
+        if ($site->subsites()->exists()) {
+            return redirect()->route('admin.witryny.confirm-destroy', $site)
+                ->with('error', 'Witryna „'.$site->site_name.'” ma podwitryny — usuń je najpierw.');
+        }
+
+        $counts = SiteRemoval::contentCounts($site);
+        if ($counts !== []) {
+            // Wymuszone usunięcie z treścią: zgoda i przepisana nazwa witryny.
+            $request->validate([
+                'with_content' => ['accepted'],
+                'confirm_name' => ['required', 'string', function ($attribute, $value, $fail) use ($site) {
+                    if (trim((string) $value) !== trim((string) $site->site_name)) {
+                        $fail('Przepisz dokładnie nazwę witryny: „'.$site->site_name.'”.');
+                    }
+                }],
+            ], [
+                'with_content.accepted' => 'Witryna ma treść — zaznacz, że chcesz usunąć ją razem z treścią.',
+            ]);
+
+            if ($request->boolean('backup')) {
+                try {
+                    $backup = app(BackupManager::class)->create('przed-usunieciem-witryny', false);
+                } catch (\Throwable $e) {
+                    return back()->withInput()->with('error', 'Nie udało się zrobić kopii zapasowej, więc niczego nie usunięto: '.$e->getMessage());
+                }
             }
         }
 
-        $site->delete();
+        $name = $site->site_name;
+        $removed = SiteRemoval::remove($site);
 
-        return redirect()->route('admin.witryny.index')->with('status', 'Witryna została usunięta.');
+        if (function_exists('activity')) {
+            activity('system')->causedBy($request->user())->event('deleted')
+                ->withProperties(['site' => $name, 'removed' => $removed, 'backup' => $backup ?? null])
+                ->log('Usunięto witrynę „'.$name.'”'.($removed ? ' razem z treścią' : ''));
+        }
+
+        $total = array_sum($removed);
+
+        return redirect()->route('admin.witryny.index')->with('status', $removed
+            ? 'Usunięto witrynę „'.$name.'” i '.$total.' powiązanych rekordów.'.(isset($backup) ? ' Kopia zapasowa: '.basename($backup).'.' : '')
+            : 'Witryna „'.$name.'” została usunięta.');
     }
 
     /**
