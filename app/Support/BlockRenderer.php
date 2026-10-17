@@ -35,7 +35,7 @@ class BlockRenderer
 
     public const TYPES = [
         'paragraph', 'heading', 'list', 'quote', 'image', 'gallery', 'buttons', 'callout',
-        'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist', 'banner',
+        'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist', 'banner', 'imagebanner',
     ];
 
     private const INLINE_TAGS = ['strong', 'b', 'em', 'i', 'a', 'br', 'code', 's', 'sub', 'sup', 'mark'];
@@ -176,6 +176,12 @@ class BlockRenderer
                 'size' => $pick('size', ['large', 'small'], 'large'),
                 'tone' => $pick('tone', ['gray', 'brand'], 'gray'),
                 'href' => self::url($str('href')),
+            ],
+            'imagebanner' => [
+                'url' => self::url($str('url')),
+                'alt' => preg_replace('/\s+/u', ' ', $str('alt', 500)),
+                'href' => self::url($str('href')),
+                'newTab' => (bool) ($a['newTab'] ?? false),
             ],
             'html' => ['html' => mb_substr((string) ($a['html'] ?? ''), 0, 500000)],
             'subpages' => self::subpagesAttrs($a),
@@ -372,6 +378,21 @@ class BlockRenderer
 
             case 'banner':
                 return $this->renderBanner($a);
+
+            case 'imagebanner':
+                // Baner graficzny: cała grafika (z tekstem na niej) jako jeden link. Tekst alternatywny = tekst z grafiki,
+                // więc jest też nazwą linku; „nowa karta” ogłaszana czytnikom ekranu.
+                if ($a['url'] === '') {
+                    return '';
+                }
+                $img = '<img src="'.e($a['url']).'" alt="'.e($a['alt']).'" loading="lazy">';
+                if ($a['href'] !== '') {
+                    $target = $a['newTab'] ? ' target="_blank" rel="noopener"' : '';
+                    $sr = $a['newTab'] ? '<span class="sr-only"> (otwiera się w nowej karcie)</span>' : '';
+                    $img = '<a href="'.e($a['href']).'" class="content-imagebanner-link"'.$target.'>'.$img.$sr.'</a>';
+                }
+
+                return '<div class="content-imagebanner">'.$img.'</div>';
 
             case 'html':
                 return trim($a['html']);

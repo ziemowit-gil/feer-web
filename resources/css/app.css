@@ -907,6 +907,15 @@ html.no-animations .nav-mega-panel { transition: none !important; }
 }
 html.contrast .content-banner { background: #fff; outline: 2px solid currentColor; }
 
+/* Baner graficzny (blok „Baner graficzny”): grafika z tekstem na całą szerokość treści, zwykle jako link.
+   Kilka pod rzędem tworzy listę banerów z równym odstępem. Najechanie i fokus — obwódka w kolorze marki (bez przezroczystości). */
+.content-imagebanner { margin: 1rem 0; }
+.content-imagebanner + .content-imagebanner { margin-top: 1.25rem; }
+.content-imagebanner img { display: block; width: 100%; height: auto; margin: 0; border-radius: 0.25rem; }
+.content-imagebanner-link { display: block; border-radius: 0.25rem; }
+.content-imagebanner-link:hover { outline: 3px solid var(--color-brand); outline-offset: 3px; }
+.content-imagebanner-link:focus-visible { outline: 3px solid var(--color-brand-dark); outline-offset: 3px; }
+
 /* Listy linków: podstrony ([podstrony…]) i aktualności ([aktualnosci…]), bloki „Lista podstron”/„Lista aktualności”: płasko, bez ramek, kolory marki.
    Linki zawsze podkreślone (WCAG 1.4.1); kontrast brand-dark na bieli i brand-light ≥ 4,5:1 we wszystkich stanach. */
 .content-links { margin: 1.5rem 0; }

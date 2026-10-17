@@ -77,11 +77,39 @@ class BlockBannerTest extends TestCase
         $this->assertMatchesRegularExpression('~<h2 class="content-banner-title"( id="[a-z0-9-]+")?><a href="/media" class="content-banner-link">Nasze media społecznościowe</a></h2>~u', $html);
     }
 
+    public function test_baner_graficzny_to_jeden_link_z_tekstem_z_grafiki(): void
+    {
+        $html = BlockRenderer::render([
+            ['type' => 'imagebanner', 'attrs' => ['url' => '/storage/1/paszport.webp', 'alt' => ' Zarezerwuj  termin w punkcie paszportowym ', 'href' => 'https://rezerwacja.example.pl', 'newTab' => true]],
+            ['type' => 'imagebanner', 'attrs' => ['url' => '/storage/1/poradnik.webp', 'alt' => 'Poradnik bezpieczeństwa. Pobierz poradnik', 'href' => '/poradnik']],
+        ]);
+
+        $this->assertStringContainsString(
+            '<div class="content-imagebanner"><a href="https://rezerwacja.example.pl" class="content-imagebanner-link" target="_blank" rel="noopener">'
+            .'<img src="/storage/1/paszport.webp" alt="Zarezerwuj termin w punkcie paszportowym" loading="lazy"><span class="sr-only"> (otwiera się w nowej karcie)</span></a></div>',
+            $html
+        );
+        $this->assertStringContainsString('<div class="content-imagebanner"><a href="/poradnik" class="content-imagebanner-link"><img src="/storage/1/poradnik.webp" alt="Poradnik bezpieczeństwa. Pobierz poradnik" loading="lazy"></a></div>', $html);
+    }
+
+    public function test_baner_graficzny_bez_grafiki_znika_a_bez_adresu_jest_obrazem(): void
+    {
+        $this->assertSame('', BlockRenderer::render([['type' => 'imagebanner', 'attrs' => ['alt' => 'Coś', 'href' => '/x']]]));
+        $this->assertSame(
+            '<div class="content-imagebanner"><img src="/b.jpg" alt="Kalendarz badań" loading="lazy"></div>',
+            BlockRenderer::render([['type' => 'imagebanner', 'attrs' => ['url' => '/b.jpg', 'alt' => 'Kalendarz badań', 'href' => 'javascript:alert(1)']]])
+        );
+    }
+
     public function test_edytor_zna_blok_banera_i_style_sa_w_css(): void
     {
         $js = file_get_contents(resource_path('js/block-editor.js'));
         $this->assertStringContainsString("banner: { title: 'Baner sekcji'", $js);
         $this->assertStringContainsString("cls.contains('content-banner')", $js); // odczyt z HTML (Przekształć w bloki)
-        $this->assertStringContainsString('.content-banner .content-banner-link:focus-visible::after', file_get_contents(resource_path('css/app.css')));
+        $this->assertStringContainsString("imagebanner: { title: 'Baner graficzny'", $js);
+        $this->assertStringContainsString("cls.contains('content-imagebanner')", $js);
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('.content-banner .content-banner-link:focus-visible::after', $css);
+        $this->assertStringContainsString('.content-imagebanner-link:focus-visible', $css);
     }
 }

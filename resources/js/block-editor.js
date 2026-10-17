@@ -189,6 +189,7 @@ function start(config) {
         file: { title: 'Plik do pobrania', icon: 'file-arrow-down', cat: 'media', desc: 'Odnośnik do dokumentu (PDF, DOCX…).', keywords: ['pdf', 'dokument', 'załącznik', 'pobierz'], create: () => ({ url: '', label: '', description: '' }) },
         buttons: { title: 'Przyciski', icon: 'hand-pointer', cat: 'design', desc: 'Wezwanie do działania — jeden lub kilka przycisków.', keywords: ['cta', 'przycisk', 'link', 'zapisz się'], align: true, create: () => ({ align: 'left', items: [{ label: 'Dowiedz się więcej', url: '', variant: 'brand', newTab: false }] }) },
         banner: { title: 'Baner sekcji', icon: 'panorama', cat: 'design', desc: 'Szeroki pasek z grafiką po lewej i tytułem sekcji, np. „Nasze media społecznościowe”. Może prowadzić do strony.', keywords: ['baner', 'banner', 'pasek', 'sekcja', 'tytuł', 'nagłówek', 'grafika'], create: () => ({ title: '', level: 2, url: '', alt: '', decorative: true, size: 'large', tone: 'gray', href: '' }) },
+        imagebanner: { title: 'Baner graficzny', icon: 'rectangle-ad', cat: 'design', desc: 'Gotowa grafika z tekstem na całą szerokość, zwykle jako link (np. „Zarezerwuj termin”). Kilka pod rzędem tworzy listę banerów.', keywords: ['baner', 'banner', 'grafika', 'reklama', 'link', 'kafel', 'promocja'], create: () => ({ url: '', alt: '', href: '', newTab: false }) },
         // Stara ramka (content-box/-note/-important): nie do wstawiania — zastąpiła ją „Ramka informacyjna” z kreatora;
         // zostaje, by istniejące ramki dało się dalej edytować i rozgrupować.
         callout: { title: 'Ramka (stara)', icon: 'rectangle-list', cat: 'design', desc: 'Wyróżniona treść: ramka, notatka/ostrzeżenie albo ważna informacja.', keywords: ['ważne', 'uwaga', 'notatka', 'ostrzeżenie', 'box'], hidden: true, container: true, create: () => ({ variant: 'box' }), inner: () => [block('paragraph')] },
@@ -664,6 +665,10 @@ function start(config) {
                 const variant = cls.contains('content-note') ? 'note' : (cls.contains('content-important') ? 'important' : 'box');
                 const inner = nodesToBlocks([...n.childNodes]);
                 out.push(block('callout', { variant }, inner.length ? inner : [block('paragraph')]));
+            } else if (tag === 'DIV' && cls.contains('content-imagebanner') && n.querySelector('img')) {
+                const img = n.querySelector('img');
+                const link = n.querySelector('a');
+                out.push(block('imagebanner', { url: img.getAttribute('src') || '', alt: img.getAttribute('alt') || '', href: link?.getAttribute('href') || '', newTab: link?.target === '_blank' }));
             } else if (tag === 'DIV' && cls.contains('content-banner')) {
                 const img = n.querySelector('.content-banner-media img');
                 const titleEl = n.querySelector('.content-banner-title');
@@ -1278,6 +1283,10 @@ function start(config) {
                 case 'file':
                     if (a.url && !a.label.trim()) w.push('Podaj czytelną nazwę pliku zamiast nazwy technicznej.');
                     break;
+                case 'imagebanner':
+                    if (a.url && !a.alt.trim()) w.push('Przepisz tekst z grafiki do tekstu alternatywnego — bez niego czytnik ekranu nie odczyta banera ani linku.');
+                    if (a.url && !a.href) w.push('Baner graficzny nie ma adresu — zwykle prowadzi do strony lub serwisu.');
+                    break;
                 case 'banner':
                     if (!a.title.trim()) w.push('Baner nie ma tytułu — bez niego nie pojawi się na stronie.');
                     if (a.url && !a.decorative && !a.alt.trim()) w.push('Grafika banera nie ma opisu — dodaj go albo oznacz grafikę jako dekoracyjną.');
@@ -1599,6 +1608,7 @@ function start(config) {
         embed: (b) => embedEditor(b),
         file: (b) => fileEditor(b),
         banner: (b) => bannerEditor(b),
+        imagebanner: (b) => imageBannerEditor(b),
         html: (b) => htmlEditor(b),
         shortcode: (b) => shortcodeEditor(b),
         subpages: (b) => linkListEditor(b, subpagesCode(b.attrs), subpagesSummary(b.attrs)),
@@ -1815,6 +1825,31 @@ function start(config) {
             }))];
         return h('div', { class: `content-banner content-banner--${a.size} content-banner--${a.tone}` + (a.url ? '' : ' content-banner--no-media') },
             ...media, h('div', { class: 'content-banner-title' }, title));
+    }
+
+    // Grafika z tekstem: opis alternatywny jest obowiązkowy (przepisany tekst z grafiki) — bez opcji „dekoracyjna”.
+    async function setImageBanner(b, url, alt = '') {
+        let cur = find(b.id)?.block;
+        if (!cur) return;
+        updateAttrs(cur, { url, alt: alt || cur.attrs.alt || '' });
+        const r = await promptAltText({ url, alt: alt || cur.attrs.alt || '', allowDecorative: false });
+        cur = find(b.id)?.block;
+        if (!cur) return;
+        if (r && typeof r === 'object') { updateAttrs(cur, { alt: r.alt }); announce('Zapisano tekst z grafiki'); } else announce('Pominięto opis — uwaga dostępności pozostaje na liście.');
+        selectBlock(cur.id, { focusWrapper: true });
+    }
+
+    function imageBannerEditor(b) {
+        const a = b.attrs;
+        if (!a.url) {
+            return mediaPlaceholder({
+                iconName: 'rectangle-ad', title: 'Baner graficzny', desc: 'Prześlij grafikę banera, wybierz ją z biblioteki albo przeciągnij tutaj. Potem przepisz tekst z grafiki i dodaj adres.', accept: 'image/*',
+                onFiles: async (files) => { const up = await uploadFiles(files.slice(0, 1)); if (up[0]) await setImageBanner(b, up[0].url); },
+                onLibrary: async () => { const picked = await openMediaLibrary(); if (picked[0]) await setImageBanner(b, picked[0].url, picked[0].alt || ''); },
+                onUrl: async (url) => { if (safeUrl(url)) await setImageBanner(b, url); else announce('Nieprawidłowy adres obrazu'); },
+            });
+        }
+        return h('div', { class: 'content-imagebanner' }, h('img', { src: a.url, alt: a.alt }));
     }
 
     function bannerLines() {
@@ -2576,6 +2611,21 @@ function start(config) {
                 panelSection('Odnośnik',
                     field('Adres po kliknięciu (opcjonalnie)', textInput(a.href, (v) => updateAttrs(b, { href: v.trim() }, { typing: true, rerender: false }), { type: 'url', placeholder: 'https://… lub /strona' }), 'Z adresem cały baner jest jednym linkiem — jego nazwą jest tytuł.'),
                     pickLinkButton(`banner-${b.id}`, ' jako odnośnik banera', () => find(b.id)?.block.attrs.href, (v) => updateAttrs(b, { href: v }, { rerender: false }))));
+                break;
+            case 'imagebanner':
+                if (a.url) {
+                    parts.push(panelSection('Tekst z grafiki',
+                        field('Tekst alternatywny', textInput(a.alt, (v) => { updateAttrs(b, { alt: v.replace(/\s+/g, ' ') }, { typing: true, rerender: false }); scheduleWarnings(); }, { multiline: true, rows: 3 }), 'Przepisz cały tekst widoczny na grafice, np. „Zarezerwuj termin w punkcie paszportowym”. To także nazwa linku dla czytnika ekranu.'),
+                        h('img', { src: a.url, alt: '', class: 'be-thumb' }),
+                        h('div', { class: 'be-row' },
+                            h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: async () => { const picked = await openMediaLibrary(); if (picked[0]) await setImageBanner(b, picked[0].url, picked[0].alt || ''); renderSidebar(); } }, icon('photo-film'), ' Zmień grafikę'),
+                            h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => { set({ url: '', alt: '' }); renderSidebar(); } }, icon('trash'), ' Usuń grafikę'))),
+                    panelSection('Odnośnik',
+                        field('Adres po kliknięciu', textInput(a.href, (v) => { updateAttrs(b, { href: v.trim() }, { typing: true, rerender: false }); scheduleWarnings(); }, { type: 'url', placeholder: 'https://… lub /strona' })),
+                        pickLinkButton(`imagebanner-${b.id}`, ' jako odnośnik banera', () => find(b.id)?.block.attrs.href, (v) => updateAttrs(b, { href: v }, { rerender: false })),
+                        checkbox('Otwieraj w nowej karcie', a.newTab, (v) => set({ newTab: v }, { rerender: false }), 'Używaj oszczędnie. Czytnik ekranu usłyszy informację o nowej karcie.'),
+                        h('p', { class: 'be-help' }, 'Dbaj o czytelność samej grafiki: duży, kontrastowy tekst (co najmniej 4,5:1), bez drobnych napisów i logotypów niosących treść.')));
+                }
                 break;
             case 'subpages': {
                 const pages = config.subpages?.pages || [];
