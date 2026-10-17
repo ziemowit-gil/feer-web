@@ -239,7 +239,7 @@ class DeployHealth
     /** Plik ze znacznikiem — przetrwa `cache:clear` w deploy.sh (inaczej każdy deploy dawał fałszywe „brak sygnału”). */
     public static function heartbeatFile(): string
     {
-        return storage_path('framework/scheduler-heartbeat');
+        return storage_path('app/scheduler-heartbeat');
     }
 
     public static function recordHeartbeat(): void

@@ -24,16 +24,31 @@ class QueueHealth
     /** Brak tętna workera dłużej niż tyle minut = worker nie działa. */
     public const WORKER_SILENT_MINUTES = 5;
 
+    /** Plik z tętnem — przetrwa `cache:clear` w deploy.sh (inaczej po wdrożeniu „Ostatnia praca workera: brak danych”). */
+    public static function heartbeatFile(): string
+    {
+        return storage_path('app/queue-worker-heartbeat');
+    }
+
     public static function beat(): void
     {
-        Cache::put(self::HEARTBEAT_KEY, now()->getTimestamp(), now()->addDay());
+        $now = now()->getTimestamp();
+        Cache::put(self::HEARTBEAT_KEY, $now, now()->addDay());
+        // Plik najwyżej co 30 s — beat() woła każda pętla workera.
+        $file = self::heartbeatFile();
+        if (! is_file($file) || $now - (int) @filemtime($file) >= 30) {
+            @file_put_contents($file, (string) $now);
+        }
     }
 
     public function lastWorkerRun(): ?Carbon
     {
         $ts = Cache::get(self::HEARTBEAT_KEY);
+        if (! $ts && is_file(self::heartbeatFile())) {
+            $ts = trim((string) @file_get_contents(self::heartbeatFile()));
+        }
 
-        return $ts ? Carbon::createFromTimestamp((int) $ts) : null;
+        return is_numeric($ts) && (int) $ts > 0 ? Carbon::createFromTimestamp((int) $ts) : null;
     }
 
     /**

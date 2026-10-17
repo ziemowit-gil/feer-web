@@ -12,7 +12,7 @@
         <p style="margin:0 0 4px;font-size:14px">Czeka w kolejce: <strong>{{ $state['pending'] }}</strong> · nieudane łącznie: <strong>{{ $state['failed'] }}</strong></p>
         <p style="margin:0 0 16px;font-size:14px">Ostatnia praca workera: <strong>{{ $state['worker']?->format('d.m.Y H:i') ?? 'brak danych' }}</strong></p>
         <p style="margin:0 0 16px"><a href="{{ $url }}" style="display:inline-block;padding:10px 16px;border-radius:6px;background:#1752BF;color:#FFFFFF;font-weight:bold;text-decoration:none">Otwórz pulpit newslettera</a></p>
-        <p style="margin:0;font-size:13px;color:#4A4A47">Co sprawdzić: czy cron uruchamia co minutę <code>php84 artisan schedule:run</code> i czy w logach (<code>storage/logs</code>) nie ma błędów. Kolejny alert o tym samym problemie przyjdzie najwcześniej za godzinę.</p>
+        <p style="margin:0;font-size:13px;color:#4A4A47">Co sprawdzić: stan harmonogramu w panelu (System → Harmonogram (cron)) albo na serwerze <code>scripts/cron.sh --sprawdz</code> oraz błędy w logach (<code>storage/logs</code>). Kolejny alert przyjdzie najwcześniej za 24 godziny.</p>
     </div>
 </body>
 </html>

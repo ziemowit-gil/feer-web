@@ -80,17 +80,28 @@ class NewsletterOperationsTest extends TestCase
         $this->assertSame(1, $state['pending']);
     }
 
-    public function test_alert_mailowy_raz_na_godzine_i_baner_na_pulpicie(): void
+    public function test_alert_mailowy_raz_na_24_godziny_i_baner_na_pulpicie(): void
     {
         Mail::fake();
+        @unlink(\Modules\Newsletter\Console\CheckQueueHealth::throttleFile());
         $admin = $this->admin();
         $this->stuckJob(30);
 
         $this->artisan('newsletter:queue-health')->assertSuccessful();
         Mail::assertSent(QueueAlertMail::class, fn ($m) => $m->hasTo($admin->email));
 
+        $this->travel(23)->hours();
         $this->artisan('newsletter:queue-health')->assertSuccessful();
-        Mail::assertSent(QueueAlertMail::class, 1); // drugi alert o tym samym problemie dopiero po godzinie
+        // cache:clear w deploy.sh nie zeruje blokady — czas ostatniego alertu jest też w pliku.
+        \Illuminate\Support\Facades\Cache::flush();
+        $this->artisan('newsletter:queue-health')->assertSuccessful();
+        Mail::assertSent(QueueAlertMail::class, 1); // w ciągu doby tylko jeden alert
+
+        $this->travel(2)->hours();
+        $this->artisan('newsletter:queue-health')->assertSuccessful();
+        Mail::assertSent(QueueAlertMail::class, 2); // po 24 h — kolejny
+        $this->travelBack();
+        @unlink(\Modules\Newsletter\Console\CheckQueueHealth::throttleFile());
 
         $this->actingAs($admin)->get(route('admin.newsletter.dashboard'))->assertOk()
             ->assertSee('Wysyłki mogą stać')
