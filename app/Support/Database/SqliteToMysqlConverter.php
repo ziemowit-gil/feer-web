@@ -144,9 +144,22 @@ class SqliteToMysqlConverter
                 $say('Szerokie tabele (kolumny tekstowe jako TEXT): '.implode(', ', $grammar->wideTables));
             }
         }
+        // Migracje z danymi zapisują modele (np. strony), a obserwatory dopisują wersje i dziennik z id zalogowanej
+        // osoby — w nowej bazie tabela users jest jeszcze pusta. Na czas migracji: bez zalogowanego użytkownika
+        // i bez kontroli kluczy obcych (te wiersze i tak zastąpią dane ze źródła).
+        $guard = auth()->guard();
+        $user = $guard->user();
+        if ($user && method_exists($guard, 'forgetUser')) {
+            $guard->forgetUser();
+        }
+        $this->foreignKeys(false);
         try {
             $exit = Artisan::call($fresh ? 'migrate:fresh' : 'migrate', ['--database' => self::TARGET, '--force' => true]);
         } finally {
+            $this->foreignKeys(true);
+            if ($user) {
+                $guard->setUser($user);
+            }
             Once::flush();
         }
         if ($exit !== 0) {
@@ -213,6 +226,13 @@ class SqliteToMysqlConverter
         $targetCount = $this->dst()->table($table)->count();
 
         return ['table' => $table, 'source' => $sourceCount, 'target' => $targetCount, 'ok' => $sourceCount === $targetCount, 'note' => $note];
+    }
+
+    private function foreignKeys(bool $on): void
+    {
+        $this->isMysql()
+            ? $this->dst()->statement('SET FOREIGN_KEY_CHECKS='.($on ? 1 : 0))
+            : $this->dst()->statement('PRAGMA foreign_keys = '.($on ? 'ON' : 'OFF'));
     }
 
     private function withoutForeignKeys(callable $fn): void

@@ -61,6 +61,20 @@ class SqliteToMysqlConverterTest extends TestCase
         $this->assertContains('pages', array_column($report['tables'], 'table'));
     }
 
+    public function test_konwersja_z_panelu_przy_zalogowanym_adminie(): void
+    {
+        // Migracje z danymi zapisują strony, a obserwator wersji wpisuje user_id zalogowanej osoby —
+        // w nowej bazie tabela users jest jeszcze pusta, więc klucz obcy blokowałby zapis.
+        $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]));
+        Page::create(['title' => 'Strona', 'slug' => 'strona', 'content' => '<p>x</p>', 'is_published' => true]);
+
+        $report = $this->converter()->convert();
+
+        $this->assertTrue($report['ok'], json_encode(array_filter($report['tables'], fn ($r) => ! $r['ok'])));
+        $this->assertNotNull(auth()->user(), 'Po konwersji osoba nadal jest zalogowana.');
+        $this->assertSame(DB::table('content_revisions')->count(), DB::connection(SqliteToMysqlConverter::TARGET)->table('content_revisions')->count());
+    }
+
     public function test_niepusta_baza_docelowa_wymaga_zastapienia(): void
     {
         $this->converter()->convert();
