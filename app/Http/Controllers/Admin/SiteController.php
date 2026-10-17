@@ -99,15 +99,17 @@ class SiteController extends Controller
         return redirect()->route('admin.witryny.index')->with('status', 'Zapisano zmiany witryny „'.$site->site_name.'".');
     }
 
-    /** Strona potwierdzenia usunięcia: ile treści ma witryna, podwitryny, opcja usunięcia razem z treścią. */
+    /** Strona potwierdzenia usunięcia: ile treści ma witryna (z podwitrynami), opcja „Wymuś usunięcie”. */
     public function confirmDestroy(SiteSetting $site)
     {
         abort_if($site->parent_site_id === null, 403, 'Nie można usunąć głównej witryny.');
 
+        $descendants = array_values(array_filter(SiteRemoval::withDescendants($site), fn ($s) => $s->id !== $site->id));
+
         return view('admin.sites.destroy', [
             'site' => $site,
-            'counts' => SiteRemoval::contentCounts($site),
-            'subsites' => $site->subsites()->get(),
+            'counts' => SiteRemoval::contentCountsDeep($site),
+            'subsites' => collect($descendants),
         ]);
     }
 
@@ -115,23 +117,22 @@ class SiteController extends Controller
     {
         abort_if($site->parent_site_id === null, 403, 'Nie można usunąć głównej witryny.');
 
-        if ($site->subsites()->exists()) {
-            return redirect()->route('admin.witryny.confirm-destroy', $site)
-                ->with('error', 'Witryna „'.$site->site_name.'” ma podwitryny — usuń je najpierw.');
-        }
+        $hasSubsites = $site->subsites()->exists();
+        $counts = SiteRemoval::contentCountsDeep($site);
 
-        $counts = SiteRemoval::contentCounts($site);
-        if ($counts !== []) {
-            // Wymuszone usunięcie z treścią: zgoda i przepisana nazwa witryny.
+        if ($counts !== [] || $hasSubsites) {
+            // Wymuszone usunięcie (treść i/lub podwitryny): zaznaczona opcja i przepisana nazwa witryny.
             $request->validate([
-                'with_content' => ['accepted'],
+                'force' => ['accepted'],
                 'confirm_name' => ['required', 'string', function ($attribute, $value, $fail) use ($site) {
                     if (trim((string) $value) !== trim((string) $site->site_name)) {
                         $fail('Przepisz dokładnie nazwę witryny: „'.$site->site_name.'”.');
                     }
                 }],
             ], [
-                'with_content.accepted' => 'Witryna ma treść — zaznacz, że chcesz usunąć ją razem z treścią.',
+                'force.accepted' => $hasSubsites
+                    ? 'Witryna ma podwitryny — zaznacz „Wymuś usunięcie”, aby usunąć ją razem z nimi i całą treścią.'
+                    : 'Witryna ma treść — zaznacz „Wymuś usunięcie”, aby usunąć ją razem z treścią.',
             ]);
 
             if ($request->boolean('backup')) {
@@ -144,19 +145,27 @@ class SiteController extends Controller
         }
 
         $name = $site->site_name;
-        $removed = SiteRemoval::remove($site);
+        $removed = SiteRemoval::remove($site, $hasSubsites);
+        $sitesRemoved = $removed['site_settings'] ?? 1;
+        unset($removed['site_settings']);
+        $total = array_sum($removed);
 
         if (function_exists('activity')) {
             activity('system')->causedBy($request->user())->event('deleted')
-                ->withProperties(['site' => $name, 'removed' => $removed, 'backup' => $backup ?? null])
-                ->log('Usunięto witrynę „'.$name.'”'.($removed ? ' razem z treścią' : ''));
+                ->withProperties(['site' => $name, 'sites' => $sitesRemoved, 'removed' => $removed, 'backup' => $backup ?? null])
+                ->log('Usunięto witrynę „'.$name.'”'.($sitesRemoved > 1 ? ' z podwitrynami ('.($sitesRemoved - 1).')' : '').($total ? ' razem z treścią' : ''));
         }
 
-        $total = array_sum($removed);
+        $msg = 'Usunięto witrynę „'.$name.'”';
+        if ($sitesRemoved > 1) {
+            $msg .= ', podwitryny: '.($sitesRemoved - 1);
+        }
+        $msg .= $total ? ' i '.$total.' powiązanych rekordów.' : '.';
+        if (isset($backup)) {
+            $msg .= ' Kopia zapasowa: '.basename($backup).'.';
+        }
 
-        return redirect()->route('admin.witryny.index')->with('status', $removed
-            ? 'Usunięto witrynę „'.$name.'” i '.$total.' powiązanych rekordów.'.(isset($backup) ? ' Kopia zapasowa: '.basename($backup).'.' : '')
-            : 'Witryna „'.$name.'” została usunięta.');
+        return redirect()->route('admin.witryny.index')->with('status', $msg);
     }
 
     /**

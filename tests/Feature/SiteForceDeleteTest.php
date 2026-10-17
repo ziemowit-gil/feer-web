@@ -49,7 +49,7 @@ class SiteForceDeleteTest extends TestCase
             ->assertSee('Usuń witrynę „Ośrodek Testowy”', false)
             ->assertSee('Witryna ma treść')
             ->assertSee('<label for="confirm-name"', false)
-            ->assertSee('Usuń witrynę i całą treść');
+            ->assertSee('Wymuś usunięcie — razem z całą treścią');
 
         $this->actingAs($this->admin())->get(route('admin.witryny.index'))->assertOk()
             ->assertSee(route('admin.witryny.confirm-destroy', $this->sub), false)
@@ -63,7 +63,7 @@ class SiteForceDeleteTest extends TestCase
 
         $this->actingAs($admin)->from(route('admin.witryny.confirm-destroy', $this->sub))
             ->delete(route('admin.witryny.destroy', $this->sub), ['confirm_name' => 'zła nazwa'])
-            ->assertSessionHasErrors(['with_content', 'confirm_name']);
+            ->assertSessionHasErrors(['force', 'confirm_name']);
 
         $this->assertNotNull($this->sub->fresh());
         $this->assertSame(1, Page::withoutGlobalScopes()->where('site_id', $this->sub->id)->count());
@@ -74,9 +74,9 @@ class SiteForceDeleteTest extends TestCase
         $this->content();
 
         $this->actingAs($this->admin())
-            ->delete(route('admin.witryny.destroy', $this->sub), ['with_content' => '1', 'confirm_name' => 'Ośrodek Testowy', 'backup' => '0'])
+            ->delete(route('admin.witryny.destroy', $this->sub), ['force' => '1', 'confirm_name' => 'Ośrodek Testowy', 'backup' => '0'])
             ->assertRedirect(route('admin.witryny.index'))
-            ->assertSessionHas('status', fn ($s) => str_contains($s, 'Usunięto witrynę „Ośrodek Testowy” i 2 powiązanych rekordów'));
+            ->assertSessionHas('status', fn ($s) => str_contains($s, 'Usunięto witrynę „Ośrodek Testowy” i 2 powiązanych rekordów.'));
 
         $this->assertNull(SiteSetting::find($this->sub->id));
         $this->assertSame(0, Page::withoutGlobalScopes()->withTrashed()->where('site_id', $this->sub->id)->count());
@@ -93,18 +93,31 @@ class SiteForceDeleteTest extends TestCase
         $this->actingAs($this->admin())->get(route('admin.witryny.confirm-destroy', $this->main))->assertForbidden();
     }
 
-    public function test_witryny_z_podwitrynami_nie_mozna_usunac(): void
+    public function test_wymus_usuniecie_witryny_z_podwitrynami(): void
     {
         $child = SiteSetting::create([
             'site_name' => 'BIP Ośrodka', 'slug' => 'bip-osrodka', 'parent_site_id' => $this->sub->id,
             'brand_color' => SiteSetting::DEFAULT_BRAND_COLOR, 'site_template' => $this->main->site_template,
         ]);
+        Page::create(['site_id' => $child->id, 'title' => 'Strona BIP ośrodka', 'slug' => 'bip-strona', 'content' => '<p>x</p>', 'is_published' => true]);
+        $admin = $this->admin();
 
-        $this->actingAs($this->admin())->get(route('admin.witryny.confirm-destroy', $this->sub))->assertOk()
-            ->assertSee('Najpierw usuń podwitryny')->assertSee('BIP Ośrodka');
-        $this->actingAs($this->admin())->delete(route('admin.witryny.destroy', $this->sub), ['with_content' => '1', 'confirm_name' => 'Ośrodek Testowy'])
-            ->assertRedirect(route('admin.witryny.confirm-destroy', $this->sub));
-        $this->assertNotNull($this->sub->fresh());
+        $this->actingAs($admin)->get(route('admin.witryny.confirm-destroy', $this->sub))->assertOk()
+            ->assertSee('Podwitryny tej witryny')->assertSee('BIP Ośrodka')
+            ->assertSee('Wymuś usunięcie — razem z całą treścią i podwitrynami (1)');
+
+        // Bez wymuszenia — nic nie znika.
+        $this->actingAs($admin)->from(route('admin.witryny.confirm-destroy', $this->sub))
+            ->delete(route('admin.witryny.destroy', $this->sub), ['confirm_name' => 'Ośrodek Testowy'])
+            ->assertSessionHasErrors('force');
         $this->assertNotNull($child->fresh());
+
+        $this->actingAs($admin)->delete(route('admin.witryny.destroy', $this->sub), ['force' => '1', 'confirm_name' => 'Ośrodek Testowy', 'backup' => '0'])
+            ->assertRedirect(route('admin.witryny.index'))
+            ->assertSessionHas('status', fn ($s) => str_contains($s, 'podwitryny: 1 i 1 powiązanych rekordów'));
+        $this->assertNull(SiteSetting::find($this->sub->id));
+        $this->assertNull(SiteSetting::find($child->id));
+        $this->assertSame(0, Page::withoutGlobalScopes()->withTrashed()->where('site_id', $child->id)->count());
+        $this->assertNotNull($this->main->fresh());
     }
 }

@@ -40,11 +40,56 @@ class SiteRemoval
     }
 
     /**
-     * Usuwa treść witryny i samą witrynę.
+     * Witryna i wszystkie jej podwitryny (rekurencyjnie), od najgłębszych — w tej kolejności je usuwamy.
+     *
+     * @return list<SiteSetting>
+     */
+    public static function withDescendants(SiteSetting $site): array
+    {
+        $out = [];
+        foreach ($site->subsites()->get() as $child) {
+            array_push($out, ...self::withDescendants($child));
+        }
+        $out[] = $site;
+
+        return $out;
+    }
+
+    /** @return array<string, int> suma rekordów witryny i jej podwitryn */
+    public static function contentCountsDeep(SiteSetting $site): array
+    {
+        $out = [];
+        foreach (self::withDescendants($site) as $s) {
+            foreach (self::contentCounts($s) as $t => $n) {
+                $out[$t] = ($out[$t] ?? 0) + $n;
+            }
+        }
+        ksort($out);
+
+        return $out;
+    }
+
+    /**
+     * Usuwa treść witryny i samą witrynę; z $withSubsites — najpierw wszystkie podwitryny (z treścią).
      *
      * @return array<string, int> tabela => usunięte wiersze
      */
-    public static function remove(SiteSetting $site): array
+    public static function remove(SiteSetting $site, bool $withSubsites = false): array
+    {
+        $removed = [];
+        DB::transaction(function () use ($site, $withSubsites, &$removed) {
+            foreach ($withSubsites ? self::withDescendants($site) : [$site] as $s) {
+                foreach (self::removeOne($s) as $t => $n) {
+                    $removed[$t] = ($removed[$t] ?? 0) + $n;
+                }
+            }
+        });
+
+        return $removed;
+    }
+
+    /** @return array<string, int> */
+    private static function removeOne(SiteSetting $site): array
     {
         $models = self::modelsByTable();
         $removed = [];
@@ -65,6 +110,7 @@ class SiteRemoval
             }
 
             $site->delete();
+            $removed['site_settings'] = ($removed['site_settings'] ?? 0) + 1;
         });
 
         return $removed;

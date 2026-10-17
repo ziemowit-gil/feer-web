@@ -23,24 +23,31 @@
 
         @if ($subsites->isNotEmpty())
             <section aria-labelledby="h-sub" class="mt-4 rounded-md bg-white p-6">
-                <h2 id="h-sub" class="font-bold text-ink">Najpierw usuń podwitryny</h2>
-                <p class="mt-1 text-sm text-ink">Ta witryna ma podwitryny — usuń je osobno, zanim usuniesz tę:</p>
+                <h2 id="h-sub" class="font-bold text-ink">Podwitryny tej witryny</h2>
+                <p class="mt-1 text-sm text-ink">„Wymuś usunięcie” usunie także te witryny z całą ich treścią. Możesz też usunąć je najpierw osobno:</p>
                 <ul class="mt-2 list-disc pl-6 text-sm text-ink">
                     @foreach ($subsites as $sub)
                         <li><a href="{{ route('admin.witryny.confirm-destroy', $sub) }}" class="font-bold text-brand-dark underline underline-offset-4 hover:no-underline">{{ $sub->site_name }}</a></li>
                     @endforeach
                 </ul>
             </section>
-        @else
+        @endif
             <form method="POST" action="{{ route('admin.witryny.destroy', $site) }}" class="mt-4 rounded-md bg-white p-6">
                 @csrf
                 @method('DELETE')
 
-                @if ($counts === [])
+                @if ($counts === [] && $subsites->isEmpty())
                     <p class="text-sm text-ink">Witryna nie ma przypisanej treści. Usunięcie jest nieodwracalne.</p>
                 @else
-                    <h2 class="font-bold text-ink">Witryna ma treść: {{ $total }} {{ $total === 1 ? 'rekord' : 'rekordów' }}</h2>
+                    <h2 class="font-bold text-ink">
+                        @if ($total === 0)
+                            Witryna ma podwitryny ({{ $subsites->count() }}), bez treści
+                        @else
+                            {{ $subsites->isNotEmpty() ? 'Witryna z podwitrynami' : 'Witryna' }} ma treść: {{ $total }} {{ $total === 1 ? 'rekord' : 'rekordów' }}
+                        @endif
+                    </h2>
                     <p class="mt-1 text-sm text-ink">Usunięcie razem z treścią jest <strong>nieodwracalne</strong> — znikną też pliki multimediów tych rekordów. Jeśli treść ma zostać, przenieś ją najpierw do innej witryny.</p>
+                    @if ($counts !== [])
                     <div class="mt-3 max-h-64 overflow-auto rounded-md bg-gray-50" tabindex="0" role="region" aria-label="Treść witryny do usunięcia">
                         <table class="w-full text-left text-sm">
                             <caption class="sr-only">Liczba rekordów witryny w tabelach</caption>
@@ -52,10 +59,11 @@
                             </tbody>
                         </table>
                     </div>
+                    @endif
 
                     <div class="mt-4 flex min-h-11 items-center gap-2">
-                        <input id="with-content" name="with_content" type="checkbox" value="1" required class="h-5 w-5 rounded border-gray-500 text-red-700 focus:ring-red-700">
-                        <label for="with-content" class="text-sm font-bold text-ink">Usuń witrynę razem z całą jej treścią</label>
+                        <input id="force" name="force" type="checkbox" value="1" required class="h-5 w-5 rounded border-gray-500 text-red-700 focus:ring-red-700">
+                        <label for="force" class="text-sm font-bold text-ink">Wymuś usunięcie — razem z całą treścią{{ $subsites->isNotEmpty() ? ' i podwitrynami ('.$subsites->count().')' : '' }}</label>
                     </div>
                     <div class="flex min-h-11 items-center gap-2">
                         <input id="backup" name="backup" type="checkbox" value="1" checked class="h-5 w-5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" aria-describedby="backup-help">
@@ -69,10 +77,9 @@
                 @endif
 
                 <div class="mt-6 flex flex-wrap gap-3">
-                    <button type="submit" class="{{ $btn }} bg-red-700 text-white hover:bg-red-800 focus-visible:ring-red-700"><i class="fa-solid fa-trash" aria-hidden="true"></i> {{ $counts === [] ? 'Usuń witrynę' : 'Usuń witrynę i całą treść' }}</button>
+                    <button type="submit" class="{{ $btn }} bg-red-700 text-white hover:bg-red-800 focus-visible:ring-red-700"><i class="fa-solid fa-trash" aria-hidden="true"></i> {{ $counts === [] && $subsites->isEmpty() ? 'Usuń witrynę' : 'Wymuś usunięcie' }}</button>
                     <a href="{{ route('admin.witryny.index') }}" class="{{ $btn }} bg-gray-100 text-ink hover:bg-gray-200 focus-visible:ring-brand-dark">Anuluj</a>
                 </div>
             </form>
-        @endif
     </div>
 @endsection
