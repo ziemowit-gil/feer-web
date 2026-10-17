@@ -25,6 +25,26 @@
         if (app(\App\Modules\ModuleManager::class)->isActive('blog') && $user->canAccessModule('blog'))
                               $shortcuts[] = ['route' => route('admin.wiem-feer.create'),    'label' => 'Wpis bloga',     'icon' => 'fa-feather-pointed'];
         $attentionTotal = $attention->sum('count');
+
+        // Panel sterowania (motyw Joomla): kafle najczęstszych działań — tylko trasy, które istnieją i do których jest dostęp.
+        $isAdmin = $user->isAdmin();
+        $tile = fn (string $route, string $label, string $icon, bool $allowed = true) => $allowed && \Illuminate\Support\Facades\Route::has($route)
+            ? ['url' => route($route), 'label' => $label, 'icon' => $icon] : null;
+        $tiles = array_values(array_filter([
+            $tile('admin.newsy.create', 'Nowa aktualność', 'fa-file-circle-plus', $can('news')),
+            $tile('admin.newsy.index', 'Aktualności', 'fa-newspaper', $can('news')),
+            $tile('admin.podstrony.index', 'Strony', 'fa-file-lines', $can('pages')),
+            $tile('admin.projekty.index', 'Działania', 'fa-diagram-project', $can('projects')),
+            $tile('admin.wydarzenia.index', 'Wydarzenia', 'fa-calendar-days', $can('events')),
+            $tile('admin.multimedia.index', 'Multimedia', 'fa-photo-film'),
+            $tile('admin.pozycje-menu.index', 'Menu', 'fa-bars', $isAdmin),
+            $tile('admin.newsletter.dashboard', 'Newsletter', 'fa-envelope-open-text', $user->canAccessModule('newsletter')),
+            $tile('admin.uzytkownicy.index', 'Użytkownicy', 'fa-users', $isAdmin),
+            $tile('admin.ustawienia.edit', 'Ustawienia', 'fa-sliders', $isAdmin),
+            $tile('admin.szablony.manage', 'Szablony', 'fa-clone', $isAdmin),
+            $tile('admin.kopie.index', 'Kopie zapasowe', 'fa-box-archive', $isAdmin),
+            $tile('admin.health.index', 'Kondycja serwisu', 'fa-heart-pulse', $isAdmin),
+        ]));
     @endphp
 
     {{-- ── Nagłówek: powitanie + „Utwórz” ───────────────────────────── --}}
@@ -78,13 +98,25 @@
         @endif
     </section>
 
+    {{-- ── Panel sterowania: kafle jak „Control Panel” w Joomla ──────── --}}
+    @if ($tiles)
+        <section aria-labelledby="dash-tiles" class="mb-6">
+            <h2 id="dash-tiles" class="mb-2 text-sm font-bold uppercase tracking-wide text-muted">Panel sterowania</h2>
+            <ul role="list" class="j-tiles">
+                @foreach ($tiles as $t)
+                    <li class="flex"><a href="{{ $t['url'] }}" class="j-tile w-full"><i class="fa-solid {{ $t['icon'] }}" aria-hidden="true"></i><span>{{ $t['label'] }}</span></a></li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     {{-- ── Główna siatka ─────────────────────────────────────────────── --}}
     <div class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div class="min-w-0 space-y-6">
             {{-- Szkice do dokończenia: konkretne treści, nie same liczby --}}
             @if ($drafts->isNotEmpty())
                 <section aria-labelledby="dash-drafts" class="rounded-md bg-white">
-                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
+                    <div class="j-panel-head flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
                         <h2 id="dash-drafts" class="text-base font-bold text-ink">Do dokończenia</h2>
                         <p class="text-xs text-ink">Szkice: {{ collect($draftCounts)->map(fn ($d) => $d['label'].' '.$d['count'])->implode(' · ') }}</p>
                     </div>
@@ -108,7 +140,7 @@
             {{-- Aktywność ---------------------------------------------------------- --}}
             <section aria-labelledby="dash-activity" class="rounded-md bg-white"
             x-data="{ f: 'all' }">
-            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
+            <div class="j-panel-head flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
                 <h2 id="dash-activity" class="text-base font-bold text-ink">Ostatnia aktywność</h2>
                 <div class="flex flex-wrap gap-1.5" role="group" aria-label="Filtr aktywności">
                     @php $filters = ['all' => 'Wszystko', 'news' => 'Aktualności', 'pages' => 'Strony', 'projects' => 'Działania', 'events' => 'Wydarzenia']; @endphp
@@ -158,7 +190,7 @@
         <div class="space-y-6">
             {{-- Zawartość serwisu: zwarta lista zamiast dużych kafli --}}
             <section aria-labelledby="dash-stats" class="rounded-md bg-white">
-                <h2 id="dash-stats" class="border-b border-gray-100 px-5 py-4 text-base font-bold text-ink">Zawartość serwisu</h2>
+                <h2 id="dash-stats" class="j-panel-head border-b border-gray-100 px-5 py-4 text-base font-bold">Zawartość serwisu</h2>
                 <ul role="list" class="divide-y divide-gray-100">
                     @foreach ($stats as $stat)
                         <li>

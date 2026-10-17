@@ -110,8 +110,9 @@
             box-shadow: 0 0 0 1px #d9dde4, 0 1px 2px rgba(16, 24, 40, .05);
         }
     </style>
+    @include('admin.partials.theme-joomla')
 </head>
-<body class="flex min-h-screen bg-gray-100 text-ink antialiased" data-admin-pickers x-data :class="{ 'overflow-hidden lg:overflow-auto': $store.adminNav.mobileOpen }">
+<body class="admin-joomla flex min-h-screen text-ink antialiased" data-admin-pickers x-data :class="{ 'overflow-hidden lg:overflow-auto': $store.adminNav.mobileOpen }">
 
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-brand-dark focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-brand-dark">Przejdź do treści</a>
 
@@ -132,16 +133,25 @@
 
     <div class="flex min-w-0 flex-1 flex-col">
         @unless ($adminEmbedded)
-        <header class="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 sm:px-6">
+        <header class="j-topbar sticky top-0 z-20 flex h-16 items-center justify-between gap-4 px-4 sm:px-6">
             <div class="flex min-w-0 flex-1 items-center gap-3">
                 <button type="button" @click="$store.adminNav.open()"
                     class="flex h-10 w-10 flex-none items-center justify-center rounded-md bg-gray-100 text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark lg:hidden"
                     aria-label="Otwórz menu" aria-controls="admin-sidebar" :aria-expanded="$store.adminNav.mobileOpen.toString()">
                     <i class="fa-solid fa-bars" aria-hidden="true"></i>
                 </button>
-                <h1 class="truncate text-lg font-bold sm:text-xl">@yield('title', 'Panel administracyjny')</h1>
+                {{-- Tytuł strony z ikoną bieżącej sekcji menu (jak „Control Panel” w Joomla); ikonę ustawia admin/partials/sidebar. --}}
+                <h1 class="j-title min-w-0 text-lg font-bold sm:text-xl">
+                    <span class="j-title-icon" aria-hidden="true"><i class="fa-solid {{ $__env->shared('adminPageIcon', 'fa-gauge') }}"></i></span>
+                    <span class="truncate">@yield('title', 'Panel administracyjny')</span>
+                </h1>
             </div>
             <div class="flex flex-none items-center gap-2 sm:gap-3">
+
+                {{-- Zobacz stronę (jak „View Site” w Joomla) --}}
+                <a href="{{ route('home') }}" target="_blank" rel="noopener" class="j-link hidden md:inline-flex">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i> Zobacz stronę<span class="sr-only"> (otwiera się w nowej karcie)</span>
+                </a>
 
                 {{-- Zadania --}}
                 @php $myTaskCount = \App\Http\Controllers\Admin\TaskController::myPendingCount(auth()->id()); @endphp
@@ -150,9 +160,7 @@
                     aria-label="Zadania{{ $myTaskCount ? ' (' . $myTaskCount . ' oczekujących)' : '' }}">
                     <i class="fa-solid fa-list-check" aria-hidden="true"></i>
                     <span class="hidden sm:inline">Zadania</span>
-                    @if ($myTaskCount > 0)
-                        <span class="absolute -right-1.5 -top-1.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-brand-dark px-1 text-xs font-bold text-white">{{ $myTaskCount > 99 ? '99+' : $myTaskCount }}</span>
-                    @endif
+                    <span class="j-pill {{ $myTaskCount ? '' : 'is-zero' }}" aria-hidden="true">{{ $myTaskCount > 99 ? '99+' : $myTaskCount }}</span>
                 </a>
 
                 {{-- Kalendarz redakcyjny --}}
@@ -272,13 +280,19 @@
                         @endforelse
                     </div>
                 </div>
+
+                {{-- Wyloguj (jak „Log out” w Joomla) --}}
+                <form method="POST" action="{{ route('logout') }}" class="hidden lg:block">
+                    @csrf
+                    <button type="submit" class="j-link"><i class="fa-solid fa-right-from-bracket text-xs" aria-hidden="true"></i> Wyloguj</button>
+                </form>
             </div>
         </header>
 
         {{-- Pasek szybkich skrótów — w kontekście bloga „Wiem FEER” własne akcje bloga --}}
         @if (\App\Support\BlogAdmin::inContext(auth()->user()))
         @php $blogPending = \App\Support\BlogAdmin::pendingCommentsCount(); @endphp
-        <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-2 sm:px-6" data-quickbar="blog">
+        <div class="j-toolbar flex flex-wrap items-center gap-2 px-4 py-2 sm:px-6" data-quickbar="blog">
             <span class="mr-1 text-xs font-bold uppercase tracking-wide text-muted">Szybko:</span>
             <a href="{{ route('admin.wiem-feer.create') }}"
                 class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
@@ -298,7 +312,7 @@
             </a>
         </div>
         @elseif ($can('news') || $can('events'))
-        <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 bg-white px-4 py-2 sm:px-6">
+        <div class="j-toolbar flex flex-wrap items-center gap-2 px-4 py-2 sm:px-6">
             <span class="mr-1 text-xs font-bold uppercase tracking-wide text-muted">Szybko:</span>
             @if ($can('news'))
             <a href="{{ route('admin.newsy.create') }}"

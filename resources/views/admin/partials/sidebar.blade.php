@@ -13,6 +13,16 @@
 @php
     $authUser   = auth()->user();
     $menu       = \App\Support\AdminMenu::for($authUser);
+    // Ikona bieżącej pozycji menu — przy tytule strony w nagłówku (motyw Joomla, admin/layout).
+    $__pageIcon = 'fa-gauge';
+    foreach ($menu as $__g) {
+        foreach ($__g['blocks'] as $__b) {
+            foreach ($__b['items'] as $__it) {
+                if ($__it['active']) { $__pageIcon = $__it['icon']; break 3; }
+            }
+        }
+    }
+    $__env->share('adminPageIcon', $__pageIcon);
     $adminSites = $authUser?->isAdmin()
         ? \App\Models\SiteSetting::orderBy('parent_site_id')->orderBy('id')->get()
         : collect();
