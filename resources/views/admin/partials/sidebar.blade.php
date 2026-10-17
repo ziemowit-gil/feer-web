@@ -143,7 +143,9 @@
             .nav-flyout--wide { width: min(48rem, calc(100vw - 20rem)); }
             .nav-flyout--wide .nav-flyout-cols { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); column-gap: .5rem; align-items: start; }
             .nav-flyout > p { font-size: 1rem !important; }
-            .nav-flyout > p.uppercase { font-size: .75rem !important; }
+            /* Nagłówki bloków (WYGLĄD, TREŚCI I DANE…) — czytelne, nie drobne 10 px; ikony pozycji większe. */
+            .nav-flyout p.uppercase { padding-top: .75rem; font-size: .8125rem !important; letter-spacing: .04em; color: var(--color-ink, #1a1a1a); }
+            .nav-flyout a > i { font-size: .9375rem !important; width: 1.25rem; }
             .nav-flyout a:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: -2px; }
         }
         .admin-sidebar.is-collapsed .tm-head { justify-content: center; padding-left: .25rem; padding-right: .25rem; }
@@ -216,7 +218,7 @@
                 @endphp
                 <li class="tm-group relative {{ $group['active'] ? 'is-active' : '' }}" x-data="navItem(false)"
                     @mouseenter="flyIn($el)" @mouseleave="flyOut()" @focusin="flyIn($el)" @focusout="flyOut($event)"
-                    @keydown.escape.stop="if (fly) { fly = false; $el.querySelector('.tm-head')?.focus(); }">
+                    @click.outside="fly = false" @keydown.escape.stop="if (fly) { fly = false; $el.querySelector('.tm-head')?.focus(); }">
 
                     <button type="button" class="tm-head nav-link relative {{ ($group['premium'] ?? false) ? 'tm-premium' : '' }}" @click="clickHead($el.closest('li'), @js($group['key']), (k) => toggle(k))"
                             :aria-expanded="($store.adminNav.flyout() ? fly : openKey === @js($group['key'])).toString()" aria-controls="{{ $gid }}"

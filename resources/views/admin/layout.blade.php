@@ -80,7 +80,8 @@
                     this.fly = true;
                 },
                 clickHead(el, key, toggle) {
-                    if (! Alpine.store('adminNav').flyout() || Alpine.store('adminNav').collapsed) return toggle(key);
+                    // Zwężona szyna też wysuwa panel — kliknięcie nagłówka zamyka go (wcześniej przełączało ukryty akordeon i panel zostawał).
+                    if (! Alpine.store('adminNav').flyout()) return toggle(key);
                     this.fly ? (this.fly = false) : this.flyIn(el);
                 },
                 flyOut(e) {

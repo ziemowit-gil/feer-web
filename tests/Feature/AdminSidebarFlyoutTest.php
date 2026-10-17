@@ -30,4 +30,15 @@ class AdminSidebarFlyoutTest extends TestCase
         $this->assertStringContainsString('<div class="nav-flyout-cols">', $html);
         $this->assertStringContainsString('.nav-flyout--wide .nav-flyout-cols { display: grid;', $html);
     }
+
+    public function test_flyout_headings_are_readable_and_click_closes_flyout_also_in_collapsed_rail(): void
+    {
+        $sidebar = file_get_contents(resource_path('views/admin/partials/sidebar.blade.php'));
+        $this->assertStringContainsString('.nav-flyout p.uppercase { padding-top: .75rem; font-size: .8125rem !important;', $sidebar);
+        $this->assertStringContainsString('@click.outside="fly = false"', $sidebar);
+
+        $layout = file_get_contents(resource_path('views/admin/layout.blade.php'));
+        $this->assertStringContainsString("if (! Alpine.store('adminNav').flyout()) return toggle(key);", $layout);
+        $this->assertStringNotContainsString("|| Alpine.store('adminNav').collapsed) return toggle(key);", $layout);
+    }
 }
