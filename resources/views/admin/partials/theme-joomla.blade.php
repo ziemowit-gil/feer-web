@@ -24,25 +24,25 @@
 
     /* Nagłówek panelu: tytuł z ikoną strony, po prawej skróty i liczniki w pigułkach. */
     .admin-joomla .j-topbar { border-bottom: 1px solid var(--j-line); background: #fff; }
-    .admin-joomla .j-title { display: flex; align-items: center; gap: .625rem; font-style: italic; }
-    .admin-joomla .j-title-icon { display: inline-flex; width: 2.25rem; height: 2.25rem; flex: none; align-items: center; justify-content: center; border-radius: 4px; background: var(--j-cream); border: 1px solid var(--j-line); color: var(--color-brand-dark); font-size: 1rem; font-style: normal; }
+    .admin-joomla .j-title { display: flex; align-items: center; gap: .625rem; font-weight: 700; letter-spacing: -.01em; }
+    .admin-joomla .j-title-icon { display: inline-flex; width: 2.25rem; height: 2.25rem; flex: none; align-items: center; justify-content: center; border-radius: 6px; background: var(--j-cream); border: 1px solid var(--j-line); color: var(--color-brand-dark); font-size: 1rem; font-style: normal; }
     .admin-joomla .j-pill { display: inline-flex; min-width: 1.4rem; height: 1.4rem; align-items: center; justify-content: center; padding: 0 .4rem; border-radius: 999px; background: #4b5563; color: #fff; font-size: .75rem; font-weight: 700; line-height: 1; }
     .admin-joomla .j-pill.is-zero { background: #6b7280; }
-    .admin-joomla .j-link { display: inline-flex; min-height: 2.5rem; align-items: center; gap: .4rem; padding: 0 .5rem; border-radius: 4px; color: var(--color-brand-dark); font-size: .875rem; font-weight: 700; }
+    .admin-joomla .j-link { display: inline-flex; min-height: 2.5rem; align-items: center; gap: .4rem; padding: 0 .5rem; border-radius: 6px; color: var(--color-brand-dark); font-size: .875rem; font-weight: 700; }
     .admin-joomla .j-link:hover { text-decoration: underline; text-underline-offset: 3px; }
     .admin-joomla .j-link:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 1px; }
 
     /* Pasek „Szybko” jak pasek narzędzi Joomla. */
     .admin-joomla .j-toolbar { background: var(--j-cream); border-bottom: 1px solid var(--j-line); }
-    .admin-joomla .j-toolbar a { background: #fff; border: 1px solid var(--j-line); border-radius: 3px; }
+    .admin-joomla .j-toolbar a { background: #fff; border: 1px solid var(--j-line); border-radius: 6px; }
     .admin-joomla .j-toolbar a:hover { background: var(--color-brand-light); border-color: var(--color-brand-dark); }
 
     /* Menu boczne: grupy jako kremowe pasy (jak górne menu Joomla), aktywna w kolorze marki. */
     .admin-joomla .admin-sidebar { background: #fff; border-right-color: var(--j-line); }
-    .admin-joomla .tm-group + .tm-group { margin-top: .25rem; }
+    .admin-joomla .tm-group + .tm-group { margin-top: .375rem; }
     /* Grupy menu: wszystkie na jasnoniebieskim tle z niebieskim obramowaniem; aktywna — pełne niebieskie tło, biały tekst.
        Kontrast: brand-dark na brand-light ≈ 6:1 (po najechaniu #dbe7ff ≈ 5,3:1), biały na brand-dark ≈ 6,6:1. */
-    .admin-joomla .tm-head { min-height: 2.5rem; background: var(--color-brand-light); border: 1px solid var(--color-brand-dark); border-radius: 3px; color: var(--color-brand-dark); }
+    .admin-joomla .tm-head { min-height: 2.5rem; background: var(--color-brand-light); border: 1px solid var(--color-brand-dark); border-radius: 6px; color: var(--color-brand-dark); }
     .admin-joomla .tm-head:hover { background: #dbe7ff; }
     .admin-joomla .tm-head .tm-chevron { color: currentColor; }
     .admin-joomla .tm-icon { background: #fff; border: 1px solid var(--color-brand-dark); color: var(--color-brand-dark); }
@@ -53,7 +53,7 @@
     .admin-joomla .tm-panel { border-left-color: var(--j-line); }
 
     /* Karty w treści: cienka ramka zamiast cienia, nagłówki tabel na kremowym tle. */
-    .admin-joomla #main :is(.rounded, .rounded-md, .rounded-lg, .rounded-xl).bg-white { border: 1px solid var(--j-line); box-shadow: none; border-radius: 4px; }
+    .admin-joomla #main :is(.rounded, .rounded-md, .rounded-lg, .rounded-xl).bg-white { border: 1px solid var(--j-line); box-shadow: none; border-radius: 6px; }
     .admin-joomla #main thead, .admin-joomla #main thead tr, .admin-joomla #main thead th { background-color: var(--j-head); }
     .admin-joomla #main thead th { color: #1a1a1a; }
 
@@ -63,7 +63,7 @@
 
     /* Kafle szybkich akcji (pulpit). */
     .j-tiles { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); }
-    .j-tile { display: flex; min-height: 7.5rem; flex-direction: column; align-items: center; justify-content: center; gap: .625rem; padding: 1rem .5rem; border: 1px solid var(--j-line, #d6d6c2); border-radius: 4px; background: var(--j-cream, #f7f7e8); color: var(--color-brand-dark); text-align: center; font-size: .8125rem; font-weight: 700; line-height: 1.25; transition: background-color .15s, border-color .15s; }
+    .j-tile { display: flex; min-height: 7.5rem; flex-direction: column; align-items: center; justify-content: center; gap: .625rem; padding: 1rem .5rem; border: 1px solid var(--j-line, #d6d6c2); border-radius: 6px; background: var(--j-cream, #f7f7e8); color: var(--color-brand-dark); text-align: center; font-size: .8125rem; font-weight: 700; line-height: 1.25; transition: background-color .15s, border-color .15s; }
     .j-tile i { font-size: 2rem; }
     .j-tile:hover { background: var(--color-brand-light); border-color: var(--color-brand-dark); }
     .j-tile:focus-visible { outline: 3px solid var(--color-brand-dark); outline-offset: 2px; }
