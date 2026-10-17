@@ -619,3 +619,10 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
 .be-list-row > ul { flex-basis: 100%; }
 .be-list-check { margin-top: 0.6rem; width: 1.1rem; height: 1.1rem; accent-color: var(--be-ui); }
 .be-list-actions { margin-bottom: 0.75rem; }
+
+/* Dymek „Element modułu — edytuj w …” nad podglądami z modułów (moduleTip w block-editor.js).
+   Biały na #1d1d1a ≈ 17:1; leży w obszarze podglądu, więc można go najechać; Esc chowa (is-tip-dismissed). */
+.be-modtip { position: relative; cursor: help; }
+.be-modtip-bubble { display: none; position: absolute; z-index: 30; top: 0.5rem; right: 0.5rem; max-width: min(26rem, calc(100% - 1rem)); padding: 0.5rem 0.75rem; border-radius: 0.375rem; background: #1d1d1a; color: #fff; font-size: 0.8125rem; font-weight: 600; line-height: 1.35; text-align: left; }
+.be-modtip:hover > .be-modtip-bubble { display: block; }
+.be-modtip.is-tip-dismissed > .be-modtip-bubble { display: none; }

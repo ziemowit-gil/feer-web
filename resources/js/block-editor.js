@@ -805,12 +805,32 @@ function start(config) {
 
     // Kafelki strony (pole „Kafelki na stronie”, nawigacja kafelkowa podstron) — tylko podgląd w miejscu,
     // w którym pokazuje je strona; edytuje się je w formularzu strony.
+    // Podgląd elementu z modułu, którego nie edytuje się w tym miejscu: dymek „Element modułu — edytuj w …”
+    // przy najechaniu. WCAG 1.4.13: dymek leży w obszarze podglądu (można go najechać), nie znika sam, Esc go chowa;
+    // czytniki dostają ten sam tekst ukryty wizualnie (sam podgląd jest aria-hidden).
+    function moduleTip(el, where) {
+        const text = 'Element modułu — edytuj w ' + where + '.';
+        el.classList.add('be-modtip');
+        let bubble = el.querySelector(':scope > .be-modtip-bubble');
+        if (!bubble) {
+            bubble = h('span', { class: 'be-modtip-bubble', 'aria-hidden': 'true' });
+            el.append(bubble, h('span', { class: 'be-sr-only be-modtip-sr' }));
+            el.addEventListener('mouseleave', () => el.classList.remove('is-tip-dismissed'));
+        }
+        bubble.replaceChildren(icon('lock'), ' ' + text);
+        el.querySelector(':scope > .be-modtip-sr').textContent = text;
+        return el;
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') document.querySelectorAll('.be-modtip:hover').forEach((el) => el.classList.add('is-tip-dismissed'));
+    });
+
     function pageTilesPreview(html, where) {
         if (!html) return null;
         return h('section', { class: 'be-page-tiles', 'aria-label': 'Kafelki strony ' + where + ' (podgląd)' },
             h('p', { class: 'be-page-tiles-note' }, icon('table-cells-large'), ' Kafelki strony ' + where + ' — podgląd. ',
                 h('a', { href: config.urls.admin }, 'Zmień je w formularzu strony'), '.'),
-            h('div', { inert: true, 'aria-hidden': 'true', class: 'be-page-tiles-body' }, sanitizePreview(html)));
+            moduleTip(h('div', { class: 'be-page-tiles-frame' }, h('div', { inert: true, 'aria-hidden': 'true', class: 'be-page-tiles-body' }, sanitizePreview(html))), 'formularzu strony (pole „Kafelki na stronie”)'));
     }
 
     // ── Szkielet interfejsu ────────────────────────────────────────────────
@@ -834,11 +854,11 @@ function start(config) {
         pageTilesPreview(config.pageTiles?.before, 'nad treścią'),
         canvas,
         pageTilesPreview(config.pageTiles?.after, 'pod treścią'));
-    const projNav = projLayout ? h('aside', { class: 'be-proj-nav', 'aria-label': 'Podgląd menu bocznego działania' },
+    const projNav = projLayout ? moduleTip(h('aside', { class: 'be-proj-nav', 'aria-label': 'Podgląd menu bocznego działania' },
         h('p', { class: 'be-proj-nav-title' }, projLayout.navTitle),
         h('span', { class: 'be-proj-bar', 'aria-hidden': 'true' }),
         h('ul', { class: 'be-proj-nav-list' }, (projLayout.nav || []).map((t, i) => h('li', { class: i === 0 ? 'is-current' : null }, t))),
-        h('p', { class: 'be-proj-nav-note' }, 'Podgląd. Sekcje i podstrony ustawiasz w formularzu działania.')) : null;
+        h('p', { class: 'be-proj-nav-note' }, 'Podgląd. Sekcje i podstrony ustawiasz w formularzu działania.')), 'formularzu działania') : null;
     const canvasWrap = h('main', { class: 'be-canvas', id: 'be-canvas', 'aria-label': L.contentLabel },
         projLayout ? h('div', { class: 'be-proj' }, canvasPage, projNav) : canvasPage);
     const sidebar = h('aside', { class: 'be-panel be-panel--right', 'aria-label': 'Ustawienia' });
@@ -1953,18 +1973,19 @@ function start(config) {
         }
         return shortcodePreviewCache.get(code);
     }
-    // Rodzaj modułu po prefiksie shortcode'u: [etykieta, ikona].
+    // Rodzaj modułu po prefiksie shortcode'u: [etykieta, ikona, gdzie się go edytuje].
     const SC_KINDS = [
-        [/^\[formularz:/, 'Formularz', 'rectangle-list'],
-        [/^\[kafelki-zestaw:/, 'Zestaw kafelków', 'grip'],
-        [/^\[kafelki:/, 'Siatka kafelków', 'table-cells-large'],
-        [/^\[blok:/, 'Blok z kreatora', 'cubes'],
-        [/^\[pasek:/, 'Pasek FEER', 'grip-lines'],
-        [/^\[banery:/, 'Zestaw banerów (strefa)', 'layer-group'],
-        [/^\[baner:/, 'Baner z modułu', 'rectangle-ad'],
-        [/^\[materialy/, 'Materiały edukacyjne', 'book-open'],
-        [/^\[klauzule-rodo/, 'Lista', 'list'],
-        [/^\[(nabory|zapytania-ofertowe)\]/, 'Lista', 'list'],
+        [/^\[formularz:/, 'Formularz', 'rectangle-list', 'module Formularze'],
+        [/^\[kafelki-zestaw:/, 'Zestaw kafelków', 'grip', 'kreatorze kafelków (przycisk „Edytuj zestaw”)'],
+        [/^\[kafelki:/, 'Siatka kafelków', 'table-cells-large', 'stronie typu „Siatka kafelków”'],
+        [/^\[blok:/, 'Blok z kreatora', 'cubes', 'kreatorze bloków (przycisk „Edytuj blok”)'],
+        [/^\[pasek:/, 'Pasek FEER', 'grip-lines', 'module FEER Paski'],
+        [/^\[banery:/, 'Zestaw banerów (strefa)', 'layer-group', 'module Banery'],
+        [/^\[baner:/, 'Baner z modułu', 'rectangle-ad', 'module Banery'],
+        [/^\[materialy/, 'Materiały edukacyjne', 'book-open', 'module Materiały edukacyjne'],
+        [/^\[klauzule-rodo/, 'Lista', 'list', 'SZO (klauzule RODO)'],
+        [/^\[nabory\]/, 'Lista', 'list', 'module Nabory'],
+        [/^\[zapytania-ofertowe\]/, 'Lista', 'list', 'module Zapytania ofertowe'],
     ];
 
     // Dlaczego moduł nic nie pokazuje — podpowiedź zależna od rodzaju.
@@ -2012,6 +2033,7 @@ function start(config) {
             if (text === code) { preview.hidden = true; showStatus('Ten kod nie jest rozpoznawany — sprawdź nazwę albo wybierz moduł z listy.', true); return; }
             if (!text && !frag.querySelector('img, iframe, form, svg, video')) { preview.hidden = true; showStatus(emptyMessage(code), true); return; }
             body.replaceChildren(frag);
+            moduleTip(preview, kindOf(code)[3]);
             preview.hidden = false;
             loaded = code;
             showStatus('');
@@ -2028,7 +2050,7 @@ function start(config) {
             ['Listy', [['[klauzule-rodo]', 'Klauzule RODO'], ['[klauzule-rodo:en]', 'Klauzule RODO (wersje angielskie)'], ['[nabory]', 'Lista naborów'], ['[zapytania-ofertowe]', 'Zapytania ofertowe']]],
         ].filter(([, opts]) => opts.length);
         const nameOf = (code) => { for (const [, opts] of groups) { const o = opts.find(([v]) => v === code); if (o) return o[1]; } return null; };
-        const kindOf = (code) => SC_KINDS.find(([re]) => re.test(code)) || [null, 'Moduł', 'code'];
+        const kindOf = (code) => SC_KINDS.find(([re]) => re.test(code)) || [null, 'Moduł', 'code', 'module, z którego pochodzi'];
 
         const setCode = (code, { focus = true } = {}) => {
             pushHistory();
@@ -2202,6 +2224,7 @@ function start(config) {
                 return;
             }
             body.replaceChildren(frag);
+            moduleTip(preview, { subpages: 'podstronach (ustawienia listy w panelu „Blok”)', newslist: 'module Aktualności (ustawienia listy w panelu „Blok”)', materials: 'module Materiały edukacyjne (ustawienia listy w panelu „Blok”)' }[b.type] || 'panelu „Blok”');
             preview.hidden = false;
             status.textContent = 'Podgląd poniżej — lista aktualizuje się sama przy wyświetlaniu strony.';
         }).catch((e) => { status.textContent = 'Nie udało się wczytać podglądu: ' + e.message; status.classList.add('be-error'); });
