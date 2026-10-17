@@ -25,5 +25,9 @@ class AdminSidebarFlyoutTest extends TestCase
         // Podpozycja (Strefy bannerów pod Bannery) także w wysuwanym panelu.
         $this->assertStringContainsString('class="nav-flyout', $html);
         $this->assertGreaterThanOrEqual(2, substr_count($html, 'href="'.route('admin.strefy-bannerow.index').'"'));
+        // Długie grupy (Ustawienia) — szeroki panel z blokami w kolumnach.
+        $this->assertStringContainsString('nav-flyout--wide', $html);
+        $this->assertStringContainsString('<div class="nav-flyout-cols">', $html);
+        $this->assertStringContainsString('.nav-flyout--wide .nav-flyout-cols { display: grid;', $html);
     }
 }

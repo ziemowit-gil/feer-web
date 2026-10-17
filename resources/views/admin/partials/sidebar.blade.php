@@ -140,6 +140,8 @@
             .admin-sidebar .tm-panel { display: none !important; }
             .admin-sidebar .tm-chevron { transform: rotate(-90deg) !important; }
             .nav-flyout a { min-height: 2.5rem; font-size: .9375rem !important; }
+            .nav-flyout--wide { width: min(48rem, calc(100vw - 20rem)); }
+            .nav-flyout--wide .nav-flyout-cols { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); column-gap: .5rem; align-items: start; }
             .nav-flyout > p { font-size: 1rem !important; }
             .nav-flyout > p.uppercase { font-size: .75rem !important; }
             .nav-flyout a:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: -2px; }
@@ -281,10 +283,14 @@
 
                     {{-- Panel grupy wysuwany w prawo (szeroki ekran i zwężona szyna): prawdziwe, osiągalne klawiaturą linki --}}
                     <div x-show="fly && $store.adminNav.flyout()" x-cloak :style="'top:' + flyTop + 'px; left:' + flyLeft + 'px'"
-                         class="nav-flyout fixed z-50 hidden w-72 overflow-y-auto rounded-md border border-gray-200 bg-white py-2 shadow-xl lg:block"
+                         @php $flyCount = collect($group['blocks'])->sum(fn ($bl) => count($bl['items'])); @endphp
+                         class="nav-flyout fixed z-50 hidden overflow-y-auto rounded-md border border-gray-200 bg-white py-2 shadow-xl lg:block {{ $flyCount > 10 ? 'nav-flyout--wide' : 'w-72' }}"
                          style="max-height: calc(100vh - 1rem)" role="group" aria-label="{{ $group['label'] }}">
                         <p class="px-3 pb-1 text-sm font-bold text-ink"><i class="fa-solid {{ $group['icon'] }} mr-1.5 text-brand-dark" aria-hidden="true"></i>{{ $group['label'] }}</p>
+                        {{-- Dużo pozycji (np. Ustawienia): bloki w kolumnach obok siebie. --}}
+                        <div class="nav-flyout-cols">
                         @foreach ($group['blocks'] as $block)
+                            <div class="nav-flyout-block">
                             @if ($block['heading'])<p class="px-3 pt-2 text-[10px] font-bold uppercase tracking-wider text-muted">{{ $block['heading'] }}</p>@endif
                             @foreach ($block['items'] as $item)
                                 <a href="{{ $item['url'] }}" @if ($item['active']) aria-current="page" @endif @if ($item['premium'] ?? false) title="Moduł premium" @endif
@@ -300,7 +306,9 @@
                                     </a>
                                 @endforeach
                             @endforeach
+                            </div>
                         @endforeach
+                        </div>
                     </div>
                 </li>
             @endforeach
