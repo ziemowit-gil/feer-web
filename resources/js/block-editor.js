@@ -1917,37 +1917,65 @@ function start(config) {
         }
         return shortcodePreviewCache.get(code);
     }
+    // Rodzaj modułu po prefiksie shortcode'u: [etykieta, ikona].
+    const SC_KINDS = [
+        [/^\[formularz:/, 'Formularz', 'rectangle-list'],
+        [/^\[kafelki-zestaw:/, 'Zestaw kafelków', 'grip'],
+        [/^\[kafelki:/, 'Siatka kafelków', 'table-cells-large'],
+        [/^\[blok:/, 'Blok z kreatora', 'cubes'],
+        [/^\[pasek:/, 'Pasek FEER', 'grip-lines'],
+        [/^\[klauzule-rodo/, 'Lista', 'list'],
+        [/^\[(nabory|zapytania-ofertowe)\]/, 'Lista', 'list'],
+    ];
+
+    // Dlaczego moduł nic nie pokazuje — podpowiedź zależna od rodzaju.
+    const emptyMessage = (code) => {
+        if (/^\[kafelki:/.test(code)) return 'Siatka kafelków nic nie pokazuje — strona-siatka nie istnieje, nie jest opublikowana albo nie ma kafelków z nazwą i adresem.';
+        if (/^\[kafelki-zestaw:/.test(code)) return 'Zestaw kafelków jest pusty albo został usunięty — otwórz „Edytuj zestaw” lub wybierz inny.';
+        if (/^\[formularz:/.test(code)) return 'Formularz nie istnieje albo jest wyłączony — sprawdź go w module Formularze.';
+        if (/^\[blok:/.test(code)) return 'Blok z kreatora jest pusty albo został usunięty — otwórz „Edytuj blok” lub wybierz inny.';
+        return 'Moduł nic nie wyświetla — sprawdź, czy wskazany element istnieje i jest opublikowany.';
+    };
+
+    // Blok „Shortcode”: po wyborze — rodzaj i nazwa modułu, akcje „Edytuj” / „Zmień moduł” i podgląd;
+    // bez modułu (albo po „Zmień moduł”) — wybór z listy, kreatory nowych elementów i kod wpisany ręcznie.
     function shortcodeEditor(b) {
-        const input = h('input', { type: 'text', class: 'be-input be-mono', value: b.attrs.code, placeholder: '[formularz:nazwa-formularza]', 'aria-label': 'Shortcode', 'aria-describedby': `sc-help-${b.id} sc-status-${b.id}` });
-        const status = h('p', { id: 'sc-status-' + b.id, class: 'be-small be-sc-status', 'aria-live': 'polite' });
+        const root = h('div', { class: 'be-placeholder be-sc' });
+        const uid = 'sc-' + b.id;
+        let choosing = !b.attrs.code;
+        const status = h('p', { id: uid + '-status', class: 'be-small be-sc-status', 'aria-live': 'polite' });
         const body = h('div', { class: 'be-sc-preview-body' });
-        // inert: podgląd nie przyjmuje fokusu ani kliknięć i jest pomijany przez czytniki
-        // ekranu — stan podglądu opisuje komunikat powyżej.
+        // inert: podgląd nie przyjmuje fokusu ani kliknięć i jest pomijany przez czytniki ekranu — stan opisuje komunikat.
         const preview = h('div', { class: 'be-sc-preview', hidden: true },
             h('p', { class: 'be-sc-preview-label', 'aria-hidden': 'true' }, icon('eye'), ' Podgląd'),
             h('div', { inert: true, 'aria-hidden': 'true' }, body));
-        const showStatus = (msg, isError = false) => { status.textContent = msg; status.classList.toggle('be-error', isError); };
+        const showStatus = (msg, isError = false) => {
+            status.replaceChildren(...(!msg ? [] : isError ? [icon('triangle-exclamation'), ' ' + msg] : [msg]));
+            status.classList.toggle('be-error', isError);
+        };
+        let loaded = null;
         const load = async () => {
-            const code = input.value.trim();
+            const code = b.attrs.code || '';
             if (!code) { preview.hidden = true; showStatus(''); return; }
-            if (!SHORTCODE_RE.test(code)) { preview.hidden = true; showStatus('Nieprawidłowy shortcode — wpisz go w nawiasach kwadratowych, np. [formularz:nazwa].', true); return; }
+            if (!SHORTCODE_RE.test(code)) { preview.hidden = true; showStatus('Nieprawidłowy kod — wpisz go w nawiasach kwadratowych, np. [formularz:nazwa].', true); return; }
+            if (loaded === code && !preview.hidden) return;
             showStatus('Wczytywanie podglądu…');
             let html;
             try { html = await fetchShortcodePreview(code); } catch (e) {
-                if (input.value.trim() === code) { preview.hidden = true; showStatus('Nie udało się wczytać podglądu: ' + e.message, true); }
+                if (b.attrs.code === code) { preview.hidden = true; showStatus('Nie udało się wczytać podglądu: ' + e.message, true); }
                 return;
             }
-            if (input.value.trim() !== code) return;
+            if (b.attrs.code !== code) return;
             const frag = sanitizePreview(html);
             const text = frag.textContent.replace(/\s+/g, ' ').trim();
-            if (text === code) { preview.hidden = true; showStatus('Ten shortcode nie jest rozpoznawany — sprawdź jego nazwę.', true); return; }
-            if (!text && !frag.querySelector('img, iframe, form, svg, video')) { preview.hidden = true; showStatus('Shortcode nic nie wyświetla — sprawdź, czy wskazany element istnieje i jest opublikowany.', true); return; }
+            if (text === code) { preview.hidden = true; showStatus('Ten kod nie jest rozpoznawany — sprawdź nazwę albo wybierz moduł z listy.', true); return; }
+            if (!text && !frag.querySelector('img, iframe, form, svg, video')) { preview.hidden = true; showStatus(emptyMessage(code), true); return; }
             body.replaceChildren(frag);
             preview.hidden = false;
-            showStatus('Podgląd poniżej pokazuje, jak moduł wygląda na stronie.');
+            loaded = code;
+            showStatus('');
         };
-        const loadSoon = debounce(load, 500);
-        // Wybór modułu z listy (jak menu „Wstaw” klasycznego edytora) i kreatory kafelków / bloków.
+        // Lista modułów (jak menu „Wstaw” klasycznego edytora).
         const groups = [
             ['Formularze', (CI.forms || []).map((o) => ['[formularz:' + o.value + ']', o.label])],
             ['Zestawy kafelków', (CI.tileSets || []).map((o) => ['[kafelki-zestaw:' + o.value + ']', o.label])],
@@ -1956,68 +1984,116 @@ function start(config) {
             ['Paski FEER', (CI.bands || []).map((o) => ['[pasek:' + o.value + ']', o.label])],
             ['Listy', [['[klauzule-rodo]', 'Klauzule RODO'], ['[klauzule-rodo:en]', 'Klauzule RODO (wersje angielskie)'], ['[nabory]', 'Lista naborów'], ['[zapytania-ofertowe]', 'Zapytania ofertowe']]],
         ].filter(([, opts]) => opts.length);
-        const setCode = (code) => { input.value = code; input.dispatchEvent(new Event('input')); pick.value = groups.some(([, o]) => o.some(([v]) => v === code)) ? code : ''; renderTools(); };
-        const pick = h('select', { class: 'be-input', 'aria-label': 'Wybierz moduł' },
-            h('option', { value: '' }, '— wybierz moduł z listy —'),
-            ...groups.map(([label, opts]) => h('optgroup', { label }, ...opts.map(([v, l]) => h('option', { value: v, selected: v === b.attrs.code ? true : null }, l)))));
-        pick.addEventListener('change', () => { if (pick.value) setCode(pick.value); });
-        const tools = h('div', { class: 'be-row be-mt' });
+        const nameOf = (code) => { for (const [, opts] of groups) { const o = opts.find(([v]) => v === code); if (o) return o[1]; } return null; };
+        const kindOf = (code) => SC_KINDS.find(([re]) => re.test(code)) || [null, 'Moduł', 'code'];
+
+        const setCode = (code, { focus = true } = {}) => {
+            pushHistory();
+            b.attrs.code = code.trim();
+            markDirty();
+            choosing = false;
+            loaded = null;
+            draw();
+            load();
+            const name = nameOf(b.attrs.code);
+            announce('Wybrano moduł: ' + (name || b.attrs.code));
+            if (focus) root.querySelector('[data-sc-change]')?.focus();
+        };
         // Kreator nowego zestawu kafelków ('tileset') albo bloku (cta, accordion, callout, pricing); zapis wpisuje shortcode.
         const openNew = (kind, trigger) => {
             if (kind === 'tileset') {
                 if (!window.TilesBuilder) return;
                 window.TilesBuilder.open({ id: null, trigger, onSave: (set) => {
                     if (!(CI.tileSets ||= []).some((x) => x.value === set.id)) CI.tileSets.push({ value: set.id, label: set.name });
+                    groups.find(([l]) => l === 'Zestawy kafelków')?.[1].push(['[kafelki-zestaw:' + set.id + ']', set.name]);
                     setCode('[kafelki-zestaw:' + set.id + ']');
                 } });
                 return;
             }
             if (!window.BlockBuilder) return;
             window.BlockBuilder.open({ type: kind, id: null, trigger, onSave: (nb) => {
-                if (!(CI.contentBlocks ||= []).some((x) => x.value === nb.id)) CI.contentBlocks.push({ value: nb.id, type: nb.type, label: ((CI.blockTypes || {})[nb.type] || nb.type) + ': ' + nb.name });
+                const label = ((CI.blockTypes || {})[nb.type] || nb.type) + ': ' + nb.name;
+                if (!(CI.contentBlocks ||= []).some((x) => x.value === nb.id)) CI.contentBlocks.push({ value: nb.id, type: nb.type, label });
+                groups.find(([l]) => l === 'Bloki z kreatora')?.[1].push(['[blok:' + nb.id + ']', label]);
                 setCode('[blok:' + nb.id + ']');
             } });
         };
-        const renderTools = () => {
-            const code = b.attrs.code || '';
-            const btn = (label, iconName, onClick) => h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: (e) => onClick(e.currentTarget) }, icon(iconName), ' ' + label);
-            const items = [];
-            if (window.TilesBuilder) {
-                items.push(btn('Nowy zestaw kafelków…', 'plus', (t) => openNew('tileset', t)));
-                const m = code.match(/^\[kafelki-zestaw:(\d+)\]$/);
-                if (m) items.push(btn('Edytuj zestaw', 'pen', (t) => window.TilesBuilder.open({ id: Number(m[1]), trigger: t, onSave: () => { shortcodePreviewCache.delete(code); load(); } })));
-            }
-            if (window.BlockBuilder) {
-                (CI.newBlockTypes || []).forEach((bt) => items.push(btn({ cta: 'Nowe przyciski CTA…', accordion: 'Nowy akordeon…', callout: 'Nowa ramka informacyjna…', pricing: 'Nowy cennik…' }[bt] || bt, 'plus', (t) => openNew(bt, t))));
-                const m = code.match(/^\[blok:(\d+)\]$/);
-                const cb = m && (CI.contentBlocks || []).find((x) => x.value === Number(m[1]));
-                if (cb) items.push(btn('Edytuj blok', 'pen', (t) => window.BlockBuilder.open({ type: cb.type, id: cb.value, trigger: t, onSave: () => { shortcodePreviewCache.delete(code); load(); } })));
-            }
-            tools.replaceChildren(...items);
+        const btn = (label, iconName, onClick, cls = 'be-btn--secondary', extra = {}) => h('button', { type: 'button', class: 'be-btn ' + cls, onClick: (e) => onClick(e.currentTarget), ...extra }, icon(iconName), ' ' + label);
+        const editButton = (code) => {
+            const ts = code.match(/^\[kafelki-zestaw:(\d+)\]$/);
+            if (ts && window.TilesBuilder) return btn('Edytuj zestaw', 'pen', (t) => window.TilesBuilder.open({ id: Number(ts[1]), trigger: t, onSave: () => { shortcodePreviewCache.delete(code); loaded = null; load(); } }));
+            const bm = code.match(/^\[blok:(\d+)\]$/);
+            const cb = bm && (CI.contentBlocks || []).find((x) => x.value === Number(bm[1]));
+            if (cb && window.BlockBuilder) return btn('Edytuj blok', 'pen', (t) => window.BlockBuilder.open({ type: cb.type, id: cb.value, trigger: t, onSave: () => { shortcodePreviewCache.delete(code); loaded = null; load(); } }));
+            return null;
         };
-        renderTools();
+
+        const drawSummary = () => {
+            const code = b.attrs.code;
+            const [, kind, kindIcon] = kindOf(code);
+            const name = nameOf(code);
+            root.replaceChildren(
+                h('div', { class: 'be-sc-head' },
+                    h('span', { class: 'be-sc-icon', 'aria-hidden': 'true' }, icon(kindIcon)),
+                    h('div', { class: 'be-sc-what' },
+                        h('span', { class: 'be-sc-kind' }, kind),
+                        h('strong', { class: 'be-sc-name' }, name || h('span', { class: 'be-mono' }, code)),
+                        name ? h('span', { class: 'be-sc-code be-mono' }, code) : null),
+                    h('div', { class: 'be-sc-actions' },
+                        editButton(code),
+                        btn('Zmień moduł', 'arrows-rotate', () => { choosing = true; draw(); root.querySelector('select, [data-sc-first]')?.focus(); }, 'be-btn--secondary', { 'data-sc-change': '' }))),
+                status,
+                preview);
+        };
+
+        const drawChooser = () => {
+            const items = [];
+            items.push(h('p', { class: 'be-placeholder-title' }, icon('puzzle-piece'), ' Moduł na stronie'));
+            items.push(h('p', {}, 'Wstaw formularz, kafelki, pasek albo blok z kreatora — wybierz gotowy lub utwórz nowy.'));
+            if (groups.length) {
+                const pick = h('select', { id: uid + '-pick', class: 'be-input', 'data-sc-first': '' },
+                    h('option', { value: '' }, '— wybierz z listy —'),
+                    ...groups.map(([label, opts]) => h('optgroup', { label }, ...opts.map(([v, l]) => h('option', { value: v, selected: v === b.attrs.code ? true : null }, l)))));
+                pick.addEventListener('change', () => { if (pick.value) setCode(pick.value); });
+                items.push(h('div', { class: 'be-sc-section' }, h('label', { for: uid + '-pick', class: 'be-sc-label' }, 'Gotowy moduł'), pick));
+            }
+            const creators = [];
+            if (window.TilesBuilder) creators.push(btn('Zestaw kafelków', 'plus', (t) => openNew('tileset', t)));
+            if (window.BlockBuilder) (CI.newBlockTypes || []).forEach((bt) => creators.push(btn({ cta: 'Przyciski CTA', accordion: 'Akordeon', callout: 'Ramka informacyjna', pricing: 'Cennik' }[bt] || bt, 'plus', (t) => openNew(bt, t))));
+            if (creators.length) {
+                items.push(h('div', { class: 'be-sc-section', role: 'group', 'aria-labelledby': uid + '-new' },
+                    h('p', { id: uid + '-new', class: 'be-sc-label' }, 'Albo utwórz nowy'),
+                    h('div', { class: 'be-sc-creators' }, ...creators)));
+            }
+            const manual = h('input', { type: 'text', id: uid + '-code', class: 'be-input be-mono', value: b.attrs.code || '', placeholder: '[formularz:nazwa-formularza]', 'aria-describedby': uid + '-help ' + uid + '-status' });
+            const manualForm = h('form', { class: 'be-url-row', onSubmit: (e) => {
+                e.preventDefault();
+                const code = manual.value.trim();
+                if (!SHORTCODE_RE.test(code)) { manual.setAttribute('aria-invalid', 'true'); showStatus('Nieprawidłowy kod — wpisz go w nawiasach kwadratowych, np. [formularz:nazwa].', true); manual.focus(); return; }
+                manual.removeAttribute('aria-invalid');
+                setCode(code);
+            } }, manual, h('button', { type: 'submit', class: 'be-btn be-btn--primary' }, 'Użyj kodu'));
+            const details = h('details', { class: 'be-sc-manual' },
+                h('summary', {}, 'Wpisz kod ręcznie'),
+                h('label', { for: uid + '-code', class: 'be-sc-label' }, 'Kod shortcode'),
+                manualForm,
+                h('p', { id: uid + '-help', class: 'be-small' }, 'Np. [formularz:slug], [kafelki:slug], [kafelki-zestaw:ID], [blok:ID], [pasek:ID].'));
+            if (b.attrs.code && !nameOf(b.attrs.code)) details.open = true;
+            items.push(details, status);
+            if (b.attrs.code) items.push(h('div', { class: 'be-sc-cancel' }, btn('Anuluj zmianę', 'xmark', () => { choosing = false; draw(); load(); root.querySelector('[data-sc-change]')?.focus(); }, 'be-btn--ghost')));
+            root.replaceChildren(...items);
+        };
+
+        const draw = () => { root.classList.toggle('be-sc--choose', choosing); if (choosing) drawChooser(); else drawSummary(); };
+        draw();
+        if (!choosing) load();
         // Blok wstawiony jako „Nowy …” (np. „Nowa ramka informacyjna”) — od razu otwiera kreator.
         if (b.attrs.builder) {
             const kind = b.attrs.builder;
             delete b.attrs.builder;
-            setTimeout(() => openNew(kind, input), 0);
+            setTimeout(() => openNew(kind, root.querySelector('select, button')), 0);
         }
-        input.addEventListener('input', () => {
-            typingHistory();
-            b.attrs.code = input.value.trim();
-            markDirty();
-            input.setAttribute('aria-invalid', String(!!b.attrs.code && !SHORTCODE_RE.test(b.attrs.code)));
-            loadSoon();
-        });
-        load();
-        return h('div', { class: 'be-placeholder be-placeholder--compact' },
-            h('label', { class: 'be-placeholder-title' }, icon('code'), ' Moduł (shortcode)'),
-            groups.length ? pick : null,
-            tools,
-            input,
-            h('p', { id: 'sc-help-' + b.id, class: 'be-small' }, 'Np. [formularz:slug], [kafelki:slug], [kafelki-zestaw:ID], [blok:ID], [pasek:ID].'),
-            status,
-            preview);
+        return root;
     }
 
     // Bloki „Lista podstron” i „Lista aktualności”: opis ustawień i podgląd z serwera

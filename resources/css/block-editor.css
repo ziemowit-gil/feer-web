@@ -543,6 +543,27 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
 .be-sc-preview-body { padding: 0.75rem 1rem; }
 .be-sc-preview-body > :first-child { margin-top: 0; }
 
+/* Blok „Shortcode”: wybrany moduł (rodzaj, nazwa, akcje) albo wybór modułu */
+.be-sc-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
+.be-sc-icon { display: flex; flex: 0 0 2.75rem; height: 2.75rem; align-items: center; justify-content: center; border-radius: 0.375rem; background: var(--be-ui-soft); color: var(--be-ui); font-size: 1.125rem; }
+.be-sc-what { display: flex; flex: 1 1 12rem; min-width: 0; flex-direction: column; gap: 0.1rem; }
+.be-sc-kind { font-size: 0.75rem; font-weight: 700; color: var(--be-muted); }
+.be-sc-name { font-size: 1rem; color: var(--be-ink); overflow-wrap: anywhere; }
+.be-sc-code { font-size: 0.75rem; color: var(--be-muted); overflow-wrap: anywhere; }
+.be-sc-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.be-sc-section { margin-top: 1rem; }
+.be-placeholder .be-sc-label, .be-sc-label { display: block; margin: 0 0 0.35rem; font-size: 0.875rem; font-weight: 700; color: var(--be-ink); }
+.be-placeholder--compact .be-sc-section .be-input, .be-sc-section .be-input { margin-top: 0; }
+.be-sc-creators { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.be-sc-manual { margin-top: 1rem; }
+.be-sc-manual > summary { display: inline-flex; min-height: 2.75rem; align-items: center; cursor: pointer; font-size: 0.875rem; font-weight: 700; color: var(--be-ui); text-decoration: underline; text-underline-offset: 3px; }
+.be-sc-manual > summary:hover { color: var(--be-ui-dark); }
+.be-sc-manual > summary:focus-visible { outline: 2px solid var(--be-ui); outline-offset: 2px; border-radius: 0.25rem; }
+.be-sc-manual[open] > summary { margin-bottom: 0.5rem; }
+.be-sc-manual .be-url-row { margin-top: 0; }
+.be-sc-cancel { margin-top: 0.75rem; }
+.be-placeholder.be-sc .be-sc-status { margin-top: 0.75rem; }
+
 /* Okno tekstu alternatywnego */
 .be-alt-thumb {
     display: block; max-width: 100%; max-height: 12rem; margin: 0 auto 1rem;
