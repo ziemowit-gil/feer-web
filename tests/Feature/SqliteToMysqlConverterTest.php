@@ -65,13 +65,26 @@ class SqliteToMysqlConverterTest extends TestCase
     {
         // Migracje z danymi zapisują strony, a obserwator wersji wpisuje user_id zalogowanej osoby —
         // w nowej bazie tabela users jest jeszcze pusta, więc klucz obcy blokowałby zapis.
-        $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]));
+        // Logowanie przez sesję jak w panelu (actingAs nie zapisuje sesji, więc nie odtwarzało błędu).
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->startSession();
+        auth()->login($admin);
         Page::create(['title' => 'Strona', 'slug' => 'strona', 'content' => '<p>x</p>', 'is_published' => true]);
+        $usersInMigrations = [];
+        \App\Models\ContentRevision::creating(function ($r) use (&$usersInMigrations) {
+            if ($r->getConnectionName() === SqliteToMysqlConverter::TARGET || DB::getDefaultConnection() === SqliteToMysqlConverter::TARGET) {
+                $usersInMigrations[] = $r->user_id;
+            }
+        });
 
-        $report = $this->converter()->convert();
+        $report = $this->converter()->convert(true);
+
+        $this->assertNotEmpty($usersInMigrations, 'Migracje z danymi zapisują wersje stron.');
+        $this->assertSame([null], array_values(array_unique($usersInMigrations)), 'Wersje z migracji bez user_id zalogowanej osoby.');
 
         $this->assertTrue($report['ok'], json_encode(array_filter($report['tables'], fn ($r) => ! $r['ok'])));
-        $this->assertNotNull(auth()->user(), 'Po konwersji osoba nadal jest zalogowana.');
+        $this->assertSame($admin->id, auth()->id(), 'Po konwersji osoba nadal jest zalogowana.');
+        $this->assertSame('web', config('auth.defaults.guard'));
         $this->assertSame(DB::table('content_revisions')->count(), DB::connection(SqliteToMysqlConverter::TARGET)->table('content_revisions')->count());
     }
 

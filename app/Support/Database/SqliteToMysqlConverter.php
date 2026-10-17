@@ -4,6 +4,7 @@ namespace App\Support\Database;
 
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -147,19 +148,22 @@ class SqliteToMysqlConverter
         // Migracje z danymi zapisują modele (np. strony), a obserwatory dopisują wersje i dziennik z id zalogowanej
         // osoby — w nowej bazie tabela users jest jeszcze pusta. Na czas migracji: bez zalogowanego użytkownika
         // i bez kontroli kluczy obcych (te wiersze i tak zastąpią dane ze źródła).
-        $guard = auth()->guard();
-        $user = $guard->user();
-        if ($user && method_exists($guard, 'forgetUser')) {
-            $guard->forgetUser();
-        }
-        $this->foreignKeys(false);
+        // Samo forgetUser() nie wystarcza — strażnik sesji przy następnym auth()->id() wczytałby osobę z sesji.
+        // Dlatego na czas migracji przełączamy się na pusty strażnik (zawsze „brak użytkownika”) i przywracamy poprzedni.
+        $previousGuard = (string) config('auth.defaults.guard');
+        Auth::viaRequest('konwersja-bez-uzytkownika', fn () => null);
+        Config::set('auth.guards.konwersja_bez_uzytkownika', ['driver' => 'konwersja-bez-uzytkownika']);
+        Auth::shouldUse('konwersja_bez_uzytkownika');
         try {
-            $exit = Artisan::call($fresh ? 'migrate:fresh' : 'migrate', ['--database' => self::TARGET, '--force' => true]);
+            // migrate:fresh przy czyszczeniu (dropAllTables) z powrotem włącza klucze obce — czyścimy sami.
+            if ($fresh) {
+                Schema::connection(self::TARGET)->dropAllTables();
+            }
+            $this->foreignKeys(false);
+            $exit = Artisan::call('migrate', ['--database' => self::TARGET, '--force' => true]);
         } finally {
             $this->foreignKeys(true);
-            if ($user) {
-                $guard->setUser($user);
-            }
+            Auth::shouldUse($previousGuard);
             Once::flush();
         }
         if ($exit !== 0) {
