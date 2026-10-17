@@ -761,6 +761,12 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('cache/{group}/flush', [AdminCacheController::class, 'flush'])->name('cache.flush');
         Route::post('cache/flush-all', [AdminCacheController::class, 'flushAll'])->name('cache.flush-all');
 
+        Route::get('baza-mysql', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'index'])->name('baza-mysql.index');
+        Route::post('baza-mysql/sprawdz', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'check'])->name('baza-mysql.check');
+        Route::post('baza-mysql/konwertuj', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'convert'])->name('baza-mysql.convert');
+        Route::post('baza-mysql/przelacz', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'switch'])->name('baza-mysql.switch');
+        Route::post('baza-mysql/powrot', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'revert'])->name('baza-mysql.revert');
+
         Route::get('kopie-zapasowe', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('kopie.index');
         Route::post('kopie-zapasowe', [\App\Http\Controllers\Admin\BackupController::class, 'store'])->name('kopie.store');
         Route::post('kopie-zapasowe/wgraj', [\App\Http\Controllers\Admin\BackupController::class, 'upload'])->name('kopie.upload');

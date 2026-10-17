@@ -259,6 +259,7 @@ final class AdminMenu
                 $this->item('health', 'Health Check', 'admin.health.index', 'fa-heart-pulse', active: 'admin.health.*'),
                 $this->item('cache', 'Cache', 'admin.cache.index', 'fa-bolt', active: 'admin.cache.*'),
                 $this->item('backups', 'Kopie zapasowe', 'admin.kopie.index', 'fa-box-archive', active: 'admin.kopie.*'),
+                $this->item('database', 'Baza MySQL', 'admin.baza-mysql.index', 'fa-database', active: 'admin.baza-mysql.*'),
                 $this->item('sites', 'Witryny sieci', 'admin.witryny.index', 'fa-sitemap', active: 'admin.witryny.*'),
             ]) : null,
         ];
@@ -311,7 +312,7 @@ final class AdminMenu
             $this->group($byKey, 'settings', 'Ustawienia', 'fa-sliders', $settingsBlocks),
             $this->group($byKey, 'system', 'System', 'fa-gear', [
                 ['Użytkownicy i dostęp', 'users'],
-                ['Dane i bezpieczeństwo', 'system', ['activity', 'gdpr', 'backups']],
+                ['Dane i bezpieczeństwo', 'system', ['activity', 'gdpr', 'backups', 'database']],
                 ['Diagnostyka', 'system', ['health', 'cache']],
                 ['Sieć witryn', 'system', ['sites']],
             ]),
@@ -340,7 +341,7 @@ final class AdminMenu
             $this->group($sections, 'users', 'Użytkownicy', 'fa-users', [$spec(null, 'users')]),
             $this->group($sections, 'system', 'System', 'fa-gear', [
                 $spec('Konfiguracja', 'system', ['settings', 'templates', 'seo']),
-                $spec('Narzędzia', 'system', ['activity', 'wcag', 'gdpr', 'modules', 'health', 'cache', 'backups', 'sites']),
+                $spec('Narzędzia', 'system', ['activity', 'wcag', 'gdpr', 'modules', 'health', 'cache', 'backups', 'database', 'sites']),
             ]),
         ]));
     }
