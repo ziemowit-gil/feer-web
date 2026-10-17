@@ -243,6 +243,29 @@ class SqliteToMysqlConverterTest extends TestCase
         $this->assertSame(['site_settings'], $this->converter()->wideTables());
     }
 
+    public function test_usuniecie_poprzedniej_bazy_sqlite_z_kopia(): void
+    {
+        $file = sys_get_temp_dir().'/stara-'.uniqid().'.sqlite';
+        file_put_contents($file, str_repeat('SQLite format 3', 1000));
+        file_put_contents($file.'.bak', 'kopia');
+        $original = config('database.connections.sqlite.database');
+        config(['database.connections.sqlite.database' => $file]);
+
+        $this->assertSame([$file, $file.'.bak'], SqliteToMysqlConverter::oldSqliteFiles());
+        $result = SqliteToMysqlConverter::deleteOldSqlite(true);
+
+        $this->assertFileDoesNotExist($file);
+        $this->assertFileDoesNotExist($file.'.bak');
+        $this->assertFileExists($result['archive']);
+        $this->assertSame(str_repeat('SQLite format 3', 1000), gzdecode(file_get_contents($result['archive'])));
+        @unlink($result['archive']);
+        config(['database.connections.sqlite.database' => $original]);
+
+        // Na SQLite (serwis nie działa jeszcze na MySQL) usuwanie z panelu jest niedostępne.
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->actingAs($admin)->delete(route('admin.baza-mysql.delete-old'), ['confirm' => '1', 'phrase' => 'USUŃ'])->assertNotFound();
+    }
+
     public function test_polecenie_konsoli_zglasza_blad_polaczenia(): void
     {
         $this->artisan('db:konwertuj-mysql', ['--host' => '127.0.0.1', '--port' => 1, '--database' => 'feer', '--username' => 'u', '--password' => 'x', '--sprawdz' => true])

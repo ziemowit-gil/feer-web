@@ -462,8 +462,9 @@ HEAD_BEFORE=$(git rev-parse --short HEAD)
 # database/blog.sqlite jest (jeszcze) śledzona w gicie — przywracamy wersję
 # z repo na czas pull, a potem kopię z /tmp. Po przeniesieniu bazy do
 # storage/app/blog/ ten plik nie jest już używany przez aplikację.
-git checkout -- "$DB" 2>/dev/null || true
-git checkout -- "$BLOG_DB" 2>/dev/null || true
+# Usuniętej poprzedniej bazy SQLite (serwis na MySQL, „Usuń poprzednią bazę”) nie odtwarzamy z gita.
+[ -f "$DB" ] && git checkout -- "$DB" 2>/dev/null || true
+[ -f "$BLOG_DB" ] && git checkout -- "$BLOG_DB" 2>/dev/null || true
 if ! run git pull origin "$BRANCH"; then
     [ -n "$BACKUP" ] && cp "$BACKUP" "$DB"
     [ -n "$BLOG_BACKUP" ] && cp "$BLOG_BACKUP" "$BLOG_DB"

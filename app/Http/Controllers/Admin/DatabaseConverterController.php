@@ -35,6 +35,7 @@ class DatabaseConverterController extends Controller
             'check' => Cache::get('db_convert_check'),
             'report' => Cache::get(self::CACHE_REPORT),
             'envBackup' => SqliteToMysqlConverter::latestEnvBackup(),
+            'oldSqlite' => SqliteToMysqlConverter::oldSqliteFiles(),
             'mysqlAvailable' => extension_loaded('pdo_mysql'),
         ]);
     }
@@ -112,6 +113,37 @@ class DatabaseConverterController extends Controller
 
         return redirect()->route('admin.baza-mysql.index')
             ->with('status', 'Przywrócono .env z '.basename($backup).' — serwis wrócił do SQLite. Zmiany zapisane w MySQL po przełączeniu nie zostały przeniesione.');
+    }
+
+    /** Usuwa poprzednią bazę SQLite (dopiero gdy serwis działa na MySQL), opcjonalnie ze skompresowaną kopią. */
+    public function deleteOld(Request $request): RedirectResponse
+    {
+        abort_unless(in_array(config('database.connections.'.config('database.default').'.driver'), ['mysql', 'mariadb'], true), 404);
+        $request->validate([
+            'confirm' => ['accepted'],
+            'phrase' => ['required', 'string', function ($attribute, $value, $fail) {
+                if (mb_strtoupper(trim((string) $value)) !== 'USUŃ') {
+                    $fail('Wpisz słowo USUŃ, aby potwierdzić.');
+                }
+            }],
+        ], ['confirm.accepted' => 'Zaznacz, że rozumiesz skutki usunięcia poprzedniej bazy.']);
+
+        try {
+            $result = SqliteToMysqlConverter::deleteOldSqlite($request->boolean('archive'));
+        } catch (Throwable $e) {
+            return back()->withErrors(['old' => SqliteToMysqlConverter::friendly($e)]);
+        }
+
+        if (function_exists('activity')) {
+            activity('system')->causedBy($request->user())->event('deleted')
+                ->withProperties(['files' => $result['deleted'], 'archive' => $result['archive'] ? basename($result['archive']) : null])
+                ->log('Usunięto poprzednią bazę SQLite');
+        }
+
+        return back()->with('status', $result['deleted'] === []
+            ? 'Poprzednia baza SQLite już nie istnieje.'
+            : 'Usunięto poprzednią bazę SQLite ('.implode(', ', $result['deleted']).', '.number_format($result['bytes'] / 1048576, 1, ',', ' ').' MB).'
+                .($result['archive'] ? ' Skompresowana kopia: storage/app/sqlite-archive/'.basename($result['archive']).'.' : ''));
     }
 
     /** @return array{host: string, port: int, database: string, username: string, password: ?string} */

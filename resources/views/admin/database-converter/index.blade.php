@@ -87,11 +87,39 @@
         <section aria-labelledby="h-onmysql" class="max-w-3xl rounded-md bg-white p-6">
             <h2 id="h-onmysql" class="font-bold text-ink">Serwis działa na MySQL</h2>
             <p class="mt-1 text-sm text-ink">Konwersja nie jest już potrzebna. Kopie zapasowe (System → Kopie zapasowe) robią teraz zrzut MySQL.</p>
-            @if ($envBackup)
+            @if ($envBackup && $oldSqlite)
                 <form method="POST" action="{{ route('admin.baza-mysql.revert') }}" class="mt-4" onsubmit="return confirm('Wrócić do SQLite? Zmiany zapisane w MySQL po przełączeniu nie zostaną przeniesione.')">
                     @csrf
                     <button type="submit" class="{{ $secondary }}"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Wróć do SQLite</button>
                     <p class="mt-2 text-xs text-muted">Przywraca plik .env z kopii {{ basename($envBackup) }}.</p>
+                </form>
+            @endif
+        </section>
+
+        {{-- Poprzednia baza SQLite (zapas po przełączeniu) — usunięcie zwalnia miejsce i wyłącza „Wróć do SQLite”. --}}
+        <section aria-labelledby="h-oldsqlite" class="mt-6 max-w-3xl rounded-md bg-white p-6">
+            <h2 id="h-oldsqlite" class="font-bold text-ink">Poprzednia baza SQLite</h2>
+            @if ($oldSqlite === [])
+                <p class="mt-1 text-sm text-ink">Poprzedniej bazy już nie ma — serwis korzysta wyłącznie z MySQL.</p>
+            @else
+                <p class="mt-1 text-sm text-ink">Plik {{ basename($oldSqlite[0]) }} ({{ number_format(array_sum(array_map('filesize', $oldSqlite)) / 1048576, 1, ',', ' ') }} MB) został jako zapas po przełączeniu. Usunięcie zwolni miejsce, ale powrót do SQLite przestanie być możliwy.</p>
+                <form method="POST" action="{{ route('admin.baza-mysql.delete-old') }}" class="mt-4 space-y-3">
+                    @csrf
+                    @method('DELETE')
+                    <div class="flex min-h-11 items-center gap-2">
+                        <input id="old-archive" name="archive" type="checkbox" value="1" checked class="h-5 w-5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" aria-describedby="old-archive-help">
+                        <label for="old-archive" class="text-sm font-bold text-ink">Najpierw zapisz skompresowaną kopię</label>
+                    </div>
+                    <p id="old-archive-help" class="ml-7 text-xs text-muted">Do storage/app/sqlite-archive — na wszelki wypadek, zajmie mniej miejsca niż plik bazy.</p>
+                    <div class="flex min-h-11 items-center gap-2">
+                        <input id="old-confirm" name="confirm" type="checkbox" value="1" required class="h-5 w-5 rounded border-gray-500 text-red-700 focus:ring-red-700">
+                        <label for="old-confirm" class="text-sm font-bold text-ink">Rozumiem, że „Wróć do SQLite” przestanie działać</label>
+                    </div>
+                    <div>
+                        <label for="old-phrase" class="block text-sm font-bold text-ink">Aby potwierdzić, wpisz <span class="font-mono">USUŃ</span></label>
+                        <input id="old-phrase" name="phrase" type="text" required autocomplete="off" class="{{ $input }} max-w-xs">
+                    </div>
+                    <button type="submit" class="{{ $btn }} bg-red-700 text-white hover:bg-red-800"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń poprzednią bazę</button>
                 </form>
             @endif
         </section>

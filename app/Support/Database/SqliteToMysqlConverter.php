@@ -388,6 +388,53 @@ class SqliteToMysqlConverter
         return preg_match('/[\s#"\'\\\\$=]/', $v) || $v === '' ? '"'.addcslashes($v, '"\\$').'"' : $v;
     }
 
+    /** Plik poprzedniej bazy SQLite (zapas po przełączeniu na MySQL) i jego pliki pomocnicze, które istnieją. @return list<string> */
+    public static function oldSqliteFiles(): array
+    {
+        $main = (string) (config('database.connections.sqlite.database') ?: database_path('database.sqlite'));
+        if ($main === ':memory:') {
+            return [];
+        }
+
+        return array_values(array_filter([$main, $main.'-wal', $main.'-shm', $main.'-journal', $main.'.bak'], 'is_file'));
+    }
+
+    /**
+     * Usuwa poprzednią bazę SQLite; z $archive najpierw zapisuje skompresowaną kopię w storage/app/sqlite-archive.
+     *
+     * @return array{deleted: list<string>, bytes: int, archive: ?string}
+     */
+    public static function deleteOldSqlite(bool $archive = true): array
+    {
+        $files = self::oldSqliteFiles();
+        $bytes = array_sum(array_map('filesize', $files));
+        $archivePath = null;
+
+        if ($archive && $files !== []) {
+            $dir = storage_path('app/sqlite-archive');
+            if (! is_dir($dir)) {
+                mkdir($dir, 0750, true);
+            }
+            $archivePath = $dir.'/'.basename($files[0]).'-'.now()->format('Ymd-His').'.gz';
+            $in = fopen($files[0], 'rb');
+            $out = gzopen($archivePath, 'wb6');
+            if (! $in || ! $out) {
+                throw new RuntimeException('Nie udało się zapisać kopii poprzedniej bazy — niczego nie usunięto.');
+            }
+            while (! feof($in)) {
+                gzwrite($out, (string) fread($in, 1 << 20));
+            }
+            fclose($in);
+            gzclose($out);
+        }
+
+        foreach ($files as $f) {
+            @unlink($f);
+        }
+
+        return ['deleted' => array_map('basename', $files), 'bytes' => (int) $bytes, 'archive' => $archivePath];
+    }
+
     /** Czytelny komunikat bez haseł i długich śladów. */
     public static function friendly(Throwable $e): string
     {

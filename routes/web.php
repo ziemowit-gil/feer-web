@@ -781,6 +781,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('baza-mysql/konwertuj', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'convert'])->name('baza-mysql.convert');
         Route::post('baza-mysql/przelacz', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'switch'])->name('baza-mysql.switch');
         Route::post('baza-mysql/powrot', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'revert'])->name('baza-mysql.revert');
+        Route::delete('baza-mysql/poprzednia', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'deleteOld'])->name('baza-mysql.delete-old');
 
         Route::get('kopie-zapasowe', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('kopie.index');
         Route::post('kopie-zapasowe', [\App\Http\Controllers\Admin\BackupController::class, 'store'])->name('kopie.store');
