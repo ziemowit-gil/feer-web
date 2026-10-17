@@ -29,6 +29,7 @@
             'pdf' => 'PDF',
             'scenariusz' => 'Scenariusze',
         ];
+        $newsletterCta = $siteSettings->isModuleEnabled('newsletter') && \Illuminate\Support\Facades\Route::has('newsletter.show');
         $actionPrimary = 'inline-flex min-h-11 items-center gap-2 rounded-md bg-brand px-4 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
         $actionGhost = 'inline-flex min-h-11 items-center gap-2 rounded-md bg-gray-100 px-4 text-sm font-bold text-ink transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
     @endphp
@@ -67,7 +68,7 @@
                                     </a>
                                 </li>
                             @endforeach
-                            <li class="shrink-0"><a href="#zapis" class="flex min-h-11 items-center rounded-md px-4 py-2 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:px-3">Powiadomienia →</a></li>
+                            <li class="shrink-0"><a href="#zapis" class="flex min-h-11 items-center rounded-md px-4 py-2 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:px-3">{{ $newsletterCta ? 'Newsletter' : 'Powiadomienia' }} →</a></li>
                         </ul>
                     </nav>
                 @endif
@@ -113,29 +114,46 @@
             </div>
         @endif
 
-        {{-- Zapis na powiadomienia o nowych materiałach --}}
-        <section id="zapis" class="mt-16 scroll-mt-24 rounded-md bg-gray-50 p-6 sm:p-8" aria-labelledby="zapis-h">
-            <div class="max-w-xl">
-                <h2 id="zapis-h" class="text-2xl font-bold text-ink">Powiadomienia o nowych materiałach</h2>
-                <p class="mt-1 text-sm text-ink">Zostaw swój adres e-mail, a damy Ci znać, gdy pojawią się nowe materiały.</p>
+        @if ($newsletterCta)
+            {{-- Zapis przez FEERletter — ten sam blok co pod „Naszymi działaniami” (brand-light, koperta w tle, przycisk do strony zapisu).
+                 Kontrast: ink na brand-light, biały na brand-dark, po najechaniu tło ink (≥ 4,5:1). --}}
+            <section id="zapis" class="relative isolate mt-16 flex scroll-mt-24 flex-col gap-6 overflow-hidden rounded-md bg-brand-light p-6 text-ink sm:flex-row sm:items-center sm:justify-between md:p-8" aria-labelledby="zapis-h">
+                <span class="pointer-events-none absolute -bottom-8 right-56 -z-10 hidden select-none text-[9rem] leading-none text-white md:block" aria-hidden="true"><i class="fa-regular fa-envelope"></i></span>
+                <div class="max-w-2xl">
+                    <span class="text-xs font-bold uppercase tracking-widest text-brand-dark">Newsletter</span>
+                    <h2 id="zapis-h" class="mt-1 text-xl font-bold leading-snug">Nowe materiały prosto do Twojej skrzynki</h2>
+                    <p class="mt-3 text-sm leading-relaxed">Zapisz się na FEERletter — jako pierwsza osoba dowiesz się o nowych bezpłatnych materiałach, terminach szkoleń i webinarów online. FEERletter wychodzi raz na dwa tygodnie.</p>
+                </div>
+                <a href="{{ route('newsletter.show') }}"
+                   class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-brand-dark px-6 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 motion-reduce:transition-none">
+                    Zapisuję się na newsletter <span aria-hidden="true">→</span>
+                </a>
+            </section>
+        @else
+            {{-- Zapis na powiadomienia o nowych materiałach --}}
+            <section id="zapis" class="mt-16 scroll-mt-24 rounded-md bg-gray-50 p-6 sm:p-8" aria-labelledby="zapis-h">
+                <div class="max-w-xl">
+                    <h2 id="zapis-h" class="text-2xl font-bold text-ink">Powiadomienia o nowych materiałach</h2>
+                    <p class="mt-1 text-sm text-ink">Zostaw swój adres e-mail, a damy Ci znać, gdy pojawią się nowe materiały.</p>
 
-                @if (session('materials_subscribed'))
-                    <p class="mt-4 text-sm font-bold text-green-800" role="status">Dziękujemy! Adres został zapisany.</p>
-                @else
-                    <form method="POST" action="{{ route('materials.subscribe') }}" class="mt-4">
-                        @csrf
-                        <div class="flex flex-col gap-2 sm:flex-row">
-                            <label for="subscribe-email" class="sr-only">Adres e-mail</label>
-                            <input type="email" id="subscribe-email" name="email" value="{{ old('email') }}" required placeholder="twoj@email.pl" autocomplete="email"
-                                   class="min-h-11 w-full rounded-md border-gray-500 focus:border-brand focus:ring-brand">
-                            <button type="submit" class="{{ $actionPrimary }} justify-center">Zapisz się</button>
-                        </div>
-                        @error('email') <p class="mt-2 text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
-                        <p class="mt-2 text-xs text-muted">Wykorzystamy Twój adres wyłącznie do informowania o nowych materiałach.</p>
-                    </form>
-                @endif
-            </div>
-        </section>
+                    @if (session('materials_subscribed'))
+                        <p class="mt-4 text-sm font-bold text-green-800" role="status">Dziękujemy! Adres został zapisany.</p>
+                    @else
+                        <form method="POST" action="{{ route('materials.subscribe') }}" class="mt-4">
+                            @csrf
+                            <div class="flex flex-col gap-2 sm:flex-row">
+                                <label for="subscribe-email" class="sr-only">Adres e-mail</label>
+                                <input type="email" id="subscribe-email" name="email" value="{{ old('email') }}" required placeholder="twoj@email.pl" autocomplete="email"
+                                       class="min-h-11 w-full rounded-md border-gray-500 focus:border-brand focus:ring-brand">
+                                <button type="submit" class="{{ $actionPrimary }} justify-center">Zapisz się</button>
+                            </div>
+                            @error('email') <p class="mt-2 text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
+                            <p class="mt-2 text-xs text-muted">Wykorzystamy Twój adres wyłącznie do informowania o nowych materiałach.</p>
+                        </form>
+                    @endif
+                </div>
+            </section>
+        @endif
     </div>
 
     <style>

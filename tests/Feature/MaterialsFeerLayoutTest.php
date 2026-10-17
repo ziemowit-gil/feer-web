@@ -115,6 +115,41 @@ class MaterialsFeerLayoutTest extends TestCase
         $this->assertStringNotContainsString('mb-10 max-w-3xl rounded-md bg-gray-50 p-5', $html);
     }
 
+    private function newsletterModule(bool $active): void
+    {
+        \Closure::bind(function () use ($active) {
+            $this->statuses->put('newsletter', $active ? 'active' : 'inactive');
+        }, app(\App\Modules\ModuleManager::class), \App\Modules\ModuleManager::class)();
+        $this->useTemplate('feer');
+    }
+
+    public function test_zapis_przez_feerletter_gdy_modul_newslettera_wlaczony(): void
+    {
+        $this->seedMaterials();
+        $this->newsletterModule(true);
+
+        $html = $this->get('/materialy')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('~<section id="zapis" class="relative isolate[^"]*bg-brand-light[^"]*" aria-labelledby="zapis-h">~u', $html);
+        $this->assertStringContainsString('<h2 id="zapis-h" class="mt-1 text-xl font-bold leading-snug">Nowe materiały prosto do Twojej skrzynki</h2>', $html);
+        $this->assertStringContainsString('href="' . route('newsletter.show') . '"', $html);
+        $this->assertStringContainsString('Zapisuję się na newsletter <span aria-hidden="true">→</span>', $html);
+        $this->assertStringNotContainsString(route('materials.subscribe'), $html);
+        $this->assertStringNotContainsString('Powiadomienia o nowych materiałach', $html);
+    }
+
+    public function test_bez_modulu_newslettera_zostaje_formularz_powiadomien(): void
+    {
+        $this->seedMaterials();
+        $this->newsletterModule(false);
+
+        $html = $this->get('/materialy')->assertOk()->getContent();
+
+        $this->assertStringContainsString('Powiadomienia o nowych materiałach', $html);
+        $this->assertStringContainsString('action="' . route('materials.subscribe') . '"', $html);
+        $this->assertStringNotContainsString('Nowe materiały prosto do Twojej skrzynki', $html);
+    }
+
     public function test_inne_szablony_bez_zmian(): void
     {
         $this->seedMaterials();
