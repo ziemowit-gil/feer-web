@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
 use App\Support\DeployHealth;
+use App\Support\HealthDashboard;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -13,7 +14,7 @@ use Illuminate\View\View;
 
 class HealthCheckController extends Controller
 {
-    public function index(DeployHealth $deployHealth): View
+    public function index(DeployHealth $deployHealth, HealthDashboard $dashboard): View
     {
         $checks = collect([
             $this->checkDatabase(),
@@ -27,11 +28,14 @@ class HealthCheckController extends Controller
         // Kompletność wdrożenia — te same kontrole co `artisan system:sprawdz`.
         $deploy = collect($deployHealth->run());
 
-        $all = $checks->concat($deploy);
+        // Pulpit: harmonogram, kolejka, ostatni deploy, kopie, baza, błędy z doby (App\Support\HealthDashboard).
+        $sections = collect($dashboard->sections());
+
+        $all = $checks->concat($deploy)->concat($sections);
         $overall = $all->contains(fn ($c) => $c['status'] === 'error') ? 'error'
             : ($all->contains(fn ($c) => $c['status'] === 'warning') ? 'warning' : 'ok');
 
-        return view('admin.health.index', compact('checks', 'deploy', 'overall'));
+        return view('admin.health.index', compact('checks', 'deploy', 'sections', 'overall'));
     }
 
     private function checkDatabase(): array

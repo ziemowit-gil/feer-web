@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Health Check')
+@section('title', 'Kondycja serwisu')
 
 @section('content')
     @php
@@ -16,7 +16,7 @@
 
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-lg font-bold text-ink">Health Check</h1>
+            <h1 class="text-lg font-bold text-ink">Kondycja serwisu</h1>
             <p class="text-sm text-muted">Stan systemu · {{ now()->locale('pl')->isoFormat('D MMMM YYYY, HH:mm:ss') }}</p>
         </div>
         <a href="{{ route('admin.health.index') }}"
@@ -35,9 +35,74 @@
                 @else Wykryto błędy — wymagana interwencja
                 @endif
             </p>
-            <p class="text-sm text-muted">{{ $checks->count() + $deploy->count() }} sprawdzonych komponentów</p>
+            <p class="text-sm text-muted">{{ $checks->count() + $deploy->count() + $sections->count() }} sprawdzonych obszarów</p>
         </div>
     </div>
+
+    {{-- Pulpit: harmonogram, kolejka, ostatni deploy, kopie, baza, błędy z doby (App\Support\HealthDashboard).
+         Kontrast: ink/muted na bieli, status słowem (nie tylko kolorem ikony), tabele z nagłówkami. --}}
+    @php
+        $sectionLabels = ['ok' => 'OK', 'warning' => 'Uwaga', 'error' => 'Problem'];
+        $sectionText = ['ok' => 'text-ink', 'warning' => 'text-amber-900', 'error' => 'text-red-800'];
+        $sectionBar = ['ok' => 'bg-gray-50', 'warning' => 'bg-amber-50', 'error' => 'bg-red-50'];
+    @endphp
+    <div class="mb-8 grid gap-4 lg:grid-cols-2">
+        @foreach ($sections as $sec)
+            <section aria-labelledby="sec-{{ $sec['key'] }}" class="flex flex-col rounded-xl bg-white {{ $sec['key'] === 'errors' || $sec['key'] === 'database' ? 'lg:col-span-2' : '' }}">
+                <div class="flex flex-wrap items-center gap-3 rounded-t-xl px-5 py-3 {{ $sectionBar[$sec['status']] }}">
+                    <i class="fa-solid {{ $sec['icon'] }} {{ $colors[$sec['status']]['icon'] }}" aria-hidden="true"></i>
+                    <h2 id="sec-{{ $sec['key'] }}" class="text-base font-bold text-ink">{{ $sec['title'] }}</h2>
+                    <span class="ml-auto text-sm font-bold {{ $sectionText[$sec['status']] }}">{{ $sectionLabels[$sec['status']] }}<span class="sr-only">:</span></span>
+                </div>
+                <div class="flex-1 px-5 py-4">
+                    <p class="text-sm font-bold {{ $sectionText[$sec['status']] }}">{{ $sec['summary'] }}</p>
+                    @if ($sec['rows'])
+                        <dl class="mt-3 grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[12rem_1fr]">
+                            @foreach ($sec['rows'] as $label => $value)
+                                <dt class="text-muted">{{ $label }}</dt>
+                                <dd class="break-words text-ink">{{ $value }}</dd>
+                            @endforeach
+                        </dl>
+                    @endif
+                    @if ($sec['table'])
+                        <div class="mt-3 overflow-x-auto" tabindex="0" role="region" aria-label="{{ $sec['title'] }} — szczegóły">
+                            <table class="w-full text-left text-sm">
+                                <caption class="sr-only">{{ $sec['title'] }}</caption>
+                                <thead class="bg-gray-50 text-xs text-ink">
+                                    <tr>
+                                        @foreach ($sec['table']['head'] as $i => $h)
+                                            <th scope="col" class="px-3 py-2 {{ $i > 0 ? 'text-right whitespace-nowrap' : '' }}">{{ $h }}</th>
+                                        @endforeach
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($sec['table']['rows'] as $row)
+                                        <tr class="align-top">
+                                            @foreach ($row as $i => $cell)
+                                                @if ($i === 0)
+                                                    <th scope="row" class="break-words px-3 py-1.5 font-normal text-ink {{ $sec['key'] === 'errors' ? 'font-mono text-xs' : '' }}">{{ $cell }}</th>
+                                                @else
+                                                    <td class="whitespace-nowrap px-3 py-1.5 text-right text-ink">{{ $cell }}</td>
+                                                @endif
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                    @foreach ($sec['notes'] as $note)
+                        <p class="mt-3 text-sm text-muted">{{ $note }}</p>
+                    @endforeach
+                    @if ($sec['link'])
+                        <a href="{{ $sec['link']['url'] }}" class="mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline">{{ $sec['link']['label'] }} <span aria-hidden="true">→</span></a>
+                    @endif
+                </div>
+            </section>
+        @endforeach
+    </div>
+
+    <h2 class="mb-3 text-base font-bold text-ink">Usługi</h2>
 
     {{-- Lista sprawdzeń --}}
     <div class="grid gap-3 sm:grid-cols-2">

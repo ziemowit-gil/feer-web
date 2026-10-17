@@ -256,7 +256,7 @@ final class AdminMenu
                 $this->item('wcag', 'Skaner WCAG', 'admin.wcag-scans.index', 'fa-universal-access', active: 'admin.wcag-scans.*'),
                 $this->item('gdpr', 'Klauzule RODO', 'admin.klauzule-rodo.index', 'fa-shield-halved', active: 'admin.klauzule-rodo.*'),
                 $this->item('modules', 'Instalacja modułów', 'admin.moduly.index', 'fa-puzzle-piece', active: 'admin.moduly.*'),
-                $this->item('health', 'Health Check', 'admin.health.index', 'fa-heart-pulse', active: 'admin.health.*'),
+                $this->item('health', 'Kondycja serwisu', 'admin.health.index', 'fa-heart-pulse', active: 'admin.health.*'),
                 $this->item('cache', 'Cache', 'admin.cache.index', 'fa-bolt', active: 'admin.cache.*'),
                 $this->item('backups', 'Kopie zapasowe', 'admin.kopie.index', 'fa-box-archive', active: 'admin.kopie.*'),
                 $this->item('database', 'Baza MySQL', 'admin.baza-mysql.index', 'fa-database', active: 'admin.baza-mysql.*'),
