@@ -69,7 +69,7 @@
                         <input id="backup" name="backup" type="checkbox" value="1" checked class="h-5 w-5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" aria-describedby="backup-help">
                         <label for="backup" class="text-sm font-bold text-ink">Najpierw zrób kopię zapasową bazy</label>
                     </div>
-                    <p id="backup-help" class="ml-7 text-xs text-muted">Kopia trafi do System → Kopie zapasowe (bez plików, sama baza). Bez udanej kopii nic nie zostanie usunięte.</p>
+                    <p id="backup-help" class="ml-7 text-xs text-muted">Kopia trafi do System → Kopie zapasowe jako „przed usunięciem witryny” (sama baza, bez plików). Bez udanej kopii nic nie zostanie usunięte.</p>
 
                     <label for="confirm-name" class="mt-4 block text-sm font-bold text-ink">Aby potwierdzić, przepisz nazwę witryny: <span class="font-mono">{{ $site->site_name }}</span></label>
                     <input id="confirm-name" name="confirm_name" type="text" required autocomplete="off" value="{{ old('confirm_name') }}"

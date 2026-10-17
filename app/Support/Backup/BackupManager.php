@@ -31,9 +31,10 @@ class BackupManager
         'auto' => 'automatyczna',
         'pre-restore' => 'przed przywróceniem',
         'upload' => 'wgrana',
+        'pre-delete' => 'przed usunięciem witryny',
     ];
 
-    private const NAME_PATTERN = '/^backup-\d{4}-\d{2}-\d{2}-\d{6}-(manual|auto|pre-restore|upload)\.zip$/';
+    private const NAME_PATTERN = '/^backup-\d{4}-\d{2}-\d{2}-\d{6}-(manual|auto|pre-restore|upload|pre-delete)\.zip$/';
 
     public function __construct(private ?BackupSettings $settings = null)
     {

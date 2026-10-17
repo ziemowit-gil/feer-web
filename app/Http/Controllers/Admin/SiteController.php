@@ -137,7 +137,7 @@ class SiteController extends Controller
 
             if ($request->boolean('backup')) {
                 try {
-                    $backup = app(BackupManager::class)->create('przed-usunieciem-witryny', false);
+                    $backup = app(BackupManager::class)->create('pre-delete', false);
                 } catch (\Throwable $e) {
                     return back()->withInput()->with('error', 'Nie udało się zrobić kopii zapasowej, więc niczego nie usunięto: '.$e->getMessage());
                 }
