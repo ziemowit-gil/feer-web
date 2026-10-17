@@ -131,7 +131,7 @@
         .tm-sub:first-child { margin-top: .25rem; }
         .admin-sidebar.is-collapsed .tm-panel, .admin-sidebar.is-collapsed .nav-search { display: none !important; }
         /* Moduły premium (AdminMenu::PREMIUM_*): niebieska obwódka w kolorze marki (brand-dark ≥ 3:1 dla obramowań). */
-        .tm-head.tm-premium { box-shadow: inset 0 0 0 2px var(--color-brand-dark); }
+        .tm-head.tm-premium { box-shadow: inset 0 0 0 2px var(--color-brand-dark), inset 0 0 0 4px #fff; }
         .admin-joomla .tm-head.tm-premium { border-color: var(--color-brand-dark); }
         .tm-panel .tm-premium-item { box-shadow: inset 0 0 0 2px var(--color-brand-dark); }
         .nav-flyout .tm-premium-item { margin: .125rem .5rem; border-radius: .375rem; box-shadow: inset 0 0 0 2px var(--color-brand-dark); }

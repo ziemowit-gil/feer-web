@@ -40,10 +40,16 @@
     /* Menu boczne: grupy jako kremowe pasy (jak górne menu Joomla), aktywna w kolorze marki. */
     .admin-joomla .admin-sidebar { background: #fff; border-right-color: var(--j-line); }
     .admin-joomla .tm-group + .tm-group { margin-top: .25rem; }
-    .admin-joomla .tm-head { min-height: 2.5rem; background: var(--j-cream); border: 1px solid var(--j-line); border-radius: 3px; color: #1a1a1a; }
-    .admin-joomla .tm-head:hover { background: var(--j-cream-hover); }
-    .admin-joomla .tm-icon { background: #fff; border: 1px solid var(--j-line); color: var(--color-brand-dark); }
-    .admin-joomla .tm-group.is-active > .tm-head { background: var(--color-brand-light); border-color: var(--color-brand-dark); color: var(--color-brand-dark); }
+    /* Grupy menu: wszystkie na jasnoniebieskim tle z niebieskim obramowaniem; aktywna — pełne niebieskie tło, biały tekst.
+       Kontrast: brand-dark na brand-light ≈ 6:1 (po najechaniu #dbe7ff ≈ 5,3:1), biały na brand-dark ≈ 6,6:1. */
+    .admin-joomla .tm-head { min-height: 2.5rem; background: var(--color-brand-light); border: 1px solid var(--color-brand-dark); border-radius: 3px; color: var(--color-brand-dark); }
+    .admin-joomla .tm-head:hover { background: #dbe7ff; }
+    .admin-joomla .tm-head .tm-chevron { color: currentColor; }
+    .admin-joomla .tm-icon { background: #fff; border: 1px solid var(--color-brand-dark); color: var(--color-brand-dark); }
+    .admin-joomla .tm-group.is-active > .tm-head { background: var(--color-brand-dark); border-color: var(--color-brand-dark); color: #fff; }
+    .admin-joomla .tm-group.is-active > .tm-head .tm-icon { background: #fff; color: var(--color-brand-dark); }
+    .admin-joomla .tm-group.is-active > .tm-head .tm-badge { background: #fff; color: var(--color-brand-dark); }
+    .admin-joomla .tm-group.is-active > .tm-head:focus-visible { outline-color: var(--color-ink, #1a1a1a); }
     .admin-joomla .tm-panel { border-left-color: var(--j-line); }
 
     /* Karty w treści: cienka ramka zamiast cienia, nagłówki tabel na kremowym tle. */
@@ -65,5 +71,5 @@
     @media (prefers-reduced-motion: reduce) { .j-tile { transition: none; } }
 
     /* Tryby wysokiego kontrastu panelu mają pierwszeństwo. */
-    html.contrast .admin-joomla, html.contrast .admin-joomla .tm-head, html.contrast .j-tile { background: #fff; }
+    html.contrast .admin-joomla, html.contrast .admin-joomla .tm-head, html.contrast .j-tile { background: #fff; color: #1a1a1a; }
 </style>

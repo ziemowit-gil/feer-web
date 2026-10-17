@@ -23,7 +23,9 @@ class AdminPremiumMarkTest extends TestCase
         $this->assertStringContainsString('title="Działalność — moduł premium"', $html);
         $this->assertStringContainsString('Działalność<span class="sr-only"> (moduł premium)</span>', $html);
         $this->assertStringNotContainsString('title="Pulpit — moduł premium"', $html);
-        $this->assertStringContainsString('.tm-head.tm-premium { box-shadow: inset 0 0 0 2px var(--color-brand-dark); }', $html);
+        $this->assertStringContainsString('.tm-head.tm-premium { box-shadow: inset 0 0 0 2px var(--color-brand-dark), inset 0 0 0 4px #fff; }', $html);
+        $this->assertStringContainsString('.admin-joomla .tm-head { min-height: 2.5rem; background: var(--color-brand-light); border: 1px solid var(--color-brand-dark);', $html);
+        $this->assertStringContainsString('.admin-joomla .tm-group.is-active > .tm-head { background: var(--color-brand-dark);', $html);
     }
 
     public function test_wersja_cms_i_wynik_wdrozenia_z_logu(): void
