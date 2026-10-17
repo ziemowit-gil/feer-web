@@ -298,6 +298,12 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
 .be-file-link { color: var(--color-brand-dark, var(--be-ui)); font-weight: 700; text-decoration: underline; }
 .be-file-label { outline: none; }
 
+/* Baner sekcji */
+.be-banner-title { display: block; min-width: 8rem; outline: none; }
+.be-banner-pick { flex: 0 0 var(--cb-media); padding: 0.5rem; }
+.be-banner-pick .be-placeholder { height: 100%; margin: 0; padding: 0.75rem; }
+.be-banner-pick .be-placeholder p { font-size: 0.8125rem; }
+
 /* Galeria */
 .be-gallery-item { position: relative; }
 .be-gallery-remove {

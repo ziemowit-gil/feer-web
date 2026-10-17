@@ -35,7 +35,7 @@ class BlockRenderer
 
     public const TYPES = [
         'paragraph', 'heading', 'list', 'quote', 'image', 'gallery', 'buttons', 'callout',
-        'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist',
+        'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist', 'banner',
     ];
 
     private const INLINE_TAGS = ['strong', 'b', 'em', 'i', 'a', 'br', 'code', 's', 'sub', 'sup', 'mark'];
@@ -167,6 +167,16 @@ class BlockRenderer
             ],
             'embed' => ['url' => self::url($str('url')), 'title' => $str('title', 300), 'caption' => $rich('caption', 1000)],
             'file' => ['url' => self::url($str('url')), 'label' => $str('label', 300), 'description' => $str('description', 500)],
+            'banner' => [
+                'title' => preg_replace('/\s+/u', ' ', $str('title', 200)),
+                'level' => max(2, min(4, (int) ($a['level'] ?? 2))),
+                'url' => self::url($str('url')),
+                'alt' => $str('alt', 500),
+                'decorative' => (bool) ($a['decorative'] ?? true),
+                'size' => $pick('size', ['large', 'small'], 'large'),
+                'tone' => $pick('tone', ['gray', 'brand'], 'gray'),
+                'href' => self::url($str('href')),
+            ],
             'html' => ['html' => mb_substr((string) ($a['html'] ?? ''), 0, 500000)],
             'subpages' => self::subpagesAttrs($a),
             'newslist' => NewsList::normalize($a),
@@ -360,6 +370,9 @@ class BlockRenderer
                 return '<p class="content-file"><a href="'.e($a['url']).'" download>'.e($label)
                     .($ext !== '' ? ' <span class="content-file-meta">('.e($ext).')</span>' : '').'</a>'.$desc.'</p>';
 
+            case 'banner':
+                return $this->renderBanner($a);
+
             case 'html':
                 return trim($a['html']);
 
@@ -421,6 +434,35 @@ class BlockRenderer
         }
 
         return null;
+    }
+
+    /**
+     * Baner sekcji: grafika po lewej ścięta ukosem, dwie ukośne linie i tytuł sekcji (nagłówek) po prawej.
+     * Grafika domyślnie dekoracyjna (alt=""), bo nazwę niesie tytuł. Z odnośnikiem cały baner jest jednym
+     * linkiem (tytuł rozciągnięty na baner). Style: .content-banner w app.css.
+     *
+     * @param  array<string, mixed>  $a
+     */
+    private function renderBanner(array $a): string
+    {
+        if ($a['title'] === '') {
+            return '';
+        }
+        $tag = 'h'.$a['level'];
+        $title = e($a['title']);
+        if ($a['href'] !== '') {
+            $title = '<a href="'.e($a['href']).'" class="content-banner-link">'.$title.'</a>';
+        }
+        $media = '';
+        if ($a['url'] !== '') {
+            $alt = $a['decorative'] ? '' : $a['alt'];
+            $media = '<div class="content-banner-media"><img src="'.e($a['url']).'" alt="'.e($alt).'" loading="lazy"></div>'
+                .'<svg class="content-banner-lines" viewBox="0 0 45 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">'
+                .'<line x1="36" y1="0" x2="6" y2="100" /><line x1="44" y1="0" x2="14" y2="100" /></svg>';
+        }
+        $classes = 'content-banner content-banner--'.$a['size'].' content-banner--'.$a['tone'].($media === '' ? ' content-banner--no-media' : '');
+
+        return '<div class="'.$classes.'">'.$media.'<'.$tag.' class="content-banner-title">'.$title.'</'.$tag.'></div>';
     }
 
     /** Tylko adresy względne, kotwice, http(s), mailto i tel — bez javascript:/data:. */

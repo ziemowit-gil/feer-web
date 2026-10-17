@@ -188,6 +188,7 @@ function start(config) {
         embed: { title: 'Film (YouTube, Vimeo)', icon: 'circle-play', cat: 'media', desc: 'Osadzony film. YouTube w trybie bez ciasteczek.', keywords: ['wideo', 'youtube', 'vimeo', 'osadzenie', 'film'], create: () => ({ url: '', title: '', caption: '' }) },
         file: { title: 'Plik do pobrania', icon: 'file-arrow-down', cat: 'media', desc: 'Odnośnik do dokumentu (PDF, DOCX…).', keywords: ['pdf', 'dokument', 'załącznik', 'pobierz'], create: () => ({ url: '', label: '', description: '' }) },
         buttons: { title: 'Przyciski', icon: 'hand-pointer', cat: 'design', desc: 'Wezwanie do działania — jeden lub kilka przycisków.', keywords: ['cta', 'przycisk', 'link', 'zapisz się'], align: true, create: () => ({ align: 'left', items: [{ label: 'Dowiedz się więcej', url: '', variant: 'brand', newTab: false }] }) },
+        banner: { title: 'Baner sekcji', icon: 'panorama', cat: 'design', desc: 'Szeroki pasek z grafiką po lewej i tytułem sekcji, np. „Nasze media społecznościowe”. Może prowadzić do strony.', keywords: ['baner', 'banner', 'pasek', 'sekcja', 'tytuł', 'nagłówek', 'grafika'], create: () => ({ title: '', level: 2, url: '', alt: '', decorative: true, size: 'large', tone: 'gray', href: '' }) },
         // Stara ramka (content-box/-note/-important): nie do wstawiania — zastąpiła ją „Ramka informacyjna” z kreatora;
         // zostaje, by istniejące ramki dało się dalej edytować i rozgrupować.
         callout: { title: 'Ramka (stara)', icon: 'rectangle-list', cat: 'design', desc: 'Wyróżniona treść: ramka, notatka/ostrzeżenie albo ważna informacja.', keywords: ['ważne', 'uwaga', 'notatka', 'ostrzeżenie', 'box'], hidden: true, container: true, create: () => ({ variant: 'box' }), inner: () => [block('paragraph')] },
@@ -663,6 +664,18 @@ function start(config) {
                 const variant = cls.contains('content-note') ? 'note' : (cls.contains('content-important') ? 'important' : 'box');
                 const inner = nodesToBlocks([...n.childNodes]);
                 out.push(block('callout', { variant }, inner.length ? inner : [block('paragraph')]));
+            } else if (tag === 'DIV' && cls.contains('content-banner')) {
+                const img = n.querySelector('.content-banner-media img');
+                const titleEl = n.querySelector('.content-banner-title');
+                const alt = img?.getAttribute('alt') || '';
+                out.push(block('banner', {
+                    title: (titleEl?.textContent || '').replace(/\s+/g, ' ').trim(),
+                    level: Math.max(2, Math.min(4, Number((titleEl?.tagName || 'H2')[1]) || 2)),
+                    url: img?.getAttribute('src') || '', alt, decorative: !alt,
+                    size: cls.contains('content-banner--small') ? 'small' : 'large',
+                    tone: cls.contains('content-banner--brand') ? 'brand' : 'gray',
+                    href: titleEl?.querySelector('a')?.getAttribute('href') || '',
+                }));
             } else if (tag === 'DIV' && cls.contains('content-gallery')) {
                 const images = [...n.querySelectorAll('img')].map((img) => ({ url: img.getAttribute('src') || '', alt: img.getAttribute('alt') || '', caption: img.closest('figure')?.querySelector('figcaption')?.textContent.trim() || '' }));
                 const cols = Number((n.className.match(/content-gallery--cols-(\d)/) || [])[1] || 3);
@@ -1265,6 +1278,10 @@ function start(config) {
                 case 'file':
                     if (a.url && !a.label.trim()) w.push('Podaj czytelną nazwę pliku zamiast nazwy technicznej.');
                     break;
+                case 'banner':
+                    if (!a.title.trim()) w.push('Baner nie ma tytułu — bez niego nie pojawi się na stronie.');
+                    if (a.url && !a.decorative && !a.alt.trim()) w.push('Grafika banera nie ma opisu — dodaj go albo oznacz grafikę jako dekoracyjną.');
+                    break;
                 default: break;
             }
             if (w.length) map.set(b.id, w);
@@ -1581,6 +1598,7 @@ function start(config) {
         separator: () => h('hr', {}),
         embed: (b) => embedEditor(b),
         file: (b) => fileEditor(b),
+        banner: (b) => bannerEditor(b),
         html: (b) => htmlEditor(b),
         shortcode: (b) => shortcodeEditor(b),
         subpages: (b) => linkListEditor(b, subpagesCode(b.attrs), subpagesSummary(b.attrs)),
@@ -1778,6 +1796,41 @@ function start(config) {
         label.addEventListener('keydown', (e) => { if (e.key === 'Enter') e.preventDefault(); });
         return h('p', { class: 'content-file' }, h('span', { class: 'be-file-link' }, icon('file-arrow-down'), ' ', label, ext ? h('span', { class: 'content-file-meta' }, ` (${ext})`) : null),
             a.description ? h('span', { class: 'content-file-desc' }, a.description) : null);
+    }
+
+    function bannerEditor(b) {
+        const a = b.attrs;
+        const title = h('span', { contenteditable: 'plaintext-only', 'data-be-editable': '', role: 'textbox', 'aria-label': 'Tytuł banera', 'data-placeholder': 'Tytuł sekcji, np. Nasze media społecznościowe', class: 'be-banner-title' });
+        title.textContent = a.title;
+        title.addEventListener('input', () => { typingHistory(); a.title = title.textContent.replace(/\s+/g, ' ').trim(); markDirty(); scheduleWarnings(); });
+        title.addEventListener('keydown', (e) => { if (e.key === 'Enter') e.preventDefault(); });
+        title.addEventListener('paste', (e) => { e.preventDefault(); document.execCommand('insertText', false, e.clipboardData.getData('text/plain').replace(/\s+/g, ' ')); });
+        const media = a.url
+            ? [h('div', { class: 'content-banner-media' }, h('img', { src: a.url, alt: '' })), bannerLines()]
+            : [h('div', { class: 'be-banner-pick' }, mediaPlaceholder({
+                iconName: 'image', title: 'Grafika banera', desc: 'Opcjonalnie: prześlij grafikę albo wybierz ją z biblioteki.', accept: 'image/*',
+                onFiles: async (files) => { const up = await uploadFiles(files.slice(0, 1)); if (up[0]) updateAttrs(find(b.id).block, { url: up[0].url }); },
+                onLibrary: async () => { const picked = await openMediaLibrary(); if (picked[0]) updateAttrs(find(b.id).block, { url: picked[0].url }); },
+                onUrl: (url) => { if (safeUrl(url)) updateAttrs(find(b.id).block, { url }); else announce('Nieprawidłowy adres obrazu'); },
+            }))];
+        return h('div', { class: `content-banner content-banner--${a.size} content-banner--${a.tone}` + (a.url ? '' : ' content-banner--no-media') },
+            ...media, h('div', { class: 'content-banner-title' }, title));
+    }
+
+    function bannerLines() {
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('class', 'content-banner-lines');
+        svg.setAttribute('viewBox', '0 0 45 100');
+        svg.setAttribute('preserveAspectRatio', 'none');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.setAttribute('focusable', 'false');
+        [[36, 6], [44, 14]].forEach(([x1, x2]) => {
+            const line = document.createElementNS(ns, 'line');
+            line.setAttribute('x1', x1); line.setAttribute('y1', 0); line.setAttribute('x2', x2); line.setAttribute('y2', 100);
+            svg.appendChild(line);
+        });
+        return svg;
     }
 
     function htmlEditor(b) {
@@ -2505,6 +2558,24 @@ function start(config) {
                     field('Adres pliku', textInput(a.url, (v) => updateAttrs(b, { url: v.trim() }, { typing: true }), { type: 'url' })),
                     field('Nazwa wyświetlana', textInput(a.label, (v) => updateAttrs(b, { label: v }, { typing: true }))),
                     field('Opis (opcjonalnie)', textInput(a.description, (v) => updateAttrs(b, { description: v }, { typing: true })), 'Np. „Wersja dostępna, 2 strony”.')));
+                break;
+            case 'banner':
+                parts.push(panelSection('Tytuł',
+                    field('Tytuł banera', textInput(a.title, (v) => updateAttrs(b, { title: v.replace(/\s+/g, ' ') }, { typing: true })), 'Krótko, jak nazwa sekcji. Wielkie litery dodaje wygląd — wpisuj normalnie, czytnik ekranu przeczyta tekst poprawnie.'),
+                    field('Poziom nagłówka', select(a.level, [[2, 'H2 — sekcja'], [3, 'H3 — podsekcja'], [4, 'H4 — szczegół']], (v) => set({ level: Number(v) })), 'Tytuł banera jest nagłówkiem — nie pomijaj poziomów.')),
+                panelSection('Grafika',
+                    a.url ? h('img', { src: a.url, alt: '', class: 'be-thumb' }) : h('p', { class: 'be-help' }, 'Bez grafiki baner pokazuje sam tytuł.'),
+                    a.url ? checkbox('Grafika dekoracyjna', a.decorative, (v) => set({ decorative: v }), 'Zwykle tak — nazwę sekcji niesie tytuł. Odznacz, jeśli grafika przekazuje coś ważnego.') : null,
+                    a.url && !a.decorative ? field('Opis grafiki', textInput(a.alt, (v) => updateAttrs(b, { alt: v }, { typing: true, rerender: false }), { multiline: true, rows: 3 }), 'Opisz, co widać i dlaczego to ważne. Tekst z grafiki przepisz w całości.') : null,
+                    h('div', { class: 'be-row' },
+                        h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: async () => { const picked = await openMediaLibrary(); if (picked[0]) set({ url: picked[0].url }); renderSidebar(); } }, icon('photo-film'), a.url ? ' Zmień grafikę' : ' Wybierz grafikę'),
+                        a.url ? h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => { set({ url: '', alt: '' }); renderSidebar(); } }, icon('trash'), ' Usuń grafikę') : null)),
+                panelSection('Wygląd',
+                    field('Szerokość grafiki', select(a.size, [['large', 'Duża (połowa banera)'], ['small', 'Mała (ok. 1/4 banera)']], (v) => set({ size: v }))),
+                    field('Tło', select(a.tone, [['gray', 'Jasnoszare'], ['brand', 'Jasnoniebieskie']], (v) => set({ tone: v })))),
+                panelSection('Odnośnik',
+                    field('Adres po kliknięciu (opcjonalnie)', textInput(a.href, (v) => updateAttrs(b, { href: v.trim() }, { typing: true, rerender: false }), { type: 'url', placeholder: 'https://… lub /strona' }), 'Z adresem cały baner jest jednym linkiem — jego nazwą jest tytuł.'),
+                    pickLinkButton(`banner-${b.id}`, ' jako odnośnik banera', () => find(b.id)?.block.attrs.href, (v) => updateAttrs(b, { href: v }, { rerender: false }))));
                 break;
             case 'subpages': {
                 const pages = config.subpages?.pages || [];
