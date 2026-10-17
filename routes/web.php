@@ -675,6 +675,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
             ->name('witryny.przelacz');
         Route::get('witryny/{site}/usun', [\App\Http\Controllers\Admin\SiteController::class, 'confirmDestroy'])
             ->middleware('edition:multisite')->name('witryny.confirm-destroy');
+        Route::post('witryny/{site}/przywroc', [\App\Http\Controllers\Admin\SiteController::class, 'restore'])
+            ->middleware('edition:multisite')->name('witryny.restore');
+        Route::delete('witryny/{site}/trwale', [\App\Http\Controllers\Admin\SiteController::class, 'forceDestroy'])
+            ->middleware('edition:multisite')->name('witryny.force-destroy');
     });
 
     Route::middleware('admin')->group(function () {
@@ -958,7 +962,7 @@ Route::name('site.')->prefix('{siteSlug}')->middleware('site.bySlug')->group($re
 Route::get('/{page:slug}', [PageController::class, 'show'])->name('page.show')->middleware('module:pages')
     ->missing(function (\Illuminate\Http\Request $request) {
         $slug = trim($request->path(), '/');
-        $site = \App\Models\SiteSetting::query()->whereNotNull('slug')->where('slug', $slug)->first();
+        $site = \App\Models\SiteSetting::query()->notTrashed()->whereNotNull('slug')->where('slug', $slug)->first();
 
         abort_unless($site, 404);
 

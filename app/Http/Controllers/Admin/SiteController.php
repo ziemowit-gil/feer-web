@@ -26,9 +26,11 @@ class SiteController extends Controller
     public function index()
     {
         $mainSite = SiteSetting::whereNull('parent_site_id')->orderBy('id')->first();
-        $sites = SiteSetting::with('subsites')->orderBy('id')->get();
+        // Witryny w koszu osobno (sekcja „Kosz” na liście) — w drzewie tylko aktywne.
+        $sites = SiteSetting::notTrashed()->with(['subsites' => fn ($q) => $q->notTrashed()])->orderBy('id')->get();
+        $trashed = SiteRemoval::trashed();
 
-        return view('admin.sites.index', compact('mainSite', 'sites'));
+        return view('admin.sites.index', compact('mainSite', 'sites', 'trashed'));
     }
 
     public function create()
@@ -99,7 +101,10 @@ class SiteController extends Controller
         return redirect()->route('admin.witryny.index')->with('status', 'Zapisano zmiany witryny „'.$site->site_name.'".');
     }
 
-    /** Strona potwierdzenia usunięcia: ile treści ma witryna (z podwitrynami), opcja „Wymuś usunięcie”. */
+    /**
+     * Strona potwierdzenia: dla zwykłej witryny — przeniesienie do kosza (z „Wymuś usunięcie”, gdy ma treść
+     * lub podwitryny), dla witryny w koszu — trwałe usunięcie.
+     */
     public function confirmDestroy(SiteSetting $site)
     {
         abort_if($site->parent_site_id === null, 403, 'Nie można usunąć głównej witryny.');
@@ -108,55 +113,71 @@ class SiteController extends Controller
 
         return view('admin.sites.destroy', [
             'site' => $site,
+            'permanent' => $site->isTrashed(),
             'counts' => SiteRemoval::contentCountsDeep($site),
             'subsites' => collect($descendants),
         ]);
     }
 
+    /** Przeniesienie do kosza na SiteSetting::TRASH_DAYS dni (treść zostaje, witryna znika publicznie). */
     public function destroy(Request $request, SiteSetting $site)
     {
         abort_if($site->parent_site_id === null, 403, 'Nie można usunąć głównej witryny.');
+        if ($site->isTrashed()) {
+            return redirect()->route('admin.witryny.confirm-destroy', $site);
+        }
 
         $hasSubsites = $site->subsites()->exists();
-        $counts = SiteRemoval::contentCountsDeep($site);
+        if (SiteRemoval::contentCountsDeep($site) !== [] || $hasSubsites) {
+            $this->confirmed($request, $site, $hasSubsites
+                ? 'Witryna ma podwitryny — zaznacz „Wymuś usunięcie”, aby przenieść ją do kosza razem z nimi.'
+                : 'Witryna ma treść — zaznacz „Wymuś usunięcie”, aby przenieść ją do kosza razem z treścią.');
+        }
 
-        if ($counts !== [] || $hasSubsites) {
-            // Wymuszone usunięcie (treść i/lub podwitryny): zaznaczona opcja i przepisana nazwa witryny.
-            $request->validate([
-                'force' => ['accepted'],
-                'confirm_name' => ['required', 'string', function ($attribute, $value, $fail) use ($site) {
-                    if (trim((string) $value) !== trim((string) $site->site_name)) {
-                        $fail('Przepisz dokładnie nazwę witryny: „'.$site->site_name.'”.');
-                    }
-                }],
-            ], [
-                'force.accepted' => $hasSubsites
-                    ? 'Witryna ma podwitryny — zaznacz „Wymuś usunięcie”, aby usunąć ją razem z nimi i całą treścią.'
-                    : 'Witryna ma treść — zaznacz „Wymuś usunięcie”, aby usunąć ją razem z treścią.',
-            ]);
+        $count = SiteRemoval::trash($site);
+        $this->log($request, 'Przeniesiono do kosza witrynę „'.$site->site_name.'”'.($count > 1 ? ' z podwitrynami ('.($count - 1).')' : ''), ['site' => $site->site_name, 'sites' => $count]);
 
-            if ($request->boolean('backup')) {
-                try {
-                    $backup = app(BackupManager::class)->create('pre-delete', false);
-                } catch (\Throwable $e) {
-                    return back()->withInput()->with('error', 'Nie udało się zrobić kopii zapasowej, więc niczego nie usunięto: '.$e->getMessage());
-                }
+        return redirect()->route('admin.witryny.index')->with('status',
+            'Witryna „'.$site->site_name.'”'.($count > 1 ? ' i podwitryny ('.($count - 1).')' : '').' trafiła do kosza. Możesz ją przywrócić do '
+            .now()->addDays(SiteSetting::TRASH_DAYS)->format('d.m.Y').' — potem zostanie usunięta trwale.');
+    }
+
+    public function restore(Request $request, SiteSetting $site)
+    {
+        abort_unless($site->isTrashed(), 404);
+
+        $count = SiteRemoval::restore($site);
+        $this->log($request, 'Przywrócono z kosza witrynę „'.$site->site_name.'”', ['site' => $site->site_name, 'sites' => $count]);
+
+        return redirect()->route('admin.witryny.index')->with('status',
+            'Przywrócono witrynę „'.$site->site_name.'”'.($count > 1 ? ' i podwitryny ('.($count - 1).')' : '').'.');
+    }
+
+    /** Trwałe usunięcie witryny z kosza (z podwitrynami i całą treścią) — przepisana nazwa, opcjonalnie kopia. */
+    public function forceDestroy(Request $request, SiteSetting $site)
+    {
+        abort_if($site->parent_site_id === null, 403, 'Nie można usunąć głównej witryny.');
+        abort_unless($site->isTrashed(), 404);
+
+        $this->confirmed($request, $site, 'Zaznacz „Usuń trwale”, aby potwierdzić nieodwracalne usunięcie.');
+
+        if ($request->boolean('backup')) {
+            try {
+                $backup = app(BackupManager::class)->create('pre-delete', false);
+            } catch (\Throwable $e) {
+                return back()->withInput()->with('error', 'Nie udało się zrobić kopii zapasowej, więc niczego nie usunięto: '.$e->getMessage());
             }
         }
 
         $name = $site->site_name;
-        $removed = SiteRemoval::remove($site, $hasSubsites);
+        $removed = SiteRemoval::remove($site, true);
         $sitesRemoved = $removed['site_settings'] ?? 1;
         unset($removed['site_settings']);
         $total = array_sum($removed);
+        $this->log($request, 'Trwale usunięto witrynę „'.$name.'”'.($sitesRemoved > 1 ? ' z podwitrynami ('.($sitesRemoved - 1).')' : '').($total ? ' razem z treścią' : ''),
+            ['site' => $name, 'sites' => $sitesRemoved, 'removed' => $removed, 'backup' => isset($backup) ? basename($backup) : null]);
 
-        if (function_exists('activity')) {
-            activity('system')->causedBy($request->user())->event('deleted')
-                ->withProperties(['site' => $name, 'sites' => $sitesRemoved, 'removed' => $removed, 'backup' => $backup ?? null])
-                ->log('Usunięto witrynę „'.$name.'”'.($sitesRemoved > 1 ? ' z podwitrynami ('.($sitesRemoved - 1).')' : '').($total ? ' razem z treścią' : ''));
-        }
-
-        $msg = 'Usunięto witrynę „'.$name.'”';
+        $msg = 'Trwale usunięto witrynę „'.$name.'”';
         if ($sitesRemoved > 1) {
             $msg .= ', podwitryny: '.($sitesRemoved - 1);
         }
@@ -166,6 +187,26 @@ class SiteController extends Controller
         }
 
         return redirect()->route('admin.witryny.index')->with('status', $msg);
+    }
+
+    /** Zaznaczona opcja „force” i przepisana nazwa witryny. */
+    private function confirmed(Request $request, SiteSetting $site, string $forceMessage): void
+    {
+        $request->validate([
+            'force' => ['accepted'],
+            'confirm_name' => ['required', 'string', function ($attribute, $value, $fail) use ($site) {
+                if (trim((string) $value) !== trim((string) $site->site_name)) {
+                    $fail('Przepisz dokładnie nazwę witryny: „'.$site->site_name.'”.');
+                }
+            }],
+        ], ['force.accepted' => $forceMessage]);
+    }
+
+    private function log(Request $request, string $message, array $props): void
+    {
+        if (function_exists('activity')) {
+            activity('system')->causedBy($request->user())->event('deleted')->withProperties($props)->log($message);
+        }
     }
 
     /**

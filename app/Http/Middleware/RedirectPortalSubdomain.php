@@ -63,7 +63,7 @@ class RedirectPortalSubdomain
     private function isSiteDomain(string $host): bool
     {
         try {
-            return Schema::hasColumn('site_settings', 'domain') && SiteSetting::query()->where('domain', $host)->exists();
+            return Schema::hasColumn('site_settings', 'domain') && SiteSetting::query()->notTrashed()->where('domain', $host)->exists();
         } catch (Throwable) {
             return false;
         }

@@ -24,7 +24,7 @@ class EnsureSiteBySlug
     {
         $slug = $request->route('siteSlug');
 
-        $site = SiteSetting::query()->whereNotNull('slug')->where('slug', $slug)->first();
+        $site = SiteSetting::query()->notTrashed()->whereNotNull('slug')->where('slug', $slug)->first();
 
         abort_unless($site, 404);
 

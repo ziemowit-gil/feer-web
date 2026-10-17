@@ -1772,6 +1772,39 @@ class SiteSetting extends Model implements HasMedia
         });
     }
 
+    /** Dni w koszu, po których witryna jest usuwana trwale (witryny:oproznij-kosz). */
+    public const TRASH_DAYS = 30;
+
+    /**
+     * Witryny poza koszem. Kolumnę sprawdzamy raz na żądanie — kod trafia na serwer (auto-pull) przed migracją,
+     * a warunek na nieistniejącą kolumnę dałby błąd 500 na całej stronie.
+     */
+    public function scopeNotTrashed(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return self::hasTrashColumn() ? $query->whereNull($this->qualifyColumn('trashed_at')) : $query;
+    }
+
+    public function scopeOnlyTrashed(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return self::hasTrashColumn() ? $query->whereNotNull($this->qualifyColumn('trashed_at')) : $query->whereRaw('1 = 0');
+    }
+
+    public static function hasTrashColumn(): bool
+    {
+        return once(fn () => \Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'trashed_at'));
+    }
+
+    public function isTrashed(): bool
+    {
+        return $this->trashed_at !== null;
+    }
+
+    /** Kiedy witryna z kosza zostanie usunięta trwale. */
+    public function purgeAt(): ?\Illuminate\Support\Carbon
+    {
+        return $this->trashed_at ? \Illuminate\Support\Carbon::parse($this->trashed_at)->addDays(self::TRASH_DAYS) : null;
+    }
+
     /** Sub-sites belonging to this federation site. */
     public function subsites(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
@@ -1810,7 +1843,7 @@ class SiteSetting extends Model implements HasMedia
         }
 
         if (! array_key_exists('bipSite', $this->relations)) {
-            $this->setRelation('bipSite', $this->subsites()->where('site_kind', 'bip')->orderBy('id')->first());
+            $this->setRelation('bipSite', $this->subsites()->notTrashed()->where('site_kind', 'bip')->orderBy('id')->first());
         }
 
         return $this->getRelation('bipSite');

@@ -17,6 +17,9 @@ Schedule::command('queue:work --queue=newsletter,default --stop-when-empty --max
 // Codzienna auto-archiwizacja przeterminowanych wydarzeń i ofert wolontariatu.
 Schedule::command('content:auto-archive')->dailyAt('03:00');
 
+// Kosz witryn sieci: trwałe usunięcie po SiteSetting::TRASH_DAYS dniach.
+Schedule::command('witryny:oproznij-kosz')->dailyAt('03:20')->withoutOverlapping();
+
 // Sprawdzanie klucza licencji w panelu licencji weCMS (unieważnienie/zastąpienie klucza).
 Schedule::command('license:check')->dailyAt('05:10')->withoutOverlapping();
 

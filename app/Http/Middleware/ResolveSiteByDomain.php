@@ -22,7 +22,7 @@ class ResolveSiteByDomain
     public function handle(Request $request, Closure $next): Response
     {
         if (! app()->bound(SiteSetting::CURRENT_SITE_BINDING)) {
-            $site = SiteSetting::query()->whereNotNull('domain')->where('domain', $request->getHost())->first();
+            $site = SiteSetting::query()->notTrashed()->whereNotNull('domain')->where('domain', $request->getHost())->first();
 
             if ($site) {
                 app()->instance(SiteSetting::CURRENT_SITE_BINDING, $site);

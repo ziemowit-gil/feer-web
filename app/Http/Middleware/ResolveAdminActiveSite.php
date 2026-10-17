@@ -24,7 +24,7 @@ class ResolveAdminActiveSite
         $siteId = session('admin_active_site_id');
 
         if ($siteId) {
-            $site = SiteSetting::find($siteId);
+            $site = SiteSetting::query()->notTrashed()->find($siteId); // witryna w koszu — wracamy do głównej
 
             if ($site) {
                 app()->instance(SiteSetting::CURRENT_SITE_BINDING, $site);

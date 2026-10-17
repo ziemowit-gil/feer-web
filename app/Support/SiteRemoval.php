@@ -55,6 +55,71 @@ class SiteRemoval
         return $out;
     }
 
+    /**
+     * Przenosi witrynę (z podwitrynami) do kosza na SiteSetting::TRASH_DAYS dni — treść zostaje nietknięta,
+     * witryna znika z publicznego routingu i listy witryn.
+     *
+     * @return int liczba witryn przeniesionych do kosza
+     */
+    public static function trash(SiteSetting $site): int
+    {
+        $sites = self::withDescendants($site);
+        $now = now();
+        DB::transaction(function () use ($sites, $now) {
+            foreach ($sites as $s) {
+                $s->forceFill(['trashed_at' => $now])->saveQuietly();
+            }
+        });
+
+        return count($sites);
+    }
+
+    /** Przywraca witrynę z kosza razem z podwitrynami, które trafiły tam razem z nią. @return int */
+    public static function restore(SiteSetting $site): int
+    {
+        $stamp = $site->trashed_at;
+        $sites = array_filter(self::withDescendants($site), fn ($s) => $s->id === $site->id || (string) $s->trashed_at === (string) $stamp);
+        DB::transaction(function () use ($sites) {
+            foreach ($sites as $s) {
+                $s->forceFill(['trashed_at' => null])->saveQuietly();
+            }
+        });
+
+        return count($sites);
+    }
+
+    /**
+     * Witryny w koszu do pokazania na liście: tylko „korzenie” (podwitryna usunięta razem z rodzicem jest w nim zawarta).
+     *
+     * @return \Illuminate\Support\Collection<int, SiteSetting>
+     */
+    public static function trashed(): \Illuminate\Support\Collection
+    {
+        $all = SiteSetting::query()->onlyTrashed()->orderBy('trashed_at')->get();
+        $ids = $all->pluck('id')->all();
+
+        return $all->reject(fn ($s) => in_array($s->parent_site_id, $ids, true))->values();
+    }
+
+    /**
+     * Trwale usuwa witryny, które leżą w koszu dłużej niż SiteSetting::TRASH_DAYS dni.
+     *
+     * @return list<string> nazwy usuniętych witryn
+     */
+    public static function purgeExpired(): array
+    {
+        $done = [];
+        foreach (self::trashed() as $site) {
+            if ($site->purgeAt() && $site->purgeAt()->isPast()) {
+                $name = $site->site_name;
+                self::remove($site, true);
+                $done[] = $name;
+            }
+        }
+
+        return $done;
+    }
+
     /** @return array<string, int> suma rekordów witryny i jej podwitryn */
     public static function contentCountsDeep(SiteSetting $site): array
     {

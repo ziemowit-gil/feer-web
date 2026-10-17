@@ -29,10 +29,13 @@ class NewsletterOperationsTest extends TestCase
     {
         parent::setUp();
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        // Tętno workera jest też w pliku (przetrwa cache:clear) — plik z innych testów zawyżałby „ostatnią pracę”.
+        @unlink(QueueHealth::heartbeatFile());
     }
 
     protected function tearDown(): void
     {
+        @unlink(QueueHealth::heartbeatFile());
         Carbon::setTestNow();
         parent::tearDown();
     }

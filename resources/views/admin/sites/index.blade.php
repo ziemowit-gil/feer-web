@@ -74,4 +74,27 @@
             </div>
         @endforeach
     </div>
+
+    {{-- Kosz witryn: przywrócenie albo trwałe usunięcie; po SiteSetting::TRASH_DAYS dniach usuwa je witryny:oproznij-kosz. --}}
+    @if ($trashed->isNotEmpty())
+        <section aria-labelledby="h-site-trash" class="mt-8">
+            <h2 id="h-site-trash" class="text-base font-bold text-ink">Kosz</h2>
+            <p class="mt-1 text-sm text-muted">Witryny w koszu są niedostępne publicznie, ale ich treść jest zachowana. Po {{ \App\Models\SiteSetting::TRASH_DAYS }} dniach zostaną usunięte trwale.</p>
+            <ul class="mt-3 divide-y divide-gray-100 overflow-hidden rounded-md bg-white" role="list">
+                @foreach ($trashed as $t)
+                    <li class="flex flex-wrap items-center gap-3 px-4 py-3">
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-bold text-ink">{{ $t->site_name }}</p>
+                            <p class="text-xs text-muted">W koszu od {{ \Illuminate\Support\Carbon::parse($t->trashed_at)->format('d.m.Y H:i') }} · zostanie usunięta trwale {{ $t->purgeAt()->format('d.m.Y') }}</p>
+                        </div>
+                        <form method="POST" action="{{ route('admin.witryny.restore', $t) }}">
+                            @csrf
+                            <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Przywróć<span class="sr-only"> witrynę {{ $t->site_name }}</span></button>
+                        </form>
+                        <a href="{{ route('admin.witryny.confirm-destroy', $t) }}" class="inline-flex min-h-11 items-center gap-2 rounded-md px-4 text-sm font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń trwale teraz<span class="sr-only"> — {{ $t->site_name }}</span></a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
 @endsection
