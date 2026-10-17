@@ -290,7 +290,7 @@
             </div>
         </header>
 
-        {{-- Pasek szybkich skrótów — w kontekście bloga „Wiem FEER” własne akcje bloga --}}
+        {{-- Pasek skrótów tylko w kontekście bloga „Wiem FEER” (ogólny pasek „Szybko” usunięty — skróty są w menu i na pulpicie). --}}
         @if (\App\Support\BlogAdmin::inContext(auth()->user()))
         @php $blogPending = \App\Support\BlogAdmin::pendingCommentsCount(); @endphp
         <div class="j-toolbar flex flex-wrap items-center gap-2 px-4 py-2 sm:px-6" data-quickbar="blog">
@@ -310,30 +310,6 @@
             <a href="{{ \App\Support\BlogAdmin::publicUrl() }}" target="_blank" rel="noopener"
                 class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                 <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Zobacz blog<span class="sr-only"> (otwiera się w nowej karcie)</span>
-            </a>
-        </div>
-        @elseif ($can('news') || $can('events'))
-        <div class="j-toolbar flex flex-wrap items-center gap-2 px-4 py-2 sm:px-6">
-            <span class="mr-1 text-xs font-bold uppercase tracking-wide text-muted">Szybko:</span>
-            @if ($can('news'))
-            <a href="{{ route('admin.newsy.create') }}"
-                class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj aktualność
-            </a>
-            @endif
-            @if ($can('events'))
-            <a href="{{ route('admin.wydarzenia.create') }}"
-                class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i> Nowe wydarzenie
-            </a>
-            @endif
-            <a href="{{ route('home') }}" target="_blank" rel="noopener"
-                class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Strona główna
-            </a>
-            <a href="{{ route('admin.raporty.brakujace-alt') }}"
-                class="ml-auto inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Brakujące alt
             </a>
         </div>
         @endif

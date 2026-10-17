@@ -52,7 +52,7 @@ class AdminJoomlaThemeTest extends TestCase
         $html = $this->actingAs($admin)->get(route('admin.podstrony.index'))->assertOk()->getContent();
 
         $this->assertStringContainsString('<body data-scheme="krem" class="admin-joomla', $html);
-        $this->assertStringContainsString('class="j-toolbar', $html);
+        $this->assertStringNotContainsString('class="j-toolbar', $html); // ogólny pasek „Szybko” usunięty
         $this->assertStringContainsString('<i class="fa-solid fa-file-lines"></i></span>', $html); // ikona sekcji „Strony” przy tytule
     }
 }

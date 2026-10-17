@@ -165,13 +165,14 @@ class BlogDashboardTest extends BlogTestCase
         $this->assertMatchesRegularExpression('/aria-current="page"\s+class="[^"]*font-extrabold[^"]*">Wpisy</', $html);
     }
 
-    public function test_pasek_szybko_poza_blogiem_bez_zmian(): void
+    public function test_poza_blogiem_bez_paska_szybko(): void
     {
         $html = $this->actingAs($this->admin())->get(route('admin.podstrony.index'))->assertOk()->getContent();
 
         $this->assertStringNotContainsString('data-quickbar="blog"', $html);
         $this->assertStringNotContainsString('data-blog-subnav', $html);
-        $this->assertStringContainsString('Dodaj aktualność', $html);
+        // Ogólny pasek „Szybko” usunięty — skróty są w menu i na pulpicie.
+        $this->assertStringNotContainsString('Szybko:', $html);
     }
 
     public function test_pasek_szybko_blogowy_gdy_aktywna_witryna_bloga(): void
