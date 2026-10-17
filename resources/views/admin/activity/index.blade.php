@@ -138,5 +138,25 @@
             @endif
         @endif
 
+        {{-- Archiwum: wpisy starsze niż 30 dni w plikach tekstowych (codziennie, dziennik:archiwizuj; rejestr BIP zostaje w bazie). --}}
+        @php $archives = Route::has('admin.dziennik.archive') ? \App\Support\ActivityArchive::files() : []; @endphp
+        <section aria-labelledby="h-archive" class="rounded-md bg-white p-5">
+            <h2 id="h-archive" class="text-base font-bold text-ink">Archiwum (starsze niż {{ \App\Support\ActivityArchive::DAYS }} dni)</h2>
+            <p class="mt-1 text-sm text-ink">Co noc wpisy starsze niż {{ \App\Support\ActivityArchive::DAYS }} dni trafiają do plików tekstowych — jeden plik na miesiąc. Historia zmian dokumentów BIP zostaje w dzienniku.</p>
+            @if ($archives === [])
+                <p class="mt-3 text-sm text-muted">Na razie nie ma zarchiwizowanych wpisów.</p>
+            @else
+                <ul role="list" class="mt-3 divide-y divide-gray-100">
+                    @foreach ($archives as $a)
+                        <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+                            <span class="text-sm text-ink">{{ \Illuminate\Support\Carbon::createFromFormat('Y-m', $a['month'])->locale('pl')->isoFormat('MMMM YYYY') }} <span class="text-muted">· {{ \App\Support\HealthDashboard::bytes($a['size']) }}</span></span>
+                            <a href="{{ route('admin.dziennik.archive', $a['name']) }}" class="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline">
+                                <i class="fa-solid fa-download" aria-hidden="true"></i> Pobierz TXT<span class="sr-only"> — {{ $a['month'] }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </section>
     </div>
 @endsection

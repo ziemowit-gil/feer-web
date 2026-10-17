@@ -40,4 +40,13 @@ class ActivityController extends Controller
 
         return view('admin.activity.index', compact('logs', 'event', 'subject', 'userName', 'dateFrom', 'dateTo', 'users'));
     }
+
+    /** Pobranie pliku archiwum dziennika (wpisy starsze niż 30 dni, App\Support\ActivityArchive). */
+    public function archive(string $file): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $path = \App\Support\ActivityArchive::path($file);
+        abort_unless($path, 404);
+
+        return response()->download($path, $file, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    }
 }

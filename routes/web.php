@@ -794,6 +794,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::delete('kopie-zapasowe/{name}', [\App\Http\Controllers\Admin\BackupController::class, 'destroy'])->name('kopie.destroy');
 
         Route::get('dziennik', [AdminActivityController::class, 'index'])->name('dziennik.index');
+        Route::get('dziennik/archiwum/{file}', [AdminActivityController::class, 'archive'])->where('file', 'dziennik-\d{4}-\d{2}\.txt')->name('dziennik.archive');
         Route::get('martwe-linki', [AdminLinkCheckController::class, 'index'])->name('martwe-linki.index');
         Route::post('martwe-linki/skanuj', [AdminLinkCheckController::class, 'scan'])->name('martwe-linki.scan')->middleware('edition:link_check');
         Route::get('skaner-wcag', [AdminWcagScanController::class, 'index'])->name('wcag-scans.index');

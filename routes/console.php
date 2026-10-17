@@ -17,6 +17,9 @@ Schedule::command('queue:work --queue=newsletter,default --stop-when-empty --max
 // Codzienna auto-archiwizacja przeterminowanych wydarzeń i ofert wolontariatu.
 Schedule::command('content:auto-archive')->dailyAt('03:00');
 
+// Dziennik zdarzeń: wpisy starsze niż 30 dni do plików TXT (bez rejestru BIP).
+Schedule::command('dziennik:archiwizuj')->dailyAt('03:40')->withoutOverlapping();
+
 // Kosz witryn sieci: trwałe usunięcie po SiteSetting::TRASH_DAYS dniach.
 Schedule::command('witryny:oproznij-kosz')->dailyAt('03:20')->withoutOverlapping();
 
