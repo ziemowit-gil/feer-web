@@ -91,6 +91,19 @@
             @error('password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        @if ($user->exists)
+            <div>
+                <label for="admin_scheme" class="mb-1 block text-sm font-bold">Schemat kolorów panelu</label>
+                <select id="admin_scheme" name="admin_scheme" aria-describedby="admin_scheme_help" class="min-h-11 w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    @foreach (\App\Models\User::ADMIN_SCHEMES as $val => [$label, $hint])
+                        <option value="{{ $val }}" @selected(old('admin_scheme', $user->adminScheme()) === $val)>{{ $label }} — {{ $hint }}</option>
+                    @endforeach
+                </select>
+                <p id="admin_scheme_help" class="mt-1 text-xs text-muted">Wygląd panelu tej osoby. Może go też zmienić sama w Mój profil → Wygląd panelu.</p>
+                @error('admin_scheme') <p class="mt-1 text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
+            </div>
+        @endif
+
         <div class="border-t border-gray-100 pt-5">
             <label class="flex items-center gap-2 text-sm font-medium">
                 <input type="hidden" name="local_login_allowed" value="0">

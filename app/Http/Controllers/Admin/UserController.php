@@ -93,6 +93,8 @@ class UserController extends Controller
             'user_group_id' => ['nullable', Rule::exists(UserGroup::class, 'id')],
             'password' => ['nullable', 'string', 'min:8'],
             'local_login_allowed' => ['sometimes', 'boolean'],
+            // Schemat kolorów panelu tej osoby (to samo co Mój profil → Wygląd panelu).
+            'admin_scheme' => ['nullable', Rule::in(array_keys(User::ADMIN_SCHEMES))],
         ], [
             'name.regex' => 'Edytor BIP musi mieć podane imię i nazwisko (dwa wyrazy).',
         ]);

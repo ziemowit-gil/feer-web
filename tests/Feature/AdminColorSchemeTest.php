@@ -56,4 +56,22 @@ class AdminColorSchemeTest extends TestCase
         $admin->forceFill(['admin_scheme' => 'stary'])->save();
         $this->assertSame('krem', $admin->fresh()->adminScheme());
     }
+
+    public function test_admin_zmienia_schemat_innej_osoby_w_edycji_uzytkownika(): void
+    {
+        $admin = $this->admin();
+        $editor = User::factory()->create(['role' => User::ROLE_CONTENT_EDITOR]);
+
+        $this->actingAs($admin)->get(route('admin.uzytkownicy.edit', $editor))->assertOk()
+            ->assertSee('<label for="admin_scheme"', false)->assertSee('Niebieski — ', false);
+
+        $this->actingAs($admin)->put(route('admin.uzytkownicy.update', $editor), [
+            'name' => $editor->name, 'email' => $editor->email, 'role' => $editor->role, 'admin_scheme' => 'niebieski',
+        ])->assertSessionHasNoErrors();
+        $this->assertSame('niebieski', $editor->fresh()->admin_scheme);
+
+        $this->actingAs($admin)->from(route('admin.uzytkownicy.edit', $editor))->put(route('admin.uzytkownicy.update', $editor), [
+            'name' => $editor->name, 'email' => $editor->email, 'role' => $editor->role, 'admin_scheme' => 'neon',
+        ])->assertSessionHasErrors('admin_scheme');
+    }
 }
