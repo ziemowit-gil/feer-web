@@ -74,6 +74,11 @@ class MediaLibraryController extends Controller
     /** Wyświetla bibliotekę multimediów z filtrowaniem, tagami i drzewem folderów. */
     public function index(Request $request)
     {
+        // Za duże obrazy zmniejszamy w tle przy otwarciu biblioteki — najwyżej raz na 10 minut (App\Jobs\ShrinkLargeImages).
+        if (\Illuminate\Support\Facades\Cache::add('media:shrink-large-dispatched', now()->getTimestamp(), now()->addMinutes(10))) {
+            \App\Jobs\ShrinkLargeImages::dispatch();
+        }
+
         $folder = $request->filled('folder') ? MediaFolder::findOrFail($request->integer('folder')) : null;
         $this->authorizeFolder($folder?->id);
 

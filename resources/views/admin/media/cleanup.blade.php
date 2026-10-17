@@ -159,7 +159,9 @@
         <h2 id="sec-large" class="text-lg font-bold text-ink">Za duże obrazy</h2>
         <p class="mb-3 text-sm text-ink">
             Obrazy cięższe niż {{ $fs(\App\Services\Media\MediaCleanup::LARGE_IMAGE_BYTES) }} albo większe niż {{ \App\Services\Media\MediaCleanup::LARGE_IMAGE_PX }} px.
-            Serwis i tak pokazuje je jako lżejsze WebP, ale oryginał zajmuje miejsce. Zmniejsz go (np. do 2000 px szerokości) i podmień w szczegółach pliku — adres się nie zmieni.
+            Serwis i tak pokazuje je jako lżejsze WebP, ale oryginał zajmuje miejsce. Po otwarciu Multimediów serwis sam zmniejsza je w tle
+            do {{ \App\Services\Media\MediaOptimizer::MAX_PX }} px (JPG, PNG, WebP; do {{ \App\Jobs\ShrinkLargeImages::LIMIT }} naraz) — adres się nie zmienia, a poprzednia wersja zostaje w szczegółach pliku.
+            GIF i SVG zmniejsz ręcznie i podmień w szczegółach pliku.
         </p>
         @if ($largeImages->isEmpty())
             <p class="rounded-md bg-white p-4 text-sm text-ink">Wszystkie obrazy mają rozsądny rozmiar.</p>

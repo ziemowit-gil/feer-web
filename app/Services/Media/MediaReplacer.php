@@ -37,6 +37,15 @@ class MediaReplacer
         return $this->swap($media, $file->getRealPath(), $file->getMimeType() ?: $media->mime_type, $userId, $note);
     }
 
+    /**
+     * Podmiana treści pliku z lokalnej ścieżki (np. zmniejszony obraz z MediaOptimizer) — ten sam adres,
+     * poprzednia treść zostaje jako wersja, konwersje (miniatury, WebP) powstają od nowa.
+     */
+    public function replaceWithPath(Media $media, string $path, string $mime, ?int $userId = null, ?string $note = null): MediaVersion
+    {
+        return $this->swap($media, $path, $mime, $userId, $note);
+    }
+
     /** Przywraca wskazaną wersję — bieżący plik sam staje się wersją, więc nic nie ginie. */
     public function restore(MediaVersion $version, ?int $userId = null): MediaVersion
     {
