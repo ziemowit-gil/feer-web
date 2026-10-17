@@ -88,6 +88,36 @@ class SqliteToMysqlConverterTest extends TestCase
         $this->assertSame(DB::table('content_revisions')->count(), DB::connection(SqliteToMysqlConverter::TARGET)->table('content_revisions')->count());
     }
 
+    public function test_wiersz_dopisany_w_trakcie_kopiowania_trafia_do_kopii_i_raport_jest_zgodny(): void
+    {
+        activity('cms')->log('przed konwersją');
+        $added = false;
+        $copying = false;
+        $source = config('database.default');
+        // Kopiowanie zaczyna się po wyczyszczeniu tabeli docelowej (migracje też zapisują dziennik) —
+        // przy pierwszej paczce serwis dopisuje wpis w SQLite.
+        DB::listen(function ($q) use (&$added, &$copying, $source) {
+            if ($q->connectionName !== SqliteToMysqlConverter::TARGET) {
+                return;
+            }
+            if (str_contains($q->sql, 'delete from "activity_log"')) {
+                $copying = true;
+            } elseif ($copying && ! $added && str_contains($q->sql, 'insert into "activity_log"')) {
+                $added = true;
+                DB::connection($source)->table('activity_log')->insert(['log_name' => 'cms', 'description' => 'w trakcie konwersji', 'created_at' => now(), 'updated_at' => now()]);
+            }
+        });
+
+        $report = $this->converter()->convert();
+
+        $row = collect($report['tables'])->firstWhere('table', 'activity_log');
+        $this->assertTrue($added);
+        $this->assertTrue($row['ok'], json_encode($row));
+        $this->assertSame($row['source'], $row['target']);
+        $this->assertStringContainsString('W trakcie kopiowania w SQLite przybyło wierszy: 1', (string) $row['note']);
+        $this->assertSame(1, DB::connection(SqliteToMysqlConverter::TARGET)->table('activity_log')->where('description', 'w trakcie konwersji')->count());
+    }
+
     public function test_niepusta_baza_docelowa_wymaga_zastapienia(): void
     {
         $this->converter()->convert();

@@ -213,21 +213,38 @@ class SqliteToMysqlConverter
         $missing = array_values(array_diff($srcCols, $dstCols));
         $note = $missing ? 'Pominięte kolumny (brak w bazie docelowej): '.implode(', ', $missing) : null;
 
-        $sourceCount = $this->src()->table($table)->count();
+        $sourceBefore = $this->src()->table($table)->count();
 
         try {
-            for ($offset = 0; $offset < $sourceCount; $offset += self::CHUNK) {
-                $rows = $this->src()->table($table)->select($cols)->orderByRaw('rowid')->offset($offset)->limit(self::CHUNK)->get()
+            // Kolejne paczki po rowid (nie offset): wiersze dopisane lub usunięte w trakcie nie przesuwają paczek,
+            // a dopisane w trakcie (np. dziennik zdarzeń przy ruchu na stronie) też trafiają do kopii.
+            $last = 0;
+            do {
+                $rows = $this->src()->table($table)->selectRaw('rowid as __rowid')->addSelect($cols)
+                    ->whereRaw('rowid > ?', [$last])->orderByRaw('rowid')->limit(self::CHUNK)->get()
                     ->map(fn ($r) => (array) $r)->all();
                 if ($rows) {
-                    $this->dst()->table($table)->insert($rows);
+                    $last = (int) end($rows)['__rowid'];
+                    $this->dst()->table($table)->insert(array_map(function ($r) {
+                        unset($r['__rowid']);
+
+                        return $r;
+                    }, $rows));
                 }
-            }
+            } while ($rows !== []); // do pustej paczki — łapie też wiersze dopisane po ostatniej niepełnej
         } catch (Throwable $e) {
             $note = trim(($note ? $note.' ' : '').'Błąd kopiowania: '.self::friendly($e));
         }
 
+        // Porównanie ze stanem źródła PO kopiowaniu — w trakcie mogły przybyć wiersze (serwis działa dalej).
+        $sourceCount = $this->src()->table($table)->count();
         $targetCount = $this->dst()->table($table)->count();
+        if ($sourceCount !== $sourceBefore) {
+            $diff = $sourceCount - $sourceBefore;
+            $note = trim(($note ? $note.' ' : '').($diff > 0
+                ? "W trakcie kopiowania w SQLite przybyło wierszy: {$diff} (działający serwis) — są też w MySQL."
+                : 'W trakcie kopiowania w SQLite ubyło wierszy: '.abs($diff).'.'));
+        }
 
         return ['table' => $table, 'source' => $sourceCount, 'target' => $targetCount, 'ok' => $sourceCount === $targetCount, 'note' => $note];
     }
