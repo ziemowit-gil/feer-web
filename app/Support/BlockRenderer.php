@@ -35,7 +35,7 @@ class BlockRenderer
 
     public const TYPES = [
         'paragraph', 'heading', 'list', 'quote', 'image', 'gallery', 'buttons', 'callout',
-        'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist', 'banner', 'imagebanner',
+        'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist', 'banner', 'imagebanner', 'materials',
     ];
 
     private const INLINE_TAGS = ['strong', 'b', 'em', 'i', 'a', 'br', 'code', 's', 'sub', 'sup', 'mark'];
@@ -189,6 +189,7 @@ class BlockRenderer
             'html' => ['html' => mb_substr((string) ($a['html'] ?? ''), 0, 500000)],
             'subpages' => self::subpagesAttrs($a),
             'newslist' => NewsList::normalize($a),
+            'materials' => MaterialList::normalize($a),
             'shortcode' => ['code' => preg_match('/^\[[a-z0-9_-]+(?::[^\]\r\n]{1,200})?\]$/i', $str('code', 220)) ? $str('code', 220) : ''],
             default => [],
         };
@@ -416,6 +417,9 @@ class BlockRenderer
 
             case 'newslist':
                 return '<p>'.NewsList::shortcode($a).'</p>';
+
+            case 'materials':
+                return '<p>'.MaterialList::shortcode($a).'</p>';
         }
 
         return '';

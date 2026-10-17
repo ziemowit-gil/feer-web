@@ -563,6 +563,10 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
 .be-sc-manual .be-url-row { margin-top: 0; }
 .be-sc-cancel { margin-top: 0.75rem; }
 .be-placeholder.be-sc .be-sc-status { margin-top: 0.75rem; }
+.be-sc-diagbox { margin-top: 0.75rem; }
+.be-placeholder .be-sc-diag { display: flex; gap: 0.4rem; align-items: baseline; margin: 0.25rem 0 0; font-size: 0.8125rem; color: var(--be-muted); }
+.be-placeholder .be-sc-diag--warn { padding: 0.5rem 0.75rem; border-radius: 0.375rem; background: var(--be-warn-bg); color: var(--be-warn); font-weight: 600; }
+.be-sc-diag-actions { margin-top: 0.5rem; }
 
 /* Okno tekstu alternatywnego */
 .be-alt-thumb {

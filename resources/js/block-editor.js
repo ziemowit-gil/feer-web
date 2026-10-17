@@ -59,7 +59,7 @@ function start(config) {
     const debounce = (fn, ms) => { let t = null; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; };
     const SHORTCODE_RE = /^\[[a-z0-9_-]+(?::[^\]\r\n]{1,200})?\]$/i;
     // Jak App\Support\ShortcodeParser::DETECT_PATTERN — czy HTML zawiera shortcode do wyrenderowania.
-    const SHORTCODE_DETECT = /\[(?:(?:formularz|kafelki):[a-z0-9_-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci)(?::[^\]\r\n<]{0,200})?)\]/i;
+    const SHORTCODE_DETECT = /\[(?:(?:formularz|kafelki):[a-z0-9_-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|banery:[a-z0-9_-]+|baner:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]{0,200})?)\]/i;
 
     // Shortcode'y list linków — jak App\Support\SubpageList::shortcode() i NewsList::shortcode().
     const LIST_LAYOUTS = [['lista', 'Prosta lista linków'], ['zajawki', 'Lista z zajawką'], ['kafle', 'Kafle w 2 kolumnach']];
@@ -80,12 +80,23 @@ function start(config) {
         if (a.layout && a.layout !== 'lista') parts.push('wyglad=' + a.layout);
         return '[aktualnosci' + (parts.length ? ':' + parts.join(';') : '') + ']';
     }
+    // Jak App\Support\MaterialList::shortcode().
+    function materialsCode(a) {
+        const parts = [];
+        if (a.group) parts.push('grupa=' + a.group);
+        if (a.type) parts.push('typ=' + a.type);
+        if (Number(a.limit) && Number(a.limit) !== 6) parts.push('liczba=' + Number(a.limit));
+        return '[materialy' + (parts.length ? ':' + parts.join(';') : '') + ']';
+    }
     // Shortcode listy z treści (klasyczny edytor, wklejanie) → atrybuty bloku.
     function listBlockFromCode(code) {
-        const m = code.match(/^\[(podstrony|aktualnosci)(?::([^\]]*))?\]$/i);
+        const m = code.match(/^\[(podstrony|aktualnosci|materialy)(?::([^\]]*))?\]$/i);
         if (!m) return null;
         const o = {};
         (m[2] || '').split(/[;|]/).forEach((p) => { const i = p.indexOf('='); if (i > 0) o[p.slice(0, i).trim().toLowerCase()] = p.slice(i + 1).trim(); });
+        if (m[1].toLowerCase() === 'materialy') {
+            return block('materials', { group: (config.materialGroups || {})[o.grupa] ? o.grupa : null, type: (config.materialTypes || {})[o.typ] ? o.typ : null, limit: Math.min(24, Number(o.liczba) || 6) });
+        }
         const layout = ['lista', 'zajawki', 'kafle'].includes(o.wyglad) ? o.wyglad : 'lista';
         if (m[1].toLowerCase() === 'aktualnosci') {
             return block('newslist', { category: Number(o.kategoria) || null, limit: Math.min(30, Number(o.liczba) || 5), sort: o.sortowanie === 'alfabet' ? 'alfabet' : 'najnowsze', layout });
@@ -198,6 +209,9 @@ function start(config) {
         separator: { title: 'Separator', icon: 'minus', cat: 'design', desc: 'Pozioma linia oddzielająca sekcje.', keywords: ['linia', 'hr', 'podział'], create: () => ({}) },
         shortcode: { title: 'Shortcode', icon: 'code', cat: 'widgets', desc: 'Osadzenie modułu: formularz, kafelki, blok z kreatora.', keywords: ['formularz', 'kafelki', 'blok', 'moduł'], create: () => ({ code: '' }) },
         subpages: { title: 'Lista podstron', icon: 'sitemap', cat: 'widgets', desc: 'Linki do podstron tej lub wskazanej strony. Aktualizuje się sama — nowa podstrona pojawi się bez edycji.', keywords: ['podstrony', 'spis', 'menu', 'linki', 'nawigacja', 'dzieci'], create: () => ({ source: 'current', page: null, manual: false, picked: [], sort: 'drzewo', depth: 1, layout: 'lista' }) },
+        materials: { title: 'Materiały edukacyjne', icon: 'book-open', cat: 'widgets', desc: 'Karty materiałów (nagrania, PDF, scenariusze) — wszystkie albo z wybranej grupy i typu. Aktualizuje się sama.', keywords: ['materiały', 'karty pracy', 'pdf', 'nagrania', 'edukacja', 'webinar'], create: () => ({ group: null, type: null, limit: 6 }) },
+        bannerzone: { as: 'shortcode', title: 'Zestaw banerów', icon: 'layer-group', cat: 'design', desc: 'Banery ze strefy modułu Banery — kolejność, harmonogram i statystyki ustawiasz w panelu „Bannery”.', keywords: ['baner', 'banery', 'strefa', 'zestaw', 'na skróty', 'reklama'], hidden: !(CI.bannerZones || []).length, create: () => ({ code: firstCode(CI.bannerZones, (v) => '[banery:' + v + ']') }) },
+        modbanner: { as: 'shortcode', title: 'Baner z modułu', icon: 'rectangle-ad', cat: 'design', desc: 'Jeden baner z modułu Banery — z harmonogramem wyświetlania i licznikiem kliknięć.', keywords: ['baner', 'banner', 'moduł', 'statystyki'], hidden: !(CI.banners || []).length, create: () => ({ code: firstCode(CI.banners, (v) => '[baner:' + v + ']') }) },
         newslist: { title: 'Lista aktualności', icon: 'newspaper', cat: 'widgets', desc: 'Linki do najnowszych aktualności (wszystkich lub z kategorii). Aktualizuje się sama.', keywords: ['aktualności', 'wpisy', 'newsy', 'blog', 'linki'], create: () => ({ category: null, limit: 5, sort: 'najnowsze', layout: 'lista' }) },
         form: { as: 'shortcode', title: 'Formularz', icon: 'rectangle-list', cat: 'modules', desc: 'Formularz z modułu Formularze.', keywords: ['formularz', 'zapisy', 'zgłoszenie'], hidden: !(CI.forms || []).length, create: () => ({ code: firstCode(CI.forms, (v) => '[formularz:' + v + ']') }) },
         tileset: { as: 'shortcode', title: 'Zestaw kafelków', icon: 'table-cells-large', cat: 'modules', desc: 'Kafelki z kreatora — wybierz istniejący zestaw albo utwórz nowy.', keywords: ['kafelki', 'kafle', 'zestaw'], create: () => ({ code: firstCode(CI.tileSets, (v) => '[kafelki-zestaw:' + v + ']') }) },
@@ -245,6 +259,11 @@ function start(config) {
         { title: 'Dokumenty do pobrania', desc: 'Nagłówek i lista plików.', build: () => [block('heading', { text: 'Dokumenty do pobrania' }), block('file'), block('file')] },
         { title: 'Kontakt w sprawie', desc: 'Nagłówek i osoba do kontaktu.', build: () => [block('heading', { text: 'Kontakt w sprawie', level: 3 }), block('paragraph', { text: 'Imię Nazwisko<br>tel. <a href="tel:+48000000000">000 000 000</a><br><a href="mailto:adres@feer.org.pl">adres@feer.org.pl</a>' })] },
     ];
+
+    // Banery i materiały (punkt „wzorce”): sekcja z banerem, lista banerów, materiały dla grupy.
+    PATTERNS.push({ title: 'Media społecznościowe', desc: 'Baner sekcji i przyciski do profili.', build: () => [block('banner', { title: 'Nasze media społecznościowe' }), block('buttons', { items: [{ label: 'Facebook', url: '', variant: 'brand', newTab: true }, { label: 'LinkedIn', url: '', variant: 'brand', newTab: true }, { label: 'YouTube', url: '', variant: 'brand', newTab: true }] })] });
+    PATTERNS.push({ title: 'Na skróty — banery', desc: (CI.bannerZones || []).length ? 'Nagłówek i zestaw banerów ze strefy modułu Banery.' : 'Nagłówek i trzy banery graficzne (1200 × 120 px).', build: () => [block('heading', { text: 'Na skróty' }), ...((CI.bannerZones || []).length ? [block('shortcode', { code: '[banery:' + CI.bannerZones[0].value + ']' })] : [block('imagebanner'), block('imagebanner'), block('imagebanner')])] });
+    PATTERNS.push({ title: 'Materiały dla grupy', desc: 'Baner sekcji i karty materiałów edukacyjnych.', build: () => [block('banner', { title: 'Materiały edukacyjne', size: 'small', tone: 'brand' }), block('materials')] });
 
     // Wstawki HTML z klasycznego edytora (BIP, sekcje akcentu) i ramki z wydarzeniem — jako bloki „Własny HTML”.
     (CI.snippets || []).forEach((sn) => PATTERNS.push({ title: sn.title, desc: sn.desc + ' (jak w klasycznym edytorze)', build: () => [block('html', { html: sn.html })] }));
@@ -1615,6 +1634,7 @@ function start(config) {
         shortcode: (b) => shortcodeEditor(b),
         subpages: (b) => linkListEditor(b, subpagesCode(b.attrs), subpagesSummary(b.attrs)),
         newslist: (b) => linkListEditor(b, newsCode(b.attrs), newsSummary(b.attrs)),
+        materials: (b) => linkListEditor(b, materialsCode(b.attrs), materialsSummary(b.attrs)),
     };
 
     function listEditor(b) {
@@ -1940,6 +1960,9 @@ function start(config) {
         [/^\[kafelki:/, 'Siatka kafelków', 'table-cells-large'],
         [/^\[blok:/, 'Blok z kreatora', 'cubes'],
         [/^\[pasek:/, 'Pasek FEER', 'grip-lines'],
+        [/^\[banery:/, 'Zestaw banerów (strefa)', 'layer-group'],
+        [/^\[baner:/, 'Baner z modułu', 'rectangle-ad'],
+        [/^\[materialy/, 'Materiały edukacyjne', 'book-open'],
         [/^\[klauzule-rodo/, 'Lista', 'list'],
         [/^\[(nabory|zapytania-ofertowe)\]/, 'Lista', 'list'],
     ];
@@ -1950,6 +1973,8 @@ function start(config) {
         if (/^\[kafelki-zestaw:/.test(code)) return 'Zestaw kafelków jest pusty albo został usunięty — otwórz „Edytuj zestaw” lub wybierz inny.';
         if (/^\[formularz:/.test(code)) return 'Formularz nie istnieje albo jest wyłączony — sprawdź go w module Formularze.';
         if (/^\[blok:/.test(code)) return 'Blok z kreatora jest pusty albo został usunięty — otwórz „Edytuj blok” lub wybierz inny.';
+        if (/^\[banery:/.test(code)) return 'Strefa nie ma teraz aktywnych banerów — dodaj je w module Banery albo sprawdź harmonogram.';
+        if (/^\[baner:/.test(code)) return 'Baner jest wyłączony, poza harmonogramem albo nie istnieje.';
         return 'Moduł nic nie wyświetla — sprawdź, czy wskazany element istnieje i jest opublikowany.';
     };
 
@@ -1998,6 +2023,8 @@ function start(config) {
             ['Bloki z kreatora', (CI.contentBlocks || []).map((o) => ['[blok:' + o.value + ']', o.label])],
             ['Siatki kafelków', (CI.tilesGrids || []).map((o) => ['[kafelki:' + o.value + ']', o.label])],
             ['Paski FEER', (CI.bands || []).map((o) => ['[pasek:' + o.value + ']', o.label])],
+            ['Strefy banerów', (CI.bannerZones || []).map((o) => ['[banery:' + o.value + ']', o.label + ' (' + o.count + ')'])],
+            ['Banery z modułu', (CI.banners || []).map((o) => ['[baner:' + o.value + ']', o.label])],
             ['Listy', [['[klauzule-rodo]', 'Klauzule RODO'], ['[klauzule-rodo:en]', 'Klauzule RODO (wersje angielskie)'], ['[nabory]', 'Lista naborów'], ['[zapytania-ofertowe]', 'Zapytania ofertowe']]],
         ].filter(([, opts]) => opts.length);
         const nameOf = (code) => { for (const [, opts] of groups) { const o = opts.find(([v]) => v === code); if (o) return o[1]; } return null; };
@@ -2044,10 +2071,41 @@ function start(config) {
             return null;
         };
 
+        // Diagnoza z serwera (App\Support\ClassicInserts::diagnostics): adres edycji, szkic / pusty / wyłączony, statystyki banerów.
+        const diagFor = (code) => (CI.diagnostics || {})[code] || null;
+        const diagView = (code) => {
+            const d = diagFor(code);
+            if (!d) return null;
+            const out = [];
+            if (d.state === 'draft') out.push(h('p', { class: 'be-sc-diag be-sc-diag--warn' }, icon('triangle-exclamation'), ' Ta siatka jest szkicem — na stronie się nie pokaże, dopóki jej nie opublikujesz.'));
+            else if (d.state === 'disabled' || d.state === 'empty') out.push(h('p', { class: 'be-sc-diag be-sc-diag--warn' }, icon('triangle-exclamation'), ' ' + (d.note || (d.state === 'disabled' ? 'Element jest wyłączony.' : 'Element jest pusty.'))));
+            else if (d.note) out.push(h('p', { class: 'be-sc-diag' }, d.note));
+            if (d.stats) {
+                const ctr = d.stats.impressions > 0 ? (Math.round(d.stats.clicks / d.stats.impressions * 1000) / 10).toLocaleString('pl-PL') + '%' : '—';
+                out.push(h('p', { class: 'be-sc-diag' }, icon('chart-simple'), ` Wyświetlenia: ${d.stats.impressions.toLocaleString('pl-PL')} · Kliknięcia: ${d.stats.clicks.toLocaleString('pl-PL')} · CTR: ${ctr}`));
+            }
+            const actions = [];
+            if (d.publishUrl) {
+                actions.push(btn('Opublikuj siatkę', 'upload', async (t) => {
+                    t.disabled = true;
+                    try {
+                        const res = await postJson(d.publishUrl, {});
+                        d.state = 'ok'; d.publishUrl = null;
+                        shortcodePreviewCache.delete(code); loaded = null;
+                        announce(res.message || 'Opublikowano');
+                        draw(); load(); root.querySelector('[data-sc-change]')?.focus();
+                    } catch (e) { t.disabled = false; announce('Nie udało się opublikować: ' + e.message); }
+                }, 'be-btn--primary'));
+            }
+            if (d.editUrl) actions.push(h('a', { href: d.editUrl, target: '_blank', rel: 'noopener', class: 'be-btn be-btn--ghost' }, icon('arrow-up-right-from-square'), /^\[banery:/.test(code) ? ' Zarządzaj strefą' : ' Otwórz do edycji', h('span', { class: 'be-sr-only' }, ' (otwiera się w nowej karcie)')));
+            if (actions.length) out.push(h('div', { class: 'be-sc-actions be-sc-diag-actions' }, ...actions));
+            return out.length ? h('div', { class: 'be-sc-diagbox' }, ...out) : null;
+        };
+
         const drawSummary = () => {
             const code = b.attrs.code;
             const [, kind, kindIcon] = kindOf(code);
-            const name = nameOf(code);
+            const name = nameOf(code) || diagFor(code)?.name || null;
             root.replaceChildren(
                 h('div', { class: 'be-sc-head' },
                     h('span', { class: 'be-sc-icon', 'aria-hidden': 'true' }, icon(kindIcon)),
@@ -2058,6 +2116,7 @@ function start(config) {
                     h('div', { class: 'be-sc-actions' },
                         editButton(code),
                         btn('Zmień moduł', 'arrows-rotate', () => { choosing = true; draw(); root.querySelector('select, [data-sc-first]')?.focus(); }, 'be-btn--secondary', { 'data-sc-change': '' }))),
+                diagView(code),
                 status,
                 preview);
         };
@@ -2124,6 +2183,9 @@ function start(config) {
         const cat = a.category ? (config.newsCategories || []).find((c) => c.id === Number(a.category))?.name : null;
         return [cat ? 'kategoria „' + cat + '”' : 'wszystkie kategorie', 'do ' + (Number(a.limit) || 5) + ' wpisów', a.sort === 'alfabet' ? 'alfabetycznie' : 'od najnowszych', layoutLabel(a.layout)].join(' · ');
     }
+    function materialsSummary(a) {
+        return [a.group ? 'grupa „' + ((config.materialGroups || {})[a.group] || a.group) + '”' : 'wszystkie grupy', a.type ? ((config.materialTypes || {})[a.type] || a.type).toLowerCase() : 'wszystkie typy', 'do ' + (Number(a.limit) || 6) + ' kart'].join(' · ');
+    }
     function linkListEditor(b, code, summary) {
         const def = BLOCKS[b.type];
         const status = h('p', { class: 'be-small be-sc-status', 'aria-live': 'polite' }, 'Wczytywanie podglądu…');
@@ -2136,7 +2198,7 @@ function start(config) {
             if (!frag.textContent.trim()) {
                 status.textContent = b.type === 'subpages'
                     ? 'Na razie nie ma opublikowanych podstron do pokazania — lista pojawi się sama, gdy się pojawią.'
-                    : 'Na razie nie ma opublikowanych aktualności do pokazania.';
+                    : (b.type === 'materials' ? 'Brak opublikowanych materiałów dla tych ustawień — zmień grupę lub typ w panelu „Blok”.' : 'Na razie nie ma opublikowanych aktualności do pokazania.');
                 return;
             }
             body.replaceChildren(frag);
@@ -2752,6 +2814,13 @@ function start(config) {
                     h('p', { class: 'be-help' }, 'Strony nieopublikowane, wyłączone i ukryte na mapie strony są pomijane.')));
                 break;
             }
+            case 'materials':
+                parts.push(panelSection('Ustawienia listy',
+                    field('Grupa docelowa', select(a.group || '', [['', 'Wszystkie grupy'], ...Object.entries(config.materialGroups || {})], (v) => set({ group: v || null }))),
+                    field('Typ materiału', select(a.type || '', [['', 'Wszystkie typy'], ...Object.entries(config.materialTypes || {})], (v) => set({ type: v || null }))),
+                    field('Liczba kart', select(a.limit, [3, 6, 9, 12, 24].map((n) => [n, String(n)]), (v) => set({ limit: Number(v) }))),
+                    h('p', { class: 'be-help' }, 'Karty jak na stronie „Materiały edukacyjne” — z linkiem do wszystkich materiałów. Pokazuje tylko opublikowane.')));
+                break;
             case 'newslist':
                 parts.push(panelSection('Ustawienia listy',
                     field('Kategoria', select(a.category || '', [['', 'Wszystkie kategorie'], ...(config.newsCategories || []).map((c) => [c.id, c.name])], (v) => set({ category: Number(v) || null }))),

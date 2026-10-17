@@ -123,4 +123,46 @@ class BannerModuleIntegrationTest extends TestCase
         $this->assertSame('[materialy:grupa=nauczyciele;liczba=3]', MaterialList::shortcode(['group' => 'nauczyciele', 'type' => 'zly', 'limit' => 3]));
         $this->assertSame('', ShortcodeParser::render('[materialy:grupa=graficy]'));
     }
+
+    public function test_blok_materialow_renderuje_shortcode_i_karty(): void
+    {
+        EducationalMaterial::create(['title' => 'Scenariusz lekcji', 'description' => 'd', 'type' => 'scenariusz', 'is_published' => true, 'target_group' => 'nauczyciele']);
+
+        $content = \App\Support\BlockRenderer::render([['type' => 'materials', 'attrs' => ['group' => 'nauczyciele', 'type' => 'nieznany', 'limit' => 99]]]);
+        $this->assertSame('<p>[materialy:grupa=nauczyciele;liczba=24]</p>', $content);
+        $this->assertStringContainsString('Scenariusz lekcji', ShortcodeParser::render($content));
+    }
+
+    public function test_strefa_strona_glowna_na_stronie_glownej_feer(): void
+    {
+        $this->artisan('migrate')->assertSuccessful();
+        $zone = BannerZone::where('slug', 'home')->firstOrFail();
+        $banner = Banner::create(['name' => 'Kalendarz', 'type' => 'image', 'image_path' => 'banery/kal.webp', 'image_alt' => 'Dolnośląski kalendarz badań profilaktycznych', 'link_url' => '/badania', 'is_active' => true]);
+        $zone->banners()->attach($banner->id, ['priority' => 1]);
+        SiteSetting::current()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get('/')->assertOk()
+            ->assertSee('data-zone="home"', false)
+            ->assertSee('aria-label="Strona główna (pod skrótami)"', false)
+            ->assertSee('alt="Dolnośląski kalendarz badań profilaktycznych"', false);
+    }
+
+    public function test_klasyczny_edytor_i_edytor_blokowy_wstawiaja_banery_i_materialy(): void
+    {
+        $this->zoneWithBanners();
+        $page = Page::create(['title' => 'Strona', 'slug' => 'strona', 'content' => '<p>x</p>', 'is_published' => true]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $html = $this->actingAs($admin)->get(route('admin.podstrony.edit', $page))->assertOk()->getContent();
+        $this->assertStringContainsString('Wstaw baner lub materiały', $html);
+        $this->assertStringContainsString('<option value="[banery:na-skroty]">Na skróty (2)</option>', $html);
+        $this->assertStringContainsString('<option value="[materialy:grupa=nauczyciele]">Nauczyciele</option>', $html);
+        $this->assertStringContainsString("text: 'Baner sekcji (tytuł)'", $html);
+
+        $js = file_get_contents(resource_path('js/block-editor.js'));
+        foreach (["bannerzone: { as: 'shortcode', title: 'Zestaw banerów'", "modbanner: { as: 'shortcode', title: 'Baner z modułu'", "materials: { title: 'Materiały edukacyjne'", "' Zarządzaj strefą'", "'Opublikuj siatkę'", 'Wyświetlenia: ', "title: 'Na skróty — banery'", "title: 'Media społecznościowe'", "title: 'Materiały dla grupy'"] as $needle) {
+            $this->assertStringContainsString($needle, $js);
+        }
+    }
 }

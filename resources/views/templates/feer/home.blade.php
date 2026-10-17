@@ -28,6 +28,8 @@
         @include('templates.feer.partials.shortcuts')
     @endif
     @include('templates.feer.partials.bands-slot', ['slot' => 'after_shortcuts'])
+    {{-- Strefa banerów „Strona główna” (moduł Banery) — pusta strefa nic nie renderuje. --}}
+    <x-banner-zone name="home" class="mx-auto max-w-6xl px-4 py-8" />
     @if ($siteSettings->isHomepageSectionEnabled('news'))
         @include('templates.feer.partials.news')
     @endif

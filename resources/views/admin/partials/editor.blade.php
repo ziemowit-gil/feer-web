@@ -69,6 +69,14 @@
     $blockTypeLabels = \App\Models\ContentBlock::TYPES;
     // Nowe bloki tylko z typów niewyłączonych w Ustawienia → Moduły; istniejące bloki dalej da się wstawić.
     $newBlockTypes = array_keys($siteSettings->availableOptions('content_block_types', \App\Models\ContentBlock::TYPES));
+    // Moduł Banery ([banery:strefa], [baner:ID]) i lista materiałów edukacyjnych ([materialy…]) — jak w edytorze blokowym.
+    $moduleInserts = collect([
+        'Strefy banerów' => collect(\App\Support\ClassicInserts::bannerZones())->map(fn ($z) => ['code' => '[banery:'.$z['value'].']', 'label' => $z['label'].' ('.$z['count'].')']),
+        'Banery z modułu' => collect(\App\Support\ClassicInserts::banners())->map(fn ($b) => ['code' => '[baner:'.$b['value'].']', 'label' => $b['label']]),
+        'Materiały edukacyjne' => collect(['' => 'Wszystkie materiały'] + \App\Models\EducationalMaterial::TARGET_GROUPS)
+            ->map(fn ($label, $key) => ['code' => \App\Support\MaterialList::shortcode(['group' => $key ?: null]), 'label' => $label])->values(),
+    ])->filter(fn ($items) => $items->isNotEmpty());
+    $sectionBannerHtml = '<div class="content-banner content-banner--large content-banner--gray content-banner--no-media"><h2 class="content-banner-title">Tytuł sekcji</h2></div><p>&nbsp;</p>';
 @endphp
 @include('admin.partials.tiles-builder')
 @include('admin.partials.content-block-builder')
@@ -175,6 +183,18 @@
                     <option value="">— wybierz siatkę —</option>
                     @foreach ($activeTilesGridPages as $tg)
                         <option value="{{ $tg->slug }}">{{ $tg->title }}</option>
+                    @endforeach
+                </select>
+            @endif
+            @if ($moduleInserts->isNotEmpty())
+                <hr class="my-1 border-gray-100" role="separator">
+                <label for="{{ $editorId }}-module-pick" class="block px-3 pb-1 pt-0.5 text-[0.65rem] font-bold uppercase tracking-wide text-muted">Wstaw baner lub materiały</label>
+                <select id="{{ $editorId }}-module-pick" @change="open = false" class="w-full rounded border-gray-500 px-2 py-1.5 text-xs font-bold text-ink focus:border-brand-dark focus:ring-brand-dark">
+                    <option value="">— wybierz —</option>
+                    @foreach ($moduleInserts as $groupLabel => $items)
+                        <optgroup label="{{ $groupLabel }}">
+                            @foreach ($items as $it)<option value="{{ $it['code'] }}">{{ $it['label'] }}</option>@endforeach
+                        </optgroup>
                     @endforeach
                 </select>
             @endif
@@ -1746,6 +1766,17 @@
                         });
                     }
 
+                    var modulePickSelect = document.getElementById('{{ $editorId }}-module-pick');
+                    if (modulePickSelect) {
+                        modulePickSelect.addEventListener('change', function () {
+                            if (!this.value) return;
+                            var viewFragment = editor.data.processor.toView('<p>' + this.value + '</p>');
+                            editor.model.insertContent(editor.data.toModel(viewFragment));
+                            editor.editing.view.focus();
+                            this.selectedIndex = 0;
+                        });
+                    }
+
                     var tilesPickSelect = document.getElementById('{{ $editorId }}-tiles-pick');
                     if (tilesPickSelect) {
                         tilesPickSelect.addEventListener('change', function () {
@@ -1908,6 +1939,8 @@
                 var eventBoxes = {!! json_encode($eventBoxOptions->map(fn ($o) => ['title' => $o['title'], 'html' => $o['html']])->values()) !!};
                 var activeForms = {!! json_encode($activeForms->map(fn ($f) => ['slug' => $f->slug, 'title' => $f->title])->values()) !!};
                 var activeTilesGridPages = {!! json_encode($activeTilesGridPages->map(fn ($p) => ['slug' => $p->slug, 'title' => $p->title])->values()) !!};
+                var moduleInserts = {!! json_encode($moduleInserts->map(fn ($items, $label) => ['label' => $label, 'items' => $items->values()])->values()) !!};
+                var sectionBannerHtml = {!! json_encode($sectionBannerHtml) !!};
                 var tileSets = {!! json_encode($tileSets->map(fn ($t) => ['id' => $t->id, 'name' => $t->name])->values()) !!};
                 var contentBlocks = {!! json_encode($contentBlocks->map(fn ($b) => ['id' => $b->id, 'type' => $b->type, 'name' => $b->name])->values()) !!};
                 var blockLabels = { cta: 'Przyciski CTA', accordion: 'Akordeon', callout: 'Ramka informacyjna', pricing: 'Cennik' };
@@ -2114,6 +2147,14 @@
                                         });
                                     } });
                                 }
+                                // Banery (moduł Banery, baner sekcji) i materiały edukacyjne — jak w edytorze blokowym.
+                                items.push({ type: 'separator' });
+                                items.push({ type: 'menuitem', text: 'Baner sekcji (tytuł)', onAction: function () { editor.insertContent(sectionBannerHtml); } });
+                                moduleInserts.forEach(function (g) {
+                                    items.push({ type: 'nestedmenuitem', text: 'Wstaw: ' + g.label, getSubmenuItems: function () {
+                                        return g.items.map(function (it) { return { type: 'menuitem', text: it.label, onAction: function () { editor.insertContent('<p>' + it.code + '</p>'); } }; });
+                                    } });
+                                });
                                 cb(items);
                             },
                         });

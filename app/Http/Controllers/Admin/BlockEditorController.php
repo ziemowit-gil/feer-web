@@ -359,6 +359,8 @@ class BlockEditorController extends Controller
                 'classic' => ClassicInserts::forBlockEditor(),
                 // Blok „Lista aktualności": kategorie do wyboru.
                 'newsCategories' => NewsList::categoryOptions(),
+                'materialGroups' => \App\Models\EducationalMaterial::TARGET_GROUPS,
+                'materialTypes' => \App\Models\EducationalMaterial::TYPES,
                 'urls' => [
                     'save' => $updateUrl,
                     'view' => $this->publicUrl($type, $record),
