@@ -41,6 +41,8 @@ class HealthDashboardTest extends TestCase
             $this->assertStringContainsString($title, $html);
         }
         $this->assertStringContainsString('aria-labelledby="sec-errors"', $html);
+        $this->assertStringContainsString('Wersja CMS <strong class="text-ink" data-cms-version>'.config('cms.version').'</strong>', $html);
+        $this->assertMatchesRegularExpression('/^\d+\.\d+(\.\d+)?$/', (string) config('cms.version'));
         $this->actingAs(User::factory()->create(['role' => User::ROLE_CONTENT_EDITOR]))->get(route('admin.health.index'))->assertForbidden();
     }
 

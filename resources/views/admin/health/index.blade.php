@@ -17,7 +17,7 @@
     <div class="mb-6 flex items-center justify-between">
         <div>
             <h1 class="text-lg font-bold text-ink">Kondycja serwisu</h1>
-            <p class="text-sm text-muted">Stan systemu · {{ now()->locale('pl')->isoFormat('D MMMM YYYY, HH:mm:ss') }}</p>
+            <p class="text-sm text-muted">Wersja CMS <strong class="text-ink" data-cms-version>{{ config('cms.version') }}</strong> · stan systemu · {{ now()->locale('pl')->isoFormat('D MMMM YYYY, HH:mm:ss') }}</p>
         </div>
         <a href="{{ route('admin.health.index') }}"
             class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-muted hover:text-brand">
