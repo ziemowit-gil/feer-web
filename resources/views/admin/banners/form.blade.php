@@ -70,7 +70,9 @@
                             @if (! $banner->exists) <span aria-hidden="true" class="text-red-600">*</span> @endif
                         </label>
                         <input id="image_file" type="file" name="image_file" accept="image/*"
+                            aria-describedby="image_file_help"
                             class="block w-full text-sm text-muted file:mr-4 file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                        <p id="image_file_help" class="mt-1 text-xs text-muted">Zalecany rozmiar banera w treści i na stronie głównej: 1200 × 120 px (proporcje 10:1), a dla ostrości na ekranach o dużej gęstości 2400 × 240 px. Duży, kontrastowy tekst; cały tekst z grafiki przepisz do tekstu alternatywnego.</p>
                         @if ($banner->image_path)
                             <div class="mt-3 flex items-center gap-3">
                                 <img src="{{ Storage::url($banner->image_path) }}" alt=""

@@ -12,7 +12,7 @@
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
             <p class="text-sm text-muted">Strefy to miejsca w serwisie, w których wyświetlają się bannery.</p>
-            <p class="mt-1 text-xs text-muted">Użyj <code class="rounded bg-gray-100 px-1 font-mono">&lt;x-banner-zone name="slug" /&gt;</code> w szablonie Blade.</p>
+            <p class="mt-1 text-xs text-muted">W treści strony wstaw blok „Zestaw banerów” albo shortcode <code class="rounded bg-gray-100 px-1 font-mono">[banery:slug]</code>; w szablonie Blade — <code class="rounded bg-gray-100 px-1 font-mono">&lt;x-banner-zone name="slug" /&gt;</code>.</p>
         </div>
         <a href="{{ route('admin.strefy-bannerow.create') }}"
             class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">

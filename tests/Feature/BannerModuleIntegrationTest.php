@@ -105,6 +105,8 @@ class BannerModuleIntegrationTest extends TestCase
         $this->actingAs($admin)->get(route('admin.banery.index', ['strefa' => 'na-skroty']))
             ->assertOk()->assertSee('Banery w strefie')->assertSee('Paszporty')->assertDontSee('Poza strefą');
         $this->actingAs($admin)->get(route('admin.banery.index'))->assertOk()->assertSee('Poza strefą');
+        $this->actingAs($admin)->get(route('admin.banery.create'))->assertOk()->assertSee('1200 × 120 px (proporcje 10:1)');
+        $this->actingAs($admin)->get(route('admin.strefy-bannerow.index'))->assertOk()->assertSee('[banery:slug]');
     }
 
     public function test_lista_materialow_w_tresci(): void

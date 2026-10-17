@@ -45,7 +45,7 @@
                     required pattern="[a-z0-9_]+"
                     {{ $zone->exists ? 'readonly class="w-full rounded border-gray-500 bg-gray-50 text-muted focus:border-brand-dark focus:ring-brand-dark"' : 'class="w-full rounded border-gray-300 focus:border-brand-dark focus:ring-brand-dark"' }}>
                 <p class="mt-1 text-xs text-muted">
-                    Używany w szablonie: <code class="rounded bg-gray-100 px-1 font-mono">&lt;x-banner-zone name="{{ $zone->slug ?? 'slug' }}" /&gt;</code>.
+                    W treści: blok „Zestaw banerów” albo <code class="rounded bg-gray-100 px-1 font-mono">[banery:{{ $zone->slug ?? 'slug' }}]</code>; w szablonie: <code class="rounded bg-gray-100 px-1 font-mono">&lt;x-banner-zone name="{{ $zone->slug ?? 'slug' }}" /&gt;</code>.
                     @if ($zone->exists) Slug jest tylko do odczytu po zapisaniu. @else Tylko małe litery, cyfry i podkreślnik. @endif
                 </p>
             </div>
