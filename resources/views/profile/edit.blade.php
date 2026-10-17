@@ -19,7 +19,7 @@
             ['dwuetapowe', 'Logowanie dwuetapowe', 'Dodatkowe zabezpieczenie przy logowaniu hasłem.', 'profile.partials.two-factor-form', 'Bezpieczeństwo', ! $isMicrosoft],
             ['klucze-dostepu', 'Klucze dostępu', 'Logowanie bez hasła: YubiKey, odcisk palca, Windows Hello albo telefon.', 'profile.partials.passkeys-form', 'Bezpieczeństwo', $siteSettings->passkeyLoginEnabled() && Route::has('passkeys.store')],
             ['domyslny-edytor', 'Domyślny edytor', 'Którym edytorem otwierać strony, aktualności i działania.', 'profile.partials.default-editor-form', 'Praca w panelu', \App\Models\SiteSetting::current()->isModuleEnabled('block_editor')],
-            ['wyglad-panelu', 'Wygląd panelu', 'Kolory tła i pasków w panelu administracyjnym.', 'profile.partials.admin-scheme-form', 'Praca w panelu', true],
+            ['wyglad-panelu', 'Wygląd panelu', 'Kolory tła i pasków w panelu administracyjnym.', 'profile.partials.admin-scheme-form', 'Praca w panelu', Route::has('profile.scheme')],
             ['powiadomienia', 'Powiadomienia', 'O czym chcesz dostawać e-maile.', 'profile.partials.notification-preferences-form', 'Praca w panelu', true],
             ['usun-konto', 'Usuń konto', 'Nieodwracalne usunięcie konta i wszystkich danych.', 'profile.partials.delete-user-form', 'Usunięcie konta', ! $isMicrosoft],
         ], fn ($s) => $s[5]));

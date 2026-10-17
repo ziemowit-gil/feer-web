@@ -94,7 +94,7 @@
                     @foreach ($sec['notes'] as $note)
                         <p class="mt-3 text-sm text-muted">{{ $note }}</p>
                     @endforeach
-                    @if ($sec['key'] === 'errors')
+                    @if ($sec['key'] === 'errors' && Route::has('admin.health.clear-log'))
                         <form method="POST" action="{{ route('admin.health.clear-log') }}" class="mt-3" onsubmit="return confirm('Wyczyścić log błędów? Bieżący log zostanie zapisany jako skompresowane archiwum.')">
                             @csrf
                             <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-broom" aria-hidden="true"></i> Wyczyść log</button>

@@ -99,7 +99,9 @@
         {{-- Poprzednia baza SQLite (zapas po przełączeniu) — usunięcie zwalnia miejsce i wyłącza „Wróć do SQLite”. --}}
         <section aria-labelledby="h-oldsqlite" class="mt-6 max-w-3xl rounded-md bg-white p-6">
             <h2 id="h-oldsqlite" class="font-bold text-ink">Poprzednia baza SQLite</h2>
-            @if ($oldSqlite === [])
+            @if (! Route::has('admin.baza-mysql.delete-old'))
+                <p class="mt-1 text-sm text-ink">Opcja pojawi się po wdrożeniu (./deploy.sh).</p>
+            @elseif ($oldSqlite === [])
                 <p class="mt-1 text-sm text-ink">Poprzedniej bazy już nie ma — serwis korzysta wyłącznie z MySQL.</p>
             @else
                 <p class="mt-1 text-sm text-ink">Plik {{ basename($oldSqlite[0]) }} ({{ number_format(array_sum(array_map('filesize', $oldSqlite)) / 1048576, 1, ',', ' ') }} MB) został jako zapas po przełączeniu. Usunięcie zwolni miejsce, ale powrót do SQLite przestanie być możliwy.</p>
