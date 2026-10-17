@@ -21,10 +21,10 @@ class NewsListFriendlyTest extends TestCase
 
         $html = $this->actingAs($admin)->get(route('admin.newsy.index'))->assertOk()->getContent();
 
-        $this->assertStringContainsString('href="'.route('admin.newsy.edit', $live).'" class="text-base font-bold', $html);
+        $this->assertStringContainsString('href="'.route('admin.newsy.edit', $live).'" class="text-[0.9375rem] font-bold', $html);
         $this->assertStringContainsString('Opublikowana', $html);
-        $this->assertStringContainsString('na '.now()->addDays(3)->format('d.m.Y').' 10:00', $html);
-        $this->assertStringContainsString('niewidoczna na stronie', $html);
+        $this->assertStringContainsString('· '.now()->addDays(3)->format('d.m').' 10:00', $html);
+        $this->assertStringContainsString('<span class="sr-only"> — niewidoczna na stronie</span>', $html);
         $this->assertStringContainsString('Edytuj<span class="sr-only">: Nowa aktualność</span>', $html);
         $this->assertStringContainsString('form="delete-'.$draft->id.'"', $html);
         $this->assertStringContainsString('<form id="delete-'.$draft->id.'"', $html);

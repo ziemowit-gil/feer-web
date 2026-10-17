@@ -57,7 +57,7 @@
                         <input type="checkbox" id="select-all" class="h-4 w-4 rounded border-gray-500" aria-label="Zaznacz wszystkie">
                     </th>
                     <th scope="col" class="px-2 py-3 font-bold">Aktualność</th>
-                    <th scope="col" class="hidden px-4 py-3 font-bold md:table-cell">Status</th>
+                    <th scope="col" class="hidden w-56 px-4 py-3 font-bold md:table-cell">Status</th>
                     <th scope="col" class="px-4 py-3 text-right font-bold"><span class="sr-only">Działania</span></th>
                 </tr>
             </thead>
@@ -74,42 +74,39 @@
                         ]);
                     @endphp
                     <tr class="group align-middle hover:bg-gray-50 {{ $item->is_clone ? 'bg-amber-50' : '' }}">
-                        <td class="px-4 py-3">
+                        <td class="px-4 py-2.5">
                             <input type="checkbox" name="ids[]" value="{{ $item->id }}" class="row-check h-4 w-4 rounded border-gray-500" aria-label="Zaznacz: {{ $item->title }}">
                         </td>
-                        <td class="px-2 py-3">
-                            <div class="flex items-center gap-4">
+                        <td class="px-2 py-2.5">
+                            <div class="flex items-center gap-3">
                                 @if ($img)
-                                    <img src="{{ $img }}" alt="" class="hidden h-14 w-20 flex-none rounded object-cover sm:block" loading="lazy"
+                                    <img src="{{ $img }}" alt="" class="hidden h-12 w-16 flex-none rounded object-cover sm:block" loading="lazy"
                                          style="object-position: {{ $item->image_focal_x ?? 50 }}% {{ $item->image_focal_y ?? 50 }}%">
                                 @else
-                                    <span class="hidden h-14 w-20 flex-none items-center justify-center rounded bg-gray-100 text-xs text-muted sm:flex">bez zdjęcia</span>
+                                    <span class="hidden h-12 w-16 flex-none items-center justify-center rounded bg-gray-100 text-muted sm:flex" title="Bez zdjęcia"><i class="fa-regular fa-image" aria-hidden="true"></i><span class="sr-only">Bez zdjęcia</span></span>
                                 @endif
                                 <div class="min-w-0">
-                                    <a href="{{ route('admin.newsy.edit', $item) }}" class="text-base font-bold leading-snug text-ink underline-offset-4 hover:text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                    <a href="{{ route('admin.newsy.edit', $item) }}" class="text-[0.9375rem] font-bold leading-snug text-ink underline-offset-4 hover:text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                         @if ($item->is_clone)<span class="text-amber-900">Kopia: </span>@endif{{ $item->title }}
                                     </a>
-                                    <p class="mt-0.5 text-sm text-muted">{{ $meta ? implode(' · ', $meta) : 'bez kategorii' }}</p>
+                                    <p class="mt-0.5 text-[0.8125rem] text-muted">{{ $meta ? implode(' · ', $meta) : 'bez kategorii' }}</p>
                                     {{-- Na telefonie status pod tytułem. --}}
                                     <p class="mt-0.5 text-sm font-bold md:hidden {{ $isLive ? 'text-ink' : 'text-muted' }}">{{ $isLive ? 'Opublikowana' : ($isPlanned ? 'Zaplanowana' : 'Szkic') }}</p>
                                 </div>
                             </div>
                         </td>
-                        <td class="hidden px-4 py-3 md:table-cell">
+                        <td class="hidden whitespace-nowrap px-4 py-2.5 text-sm md:table-cell">
                             @if ($isLive)
-                                <span class="inline-flex items-center gap-1.5 text-sm font-bold text-ink"><i class="fa-solid fa-circle-check text-brand-dark" aria-hidden="true"></i> Opublikowana</span>
-                                <span class="block text-sm text-muted">{{ $item->published_at->format('d.m.Y') }}</span>
+                                <span class="inline-flex items-center gap-1.5 text-ink"><i class="fa-solid fa-circle-check text-brand-dark" aria-hidden="true"></i> <strong>Opublikowana</strong> <span class="text-muted">· {{ $item->published_at->format('d.m.Y') }}</span></span>
                             @elseif ($isPlanned)
-                                <span class="inline-flex items-center gap-1.5 text-sm font-bold text-ink"><i class="fa-solid fa-clock text-brand-dark" aria-hidden="true"></i> Zaplanowana</span>
-                                <span class="block text-sm text-muted">na {{ $item->published_at?->format('d.m.Y H:i') }}</span>
+                                <span class="inline-flex items-center gap-1.5 text-ink"><i class="fa-solid fa-clock text-brand-dark" aria-hidden="true"></i> <strong>Zaplanowana</strong> <span class="text-muted">· {{ $item->published_at?->format('d.m H:i') }}</span></span>
                             @else
-                                <span class="inline-flex items-center gap-1.5 text-sm font-bold text-muted"><i class="fa-regular fa-file-lines" aria-hidden="true"></i> Szkic</span>
-                                <span class="block text-sm text-muted">niewidoczna na stronie</span>
+                                <span class="inline-flex items-center gap-1.5 text-muted" title="Niewidoczna na stronie"><i class="fa-regular fa-file-lines" aria-hidden="true"></i> <strong>Szkic</strong><span class="sr-only"> — niewidoczna na stronie</span></span>
                             @endif
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-1">
-                                <a href="{{ route('admin.newsy.edit', $item) }}" class="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-gray-100 px-3 text-sm font-bold text-ink hover:bg-brand-light hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                <a href="{{ route('admin.newsy.edit', $item) }}" class="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 text-sm font-bold text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                     <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj<span class="sr-only">: {{ $item->title }}</span>
                                 </a>
                                 @php $iconBtn = 'inline-flex h-11 w-11 items-center justify-center rounded-md text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark'; @endphp
