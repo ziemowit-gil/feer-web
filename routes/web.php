@@ -761,6 +761,14 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('cache/{group}/flush', [AdminCacheController::class, 'flush'])->name('cache.flush');
         Route::post('cache/flush-all', [AdminCacheController::class, 'flushAll'])->name('cache.flush-all');
 
+        Route::get('harmonogram', [\App\Http\Controllers\Admin\CronController::class, 'index'])->name('cron.index');
+        // Zmiany crontaba: ponowne podanie hasła (konta bez hasła, np. tylko Microsoft SSO — bez tego kroku).
+        Route::middleware(\App\Http\Middleware\ConfirmPasswordIfSet::class)->group(function () {
+            Route::post('harmonogram/napraw', [\App\Http\Controllers\Admin\CronController::class, 'repair'])->name('cron.repair');
+            Route::put('harmonogram', [\App\Http\Controllers\Admin\CronController::class, 'update'])->name('cron.update');
+            Route::post('harmonogram/przywroc', [\App\Http\Controllers\Admin\CronController::class, 'restore'])->name('cron.restore');
+        });
+
         Route::get('baza-mysql', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'index'])->name('baza-mysql.index');
         Route::post('baza-mysql/sprawdz', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'check'])->name('baza-mysql.check');
         Route::post('baza-mysql/konwertuj', [\App\Http\Controllers\Admin\DatabaseConverterController::class, 'convert'])->name('baza-mysql.convert');
