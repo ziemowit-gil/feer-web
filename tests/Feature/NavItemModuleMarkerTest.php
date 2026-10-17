@@ -26,6 +26,10 @@ class NavItemModuleMarkerTest extends TestCase
         $this->assertTrue($this->item(['url' => '/aktualnosci'])->isModuleLink());
         $this->assertTrue($this->item(['type' => 'events', 'url' => null])->isModuleLink());
         $this->assertFalse($this->item(['url' => '/o-nas'])->isModuleLink());
+        // Strona CMS wygrywa z przypięciem do modułu (jak „Sprawozdania”).
+        Page::create(['title' => 'Sprawozdania', 'slug' => 'sprawozdania', 'content' => '<p>x</p>', 'is_published' => true]);
+        $this->assertFalse($this->item(['url' => '/sprawozdania', 'module' => 'reports'])->isModuleLink());
+        $this->assertTrue($this->item(['url' => '/wolontariat', 'module' => 'volunteering'])->isModuleLink());
         $this->assertFalse($this->item(['url' => '/'])->isModuleLink());
         $this->assertFalse($this->item(['url' => 'https://example.org/x'])->isModuleLink());
         $this->assertFalse($this->item(['url' => '#kontakt'])->isModuleLink());
@@ -37,6 +41,6 @@ class NavItemModuleMarkerTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $html = $this->actingAs($admin)->get(route('admin.pozycje-menu.index', ['location' => 'main']))->assertOk()->getContent();
-        $this->assertMatchesRegularExpression('~title="Strona z modułu"\s*>M<span class="sr-only"> — strona z modułu</span>~u', $html);
+        $this->assertMatchesRegularExpression('~border border-brand-dark bg-brand-light[^"]*text-brand-dark" title="Strona z modułu">M<span class="sr-only"> — strona z modułu</span>~u', $html);
     }
 }

@@ -148,11 +148,18 @@ class NavItem extends Model
      */
     public function isModuleLink(): bool
     {
-        if (filled($this->module) || in_array($this->type, self::MODULE_TYPES, true)) {
-            return true; // pozycja przypięta do modułu (chowa się po jego wyłączeniu)
+        if (in_array($this->type, self::MODULE_TYPES, true)) {
+            return true;
         }
         if ($this->type !== 'link' || $this->is_button || blank($this->url) || Str::startsWith($this->url, '#')) {
             return false;
+        }
+        // Zwykła strona CMS ma pierwszeństwo, nawet gdy pozycja jest przypięta do modułu (np. „Sprawozdania”).
+        if ($this->editablePage()) {
+            return false;
+        }
+        if (filled($this->module)) {
+            return true; // pozycja przypięta do modułu (chowa się po jego wyłączeniu)
         }
 
         $url = $this->url;
@@ -163,8 +170,8 @@ class NavItem extends Model
             $url = Str::after($url, rtrim(url('/'), '/'));
         }
         $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
-        if ($path === '' || $this->editablePage()) {
-            return false; // strona główna albo zwykła strona CMS
+        if ($path === '') {
+            return false; // strona główna
         }
 
         try {
