@@ -311,6 +311,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/powiadomienia', [ProfileController::class, 'updateNotifications'])->name('profile.notifications');
     Route::patch('/profile/edytor', [ProfileController::class, 'updateEditor'])->name('profile.editor');
+    Route::patch('/profile/wyglad', [ProfileController::class, 'updateScheme'])->name('profile.scheme');
     Route::post('/profile/edytor/pozniej', [ProfileController::class, 'dismissEditorPrompt'])->name('profile.editor.dismiss');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });

@@ -24,7 +24,7 @@ class AdminJoomlaThemeTest extends TestCase
 
         $html = $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->getContent();
 
-        $this->assertStringContainsString('<body class="admin-joomla', $html);
+        $this->assertStringContainsString('<body data-scheme="krem" class="admin-joomla', $html);
         $this->assertStringContainsString('--j-cream: #f7f7e8', $html);
         $this->assertMatchesRegularExpression('~<h1 class="j-title[^"]*">\s*<span class="j-title-icon" aria-hidden="true"><i class="fa-solid fa-[a-z-]+"></i></span>~u', $html);
         $this->assertStringContainsString('Zobacz stronę<span class="sr-only"> (otwiera się w nowej karcie)</span>', $html);
@@ -51,7 +51,7 @@ class AdminJoomlaThemeTest extends TestCase
 
         $html = $this->actingAs($admin)->get(route('admin.podstrony.index'))->assertOk()->getContent();
 
-        $this->assertStringContainsString('<body class="admin-joomla', $html);
+        $this->assertStringContainsString('<body data-scheme="krem" class="admin-joomla', $html);
         $this->assertStringContainsString('class="j-toolbar', $html);
         $this->assertStringContainsString('<i class="fa-solid fa-file-lines"></i></span>', $html); // ikona sekcji „Strony” przy tytule
     }

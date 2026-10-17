@@ -57,6 +57,22 @@ class ProfileController extends Controller
     }
 
     /** Zapisz domyślny edytor treści (z profilu albo z okna wyboru po zalogowaniu). */
+    /** Mój profil → Wygląd panelu: schemat kolorów (User::ADMIN_SCHEMES). */
+    public function updateScheme(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'admin_scheme' => ['required', Rule::in(array_keys(User::ADMIN_SCHEMES))],
+        ], [
+            'admin_scheme.required' => 'Wybierz schemat kolorów.',
+            'admin_scheme.in' => 'Wybierz schemat kolorów z listy.',
+        ]);
+
+        $request->user()->update($data);
+
+        return Redirect::to(route('profile.edit').'#wyglad-panelu')
+            ->with('status', 'Schemat kolorów panelu: '.User::ADMIN_SCHEMES[$data['admin_scheme']][0].'.');
+    }
+
     public function updateEditor(Request $request): RedirectResponse
     {
         $data = $request->validate([

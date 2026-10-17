@@ -14,6 +14,12 @@
         background: var(--j-bg);
     }
 
+    /* Schematy kolorów (Mój profil → Wygląd panelu, User::ADMIN_SCHEMES) — zmieniają tylko tła, pasy i linie;
+       tekst (ink) i akcent (brand-dark) zostają, więc kontrast ≥ 4,5:1 obowiązuje w każdym schemacie. */
+    .admin-joomla[data-scheme="szary"] { --j-bg: #f3f4f6; --j-cream: #f9fafb; --j-cream-hover: #eef0f3; --j-line: #d1d5db; --j-head: #eef0f3; }
+    .admin-joomla[data-scheme="niebieski"] { --j-bg: #eef3fb; --j-cream: #f3f7ff; --j-cream-hover: #e6eeff; --j-line: #c9d6ee; --j-head: #e8f0ff; }
+    .admin-joomla[data-scheme="szalwia"] { --j-bg: #f1f5f1; --j-cream: #f5f9f4; --j-cream-hover: #e8f0e6; --j-line: #cddbcb; --j-head: #e9f1e7; }
+
     /* Nagłówek panelu: tytuł z ikoną strony, po prawej skróty i liczniki w pigułkach. */
     .admin-joomla .j-topbar { border-bottom: 1px solid var(--j-line); background: #fff; }
     .admin-joomla .j-title { display: flex; align-items: center; gap: .625rem; font-style: italic; }

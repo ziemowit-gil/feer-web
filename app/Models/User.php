@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Revoltify\Subscriptionify\Concerns\InteractsWithSubscriptions;
 use Revoltify\Subscriptionify\Contracts\Subscribable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences', 'default_editor'])]
+#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences', 'default_editor', 'admin_scheme'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable implements Subscribable
 {
@@ -54,6 +54,25 @@ class User extends Authenticatable implements Subscribable
         self::EDITOR_CLASSIC => 'Klasyczny (formularz)',
         self::EDITOR_BLOCKS  => 'Blokowy',
     ];
+
+    /**
+     * Schematy kolorów panelu (Mój profil → Wygląd panelu): klucz => [nazwa, opis, próbki kolorów].
+     * Style w admin/partials/theme-joomla (atrybut data-scheme na <body>); „pierwotny” = panel sprzed motywu Joomla.
+     */
+    public const ADMIN_SCHEMES = [
+        'krem' => ['Krem', 'Ciepłe, jasne tło i kremowe pasy — jak klasyczny panel Joomla.', ['#f4f4ee', '#f7f7e8', '#d6d6c2']],
+        'szary' => ['Szary', 'Neutralne, chłodne szarości — spokojnie i bez koloru.', ['#f3f4f6', '#f9fafb', '#d1d5db']],
+        'niebieski' => ['Niebieski', 'Jasne błękity w kolorze marki FEER.', ['#eef3fb', '#f3f7ff', '#c9d6ee']],
+        'szalwia' => ['Szałwiowy', 'Delikatna, przygaszona zieleń.', ['#f1f5f1', '#f5f9f4', '#cddbcb']],
+        'pierwotny' => ['Pierwotny', 'Wygląd panelu sprzed motywu Joomla — białe karty na szarym tle.', ['#f3f4f6', '#ffffff', '#e5e7eb']],
+    ];
+
+    public const DEFAULT_ADMIN_SCHEME = 'krem';
+
+    public function adminScheme(): string
+    {
+        return array_key_exists((string) $this->admin_scheme, self::ADMIN_SCHEMES) ? $this->admin_scheme : self::DEFAULT_ADMIN_SCHEME;
+    }
 
     /**
      * Get the attributes that should be cast.

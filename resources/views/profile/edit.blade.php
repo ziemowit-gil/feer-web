@@ -105,6 +105,19 @@
             </div>
             @endif
 
+            {{-- Wygląd panelu: schemat kolorów --}}
+            <div id="wyglad-panelu" class="grid gap-8 scroll-mt-6 py-8 md:grid-cols-[220px_1fr]">
+                <div>
+                    <h2 class="text-base font-bold text-ink">Wygląd panelu</h2>
+                    <p class="mt-1 text-sm text-muted">Kolory tła i pasków w panelu administracyjnym.</p>
+                </div>
+                <div class="rounded-lg border border-gray-200 bg-white p-6">
+                    <div class="max-w-md">
+                        @include('profile.partials.admin-scheme-form')
+                    </div>
+                </div>
+            </div>
+
             {{-- Powiadomienia --}}
             <div id="powiadomienia" class="grid gap-8 scroll-mt-6 py-8 md:grid-cols-[220px_1fr]">
                 <div>
