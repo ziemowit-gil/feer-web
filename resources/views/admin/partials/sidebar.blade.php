@@ -130,6 +130,13 @@
         .tm-sub { margin: .5rem .5rem .125rem; font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #4b5563; }
         .tm-sub:first-child { margin-top: .25rem; }
         .admin-sidebar.is-collapsed .tm-panel, .admin-sidebar.is-collapsed .nav-search { display: none !important; }
+        /* Szeroki ekran: grupy wysuwane w prawo zamiast akordeonu (navItem.flyIn); strzałka wskazuje w prawo. */
+        @media (min-width: 1024px) {
+            .admin-sidebar .tm-panel { display: none !important; }
+            .admin-sidebar .tm-chevron { transform: rotate(-90deg) !important; }
+            .nav-flyout a { min-height: 2.25rem; }
+            .nav-flyout a:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: -2px; }
+        }
         .admin-sidebar.is-collapsed .tm-head { justify-content: center; padding-left: .25rem; padding-right: .25rem; }
         .admin-sidebar.is-collapsed .tm-head .tm-badge { position: absolute; top: .125rem; right: .25rem; }
     </style>
@@ -199,10 +206,11 @@
                     $gid = 'tm-panel-' . $group['key'];
                 @endphp
                 <li class="tm-group relative {{ $group['active'] ? 'is-active' : '' }}" x-data="navItem(false)"
-                    @mouseenter="flyIn($el)" @mouseleave="flyOut()" @focusin="flyIn($el)" @focusout="flyOut($event)">
+                    @mouseenter="flyIn($el)" @mouseleave="flyOut()" @focusin="flyIn($el)" @focusout="flyOut($event)"
+                    @keydown.escape.stop="if (fly) { fly = false; $el.querySelector('.tm-head')?.focus(); }">
 
-                    <button type="button" class="tm-head nav-link relative" @click="toggle(@js($group['key']))"
-                            :aria-expanded="($store.adminNav.collapsed ? false : openKey === @js($group['key'])).toString()" aria-controls="{{ $gid }}"
+                    <button type="button" class="tm-head nav-link relative" @click="clickHead($el.closest('li'), @js($group['key']), (k) => toggle(k))"
+                            :aria-expanded="($store.adminNav.flyout() ? fly : openKey === @js($group['key'])).toString()" aria-controls="{{ $gid }}"
                             title="{{ $group['label'] }}">
                         <span class="tm-icon" aria-hidden="true"><i class="fa-solid {{ $group['icon'] }}"></i></span>
                         <span class="nav-label min-w-0 flex-1 truncate">{{ $group['label'] }}</span>
@@ -210,7 +218,7 @@
                             <span class="tm-badge nav-badge inline-flex h-5 min-w-5 flex-none items-center justify-center rounded-full bg-brand-dark px-1.5 text-[11px] font-bold leading-none text-white"
                                   aria-label="{{ $group['badge'] }} do obsłużenia">{{ $group['badge'] > 99 ? '99+' : $group['badge'] }}</span>
                         @endif
-                        <i class="nav-label fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': openKey === @js($group['key']) }" aria-hidden="true"></i>
+                        <i class="nav-label tm-chevron fa-solid fa-chevron-down text-[0.6rem] text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': openKey === @js($group['key']) }" aria-hidden="true"></i>
                     </button>
 
                     {{-- Lista pozycji grupy --}}
@@ -264,10 +272,10 @@
                         @endforeach
                     </div>
 
-                    {{-- Wysuwany panel grupy w zwężonej szynie (desktop): prawdziwe, osiągalne klawiaturą linki --}}
-                    <div x-show="fly && $store.adminNav.collapsed" x-cloak :style="'top:' + flyTop + 'px'"
-                         class="nav-flyout fixed z-50 hidden w-64 overflow-y-auto rounded-md border border-gray-200 bg-white py-2 shadow-xl lg:block"
-                         style="left: 4.25rem; max-height: calc(100vh - 2rem)">
+                    {{-- Panel grupy wysuwany w prawo (szeroki ekran i zwężona szyna): prawdziwe, osiągalne klawiaturą linki --}}
+                    <div x-show="fly && $store.adminNav.flyout()" x-cloak :style="'top:' + flyTop + 'px; left:' + flyLeft + 'px'"
+                         class="nav-flyout fixed z-50 hidden w-72 overflow-y-auto rounded-md border border-gray-200 bg-white py-2 shadow-xl lg:block"
+                         style="max-height: calc(100vh - 1rem)" role="group" aria-label="{{ $group['label'] }}">
                         <p class="px-3 pb-1 text-sm font-bold text-ink"><i class="fa-solid {{ $group['icon'] }} mr-1.5 text-brand-dark" aria-hidden="true"></i>{{ $group['label'] }}</p>
                         @foreach ($group['blocks'] as $block)
                             @if ($block['heading'])<p class="px-3 pt-2 text-[10px] font-bold uppercase tracking-wider text-muted">{{ $block['heading'] }}</p>@endif
@@ -278,6 +286,12 @@
                                     <span class="truncate">{{ $item['label'] }}</span>
                                     @if ($item['badge'])<span class="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-none {{ $item['badge_tone'] === 'muted' ? 'bg-gray-200 text-gray-700' : 'bg-brand-dark text-white' }}">{{ $item['badge'] > 99 ? '99+' : $item['badge'] }}</span>@endif
                                 </a>
+                                @foreach ($item['children'] as $child)
+                                    <a href="{{ $child['url'] }}" @if ($child['active']) aria-current="page" @endif
+                                       class="flex min-h-9 items-center gap-2 py-1 pl-10 pr-3 text-[13px] hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none {{ $child['active'] ? 'font-semibold text-brand-dark' : 'text-ink' }}">
+                                        <span class="truncate">{{ $child['label'] }}</span>
+                                    </a>
+                                @endforeach
                             @endforeach
                         @endforeach
                     </div>

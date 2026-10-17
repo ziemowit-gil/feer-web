@@ -31,6 +31,8 @@
                     this.collapsed = ! this.collapsed;
                     localStorage.setItem('admin-sidebar', this.collapsed ? '1' : '0');
                 },
+                // Grupy menu wysuwane w prawo: na szerokim ekranie (≥ 1024 px) zawsze, w zwężonej szynie też; na telefonie akordeon.
+                flyout() { return this.collapsed || window.matchMedia('(min-width: 1024px)').matches; },
                 open()  { this.mobileOpen = true;  setTimeout(() => document.querySelector('#admin-sidebar [aria-label="Zamknij menu"]')?.focus(), 50); },
                 close() { if (this.mobileOpen) { this.mobileOpen = false; document.querySelector('[aria-controls="admin-sidebar"]')?.focus(); } },
             });
@@ -63,16 +65,23 @@
                 },
             }));
 
-            // Pozycja menu: rozwijanie podpozycji + wysuwany panel w trybie zwiniętej szyny.
+            // Grupa menu: panel wysuwany w prawo (najechanie, fokus, kliknięcie; Esc zamyka) — przy krawędzi menu bocznego.
             Alpine.data('navItem', (initiallyOpen) => ({
                 open: initiallyOpen,
                 fly: false,
                 flyTop: 0,
+                flyLeft: 0,
                 flyIn(el) {
-                    if (! Alpine.store('adminNav').collapsed) return;
+                    if (! Alpine.store('adminNav').flyout()) return;
                     const r = el.getBoundingClientRect();
-                    this.flyTop = Math.min(r.top, window.innerHeight - 320);
+                    const side = el.closest('.admin-sidebar')?.getBoundingClientRect();
+                    this.flyTop = Math.max(8, Math.min(r.top, window.innerHeight - 320));
+                    this.flyLeft = side ? side.right : r.right;
                     this.fly = true;
+                },
+                clickHead(el, key, toggle) {
+                    if (! Alpine.store('adminNav').flyout() || Alpine.store('adminNav').collapsed) return toggle(key);
+                    this.fly ? (this.fly = false) : this.flyIn(el);
                 },
                 flyOut(e) {
                     if (e && e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) return;
