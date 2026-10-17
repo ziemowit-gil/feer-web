@@ -38,10 +38,13 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
-            'journal_mode' => null,
+            // Kilka zadań harmonogramu, worker kolejki i żądania WWW piszą do jednego pliku naraz.
+            // IMMEDIATE: transakcja od razu bierze blokadę zapisu, więc czeka (busy_timeout) zamiast
+            // padać z „database is locked” przy przejściu odczyt → zapis (tak padało SyncSubscriberToCrm).
+            'busy_timeout' => (int) env('DB_BUSY_TIMEOUT', 10000),
+            'journal_mode' => env('DB_JOURNAL_MODE'),
             'synchronous' => null,
-            'transaction_mode' => 'DEFERRED',
+            'transaction_mode' => env('DB_TRANSACTION_MODE', 'IMMEDIATE'),
         ],
 
         // Dedicated database for the "Wiem FEER" blog (articles + comments),
@@ -59,10 +62,10 @@ return [
             ),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
-            'journal_mode' => null,
+            'busy_timeout' => (int) env('DB_BUSY_TIMEOUT', 10000),
+            'journal_mode' => env('BLOG_DB_JOURNAL_MODE'),
             'synchronous' => null,
-            'transaction_mode' => 'DEFERRED',
+            'transaction_mode' => env('DB_TRANSACTION_MODE', 'IMMEDIATE'),
         ],
 
         'mysql' => [
