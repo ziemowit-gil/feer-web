@@ -73,6 +73,22 @@ class ProfileController extends Controller
             ->with('status', 'Schemat kolorów panelu: '.User::ADMIN_SCHEMES[$data['admin_scheme']][0].'.');
     }
 
+    /** Mój profil → Wygląd panelu: styl menu bocznego (User::ADMIN_NAV_STYLES). */
+    public function updateNavStyle(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'admin_nav_style' => ['required', Rule::in(array_keys(User::ADMIN_NAV_STYLES))],
+        ], [
+            'admin_nav_style.required' => 'Wybierz styl menu.',
+            'admin_nav_style.in' => 'Wybierz styl menu z listy.',
+        ]);
+
+        $request->user()->update($data);
+
+        return Redirect::to(route('profile.edit').'#menu-panelu')
+            ->with('status', 'Styl menu panelu: '.User::ADMIN_NAV_STYLES[$data['admin_nav_style']][0].'.');
+    }
+
     public function updateEditor(Request $request): RedirectResponse
     {
         $data = $request->validate([

@@ -31,8 +31,10 @@
                     this.collapsed = ! this.collapsed;
                     localStorage.setItem('admin-sidebar', this.collapsed ? '1' : '0');
                 },
-                // Grupy menu wysuwane w prawo: na szerokim ekranie (≥ 1024 px) zawsze, w zwężonej szynie też; na telefonie akordeon.
-                flyout() { return this.collapsed || window.matchMedia('(min-width: 1024px)').matches; },
+                // Styl menu z profilu (User::ADMIN_NAV_STYLES): „flyout” — grupy wysuwane w prawo na szerokim ekranie (≥ 1024 px),
+                // „accordion” — rozwijane w pasku. Zwężona szyna zawsze wysuwa (brak miejsca), telefon zawsze rozwija.
+                style: @js(auth()->user()?->adminNavStyle() ?? \App\Models\User::DEFAULT_ADMIN_NAV_STYLE),
+                flyout() { return this.collapsed || (this.style === 'flyout' && window.matchMedia('(min-width: 1024px)').matches); },
                 open()  { this.mobileOpen = true;  setTimeout(() => document.querySelector('#admin-sidebar [aria-label="Zamknij menu"]')?.focus(), 50); },
                 close() { if (this.mobileOpen) { this.mobileOpen = false; document.querySelector('[aria-controls="admin-sidebar"]')?.focus(); } },
             });

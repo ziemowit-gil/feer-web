@@ -36,7 +36,7 @@
      class="fixed inset-0 z-30 bg-ink/50 lg:hidden" aria-hidden="true"></div>
 
 <aside id="admin-sidebar"
-       class="admin-sidebar fixed inset-y-0 left-0 z-40 flex flex-col border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
+       class="admin-sidebar nav-style-{{ auth()->user()?->adminNavStyle() ?? \App\Models\User::DEFAULT_ADMIN_NAV_STYLE }} fixed inset-y-0 left-0 z-40 flex flex-col border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
        :class="{ 'is-collapsed': $store.adminNav.collapsed, 'is-open': $store.adminNav.mobileOpen }"
        @keydown.escape.window="$store.adminNav.close()"
        aria-label="Panel administracyjny">
@@ -135,10 +135,11 @@
         .admin-joomla .tm-head.tm-premium { border-color: var(--color-brand-dark); }
         .tm-panel .tm-premium-item { box-shadow: inset 0 0 0 2px var(--color-brand-dark); }
         .nav-flyout .tm-premium-item { margin: .125rem .5rem; border-radius: .375rem; box-shadow: inset 0 0 0 2px var(--color-brand-dark); }
-        /* Szeroki ekran: grupy wysuwane w prawo zamiast akordeonu (navItem.flyIn); strzałka wskazuje w prawo. */
+        /* Szeroki ekran, styl „wysuwane” (Mój profil → Menu panelu): grupy wysuwane w prawo zamiast akordeonu (navItem.flyIn);
+           strzałka wskazuje w prawo. Styl „rozwijane” zostawia akordeon jak na telefonie. */
         @media (min-width: 1024px) {
-            .admin-sidebar .tm-panel { display: none !important; }
-            .admin-sidebar .tm-chevron { transform: rotate(-90deg) !important; }
+            .admin-sidebar.nav-style-flyout .tm-panel { display: none !important; }
+            .admin-sidebar.nav-style-flyout .tm-chevron { transform: rotate(-90deg) !important; }
             .nav-flyout a { min-height: 2.5rem; font-size: .9375rem !important; }
             .nav-flyout--wide { width: min(48rem, calc(100vw - 20rem)); }
             .nav-flyout--wide .nav-flyout-cols { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); column-gap: .5rem; align-items: start; }

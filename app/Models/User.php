@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Revoltify\Subscriptionify\Concerns\InteractsWithSubscriptions;
 use Revoltify\Subscriptionify\Contracts\Subscribable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences', 'default_editor', 'admin_scheme'])]
+#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences', 'default_editor', 'admin_scheme', 'admin_nav_style'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable implements Subscribable
 {
@@ -72,6 +72,22 @@ class User extends Authenticatable implements Subscribable
     public function adminScheme(): string
     {
         return array_key_exists((string) $this->admin_scheme, self::ADMIN_SCHEMES) ? $this->admin_scheme : self::DEFAULT_ADMIN_SCHEME;
+    }
+
+    /**
+     * Styl menu bocznego panelu (Mój profil → Wygląd panelu): grupy wysuwane w dymku obok paska
+     * albo rozwijane w miejscu, pod nagłówkiem grupy. Na telefonie menu jest zawsze rozwijane.
+     */
+    public const ADMIN_NAV_STYLES = [
+        'flyout' => ['Wysuwane', 'Pozycje grupy otwierają się w dymku obok paska po najechaniu albo kliknięciu.'],
+        'accordion' => ['Rozwijane', 'Pozycje grupy rozwijają się pod jej nazwą, w samym pasku — jedna grupa naraz.'],
+    ];
+
+    public const DEFAULT_ADMIN_NAV_STYLE = 'flyout';
+
+    public function adminNavStyle(): string
+    {
+        return array_key_exists((string) $this->admin_nav_style, self::ADMIN_NAV_STYLES) ? $this->admin_nav_style : self::DEFAULT_ADMIN_NAV_STYLE;
     }
 
     /**
