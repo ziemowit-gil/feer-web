@@ -147,4 +147,29 @@ class NewsletterPermissionsTest extends TestCase
             UserGroup::where('name', 'Redakcja newslettera')->value('modules'),
         );
     }
+
+    public function test_menu_newslettera_rozwija_tylko_dozwolone_podpozycje(): void
+    {
+        $children = function (User $user): array {
+            $item = collect(AdminMenu::for($user))->flatMap(fn ($g) => $g['blocks'])->flatMap(fn ($b) => $b['items'])->firstWhere('key', 'newsletter');
+
+            return array_column($item['children'], 'label');
+        };
+
+        $admin = $children($this->user(User::ROLE_ADMIN));
+        foreach (['Pulpit', 'Kampanie', 'Nowa kampania', 'Subskrybenci', 'Listy', 'Segmenty', 'Szablony i maile systemowe', 'Ustawienia'] as $label) {
+            $this->assertContains($label, $admin);
+        }
+
+        $editor = $children($this->user(User::ROLE_NEWSLETTER_EDITOR));
+        $this->assertContains('Nowa kampania', $editor);
+        $this->assertContains('Szablony i maile systemowe', $editor);
+        foreach (['Subskrybenci', 'Listy', 'Segmenty', 'Ustawienia'] as $label) {
+            $this->assertNotContains($label, $editor);
+        }
+
+        $reports = $children($this->user(User::ROLE_EDITOR, [NewsletterPermissions::REPORTS]));
+        $this->assertNotContains('Nowa kampania', $reports);
+        $this->assertContains('Kampanie', $reports);
+    }
 }
