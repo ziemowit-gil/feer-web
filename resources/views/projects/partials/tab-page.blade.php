@@ -68,6 +68,9 @@
                     @include('partials.schedule', ['page' => $n, 'showHeading' => false])
                 @elseif ($n->isFaq())
                     @include('partials.faq', ['page' => $n])
+                @elseif ($n->tyfloKind())
+                    {{-- Konsultacje / szkolenia tyflo: sekcje z harmonogramem (treść strony wypisana wyżej). --}}
+                    @include('page.partials.typed._tyflo-page', ['page' => $n, 'kind' => $n->tyfloKind(), 'embedded' => true, 'headingTag' => (! $loop->first || $hasKids) ? 'h3' : 'h2'])
                 @endif
             </div>
         @endforeach

@@ -240,6 +240,8 @@
                         @include('partials.schedule', ['page' => $subpage, 'showHeading' => false])
                     @elseif ($subpage->isFaq())
                         @include('partials.faq', ['page' => $subpage])
+                    @elseif ($subpage->tyfloKind())
+                        @include('page.partials.typed._tyflo-page', ['page' => $subpage, 'kind' => $subpage->tyfloKind(), 'embedded' => true, 'headingTag' => 'h3'])
                     @endif
                     <a href="{{ route('page.show', $subpage) }}" class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
                         Otwórz jako osobną stronę <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
@@ -267,6 +269,8 @@
                                 @include('partials.schedule', ['page' => $subpage, 'showHeading' => false])
                             @elseif ($subpage->isFaq())
                                 @include('partials.faq', ['page' => $subpage])
+                            @elseif ($subpage->tyfloKind())
+                                @include('page.partials.typed._tyflo-page', ['page' => $subpage, 'kind' => $subpage->tyfloKind(), 'embedded' => true, 'headingTag' => 'h3'])
                             @endif
                             <a href="{{ route('page.show', $subpage) }}" class="mt-3 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">
                                 Otwórz jako osobną stronę <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>

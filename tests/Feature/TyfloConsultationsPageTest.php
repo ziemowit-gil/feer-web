@@ -276,7 +276,7 @@ class TyfloConsultationsPageTest extends TestCase
     public function test_views_use_no_low_contrast_or_color_only_classes(): void
     {
         foreach ([
-            'resources/views/page/partials/typed/tyflo-consultations.blade.php',
+            'resources/views/page/partials/typed/_tyflo-page.blade.php',
             'resources/views/page/partials/typed/_tyflo-table.blade.php',
         ] as $file) {
             $source = file_get_contents(base_path($file));

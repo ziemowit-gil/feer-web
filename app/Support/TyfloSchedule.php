@@ -27,12 +27,43 @@ class TyfloSchedule
         'cancelled' => 'Odwołane',
     ];
 
+    /**
+     * Teksty widoku wg rodzaju strony: 'consultations' (konsultacje) albo 'trainings' (szkolenia).
+     *
+     * @return array<string, string>
+     */
+    public static function labels(string $kind): array
+    {
+        return $kind === 'trainings' ? [
+            'about' => 'O szkoleniu',
+            'people' => 'Prowadzący',
+            'person' => 'Prowadzący',
+            'schedule' => 'Harmonogram szkoleń',
+            'next' => 'Najbliższy termin szkolenia',
+            'cta' => 'Zapisz się na szkolenie',
+            'genitive' => 'szkoleń tyflo',
+            'enrol' => 'na szkolenie',
+            'empty' => 'Nowe terminy szkoleń zostaną wkrótce opublikowane.',
+            'a11y' => 'Dostępność szkolenia',
+        ] : [
+            'about' => 'O konsultacjach',
+            'people' => 'Konsultanci',
+            'person' => 'Konsultant',
+            'schedule' => 'Harmonogram konsultacji',
+            'next' => 'Najbliższy wolny termin',
+            'cta' => 'Zapisz się na konsultacje',
+            'genitive' => 'konsultacji tyflo',
+            'enrol' => 'na konsultacje',
+            'empty' => 'Nowe terminy konsultacji zostaną wkrótce opublikowane.',
+            'a11y' => 'Dostępność konsultacji',
+        ];
+    }
+
     /** Statusy, przy których można się jeszcze zapisać. */
     public const BOOKABLE = ['open', 'few'];
 
     /**
-     * Terminy ze znaną datą, posortowane rosnąco. Każdy: date (Carbon), starts/ends
-     * (Carbon|null), time_label, mode/mode_label, place, consultant, seats, status,
+     * Terminy ze znaną datą, posortowane rosnąco. Każdy: date (Carbon), date_to (Carbon|null, szkolenia wielodniowe), time_label, mode/mode_label, place, consultant, seats, status,
      * status_label, note, bookable, past.
      *
      * @param  array<int, mixed>  $rows  type_data['slots']
@@ -59,19 +90,32 @@ class TyfloSchedule
             return null;
         }
 
+        // Data zakończenia (szkolenia wielodniowe) — pomijana, gdy wcześniejsza niż początek.
+        $dateTo = null;
+        if (filled($r['date_to'] ?? null)) {
+            try {
+                $dateTo = Carbon::parse($r['date_to'])->startOfDay();
+            } catch (\Throwable) {
+            }
+            if ($dateTo && ($dateTo->lessThanOrEqualTo($date))) {
+                $dateTo = null;
+            }
+        }
+
         $from = self::time($r['time_from'] ?? null);
         $to = self::time($r['time_to'] ?? null);
         $mode = array_key_exists($r['mode'] ?? '', self::MODES) ? $r['mode'] : null;
         $status = array_key_exists($r['status'] ?? '', self::STATUSES) ? $r['status'] : 'open';
 
         // Termin minął po godzinie końca (a bez niej — po początku, a bez godzin — po dniu).
-        $endsAt = $date->copy()->setTimeFromTimeString(($to ?? $from ?? '23:59').':00');
-        if ($endsAt->lessThan($date->copy()->setTimeFromTimeString(($from ?? '00:00').':00'))) {
+        $endsAt = ($dateTo ?? $date)->copy()->setTimeFromTimeString(($to ?? $from ?? '23:59').':00');
+        if (! $dateTo && $endsAt->lessThan($date->copy()->setTimeFromTimeString(($from ?? '00:00').':00'))) {
             $endsAt = $endsAt->addDay();
         }
 
         return [
             'date' => $date,
+            'date_to' => $dateTo,
             'time_from' => $from,
             'time_to' => $to,
             'time_label' => match (true) {

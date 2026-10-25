@@ -486,6 +486,14 @@ class Page extends Model
         return $this->type === 'schedule';
     }
 
+    /** Rodzaj strony tyflo ('consultations' | 'trainings') albo null, gdy to inny typ. */
+    public function tyfloKind(): ?string
+    {
+        $type = PageTypeRegistry::get($this->type);
+
+        return $type instanceof \App\PageTypes\TyfloPageType ? $type->kind() : null;
+    }
+
     public function isAbout(): bool
     {
         return $this->type === 'about';

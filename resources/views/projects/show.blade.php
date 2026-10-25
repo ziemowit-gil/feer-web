@@ -546,6 +546,8 @@
                             @include('partials.schedule', ['page' => $subpage, 'showHeading' => false])
                         @elseif ($subpage->isFaq())
                             @include('partials.faq', ['page' => $subpage])
+                        @elseif ($subpage->tyfloKind())
+                            @include('page.partials.typed._tyflo-page', ['page' => $subpage, 'kind' => $subpage->tyfloKind(), 'embedded' => true, 'headingTag' => 'h3', 'onGray' => true])
                         @endif
                     </section>
                 @endforeach

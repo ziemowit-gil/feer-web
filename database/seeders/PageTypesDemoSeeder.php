@@ -66,6 +66,7 @@ class PageTypesDemoSeeder extends Seeder
         $this->recruitment();
         $this->tender();
         $this->tyfloConsultations();
+        $this->tyfloTrainings();
         $this->formPage();
 
         // Listy stron typów „Rekrutacja do projektu" i „Zapytanie ofertowe" (shortcody z filtrem i archiwum).
@@ -508,6 +509,28 @@ class PageTypesDemoSeeder extends Seeder
                     ['date' => now()->addDays(7)->toDateString(), 'time_from' => '10:00', 'time_to' => '12:00', 'mode' => 'stationary', 'place' => 'Biuro FEER, sala 2', 'consultant' => 'Anna Nowak', 'seats' => '4', 'status' => 'open'],
                     ['date' => now()->addDays(14)->toDateString(), 'time_from' => '16:00', 'time_to' => '18:00', 'mode' => 'online', 'place' => 'Link po zgłoszeniu', 'consultant' => 'Anna Nowak', 'seats' => '1', 'status' => 'few'],
                     ['date' => now()->subDays(7)->toDateString(), 'time_from' => '10:00', 'time_to' => '12:00', 'mode' => 'phone', 'status' => 'open'],
+                ],
+            ],
+        ]);
+    }
+
+    private function tyfloTrainings(): void
+    {
+        $this->page('szkolenie-tyflo', 'tyflo_trainings', [
+            'title' => 'Przykład: szkolenie tyflo — czytnik ekranu w pracy',
+            'content' => '<p>Dwudniowe szkolenie praktyczne z obsługi komputera i poczty e-mail za pomocą czytnika ekranu.</p>',
+            'type_data' => [
+                'lead' => 'Naucz się samodzielnie pracować na komputerze z czytnikiem ekranu NVDA.',
+                'tt_duration' => '16 godzin, 2 dni', 'tt_cost' => 'Bezpłatnie', 'tt_group' => 'do 6 osób', 'tt_certificate' => 'Zaświadczenie o ukończeniu',
+                'audience' => [['text' => 'Osoby niewidome i słabowidzące']],
+                'tt_program' => [['title' => 'Podstawy NVDA', 'text' => 'Skróty klawiszowe i nawigacja po systemie.'], ['title' => 'Poczta e-mail i przeglądarka', 'text' => 'Samodzielne wysyłanie wiadomości i korzystanie z internetu.']],
+                'requirements' => [['text' => 'Własny laptop z zainstalowanym NVDA (w razie potrzeby wypożyczymy)']],
+                'consultants' => [['name' => 'Jan Kowalski', 'role' => 'Trener tyflo', 'text' => 'Od 10 lat uczy pracy z czytnikami ekranu.']],
+                'contact_name' => 'Biuro szkoleń', 'contact_phone' => '500 000 000', 'contact_email' => 'szkolenia@example.org',
+                'tc_signup_note' => 'Zapisy trwają do 3 dni przed szkoleniem.',
+                'slots' => [
+                    ['date' => now()->addDays(14)->toDateString(), 'date_to' => now()->addDays(15)->toDateString(), 'time_from' => '09:00', 'time_to' => '15:00', 'mode' => 'stationary', 'place' => 'Biuro FEER, sala 2', 'consultant' => 'Jan Kowalski', 'seats' => '6', 'status' => 'open'],
+                    ['date' => now()->subDays(30)->toDateString(), 'time_from' => '09:00', 'time_to' => '15:00', 'mode' => 'online', 'status' => 'full'],
                 ],
             ],
         ]);

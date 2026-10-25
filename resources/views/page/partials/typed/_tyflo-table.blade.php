@@ -1,7 +1,8 @@
 {{--
     Tabela terminów konsultacji tyflo (nadchodzące lub zakończone).
     Zmienne: $slots (z App\Support\TyfloSchedule::slots), $caption (opis dla czytników ekranu),
-    $labelId (id nagłówka sekcji), $bookUrl (adres zapisu albo ''), $showBook (czy link „Zapisz się”).
+    $labelId (id nagłówka sekcji), $bookUrl (adres zapisu albo ''), $showBook (czy link „Zapisz się”),
+    $person (nagłówek kolumny osoby prowadzącej), $enrol (np. „na konsultacje” — kontekst linku dla czytnika).
     Region przewijalny jest fokusowalny (WCAG 2.1.1) — na wąskim ekranie tabela przewija się w poziomie.
     Status, forma i uwagi są tekstem; ikony są ozdobne (aria-hidden), kolor niczego nie koduje.
 --}}
@@ -19,7 +20,7 @@
                 <th scope="col" class="px-4 py-3">Data</th>
                 <th scope="col" class="px-4 py-3">Godzina</th>
                 <th scope="col" class="px-4 py-3">Forma i miejsce</th>
-                @if ($hasConsultant)<th scope="col" class="px-4 py-3">Konsultant</th>@endif
+                @if ($hasConsultant)<th scope="col" class="px-4 py-3">{{ $person }}</th>@endif
                 <th scope="col" class="px-4 py-3">Liczba miejsc</th>
                 <th scope="col" class="px-4 py-3">Status</th>
                 @if ($hasNote)<th scope="col" class="px-4 py-3">Uwagi</th>@endif
@@ -27,9 +28,10 @@
         </thead>
         <tbody>
             @foreach ($slots as $s)
-                <tr class="align-top odd:bg-gray-50 hover:bg-brand-light" data-slot-status="{{ $s['status'] }}">
+                <tr class="align-top {{ $zebra ?? 'odd:bg-gray-50' }} hover:bg-brand-light" data-slot-status="{{ $s['status'] }}">
                     <th scope="row" class="px-4 py-3 font-bold">
                         <time datetime="{{ $s['date']->format('Y-m-d') }}">{{ \App\Support\TyfloSchedule::dateLabel($s['date']) }}</time>
+                        @if ($s['date_to'])<span class="block font-normal">do <time datetime="{{ $s['date_to']->format('Y-m-d') }}">{{ \App\Support\TyfloSchedule::dateLabel($s['date_to']) }}</time></span>@endif
                     </th>
                     <td class="whitespace-nowrap px-4 py-3">
                         @if ($s['time_label'])
@@ -52,7 +54,7 @@
                     <td class="px-4 py-3">
                         <span class="font-bold"><i class="fa-solid {{ $statusIcons[$s['status']] }} mr-1.5 text-brand-dark" aria-hidden="true"></i>{{ $s['status_label'] }}</span>
                         @if ($showBook && $bookUrl !== '' && $s['bookable'])
-                            <a href="{{ $bookUrl }}" class="{{ $tcLink }} mt-1 block">Zapisz się<span class="sr-only"> na konsultacje: {{ \App\Support\TyfloSchedule::dateLabel($s['date']) }}{{ $s['time_from'] ? ', godz. '.$s['time_from'] : '' }}</span></a>
+                            <a href="{{ $bookUrl }}" class="{{ $tcLink }} mt-1 block">Zapisz się<span class="sr-only"> {{ $enrol }}: {{ \App\Support\TyfloSchedule::dateLabel($s['date']) }}{{ $s['time_from'] ? ', godz. '.$s['time_from'] : '' }}</span></a>
                         @endif
                     </td>
                     @if ($hasNote)<td class="px-4 py-3">{{ $s['note'] ?? '—' }}</td>@endif
