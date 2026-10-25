@@ -584,6 +584,45 @@ function start(config) {
         selectBlock(copy.id, { focusWrapper: true });
         announce('Zduplikowano blok');
     }
+    // Schowek bloków: Ctrl+C / X / V na zaznaczonym bloku (tryb nawigacji) albo z menu „Więcej opcji”.
+    // Do schowka systemowego trafia JSON (można wkleić do innej strony) i zwykły tekst; pamięć edytora
+    // służy jako zapas dla pozycji menu.
+    const BLOCK_CLIP = 'application/x-feer-blocks';
+    let blockClip = null;
+    function blockPlainText(b) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = [b.attrs.text, b.attrs.summary, b.attrs.title, b.attrs.html, ...(b.attrs.items || []).map((i) => (typeof i === 'string' ? i : i?.label || ''))].filter((v) => typeof v === 'string').join('\n');
+        return tmp.textContent.trim();
+    }
+    function copyBlock(id, clipboardData = null) {
+        const r = find(id);
+        if (!r) return false;
+        if (r.block.type === 'column') { announce('Kolumny nie można skopiować — skopiuj cały blok „Kolumny”'); return false; }
+        const json = JSON.stringify(serialize([r.block]));
+        blockClip = json;
+        if (clipboardData) {
+            clipboardData.setData(BLOCK_CLIP, json);
+            clipboardData.setData('text/plain', blockPlainText(r.block));
+        } else {
+            navigator.clipboard?.writeText(blockPlainText(r.block)).catch(() => {});
+        }
+        announce('Skopiowano blok: ' + BLOCKS[r.block.type].title);
+        return true;
+    }
+    function cutBlock(id, clipboardData = null) {
+        if (copyBlock(id, clipboardData)) removeBlock(id);
+    }
+    function pasteBlocks(json, afterId) {
+        let list;
+        try { list = hydrate(JSON.parse(json)); } catch (e) { list = []; }
+        if (!list.length) return false;
+        const r = find(afterId);
+        insertBlocks(list, r?.block.type === 'column' ? { parentId: r.block.id } : (r ? { afterId } : null));
+        selectBlock(list[list.length - 1].id, { focusWrapper: true });
+        announce('Wklejono blok: ' + BLOCKS[list[0].type].title);
+        return true;
+    }
+
     function replaceBlock(id, blocks, focus = 'start') {
         const r = find(id);
         if (!r) return;
@@ -1424,6 +1463,17 @@ function start(config) {
             role: 'group', 'aria-label': 'Blok: ' + def.title,
         });
         wrap.append(def.edit ? def.edit(b) : editors[b.type](b));
+        // Szybkie wstawianie „w miejscu”: plus pod blokiem (tylko dla myszy; z klawiatury — „/”, menu bloku
+        // „Wstaw blok po” i przycisk „Dodaj blok”, więc plus nie zwiększa liczby tabulatorów).
+        if (b.type !== 'column') {
+            const add = h('button', { type: 'button', class: 'be-between', tabindex: '-1', 'aria-hidden': 'true', title: 'Wstaw blok poniżej', onMousedown: (e) => e.preventDefault() }, icon('plus'));
+            add.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const r = find(b.id);
+                if (r) togglePanel('inserter', r.parent ? { parentId: r.parent.id, index: r.index + 1 } : { index: r.index + 1 });
+            });
+            wrap.append(add);
+        }
         wrap.addEventListener('dragover', onDragOver);
         wrap.addEventListener('drop', onDrop);
         return wrap;
@@ -2392,6 +2442,11 @@ function start(config) {
 
         groups.push(h('div', { class: 'be-tool-group' }, dropdown(icon('ellipsis-vertical'), [
             { label: 'Duplikuj', icon: 'copy', shortcut: mod + '+Shift+D', onClick: () => duplicateBlock(b.id) },
+            ...(b.type === 'column' ? [] : [
+                { label: 'Kopiuj blok', icon: 'copy', shortcut: mod + '+C', onClick: () => copyBlock(b.id) },
+                { label: 'Wytnij blok', icon: 'scissors', shortcut: mod + '+X', onClick: () => cutBlock(b.id) },
+            ]),
+            ...(blockClip ? [{ label: 'Wklej blok po', icon: 'paste', shortcut: mod + '+V', onClick: () => pasteBlocks(blockClip, b.id) }] : []),
             { label: 'Wstaw blok przed', icon: 'arrow-up', onClick: () => { const r = find(b.id); togglePanel('inserter', r.parent ? { parentId: r.parent.id, index: r.index } : { index: r.index }); } },
             { label: 'Wstaw blok po', icon: 'arrow-down', onClick: () => { const r = find(b.id); togglePanel('inserter', r.parent ? { parentId: r.parent.id, index: r.index + 1 } : { index: r.index + 1 }); } },
             ...(b.type === 'callout' || b.type === 'details' ? [{ label: 'Rozgrupuj (zostaw samą treść)', icon: 'object-ungroup', onClick: () => replaceBlock(b.id, b.inner.length ? b.inner : [block('paragraph')]) }] : []),
@@ -2474,6 +2529,16 @@ function start(config) {
         dragId = null; dropTarget = null;
         moveBlockTo(moving, id, after);
     }
+
+    // Schowek bloków działa, gdy fokus jest na samym bloku (nie w tekście — tam obowiązuje zwykłe kopiowanie).
+    canvas.addEventListener('copy', (e) => { const w = e.target; if (w.classList?.contains('be-block') && copyBlock(w.dataset.id, e.clipboardData)) e.preventDefault(); });
+    canvas.addEventListener('cut', (e) => { const w = e.target; if (w.classList?.contains('be-block') && e.clipboardData) { e.preventDefault(); cutBlock(w.dataset.id, e.clipboardData); } });
+    canvas.addEventListener('paste', (e) => {
+        const w = e.target;
+        if (!w.classList?.contains('be-block')) return;
+        const json = e.clipboardData?.getData(BLOCK_CLIP) || (e.clipboardData?.getData('text/plain') ? '' : blockClip);
+        if (json && pasteBlocks(json, w.dataset.id)) e.preventDefault();
+    });
 
     // Klik/fokus w bloku → zaznaczenie najgłębszego bloku.
     canvas.addEventListener('focusin', (e) => {
@@ -3323,6 +3388,7 @@ function start(config) {
             ['Esc', 'Tryb nawigacji (strzałki — wybór bloku, Enter — edycja, Delete — usuń)'],
             ['Alt+F10', 'Przejdź do paska narzędzi bloku'], ['Alt+Shift+↑ / ↓', 'Przenieś blok w górę / w dół'],
             [mod + '+Shift+D', 'Duplikuj blok'], ['Shift+Alt+Z', 'Usuń blok'],
+            [mod + '+C / X / V', 'W trybie nawigacji (Esc): kopiuj, wytnij, wklej cały blok'],
         ];
         const dlg = h('dialog', { class: 'be-dialog be-dialog--small', 'aria-labelledby': 'be-keys-title' },
             h('div', { class: 'be-dialog-head' }, h('h2', { id: 'be-keys-title' }, 'Skróty klawiszowe'), h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': 'Zamknij', onClick: () => { dlg.close(); dlg.remove(); } }, icon('xmark'))),
