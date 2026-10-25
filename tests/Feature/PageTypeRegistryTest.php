@@ -70,11 +70,12 @@ class PageTypeRegistryTest extends TestCase
             'partners' => 'Partnerzy i sponsorzy (logotypy w grupach, z modułu Partnerzy lub własne)',
             'recruitment' => 'Rekrutacja do projektu (status naboru, terminy, kryteria, dokumenty, zgłoszenie)',
             'tender' => 'Zapytanie ofertowe (zasada konkurencyjności: termin ofert, warunki, kryteria, zmiany, wynik)',
+            'tyflo_consultations' => 'Konsultacje tyflo (opis, konsultanci, zgłoszenie i harmonogram terminów)',
         ], Page::types());
 
         $this->assertSame([
             'Treść i informacja' => ['standard', 'faq', 'glossary', 'guide', 'documents', 'regulation'],
-            'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution', 'recruitment'],
+            'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution', 'recruitment', 'tyflo_consultations'],
             'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets', 'reports', 'partners', 'tender'],
             'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
             'Kontakt i wydarzenia' => ['contact', 'form_page', 'event', 'schedule'],
@@ -86,7 +87,7 @@ class PageTypeRegistryTest extends TestCase
         ksort($icons);
         $expected = [
             'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced', 'redirect' => 'fa-share', 'menu_link' => 'fa-link', 'menu_heading' => 'fa-heading', 'reports' => 'fa-file-invoice', 'partners' => 'fa-handshake',
-            'recruitment' => 'fa-user-plus', 'tender' => 'fa-file-signature', 'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
+            'recruitment' => 'fa-user-plus', 'tyflo_consultations' => 'fa-eye-low-vision', 'tender' => 'fa-file-signature', 'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
             'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
             'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
             'about' => 'fa-building', 'contact' => 'fa-envelope', 'wspolpraca' => 'fa-handshake', 'brand_assets' => 'fa-palette', 'legacy' => 'fa-clock-rotate-left',
@@ -96,7 +97,7 @@ class PageTypeRegistryTest extends TestCase
         $this->assertSame($expected, $icons);
 
         $this->assertSame(
-            ['form_page', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'menu_link', 'reports', 'partners', 'recruitment', 'tender'],
+            ['form_page', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'menu_link', 'reports', 'partners', 'recruitment', 'tender', 'tyflo_consultations'],
             Page::typeDataTypes(),
         );
 
@@ -107,7 +108,7 @@ class PageTypeRegistryTest extends TestCase
 
         $listKeys = PageTypeRegistry::listKeys();
         sort($listKeys);
-        $this->assertSame(['audience', 'benefits', 'bonus', 'criteria', 'docs', 'members', 'notices', 'partner_groups', 'partners', 'price_rows', 'rec_faq', 'requirements', 'results', 'steps', 'terms', 'versions'], $listKeys);
+        $this->assertSame(['audience', 'benefits', 'bonus', 'consultants', 'criteria', 'docs', 'members', 'notices', 'partner_groups', 'partners', 'price_rows', 'rec_faq', 'requirements', 'results', 'slots', 'steps', 'terms', 'versions'], $listKeys);
 
         // Każdy typ `type_data` ma widok publiczny i sekcję pól w panelu, które istnieją.
         foreach (PageTypeRegistry::all() as $key => $type) {

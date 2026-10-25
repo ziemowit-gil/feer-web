@@ -65,6 +65,7 @@ class PageTypesDemoSeeder extends Seeder
         $this->partners();
         $this->recruitment();
         $this->tender();
+        $this->tyfloConsultations();
         $this->formPage();
 
         // Listy stron typów „Rekrutacja do projektu" i „Zapytanie ofertowe" (shortcody z filtrem i archiwum).
@@ -487,6 +488,27 @@ class PageTypesDemoSeeder extends Seeder
                     ['group' => 'Sponsorzy', 'name' => 'Firma (przykład)', 'note' => 'Sponsor szkoleń'],
                 ],
                 'partners_cta_label' => 'Zostań partnerem', 'partners_cta_url' => '/kontakt',
+            ],
+        ]);
+    }
+
+    private function tyfloConsultations(): void
+    {
+        $this->page('konsultacje-tyflo', 'tyflo_consultations', [
+            'title' => 'Przykład: konsultacje tyflo',
+            'content' => '<p>Indywidualne konsultacje tyflopedagogiczne: nauka orientacji przestrzennej, obsługi czytnika ekranu i sprzętu dla osób niewidomych i słabowidzących.</p>',
+            'type_data' => [
+                'lead' => 'Bezpłatne konsultacje z tyflopedagogiem — stacjonarnie, online lub telefonicznie.',
+                'audience' => [['text' => 'Osoby niewidome i słabowidzące'], ['text' => 'Rodzice i opiekunowie dzieci z dysfunkcją wzroku']],
+                'consultants' => [['name' => 'Anna Nowak', 'role' => 'Tyflopedagog', 'text' => 'Orientacja przestrzenna i samodzielne poruszanie się.', 'email' => 'tyflo@example.org']],
+                'contact_name' => 'Biuro konsultacji', 'contact_phone' => '500 000 000', 'contact_email' => 'tyflo@example.org',
+                'tc_signup_note' => 'Zgłoś się co najmniej 2 dni przed terminem — telefonicznie, e-mailem lub przez formularz.',
+                'tc_accessibility' => 'Biuro jest dostępne dla osób poruszających się na wózku; można przyjść z psem przewodnikiem.',
+                'slots' => [
+                    ['date' => now()->addDays(7)->toDateString(), 'time_from' => '10:00', 'time_to' => '12:00', 'mode' => 'stationary', 'place' => 'Biuro FEER, sala 2', 'consultant' => 'Anna Nowak', 'seats' => '4', 'status' => 'open'],
+                    ['date' => now()->addDays(14)->toDateString(), 'time_from' => '16:00', 'time_to' => '18:00', 'mode' => 'online', 'place' => 'Link po zgłoszeniu', 'consultant' => 'Anna Nowak', 'seats' => '1', 'status' => 'few'],
+                    ['date' => now()->subDays(7)->toDateString(), 'time_from' => '10:00', 'time_to' => '12:00', 'mode' => 'phone', 'status' => 'open'],
+                ],
             ],
         ]);
     }
