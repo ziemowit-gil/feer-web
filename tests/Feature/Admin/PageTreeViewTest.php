@@ -296,4 +296,112 @@ class PageTreeViewTest extends TestCase
         $html = $this->actingAs($editor)->get(route('admin.podstrony.index'))->getContent();
         $this->assertMatchesRegularExpression('/data-page-id="'.$locked->id.'"[^>]*data-can-edit="0"/s', $html);
     }
+
+    public function test_panel_pokazuje_pozycje_wsrod_rodzenstwa_z_przyciskami_wyzej_nizej(): void
+    {
+        $root = $this->page('Dział');
+        $x = $this->page('X', ['parent_id' => $root->id, 'order' => 0]);
+        $y = $this->page('Y', ['parent_id' => $root->id, 'order' => 1]);
+        $this->page('Z', ['parent_id' => $root->id, 'order' => 2]);
+
+        $html = $this->actingAs($this->admin())->get(route('admin.podstrony.index', ['wybrana' => $y->id]))->assertOk()->getContent();
+
+        // Szczegóły: pozycja w zapisanej kolejności zamiast surowego numeru `order`.
+        $this->assertStringContainsString('wśród podstron „Dział”', $html);
+        $this->assertMatchesRegularExpression('/<span class="font-bold">2<\/span> z 3/u', $html);
+        $this->assertStringContainsString('aria-label="Wyżej: Y (na pozycję 1)"', $html);
+        $this->assertStringContainsString('aria-label="Niżej: Y (na pozycję 3)"', $html);
+        $this->assertStringNotContainsString('Kolejność</dt>', $html);
+
+        // Tabela podstron wybranej strony: te same przyciski, skrajne wyłączone.
+        $html = $this->actingAs($this->admin())->get(route('admin.podstrony.index', ['wybrana' => $root->id]))->assertOk()->getContent();
+        $this->assertStringContainsString('aria-label="Niżej: X (na pozycję 2)"', $html);
+        $this->assertMatchesRegularExpression('/disabled[^>]*aria-label="Wyżej: X"/u', $html);
+        $this->assertStringNotContainsString('name="order"', $html);
+    }
+
+    public function test_formularz_wyzej_nizej_przenosi_strone_i_wraca_do_wybranej(): void
+    {
+        $root = $this->page('Dział');
+        $x = $this->page('X', ['parent_id' => $root->id, 'order' => 0]);
+        $this->page('Y', ['parent_id' => $root->id, 'order' => 1]);
+        $z = $this->page('Z', ['parent_id' => $root->id, 'order' => 2]);
+        $admin = $this->admin();
+
+        // Zwykły formularz (bez nagłówka JSON) — przekierowanie z komunikatem o nowej pozycji.
+        $this->actingAs($admin)->post(route('admin.podstrony.uloz'), ['id' => $z->id, 'parent_id' => $root->id, 'position' => 1, 'wybrana' => $root->id])
+            ->assertRedirect(route('admin.podstrony.index', ['wybrana' => $root->id]))
+            ->assertSessionHas('status', 'Przeniesiono stronę „Z” na pozycję 2 z 3.');
+        $this->assertSame(['X', 'Z', 'Y'], Page::where('parent_id', $root->id)->orderBy('order')->pluck('title')->all());
+
+        // Błąd z formularza też wraca do wybranej strony z komunikatem, a nie JSON-em.
+        $this->actingAs($admin)->post(route('admin.podstrony.uloz'), ['id' => $root->id, 'parent_id' => $x->id, 'position' => 0, 'wybrana' => $root->id])
+            ->assertRedirect(route('admin.podstrony.index', ['wybrana' => $root->id]))
+            ->assertSessionHas('error', 'Nie można przenieść strony do niej samej ani do jej podstrony.');
+        $this->assertNull($root->fresh()->parent_id);
+    }
+
+    public function test_przeniesienie_w_drzewie_umieszcza_na_poczatku_albo_koncu_nowego_rodzenstwa(): void
+    {
+        $root = $this->page('Dział');
+        $this->page('X', ['parent_id' => $root->id, 'order' => 0]);
+        $this->page('Y', ['parent_id' => $root->id, 'order' => 1]);
+        $c = $this->page('C');
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->patch(route('admin.podstrony.przenies', $c), ['parent_id' => $root->id, 'position' => 'start'])
+            ->assertRedirect(route('admin.podstrony.index', ['wybrana' => $c->id]))
+            ->assertSessionHas('status', 'Strona „C” została przeniesiona pod stronę „Dział” (na początek).');
+        $this->assertSame(['C', 'X', 'Y'], Page::where('parent_id', $root->id)->orderBy('order')->pluck('title')->all());
+        $this->assertSame([0, 1, 2], Page::where('parent_id', $root->id)->orderBy('order')->pluck('order')->all());
+
+        // Bez wskazania miejsca — na koniec.
+        $this->actingAs($admin)->patch(route('admin.podstrony.przenies', $c), ['parent_id' => $root->id])
+            ->assertSessionHas('status', 'Strona „C” została przeniesiona pod stronę „Dział” (na koniec).');
+        $this->assertSame(['X', 'Y', 'C'], Page::where('parent_id', $root->id)->orderBy('order')->pluck('title')->all());
+
+        // Na poziom główny, na początek.
+        $this->actingAs($admin)->patch(route('admin.podstrony.przenies', $c), ['parent_id' => null, 'position' => 'start'])
+            ->assertSessionHas('status', 'Strona „C” została przeniesiona na poziom główny (na początek).');
+        $this->assertNull($c->fresh()->parent_id);
+        $this->assertSame(0, $c->fresh()->order);
+    }
+
+    public function test_kolejnosc_stron_dzialania_liczy_sie_w_obrebie_dzialania(): void
+    {
+        $category = \App\Models\Category::create(['name' => 'Audyty', 'slug' => 'audyty']);
+        $project = \App\Models\Project::create(['title' => 'Audyt', 'slug' => 'audyt', 'is_published' => true, 'category_id' => $category->id]);
+        $main = $this->page('Główna', ['order' => 5]);
+        $p1 = $this->page('P1', ['project_id' => $project->id, 'order' => 0]);
+        $p2 = $this->page('P2', ['project_id' => $project->id, 'order' => 1]);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->postJson(route('admin.podstrony.uloz'), ['id' => $p2->id, 'parent_id' => null, 'position' => 0])
+            ->assertOk()->assertJson(['ok' => true, 'message' => 'Przeniesiono stronę „P2” na pozycję 1 z 2.']);
+
+        $this->assertSame(0, $p2->fresh()->order);
+        $this->assertSame(1, $p1->fresh()->order);
+        $this->assertSame(5, $main->fresh()->order, 'Strony spoza działania zostają bez zmian.');
+
+        // Panel: pozycja liczona wśród podstron działania; drzewo zna działanie każdej strony (data-project).
+        $html = $this->actingAs($admin)->get(route('admin.podstrony.index', ['wybrana' => $p1->id]))->assertOk()->getContent();
+        $this->assertStringContainsString('wśród podstron działania „Audyt”', $html);
+        $this->assertMatchesRegularExpression('/data-page-id="'.$p1->id.'"[^>]*data-project="'.$project->id.'"/s', $html);
+        $this->assertMatchesRegularExpression('/data-page-id="'.$main->id.'"[^>]*data-project="0"/s', $html);
+    }
+
+    public function test_drzewo_ma_komunikat_o_wynikach_filtru_a_pasek_wybor_miejsca_nowej_strony(): void
+    {
+        $root = $this->page('Dział');
+
+        $html = $this->actingAs($this->admin())->get(route('admin.podstrony.index', ['wybrana' => $root->id]))->assertOk()->getContent();
+
+        $this->assertStringContainsString('id="tree-filter-status" role="status" aria-live="polite"', $html);
+        $this->assertStringContainsString('aria-describedby="tree-filter-status"', $html);
+        // „Dodaj podstronę” pod wybraną stroną oraz druga możliwość: strona najwyższego poziomu.
+        $this->assertStringContainsString(route('admin.podstrony.create', ['parent_id' => $root->id]), $html);
+        $this->assertStringContainsString('id="add-page-menu"', $html);
+        $this->assertStringContainsString('na najwyższym poziomie', $html);
+        $this->assertStringContainsString('jako podstronę „<span class="font-bold">Dział</span>”', $html);
+    }
 }

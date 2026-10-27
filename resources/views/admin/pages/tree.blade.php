@@ -85,11 +85,34 @@
                 <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Eksport CSV
             </a>
             <span style="width:1px;height:1.5rem;background:#d1d5db" aria-hidden="true"></span>
-            <a href="{{ route('admin.podstrony.create', array_filter(['parent_id' => $selected?->id])) }}"
-                class="inline-flex items-center rounded bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
-                style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i> {{ $selected ? 'Dodaj podstronę' : 'Dodaj stronę' }}
-            </a>
+            @php $addBtn = 'inline-flex items-center bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2'; @endphp
+            @if ($selected)
+                {{-- Przycisk dzielony: główna część dodaje podstronę wybranej strony, strzałka rozwija obie możliwości
+                     (podstrona albo strona najwyższego poziomu). Escape zamyka listę i oddaje fokus strzałce. --}}
+                <div class="relative" style="display:inline-flex" x-data="{ open: false }" @keydown.escape.prevent="open = false; $refs.addToggle.focus()" @click.outside="open = false">
+                    <a href="{{ route('admin.podstrony.create', ['parent_id' => $selected->id]) }}" class="{{ $addBtn }}" style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem;border-radius:.25rem 0 0 .25rem"
+                        title="Nowa strona pod „{{ $selected->title }}”">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj podstronę
+                    </a>
+                    <button type="button" x-ref="addToggle" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="false" aria-controls="add-page-menu"
+                        aria-label="Gdzie dodać nową stronę" class="{{ $addBtn }}" style="min-height:2.25rem;padding:.375rem .625rem;border-left:1px solid rgba(255,255,255,.4);border-radius:0 .25rem .25rem 0">
+                        <i class="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
+                    </button>
+                    <div id="add-page-menu" x-show="open" x-cloak class="absolute right-0 top-full z-30 mt-1 rounded-lg border border-gray-200 bg-white py-1.5 shadow-xl" style="min-width:18rem">
+                        <p class="px-3 pb-1 pt-0.5 text-xs font-bold text-muted">Dodaj nową stronę</p>
+                        <a href="{{ route('admin.podstrony.create', ['parent_id' => $selected->id]) }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-ink hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none">
+                            <i class="fa-solid fa-indent w-4 text-center text-gray-500" aria-hidden="true"></i><span>jako podstronę „<span class="font-bold">{{ $selected->title }}</span>”</span>
+                        </a>
+                        <a href="{{ route('admin.podstrony.create') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-ink hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none">
+                            <i class="fa-solid fa-house w-4 text-center text-gray-500" aria-hidden="true"></i><span>na najwyższym poziomie</span>
+                        </a>
+                    </div>
+                </div>
+            @else
+                <a href="{{ route('admin.podstrony.create') }}" class="{{ $addBtn }} rounded" style="min-height:2.25rem;padding:.375rem 1rem;gap:.375rem">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj stronę
+                </a>
+            @endif
         </div>
     @endpush
 
@@ -102,13 +125,16 @@
         <nav aria-label="Drzewo stron" id="page-tree" x-show="open" :class="{ 'tree-full': full, 'opt-hide-drafts': opts.hideDrafts, 'opt-menu-only': opts.menuOnly, 'opt-hide-projects': opts.hideProjects, 'opt-no-chips': opts.noChips, 'opt-no-counts': opts.noCounts }" class="min-w-0 rounded-md bg-white" :style="twoCols ? 'position:sticky;top:1rem;align-self:start' : ''"
             x-data="{
                 q: '',
+                filterInfo: '',
                 filter() {
                     const q = this.q.trim().toLowerCase();
                     const items = this.$root.querySelectorAll('[data-tree-node]');
                     const groups = this.$root.querySelectorAll('[data-tree-group]');
                     items.forEach(li => { li.hidden = false; });
                     groups.forEach(g => { g.hidden = false; });
-                    if (! q) return;
+                    if (! q) { this.filterInfo = ''; return; }
+                    const hits = [...items].filter(li => li.dataset.title.includes(q)).length;
+                    this.filterInfo = hits ? 'Pasuje stron: ' + hits + ' z ' + items.length + '.' : 'Żadna strona nie pasuje do filtru.';
                     groups.forEach(g => {
                         const hit = g.dataset.title.includes(q);
                         g.hidden = ! hit;
@@ -179,9 +205,11 @@
                     <label for="tree-filter" class="sr-only">Filtruj drzewo po tytule</label>
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted" aria-hidden="true"></i>
-                        <input type="search" id="tree-filter" x-model="q" @input="filter()" placeholder="Filtruj drzewo…" autocomplete="off"
+                        <input type="search" id="tree-filter" x-model="q" @input="filter()" placeholder="Filtruj drzewo…" autocomplete="off" aria-describedby="tree-filter-status"
                             class="w-full rounded border-gray-500 py-1.5 pl-8 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
+                    {{-- Wynik filtrowania: widoczny tekst i komunikat dla czytników ekranu (element zawsze w DOM, więc aria-live działa). --}}
+                    <p id="tree-filter-status" role="status" aria-live="polite" class="mt-1 text-xs text-muted" :class="filterInfo ? '' : 'sr-only'" x-text="filterInfo"></p>
                 </div>
                 @php
                     $usedTypes = $byParent->flatten()->pluck('type')->unique();
@@ -357,7 +385,16 @@
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Adres</dt><dd class="mt-0.5 break-all font-mono text-xs">/{{ $selected->slug }}</dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Strona nadrzędna</dt>
                             <dd class="mt-0.5">@if ($rootline->isNotEmpty())<a href="{{ route('admin.podstrony.index', ['wybrana' => $rootline->last()->id]) }}" class="text-brand-dark hover:underline">{{ $rootline->last()->title }}</a>@else<span class="text-muted">— strona najwyższego poziomu</span>@endif</dd></div>
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Kolejność</dt><dd class="mt-0.5">{{ $selected->order }}</dd></div>
+                        <div>
+                            <dt class="text-xs font-bold uppercase tracking-wide text-muted">Pozycja</dt>
+                            <dd class="mt-0.5 flex flex-wrap items-center gap-2">
+                                <span><span class="font-bold">{{ $position + 1 }}</span> z {{ $siblings->count() }}</span>
+                                <span class="text-xs text-muted">{{ $siblingsLabel }}</span>
+                                @if ($canEditSelected && $siblings->count() > 1)
+                                    @include('admin.pages.partials.position-buttons', ['page' => $selected, 'parentId' => $parentKey ?: null, 'index' => $position, 'count' => $siblings->count(), 'selectedId' => $selected->id])
+                                @endif
+                            </dd>
+                        </div>
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">W menu głównym</dt><dd class="mt-0.5">{{ ! $selected->parent_id && $selected->show_in_menu ? 'Tak' : 'Nie' }}</dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Nawigacja po podstronach</dt><dd class="mt-0.5">{{ $selected->show_side_nav ? (\App\Models\Page::SIDE_NAV_STYLES[$selected->side_nav_style] ?? 'Boczne drzewo') : 'Wyłączona' }}</dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Ostatnia zmiana</dt><dd class="mt-0.5">{{ $selected->updated_at?->format('d.m.Y H:i') ?? '—' }}</dd></div>
@@ -432,7 +469,7 @@
                                 </div>
                             @endif
                             @unless ($selected->is_system)
-                                <form method="POST" action="{{ route('admin.podstrony.destroy', $selected) }}" class="ml-auto" data-confirm="Usunąć stronę „{{ $selected->title }}”? Trafi do kosza.">
+                                <form method="POST" action="{{ route('admin.podstrony.destroy', $selected) }}" data-confirm="Usunąć stronę „{{ $selected->title }}”? Trafi do kosza.">
                                     @csrf @method('DELETE') <input type="hidden" name="wybrana" value="{{ $selected->id }}">
                                     <button type="submit" class="inline-flex min-h-9 items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 bg-red-50 hover:bg-red-100">
                                         <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
@@ -441,20 +478,31 @@
                             @endunless
                         </div>
 
-                        {{-- Przeniesienie w drzewie --}}
-                        <form method="POST" action="{{ route('admin.podstrony.przenies', $selected) }}" class="mt-4 flex flex-wrap items-end gap-2 rounded-lg bg-gray-50 p-3">
+                        {{-- Przeniesienie w drzewie: nowa strona nadrzędna i miejsce wśród jej podstron (kolejność wśród
+                             obecnych sąsiadów zmieniają przyciski „Wyżej / Niżej” przy pozycji oraz przeciąganie w drzewie). --}}
+                        <form method="POST" action="{{ route('admin.podstrony.przenies', $selected) }}" class="mt-4 rounded-lg bg-gray-50 p-3" aria-labelledby="move-heading">
                             @csrf @method('PATCH')
-                            <div class="min-w-56 flex-1">
-                                <label for="move-parent" class="mb-1 block text-xs font-bold text-ink">Przenieś w drzewie</label>
-                                <select id="move-parent" name="parent_id" class="w-full rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark">
-                                    <option value="" @selected(! $selected->parent_id)>— poziom główny —</option>
-                                    @foreach ($moveOptions as $opt)
-                                        <option value="{{ $opt['id'] }}" @selected($selected->parent_id === $opt['id']) @disabled($opt['disabled'])>{{ $opt['label'] }}</option>
-                                    @endforeach
-                                </select>
+                            <h3 id="move-heading" class="text-xs font-bold uppercase tracking-wide text-muted">Przenieś w drzewie</h3>
+                            <div class="mt-2 flex flex-wrap items-end gap-2">
+                                <div class="min-w-56 flex-1">
+                                    <label for="move-parent" class="mb-1 block text-xs font-bold text-ink">Pod stronę</label>
+                                    <select id="move-parent" name="parent_id" class="w-full rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                                        <option value="" @selected(! $selected->parent_id)>— poziom główny —</option>
+                                        @foreach ($moveOptions as $opt)
+                                            <option value="{{ $opt['id'] }}" @selected($selected->parent_id === $opt['id']) @disabled($opt['disabled'])>{{ $opt['label'] }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="move-position" class="mb-1 block text-xs font-bold text-ink">Umieść</label>
+                                    <select id="move-position" name="position" class="rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                                        <option value="end">na końcu podstron</option>
+                                        <option value="start">na początku podstron</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="{{ $btn }}"><i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i> Przenieś</button>
                             </div>
-                            <button type="submit" class="{{ $btn }}"><i class="fa-solid fa-arrows-up-down-left-right" aria-hidden="true"></i> Przenieś</button>
-                            <p class="basis-full text-xs text-muted">Adres URL strony nie zmienia się. Strona nie może trafić do samej siebie ani do własnej podstrony.</p>
+                            <p class="mt-2 text-xs text-muted">Adres URL strony nie zmienia się. Strona nie może trafić do samej siebie ani do własnej podstrony.</p>
                         </form>
                     @endif
                 </div>
@@ -701,6 +749,9 @@
             const idOf = li => parseInt(li.dataset.pageId, 10);
             const parentIdOf = li => { const p = li.parentElement.closest('[data-tree-node]'); return p ? idOf(p) : 0; };
             const siblingsOf = (li, exceptId) => [...li.parentElement.children].filter(n => n.matches('[data-tree-node]') && idOf(n) !== exceptId);
+            // Na najwyższym poziomie kolejność liczy się w obrębie działania (grupy „Podstrony działań”): przed/za stroną
+            // z innego działania (albo bez działania) upuścić się nie da — „do środka” zawsze można.
+            const crossGroup = (li, zone) => zone !== 'inside' && parentIdOf(li) === 0 && dragLi.dataset.project !== li.dataset.project;
             const clearMarks = () => tree.querySelectorAll('[data-drop]').forEach(r => {
                 r.removeAttribute('data-drop');
                 r.classList.remove('bg-brand-light', 'ring-2', 'ring-brand-dark', 'border-t-2', 'border-b-2', 'border-brand-dark');
@@ -762,9 +813,10 @@
                 if (! row) return;
                 const li = liOf(row);
                 if (dragLi.contains(li)) { clearMarks(); return; }          // nie na siebie ani własnego potomka
+                const zone = zoneOf(row, e);
+                if (crossGroup(li, zone)) { clearMarks(); return; }
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
-                const zone = zoneOf(row, e);
                 clearMarks();
                 row.dataset.drop = zone;
                 if (zone === 'inside') row.classList.add('bg-brand-light', 'ring-2', 'ring-brand-dark');
@@ -793,6 +845,7 @@
                 if (dragLi.contains(li)) return;
                 const zone = zoneOf(row, e);
                 clearMarks();
+                if (crossGroup(li, zone)) return;
                 if (zone === 'inside') {
                     send(id, idOf(li), 100000);                              // na koniec podstron
                 } else {

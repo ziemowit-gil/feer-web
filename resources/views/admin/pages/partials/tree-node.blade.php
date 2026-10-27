@@ -19,7 +19,7 @@
             // Dane dla menu kontekstowego drzewa (tree.blade.php): adresy podglądu i uprawnienia wiersza.
             $nodeLive = $node->is_published && ($node->publish_at === null || $node->publish_at->isPast());
         @endphp
-        <li data-tree-node data-page-id="{{ $node->id }}" data-pos="{{ $loop->index }}" data-folder="{{ $kids->isNotEmpty() ? 1 : 0 }}" data-state="{{ $state }}" data-menu="{{ $node->show_in_menu ? 1 : 0 }}" data-title="{{ \Illuminate\Support\Str::lower($node->title) }}"
+        <li data-tree-node data-page-id="{{ $node->id }}" data-pos="{{ $loop->index }}" data-project="{{ $node->project_id ?: 0 }}" data-folder="{{ $kids->isNotEmpty() ? 1 : 0 }}" data-state="{{ $state }}" data-menu="{{ $node->show_in_menu ? 1 : 0 }}" data-title="{{ \Illuminate\Support\Str::lower($node->title) }}"
             data-label="{{ $node->title }}" data-published="{{ $node->is_published ? 1 : 0 }}" data-system="{{ $node->is_system ? 1 : 0 }}"
             data-can-edit="{{ ! $node->is_locked || auth()->user()->isAdmin() ? 1 : 0 }}"
             data-public-url="{{ $node->publicUrl() }}" data-view-url="{{ $nodeLive ? $node->publicUrl() : $node->previewUrl() }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>

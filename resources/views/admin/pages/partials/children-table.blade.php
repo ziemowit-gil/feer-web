@@ -1,6 +1,7 @@
 {{--
-    Tabela podstron w prawym panelu widoku drzewa.
-    Zmienne: $children, $selected (null = poziom główny), $byParent.
+    Tabela podstron w prawym panelu widoku drzewa. Kolejność: pozycja wśród rodzeństwa i przyciski
+    „Wyżej / Niżej” (zamiast surowego numeru `order`, który dla nowych stron jest zawsze 0).
+    Zmienne: $children (w zapisanej kolejności), $selected (null = poziom główny), $byParent, $inheritedDisabled.
 --}}
 <div class="overflow-x-auto rounded-md bg-white">
     <table class="w-full text-left text-sm">
@@ -9,7 +10,7 @@
             <tr>
                 <th scope="col" class="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted">Strona</th>
                 <th scope="col" class="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted">Status</th>
-                <th scope="col" class="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted">Kolejność</th>
+                <th scope="col" class="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-muted">Pozycja</th>
                 <th scope="col" class="px-4 py-2.5 text-right text-xs font-bold uppercase tracking-wide text-muted">Akcje</th>
             </tr>
         </thead>
@@ -27,15 +28,12 @@
                         @include('admin.pages.partials.status-chip', ['page' => $child, 'inherited' => isset($inheritedDisabled[$child->id])])
                     </td>
                     <td class="px-4 py-2.5">
-                        <form method="POST" action="{{ route('admin.podstrony.kolejnosc', $child) }}" class="flex items-center gap-1">
-                            @csrf @method('PATCH')
-                            <input type="hidden" name="wybrana" value="{{ $selected?->id }}">
-                            <input type="number" name="order" min="0" value="{{ $child->order }}" aria-label="Kolejność strony {{ $child->title }}"
-                                class="w-16 rounded border-gray-500 py-1 text-sm focus:border-brand-dark focus:ring-brand-dark">
-                            <button type="submit" class="rounded p-1.5 text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" aria-label="Zapisz kolejność strony {{ $child->title }}" title="Zapisz kolejność">
-                                <i class="fa-solid fa-check text-xs" aria-hidden="true"></i>
-                            </button>
-                        </form>
+                        <div class="flex items-center gap-2">
+                            <span class="whitespace-nowrap text-sm" style="min-width:3rem"><span class="font-bold">{{ $loop->iteration }}</span> <span class="text-muted">z {{ $loop->count }}</span></span>
+                            @if ($loop->count > 1 && (! $child->is_locked || auth()->user()->isAdmin()))
+                                @include('admin.pages.partials.position-buttons', ['page' => $child, 'parentId' => $selected?->id, 'index' => $loop->index, 'count' => $loop->count, 'selectedId' => $selected?->id])
+                            @endif
+                        </div>
                     </td>
                     <td class="px-4 py-2.5">
                         <div class="flex items-center justify-end gap-1.5">
