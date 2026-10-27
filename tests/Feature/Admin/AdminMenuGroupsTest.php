@@ -60,7 +60,9 @@ class AdminMenuGroupsTest extends TestCase
 
         $this->assertMatchesRegularExpression('/class="tm-group relative is-active"/', $html);
         $this->assertStringContainsString('Witryna', $html);
-        $this->assertSame(8, substr_count($html, 'class="tm-head nav-link relative"'));
+        // 8 grup jako nagłówki; moduły premium (AdminMenu::PREMIUM_GROUPS) mają dodatkowo klasę obwódki.
+        $this->assertSame(8, substr_count($html, 'class="tm-head nav-link relative'));
+        $this->assertSame(count(AdminMenu::PREMIUM_GROUPS), substr_count($html, 'class="tm-head nav-link relative tm-premium"'));
         $this->assertStringContainsString('aria-label="Menu panelu"', $html);
     }
 

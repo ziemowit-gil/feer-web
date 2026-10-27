@@ -221,7 +221,7 @@
                     @mouseenter="flyIn($el)" @mouseleave="flyOut()" @focusin="flyIn($el)" @focusout="flyOut($event)"
                     @click.outside="fly = false" @keydown.escape.stop="if (fly) { fly = false; $el.querySelector('.tm-head')?.focus(); }">
 
-                    <button type="button" class="tm-head nav-link relative {{ ($group['premium'] ?? false) ? 'tm-premium' : '' }}" @click="clickHead($el.closest('li'), @js($group['key']), (k) => toggle(k))"
+                    <button type="button" class="tm-head nav-link relative{{ ($group['premium'] ?? false) ? ' tm-premium' : '' }}" @click="clickHead($el.closest('li'), @js($group['key']), (k) => toggle(k))"
                             :aria-expanded="($store.adminNav.flyout() ? fly : openKey === @js($group['key'])).toString()" aria-controls="{{ $gid }}"
                             title="{{ $group['label'] }}{{ ($group['premium'] ?? false) ? ' — moduł premium' : '' }}">
                         <span class="tm-icon" aria-hidden="true"><i class="fa-solid {{ $group['icon'] }}"></i></span>
