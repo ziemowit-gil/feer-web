@@ -12,20 +12,21 @@
 {{-- Wolontariat w stylu FEER: jasny nagłówek, oferty jako płaskie karty z paskiem koloru grupy docelowej, fakty jako zwykły tekst. --}}
 @section('content')
     <section class="bg-gray-50">
-        <div class="mx-auto max-w-6xl px-4 py-12 md:py-16">
+        <div class="mx-auto max-w-6xl px-4 py-10 md:py-12">
             <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">Wolontariat</h1>
-            <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">Dołącz do nas w konkretnym działaniu. Poniżej znajdziesz aktualne oferty. Każda odpowiada na to, co warto wiedzieć, zanim się zgłosisz.</p>
+            <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">Dołącz do nas w konkretnym działaniu. Każda oferta opisuje, na czym polega pomoc i co warto wiedzieć, zanim się zgłosisz.</p>
         </div>
     </section>
 
-    <div class="mx-auto max-w-6xl px-4 py-12">
+    <div class="mx-auto max-w-6xl px-4 pb-12" style="padding-top:2rem">
         @if ($ads->isEmpty())
             <div class="rounded-md bg-gray-50 p-8 text-center text-ink">
                 Obecnie nie prowadzimy naboru. Zajrzyj wkrótce albo napisz do nas przez
                 <a href="{{ route('contact.show') }}" class="font-bold text-brand-dark underline underline-offset-4 hover:no-underline">formularz kontaktowy</a>.
             </div>
         @else
-            <ul class="grid gap-6 md:grid-cols-2" role="list">
+            {{-- Jedna oferta: węższa karta bez pustego boku; dwie i więcej: dwie kolumny. --}}
+            <ul @class(['grid gap-6', 'md:grid-cols-2' => $ads->count() > 1, 'max-w-3xl' => $ads->count() === 1]) role="list">
                 @foreach ($ads as $ad)
                     @php $accent = $siteSettings->contrastSafeColor($siteSettings->audienceColor($ad->audience)); @endphp
                     <li>
