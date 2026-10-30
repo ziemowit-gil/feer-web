@@ -4,6 +4,11 @@ namespace Tests\Feature;
 
 use App\Mcp\Servers\FeerServer;
 use App\Mcp\Tools\CreateNewsDraftTool;
+use App\Mcp\Tools\CreatePageDraftTool;
+use App\Mcp\Tools\CreateProjectDraftTool;
+use App\Mcp\Tools\SearchProjectsTool;
+use App\Models\Category;
+use App\Models\Project;
 use App\Mcp\Tools\SearchPagesTool;
 use App\Models\News;
 use App\Models\Page;
@@ -73,5 +78,54 @@ class McpServerTest extends TestCase
         FeerServer::actingAs($admin)->tool(CreateNewsDraftTool::class, ['title' => 'Nie', 'content' => 'x'])
             ->assertHasErrors();
         $this->assertSame(0, News::count());
+    }
+
+    public function test_project_search_and_draft(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $cat = Category::create(['name' => 'Kat', 'slug' => 'kat']);
+        Project::create(['title' => 'Działanie opublikowane', 'slug' => 'dz-pub', 'category_id' => $cat->id, 'is_published' => true]);
+        Project::create(['title' => 'Działanie szkic', 'slug' => 'dz-szkic', 'category_id' => $cat->id, 'is_published' => false]);
+
+        FeerServer::actingAs($admin)->tool(SearchProjectsTool::class, ['query' => 'Działanie'])
+            ->assertOk()->assertSee('dz-pub')->assertDontSee('dz-szkic');
+
+        Sanctum::actingAs($admin, ['mcp:write']);
+        FeerServer::actingAs($admin)->tool(CreateProjectDraftTool::class, ['title' => 'Nowe z MCP', 'content' => 'Treść'])->assertOk();
+        $this->assertFalse(Project::where('title', 'Nowe z MCP')->firstOrFail()->is_published);
+    }
+
+    public function test_page_draft_under_parent_is_hidden(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $parent = Page::create(['title' => 'Rodzic', 'slug' => 'rodzic', 'is_published' => true]);
+        Sanctum::actingAs($admin, ['mcp:write']);
+
+        FeerServer::actingAs($admin)->tool(CreatePageDraftTool::class, ['title' => 'Podstrona z MCP', 'content' => 'Tekst', 'parent_slug' => 'rodzic'])->assertOk();
+
+        $page = Page::where('title', 'Podstrona z MCP')->firstOrFail();
+        $this->assertFalse($page->is_published);
+        $this->assertSame($parent->id, $page->parent_id);
+    }
+
+    public function test_admin_creates_and_revokes_token_in_gui(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->post(route('admin.mcp.store'), ['name' => 'laptop', 'write' => 1])
+            ->assertRedirect(route('admin.mcp.index'))->assertSessionHas('new_token');
+
+        $token = $admin->tokens()->firstOrFail();
+        $this->assertSame(['mcp:read', 'mcp:write'], $token->abilities);
+
+        $this->actingAs($admin)->get(route('admin.mcp.index'))->assertOk()->assertSee('laptop');
+        $this->actingAs($admin)->delete(route('admin.mcp.destroy', $token->id));
+        $this->assertSame(0, $admin->tokens()->count());
+    }
+
+    public function test_non_admin_cannot_open_mcp_panel(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => User::ROLE_CONTENT_EDITOR]))
+            ->get(route('admin.mcp.index'))->assertForbidden();
     }
 }

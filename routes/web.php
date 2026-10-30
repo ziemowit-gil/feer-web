@@ -765,6 +765,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
         Route::get('health', [AdminHealthCheckController::class, 'index'])->name('health.index');
         Route::post('health/wyczysc-log', [AdminHealthCheckController::class, 'clearLog'])->name('health.clear-log');
+        Route::get('mcp', [\App\Http\Controllers\Admin\McpTokenController::class, 'index'])->name('mcp.index');
+        Route::post('mcp', [\App\Http\Controllers\Admin\McpTokenController::class, 'store'])->name('mcp.store');
+        Route::delete('mcp/{token}', [\App\Http\Controllers\Admin\McpTokenController::class, 'destroy'])->name('mcp.destroy');
         Route::get('cache', [AdminCacheController::class, 'index'])->name('cache.index');
         Route::put('cache', [AdminCacheController::class, 'update'])->name('cache.update');
         Route::post('cache/{group}/flush', [AdminCacheController::class, 'flush'])->name('cache.flush');

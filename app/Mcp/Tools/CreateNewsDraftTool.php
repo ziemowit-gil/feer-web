@@ -27,16 +27,11 @@ class CreateNewsDraftTool extends Tool
             'content' => ['required', 'string', 'max:50000'],
         ]);
 
-        $html = collect(preg_split('/\R{2,}/', trim($data['content'])))
-            ->filter(fn ($p) => trim($p) !== '')
-            ->map(fn ($p) => '<p>'.nl2br(e(trim($p))).'</p>')
-            ->implode("\n");
-
         $news = News::create([
             'title' => $data['title'],
             'slug' => UniqueSlug::news($data['title']),
             'excerpt' => $data['excerpt'] ?? null,
-            'content' => $html,
+            'content' => PlainText::toHtml($data['content']),
             'is_published' => false,
             'created_by' => $user->id,
         ]);
