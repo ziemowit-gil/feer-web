@@ -17,7 +17,7 @@ class FaqPaidActivityFormTextsHumanizedSeederTest extends TestCase
     {
         $faq = Faq::create(['question' => 'Czy rekrutujecie trenerów?', 'answer' => 'To zależy – nabory na trenerów prowadzimy okresowo, w zależności od aktualnych potrzeb i realizowanych projektów. Informacje o wszelkich otwartych naborach i możliwościach współpracy trenerskiej zawsze na bieżąco publikujemy na naszej stronie internetowej', 'category' => 'X', 'is_published' => true]);
         $own = Faq::create(['question' => 'Własne?', 'answer' => 'Własna odpowiedź redakcji.', 'category' => 'X', 'is_published' => true]);
-        $page = Page::create(['title' => 'Odpłatna działalność pożytku publicznego — jak to u nas działa', 'slug' => 'odplatna-dzialalnosc-pozytku-publicznego', 'type' => 'standard', 'is_published' => true,
+        $page = Page::withoutGlobalScopes()->updateOrCreate(['slug' => 'odplatna-dzialalnosc-pozytku-publicznego'], ['title' => 'Odpłatna działalność pożytku publicznego — jak to u nas działa', 'type' => 'standard', 'is_published' => true,
             'content' => '<p>Kierujemy się zasadą pełnej otwartości. Często pytasz, dlaczego.</p><p>Twoje wpłaty pokrywają wyłącznie prawdziwe wydatki:</p>']);
         $form = FormDefinition::create(['title' => 'Wsparcie', 'slug' => 'wsparcie-technologiczne-ngo', 'is_active' => true,
             'fields' => [['label' => 'Telefon', 'type' => 'tel', 'help_text' => 'Opcjonalnie — przyda się, jeśli wolisz rozmowę.']]]);
