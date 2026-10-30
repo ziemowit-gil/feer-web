@@ -33,13 +33,16 @@
     ]));
 @endphp
 @if ($keyFacts)
-    {{-- Najważniejsze informacje: jeden spokojny wiersz tekstu z ikonami (bez tła i ramek), zawija się na wąskich ekranach. --}}
-    <dl class="mt-6 flex flex-wrap gap-x-6 gap-y-2.5 text-base text-ink" aria-label="Najważniejsze informacje">
+    {{-- Najważniejsze informacje: płaska siatka kafelków (ikona w jasnym polu, mała etykieta nad pogrubioną wartością), bez ramek
+         i tła. Kolumny dopasowują się do szerokości; długa wartość („Dla kogo”) dostaje cały wiersz, więc etykieta się nie zawija. --}}
+    <dl class="mt-6 grid gap-x-8 gap-y-4 text-ink" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr))" aria-label="Najważniejsze informacje">
         @foreach ($keyFacts as $f)
-            <div class="flex items-baseline gap-2">
-                <i class="fa-solid {{ $f['icon'] }} w-4 flex-none text-center text-brand-dark" aria-hidden="true"></i>
-                <dt>{{ $f['label'] }}:</dt>
-                <dd class="font-bold" @if ($canInlineEdit && ! empty($f['inline'])) data-inline-field="{{ $f['inline'] }}" data-inline-kind="text" data-inline-multiline @endif>{{ $f['value'] }}</dd>
+            <div class="flex items-start gap-3" @if (mb_strlen((string) $f['value']) > 38) style="grid-column:1/-1" @endif>
+                <span class="flex h-8 w-8 flex-none items-center justify-center rounded-md bg-brand-light text-brand-dark" aria-hidden="true"><i class="fa-solid {{ $f['icon'] }}"></i></span>
+                <div class="min-w-0">
+                    <dt class="text-sm leading-tight text-ink">{{ $f['label'] }}</dt>
+                    <dd class="mt-0.5 text-base font-bold leading-snug" @if ($canInlineEdit && ! empty($f['inline'])) data-inline-field="{{ $f['inline'] }}" data-inline-kind="text" data-inline-multiline @endif>{{ $f['value'] }}</dd>
+                </div>
             </div>
         @endforeach
     </dl>
