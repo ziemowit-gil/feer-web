@@ -45,6 +45,6 @@
         </a>
         <p class="mt-2 text-xs text-muted">Microsoft poprosi o ponowne zalogowanie na Twoje konto.</p>
     @elseif (! $hasPassword)
-        <p class="text-sm text-ink">Twoje konto nie ma hasła, a logowanie przez Microsoft 365 jest wyłączone — poproś administratora o ustawienie hasła.</p>
+        <p class="text-sm text-ink">Twoje konto nie ma hasła, a logowanie przez Microsoft 365 jest wyłączone. Poproś administratora o ustawienie hasła.</p>
     @endif
 </x-guest-layout>

@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-    <h1>Polecenie przelewu — darowizna</h1>
+    <h1>Polecenie przelewu: darowizna</h1>
     <p class="intro">Wydrukuj i złóż w banku lub na poczcie albo przepisz dane do bankowości internetowej.</p>
     <table>
         <tr><th>Nazwa odbiorcy</th><td>{{ $siteSettings->site_name }}</td></tr>

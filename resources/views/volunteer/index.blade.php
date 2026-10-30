@@ -16,7 +16,7 @@
 
         @if ($ads->isEmpty())
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center text-muted">
-                Obecnie nie prowadzimy naboru. Zajrzyj wkrótce — albo napisz do nas przez <a href="{{ route('contact.show') }}" class="font-bold text-brand hover:text-brand-dark">formularz kontaktowy</a>.
+                Obecnie nie prowadzimy naboru. Zajrzyj wkrótce albo napisz do nas przez <a href="{{ route('contact.show') }}" class="font-bold text-brand hover:text-brand-dark">formularz kontaktowy</a>.
             </div>
         @elseif (($siteSettings->volunteer_layout ?? 'grid') === 'list')
             {{-- ── Widok lista ── --}}

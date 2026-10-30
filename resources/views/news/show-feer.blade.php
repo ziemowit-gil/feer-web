@@ -57,7 +57,7 @@
             <div class="mx-auto flex max-w-2xl flex-wrap items-center justify-between gap-3">
                 <p class="flex items-center gap-2 text-sm font-bold text-amber-800">
                     <i class="fa-solid fa-eye" aria-hidden="true"></i>
-                    Podgląd szkicu — ta aktualność nie jest jeszcze widoczna dla odwiedzających.
+                    Podgląd szkicu: ta aktualność nie jest jeszcze widoczna dla odwiedzających.
                 </p>
                 <a href="{{ route('admin.newsy.edit', $news) }}"
                     class="inline-flex items-center gap-2 rounded bg-amber-700 px-4 py-1.5 text-sm font-bold text-white hover:bg-amber-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700">

@@ -62,7 +62,7 @@
     <div class="pc-lock" role="group" aria-labelledby="{{ $pid }}-lock">
         <h3 id="{{ $pid }}-lock"><i class="fa-solid fa-lock" aria-hidden="true"></i> Odcinek dla subskrybentów</h3>
         @auth
-            <p>Twoje konto nie ma jeszcze dostępu do tego odcinka. Napisz do nas — podpowiemy, jak go uzyskać.</p>
+            <p>Twoje konto nie ma jeszcze dostępu do tego odcinka. Napisz do nas, podpowiemy, jak go uzyskać.</p>
             <a href="{{ url('/kontakt') }}" class="pc-link">Napisz do nas <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
         @else
             <p>Zaloguj się, aby posłuchać. Jeśli masz dostęp w ramach subskrypcji, odcinek od razu się odtworzy.</p>

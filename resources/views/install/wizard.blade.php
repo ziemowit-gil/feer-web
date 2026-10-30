@@ -212,7 +212,7 @@ tailwind.config = {
                     <i class="fa-solid fa-key text-brand"></i>
                     Klucz licencyjny
                     @if ($devMode)
-                        <span class="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">Pominięty — tryb dev</span>
+                        <span class="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">Pominięty (tryb dev)</span>
                     @endif
                 </h2>
                 <p class="mb-4 text-xs text-gray-500">
@@ -241,7 +241,7 @@ tailwind.config = {
                             <input type="radio" name="db_type" value="sqlite" x-model="db" class="accent-brand">
                             <span>
                                 <span class="block text-sm font-bold text-gray-900">SQLite</span>
-                                <span class="text-xs text-gray-500">Zalecana — plik lokalny, zero konfiguracji</span>
+                                <span class="text-xs text-gray-500">Zalecana: plik lokalny, zero konfiguracji</span>
                             </span>
                         </label>
                         <label class="flex cursor-pointer items-center gap-3 rounded-xl border-2 p-4 transition"
@@ -464,7 +464,7 @@ tailwind.config = {
                                 <i class="fa-solid fa-seedling text-brand mr-1"></i>
                                 Załaduj przykładowe dane demonstracyjne
                             </span>
-                            <span class="text-xs text-gray-500">Aktualności, projekty, slajdy, partnerzy — do szybkiego podglądu systemu.</span>
+                            <span class="text-xs text-gray-500">Aktualności, projekty, slajdy i partnerzy do szybkiego podglądu systemu.</span>
                         </span>
                     </label>
                 </div>
@@ -503,7 +503,7 @@ tailwind.config = {
                 <div class="mb-8 rounded-xl border-2 border-amber-300 bg-amber-50 p-5 text-left">
                     <p class="mb-1 flex items-center gap-2 text-sm font-bold text-amber-900">
                         <i class="fa-solid fa-triangle-exclamation"></i>
-                        Pobierz certyfikat super-admina — teraz albo nigdy
+                        Pobierz certyfikat super-admina: teraz albo nigdy
                     </p>
                     <p class="mb-4 text-xs text-amber-800">
                         Ten plik .pfx (chroniony hasłem, które podałeś/aś w kreatorze) służy do logowania pod

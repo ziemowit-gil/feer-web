@@ -86,7 +86,7 @@
                 if (current === '1' || current === '0') {
                     status.textContent = current === '1'
                         ? 'Obecnie: zgoda na pliki cookies statystyczne.'
-                        : 'Obecnie: odmowa — używamy tylko niezbędnych plików cookies.';
+                        : 'Obecnie: odmowa. Używamy tylko niezbędnych plików cookies.';
                     status.hidden = false;
                 } else {
                     status.hidden = true;

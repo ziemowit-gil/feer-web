@@ -115,7 +115,7 @@
                         <p class="mt-6"><a href="{{ $bkUrl }}" class="{{ $link }}" target="_blank" rel="noopener">Ogłoszenie w Bazie Konkurencyjności<span class="sr-only"> (otwiera się w nowej karcie)</span></a></p>
                     @endif
                     @if ($status === 'evaluation')
-                        <p class="mt-6 text-ink"><strong>Termin składania ofert minął.</strong> Trwa ocena ofert — wynik opublikujemy na tej stronie.</p>
+                        <p class="mt-6 text-ink"><strong>Termin składania ofert minął.</strong> Trwa ocena ofert. Wynik opublikujemy na tej stronie.</p>
                     @endif
                 </section>
 

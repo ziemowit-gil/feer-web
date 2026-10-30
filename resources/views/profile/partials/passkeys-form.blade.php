@@ -5,7 +5,7 @@
 @endphp
 
 @if (session('status') === 'passkey-added')
-    <p class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm font-bold text-ink" role="status">Klucz dostępu dodany — możesz nim logować się bez hasła.</p>
+    <p class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm font-bold text-ink" role="status">Klucz dostępu dodany. Możesz nim logować się bez hasła.</p>
 @elseif (session('status') === 'passkey-removed')
     <p class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm font-bold text-ink" role="status">Klucz dostępu usunięty.</p>
 @endif
@@ -50,7 +50,7 @@
         <div class="flex flex-wrap items-end gap-3">
             <div class="min-w-[14rem] flex-1">
                 <label for="passkey-name" class="mb-1 block text-sm font-bold text-ink">Nazwa klucza</label>
-                <input id="passkey-name" type="text" x-model="name" maxlength="120" placeholder="np. YubiKey służbowy, Laptop — Windows Hello"
+                <input id="passkey-name" type="text" x-model="name" maxlength="120" placeholder="np. YubiKey służbowy, Laptop z Windows Hello"
                     class="w-full rounded-md border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
             </div>
             <button type="button" @click="add()" :disabled="busy" class="{{ $btn }} bg-brand-dark text-white hover:bg-ink disabled:opacity-60">

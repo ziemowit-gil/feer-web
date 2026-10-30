@@ -76,7 +76,7 @@
             </a>
         @elseif ($event->isPast())
             <p class="rounded-lg bg-gray-100 px-4 py-3 text-center text-sm text-gray-600">
-                Zapisy zamknięte — wydarzenie minęło.
+                Zapisy zamknięte: wydarzenie minęło.
             </p>
         @else
             <p class="rounded-lg bg-gray-100 px-4 py-3 text-center text-sm text-gray-600">

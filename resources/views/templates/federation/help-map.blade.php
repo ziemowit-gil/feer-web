@@ -17,7 +17,7 @@
         </h1>
         <p class="mb-8 max-w-2xl text-base leading-relaxed text-muted">
             {{ $siteSettings->site_name }} prowadzi ośrodki wsparcia nie tylko w Krakowie, ale w wielu miejscowościach
-            całej Małopolski — żywność, schronienie, poradnictwo, wsparcie zdrowotne i prawne. Sprawdź, gdzie działamy
+            całej Małopolski: żywność, schronienie, poradnictwo, wsparcie zdrowotne i prawne. Sprawdź, gdzie działamy
             najbliżej Ciebie.
         </p>
 

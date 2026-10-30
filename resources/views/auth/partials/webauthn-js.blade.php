@@ -8,7 +8,7 @@
         async post(url, body) {
             const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content }, body: JSON.stringify(body || {}) });
             const data = await r.json().catch(() => ({}));
-            if (! r.ok) throw new Error(data.message || 'Nie udało się — spróbuj ponownie.');
+            if (! r.ok) throw new Error(data.message || 'Nie udało się. Spróbuj ponownie.');
             return data;
         },
         credentialToJson(c) {
@@ -20,7 +20,7 @@
         message(e) {
             if (e && e.name === 'NotAllowedError') return 'Anulowano albo minął czas na potwierdzenie na urządzeniu.';
             if (e && e.name === 'InvalidStateError') return 'Ten klucz jest już dodany do konta.';
-            return (e && e.message) || 'Nie udało się — spróbuj ponownie.';
+            return (e && e.message) || 'Nie udało się. Spróbuj ponownie.';
         },
     };
 </script>

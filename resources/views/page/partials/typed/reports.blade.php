@@ -26,7 +26,7 @@
             @endif
 
             @if (! $reportsOn)
-                <p class="text-muted">Moduł „Sprawozdania” jest wyłączony — włącz go w Ustawienia → Moduły, aby pokazać tabelę.</p>
+                <p class="text-muted">Moduł „Sprawozdania” jest wyłączony. Włącz go w Ustawienia → Moduły, aby pokazać tabelę.</p>
             @elseif ($reports->isEmpty())
                 <p class="text-muted">Sprawozdania zostaną wkrótce opublikowane.</p>
             @else

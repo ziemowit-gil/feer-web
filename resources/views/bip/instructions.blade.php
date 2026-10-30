@@ -16,7 +16,7 @@
 
                 <h2>Jak się poruszać po BIP</h2>
                 <ul>
-                    <li>Menu po lewej stronie (na telefonie — nad treścią) prowadzi do działów BIP, rejestru zmian, tej instrukcji i deklaracji dostępności.</li>
+                    <li>Menu po lewej stronie (na telefonie nad treścią) prowadzi do działów BIP, rejestru zmian, tej instrukcji i deklaracji dostępności.</li>
                     <li>Dokumenty są pogrupowane w kategorie. Kliknij tytuł dokumentu, aby zobaczyć jego treść i pobrać załączniki.</li>
                     <li>Do strony głównej organizacji wracasz przyciskiem „Strona główna organizacji” u góry.</li>
                 </ul>
@@ -39,7 +39,7 @@
                     @else
                         W sprawach związanych z BIP skorzystaj ze strony <a href="{{ site_route('contact.show') }}">Kontakt</a>.
                     @endif
-                    Jeśli nie możesz znaleźć informacji lub potrzebujesz dokumentu w innej formie, napisz do nas — udzielimy pomocy.
+                    Jeśli nie możesz znaleźć informacji lub potrzebujesz dokumentu w innej formie, napisz do nas, udzielimy pomocy.
                 </p>
 
                 <h2>Główna strona BIP</h2>

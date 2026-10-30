@@ -44,7 +44,7 @@
                     @if ($hasCta)
                         <section class="rounded-md bg-brand-light p-6" aria-labelledby="service-cta">
                             <h2 id="service-cta" class="text-lg font-bold text-ink">Porozmawiajmy</h2>
-                            <p class="mt-2 text-ink">Napisz do nas — odpowiemy i dopasujemy ofertę do Twoich potrzeb.</p>
+                            <p class="mt-2 text-ink">Napisz do nas, odpowiemy i dopasujemy ofertę do Twoich potrzeb.</p>
                             <a href="{{ $ctaUrl }}" class="{{ $btn }} mt-5" @if ($ctaExternal) target="_blank" rel="noopener" @endif>
                                 {{ $td['cta_label'] }} <i class="fa-solid fa-arrow-right text-sm" aria-hidden="true"></i>
                                 @if ($ctaExternal)<span class="sr-only"> (otwiera się w nowej karcie)</span>@endif

@@ -2,7 +2,7 @@
 
 @php
     $formTitle    = $cd['form_title'] ?? 'Formularz współpracy';
-    $formSubtitle = $cd['form_subtitle'] ?? 'Wypełnij poniższe pola — skontaktujemy się z Tobą w ciągu 2 dni roboczych.';
+    $formSubtitle = $cd['form_subtitle'] ?? 'Wypełnij poniższe pola, a skontaktujemy się z Tobą w ciągu 2 dni roboczych.';
 
     $defaultSectors = [
         ['title' => 'Biznes'],

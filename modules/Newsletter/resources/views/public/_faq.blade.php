@@ -3,7 +3,7 @@
     $faqItems = collect($form->faq ?? []);
     $has = fn (string $needle) => $faqItems->contains(fn ($i) => str_contains(mb_strtolower($i['q']), $needle));
     if (! $has('potwierdz')) {
-        $faqItems->push(['q' => 'Dlaczego muszę potwierdzić zapis?', 'a' => "Dzięki temu nikt nie zapisze Cię bez Twojej wiedzy. Po wysłaniu formularza dostaniesz e-mail z linkiem — kliknij go w ciągu {$ttlDays} dni. Bez potwierdzenia nie wyślemy Ci nic więcej, a dane wygasłego zapisu usuwamy."]);
+        $faqItems->push(['q' => 'Dlaczego muszę potwierdzić zapis?', 'a' => "Dzięki temu nikt nie zapisze Cię bez Twojej wiedzy. Po wysłaniu formularza dostaniesz e-mail z linkiem. Kliknij go w ciągu {$ttlDays} dni. Bez potwierdzenia nie wyślemy Ci nic więcej, a dane wygasłego zapisu usuwamy."]);
     }
     if (! $has('wypis')) {
         $faqItems->push(['q' => 'Jak się wypisać lub zmienić tematy?', 'a' => 'W stopce każdej wiadomości są dwa linki: do zmiany tematów i do wypisu. Wystarczy jedno kliknięcie, bez logowania.']);

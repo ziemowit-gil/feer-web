@@ -225,7 +225,7 @@
                             <i class="fa-solid fa-calendar-days"></i>
                         </span>
                         <h2 class="text-base font-bold text-ink">{{ $scheduleTitle }}</h2>
-                        <p class="mt-1 text-sm text-muted">{{ $siteSettings->contact_no_schedule_note ?: 'Jeszcze nie ustaliliśmy żadnych terminów — wypełnij formularz, a odezwiemy się do Ciebie.' }}</p>
+                        <p class="mt-1 text-sm text-muted">{{ $siteSettings->contact_no_schedule_note ?: 'Jeszcze nie ustaliliśmy żadnych terminów. Wypełnij formularz, a odezwiemy się do Ciebie.' }}</p>
                         @if ($siteSettings->contact_email)
                             <a href="mailto:{{ $siteSettings->contact_email }}"
                                 class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-dark">

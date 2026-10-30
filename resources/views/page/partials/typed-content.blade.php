@@ -927,7 +927,7 @@
                 Dokumenty i sprawozdania naszej fundacji publikujemy w <strong class="font-bold text-ink">Biuletynie
                 Informacji Publicznej (BIP)</strong> — oficjalnym, uporządkowanym miejscu gromadzącym najważniejsze
                 informacje o naszej działalności. Dzięki temu na tej stronie możemy skupić się na przedstawianiu tego,
-                co i dla kogo robimy. Nasz Biuletyn wciąż się rozwija — serdecznie zachęcamy do regularnego odwiedzania
+                co i dla kogo robimy. Nasz Biuletyn wciąż się rozwija, dlatego zachęcamy do regularnego odwiedzania
                 i dziękujemy za wyrozumiałość.
             </p>
 
@@ -1205,7 +1205,7 @@
                 W przygotowaniu
             </span>
             <h1 class="mt-4 text-3xl font-bold tracking-tight text-ink">{{ $page->title }}</h1>
-            <p class="mt-4 text-lg text-muted">Ta sekcja jest aktualnie w przygotowaniu. Wróć wkrótce — pracujemy nad treścią.</p>
+            <p class="mt-4 text-lg text-muted">Ta sekcja jest aktualnie w przygotowaniu. Wróć wkrótce, pracujemy nad treścią.</p>
         </div>
     </section>
     @else
@@ -1388,7 +1388,7 @@
                             <i class="fa-solid fa-hands-helping text-white" aria-hidden="true"></i>
                         </span>
                         <span class="block text-xl font-extrabold leading-tight">Wolontariat</span>
-                        <span class="mt-1 block text-sm text-white/75">Angażuj czas i umiejętności — każda pomoc ma znaczenie.</span>
+                        <span class="mt-1 block text-sm text-white/75">Angażuj czas i umiejętności.</span>
                         <span class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-white/90 transition group-hover:gap-3">
                             Dowiedz się więcej <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                         </span>
@@ -1402,7 +1402,7 @@
                             <i class="fa-solid fa-briefcase text-white" aria-hidden="true"></i>
                         </span>
                         <span class="block text-xl font-extrabold leading-tight">Praca</span>
-                        <span class="mt-1 block text-sm text-white/75">Sprawdź oferty — buduj karierę z misją.</span>
+                        <span class="mt-1 block text-sm text-white/75">Sprawdź oferty i buduj karierę z misją.</span>
                         <span class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-white/90 transition group-hover:gap-3">
                             Zobacz oferty <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
                         </span>

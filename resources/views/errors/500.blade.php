@@ -6,6 +6,6 @@
 @section('content')
     @include('errors._layout', [
         'code' => '500',
-        'description' => 'Wystąpił nieoczekiwany błąd po stronie serwera. Zostaliśmy o tym powiadomieni — spróbuj ponownie za chwilę.',
+        'description' => 'Wystąpił nieoczekiwany błąd po stronie serwera. Zostaliśmy o tym powiadomieni. Spróbuj ponownie za chwilę.',
     ])
 @endsection

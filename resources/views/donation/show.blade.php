@@ -19,7 +19,7 @@
     $transferTitle = config('szo.donation_purpose', 'Darowizna na cele statutowe');
     $intro = filled($siteSettings->donation_intro)
         ? preg_split('/\R{2,}/', trim($siteSettings->donation_intro))
-        : ['Dzięki Twojej pomocy możemy zrobić więcej. Docenimy każdą, nawet niewielką darowiznę — razem z innymi wpłatami pozwala nam skutecznie działać.'];
+        : ['Dzięki Twojej pomocy możemy zrobić więcej. Docenimy każdą, nawet niewielką darowiznę. Razem z innymi wpłatami pozwala nam skutecznie działać.'];
 
     $headline = filled($siteSettings->donation_headline) ? $siteSettings->donation_headline : 'Twoja wpłata zamienia się w realną pomoc';
     $useNote = filled($siteSettings->donation_use_note)
@@ -64,7 +64,7 @@
             @if (! $onlineEnabled)
                 <div class="rounded-xl border border-amber-300 bg-amber-50 p-5 text-sm text-ink" role="status">
                     <p class="font-bold">Płatności online są chwilowo niedostępne.</p>
-                    <p class="mt-1">Możesz przekazać darowiznę tradycyjnym przelewem — dane znajdziesz obok.</p>
+                    <p class="mt-1">Możesz przekazać darowiznę tradycyjnym przelewem. Dane znajdziesz obok.</p>
                 </div>
             @else
                 @if (session('donation_error'))
@@ -195,7 +195,7 @@
                         <div class="space-y-3 text-xs leading-relaxed text-muted">
                             <p>
                                 Administratorem danych osobowych jest {{ $siteSettings->site_name }}@if ($siteSettings->contact_address) z siedzibą: {{ $siteSettings->contact_address }}, {{ $siteSettings->contact_city }}@endif.
-                                Dane przetwarzamy w celu przyjęcia i rozliczenia darowizny oraz — jeśli wyrazisz zgodę — wysyłki newslettera.
+                                Dane przetwarzamy w celu przyjęcia i rozliczenia darowizny oraz, jeśli wyrazisz zgodę, wysyłki newslettera.
                             </p>
                         </div>
                         <div class="mt-4 space-y-3">

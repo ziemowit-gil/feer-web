@@ -27,7 +27,7 @@
     </fieldset>
     @error('admin_scheme') <p class="text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
 
-    <p class="text-sm text-muted">Schemat zmienia tylko tła i linie panelu — teksty i przyciski zostają kontrastowe. Dotyczy tylko Twojego konta.</p>
+    <p class="text-sm text-muted">Schemat zmienia tylko tła i linie panelu. Teksty i przyciski zostają kontrastowe. Dotyczy tylko Twojego konta.</p>
 
     <button type="submit"
         class="rounded-lg bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">

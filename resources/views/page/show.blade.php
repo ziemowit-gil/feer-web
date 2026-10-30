@@ -31,7 +31,7 @@
             <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm">
                 <span class="flex items-center gap-2 text-brand-dark">
                     <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
-                    Strefa wewnętrzna — zalogowano jako <strong>{{ auth('member')->user()->email }}</strong>
+                    Strefa wewnętrzna: zalogowano jako <strong>{{ auth('member')->user()->email }}</strong>
                 </span>
                 <form method="POST" action="{{ route('member.logout') }}">
                     @csrf

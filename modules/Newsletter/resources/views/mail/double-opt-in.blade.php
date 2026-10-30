@@ -13,7 +13,7 @@
 </head>
 @php $host = preg_replace('#^https?://(www\.)?#', '', rtrim((string) $site_url, '/')); @endphp
 <body style="margin:0;padding:0;background:#F3F4F6;font-family:Arial,Helvetica,sans-serif;font-style:normal;color:#1D1D1A;-webkit-text-size-adjust:100%">
-<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#F3F4F6">Jedno kliknięcie i gotowe — potwierdź zapis na newsletter.&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
+<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#F3F4F6">Jedno kliknięcie i gotowe: potwierdź zapis na newsletter.&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F3F4F6">
 <tr><td align="center" style="padding:32px 12px">
 <table role="presentation" class="wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background:#FFFFFF;border-radius:12px;border-top:6px solid #1E6DFF">
@@ -63,7 +63,7 @@
   {{-- Stopka --}}
   <tr><td class="pad" style="padding:18px 48px 26px;border-top:1px solid #E5E7EB;font-size:13px;line-height:1.6;color:#4A4A47">
     <p style="margin:0 0 8px">Jeśli przycisk nie działa, skopiuj ten adres do przeglądarki:<br><a href="{{ $confirm_url }}" style="color:#1752BF;word-break:break-all">{{ $confirm_url }}</a></p>
-    <p style="margin:0">To nie Ty? Zignoruj tę wiadomość — bez potwierdzenia adres nie zostanie dodany do listy.</p>
+    <p style="margin:0">To nie Ty? Zignoruj tę wiadomość, bez potwierdzenia adres nie zostanie dodany do listy.</p>
   </td></tr>
 
 </table>

@@ -93,7 +93,7 @@
     @if (! empty($impacts))
         <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="impact-heading">
             <h2 id="impact-heading" class="text-2xl font-bold text-ink md:text-3xl">Co daje Twoja wpłata</h2>
-            <p class="mt-2 max-w-2xl text-muted">Wybierz kwotę — przejdziesz do formularza z gotową wartością i dokończysz w minutę.</p>
+            <p class="mt-2 max-w-2xl text-muted">Wybierz kwotę, a przejdziesz do formularza z gotową wartością i dokończysz w minutę.</p>
             <ul class="mt-8 grid gap-4 sm:grid-cols-2 {{ match (min(4, count($impacts))) { 1, 2 => 'lg:grid-cols-2', 3 => 'lg:grid-cols-3', default => 'lg:grid-cols-4' } }}" role="list">
                 @foreach ($impacts as $amount => $text)
                     <li>

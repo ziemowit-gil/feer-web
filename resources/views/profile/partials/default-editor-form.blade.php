@@ -13,7 +13,7 @@
     <fieldset>
         <legend class="text-sm font-bold text-ink">Co ma się otwierać po kliknięciu „Edytuj”?</legend>
         @if (blank($current))
-            <p class="mt-1 text-sm text-muted">Nie wybrano jeszcze domyślnego edytora — panel zapyta o to po zalogowaniu.</p>
+            <p class="mt-1 text-sm text-muted">Nie wybrano jeszcze domyślnego edytora. Panel zapyta o to po zalogowaniu.</p>
         @endif
         <div class="mt-3 space-y-2">
             @foreach (\App\Models\User::EDITORS as $value => $label)
@@ -31,7 +31,7 @@
     </fieldset>
     @error('default_editor') <p class="text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
 
-    <p class="text-sm text-muted">Drugi edytor zawsze zostaje pod ręką — przyciskiem w formularzu lub w edytorze blokowym.</p>
+    <p class="text-sm text-muted">Drugi edytor zawsze zostaje pod ręką: przyciskiem w formularzu lub w edytorze blokowym.</p>
 
     <button type="submit"
         class="rounded-lg bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">

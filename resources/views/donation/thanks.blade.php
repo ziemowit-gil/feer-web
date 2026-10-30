@@ -22,7 +22,7 @@
         <h1 class="{{ $display }} mb-4 text-3xl text-ink">Czekamy na potwierdzenie płatności</h1>
         <p class="text-lg leading-relaxed text-ink" role="status">
             Przelewy24 zwykle potwierdza wpłatę w ciągu kilku sekund. Jeśli płatność się udała,
-            nic więcej nie musisz robić — dziękujemy!
+            nic więcej nie musisz robić. Dziękujemy!
         </p>
         <a href="{{ route('donation.thanks', $donation) }}"
            class="mt-6 inline-flex min-h-11 items-center gap-2 rounded-2xl border-2 border-brand px-6 text-sm font-bold text-brand hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">

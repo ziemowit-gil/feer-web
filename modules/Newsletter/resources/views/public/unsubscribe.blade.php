@@ -8,7 +8,7 @@
     @if ($done)
         <section class="np__hero" aria-labelledby="np-h">
             <span class="np__icon np__icon--off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12l5 5L20 6"/></svg></span>
-            <h1 id="np-h">Gotowe — wypisaliśmy Cię</h1>
+            <h1 id="np-h">Gotowe, wypisaliśmy Cię</h1>
             <p>Na adres <strong>{{ $subscriber->email }}</strong> nie wyślemy już newslettera. Zgody zostały wycofane, a Twoje dane możesz w każdej chwili usunąć.</p>
             <div class="np__row">
                 <a href="{{ route('newsletter.show') }}" class="np__btn np__btn--ghost">Zapisz się ponownie</a>
@@ -29,7 +29,7 @@
             <form method="post" action="{{ route('newsletter.unsubscribe.post', ['token' => $subscriber->token]) }}" style="width:100%;display:grid;gap:18px">
                 @csrf
                 <div class="np__box">
-                    <label for="reason" class="np__label">Dlaczego odchodzisz? <span style="font-weight:400;color:var(--np-muted)">(opcjonalnie — pomaga nam poprawiać newsletter)</span></label>
+                    <label for="reason" class="np__label">Dlaczego odchodzisz? <span style="font-weight:400;color:var(--np-muted)">(opcjonalnie, pomaga nam poprawiać newsletter)</span></label>
                     <select id="reason" name="reason" class="np__select">
                         <option value="">— wolę nie mówić —</option>
                         <option>Za dużo wiadomości</option>

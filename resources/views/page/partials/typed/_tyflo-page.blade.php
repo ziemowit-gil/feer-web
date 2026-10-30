@@ -211,7 +211,7 @@
                         'enrol' => $L['enrol'],
                     ])
                 @else
-                    <p class="rounded-md {{ $card }} p-5 text-ink">{{ $L['empty'] }}@if ($hasContact && ! $embedded) Zapytaj o najbliższy termin — dane do kontaktu znajdziesz w sekcji <a href="#jak-sie-zgloszyc" class="{{ $link }}">Jak się zgłosić</a>.@endif</p>
+                    <p class="rounded-md {{ $card }} p-5 text-ink">{{ $L['empty'] }}@if ($hasContact && ! $embedded) Zapytaj o najbliższy termin. Dane do kontaktu znajdziesz w sekcji <a href="#jak-sie-zgloszyc" class="{{ $link }}">Jak się zgłosić</a>.@endif</p>
                 @endif
 
                 @if ($past->isNotEmpty())

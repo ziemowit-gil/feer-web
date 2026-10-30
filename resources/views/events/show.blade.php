@@ -247,7 +247,7 @@
                 <i class="fa-solid fa-paper-plane" aria-hidden="true" style="color: var(--accent)"></i> Zapisy i kontakt
             </h2>
             @if ($event->isPast())
-                <p class="mt-2 text-gray-700">To wydarzenie już się odbyło — zapisy są zamknięte. Napisz do nas, jeśli interesują Cię kolejne terminy.</p>
+                <p class="mt-2 text-gray-700">To wydarzenie już się odbyło, zapisy są zamknięte. Napisz do nas, jeśli interesują Cię kolejne terminy.</p>
             @elseif ($event->registrationHref())
                 <p class="mt-2 text-gray-700">Aby wziąć udział, zapisz się poniżej. W razie pytań chętnie pomożemy.</p>
             @else

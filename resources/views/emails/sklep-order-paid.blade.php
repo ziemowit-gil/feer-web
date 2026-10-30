@@ -8,7 +8,7 @@
     @endforeach
 </ul>
 
-<p>Płatność została zaksięgowana — dostęp możesz odebrać poniższym linkiem:</p>
+<p>Płatność została zaksięgowana. Dostęp możesz odebrać poniższym linkiem:</p>
 
 <p style="margin: 24px 0;">
     <a href="{{ route('sklep.download', $order->access_token) }}"
@@ -21,4 +21,4 @@
     Link bezpośredni: {{ route('sklep.download', $order->access_token) }}
 </p>
 
-<p>Zachowaj tę wiadomość — link pozostaje aktywny i będzie działał również w przyszłości.</p>
+<p>Zachowaj tę wiadomość. Link pozostaje aktywny i będzie działał również w przyszłości.</p>

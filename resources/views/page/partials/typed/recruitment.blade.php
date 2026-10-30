@@ -48,7 +48,7 @@
             $startLabel && $endLabel => $startLabel.' – '.$endLabel,
             (bool) $endLabel => 'do '.$endLabel,
             (bool) $startLabel => 'od '.$startLabel,
-            default => $status === 'continuous' ? 'Nabór ciągły — zgłoszenia przyjmujemy na bieżąco' : null,
+            default => $status === 'continuous' ? 'Nabór ciągły: zgłoszenia przyjmujemy na bieżąco' : null,
         },
         'Liczba miejsc' => $td['rec_places'] ?? null,
         'Okres wsparcia' => $td['rec_period'] ?? null,
@@ -125,7 +125,7 @@
                         @elseif ($status === 'closed')
                             <p class="text-ink"><strong>Nabór został zakończony.</strong> Dziękujemy za wszystkie zgłoszenia.</p>
                         @elseif ($accepts)
-                            <p class="text-ink">Zgłoszenia przyjmujemy — skontaktuj się z nami.</p>
+                            <p class="text-ink">Zgłoszenia przyjmujemy. Skontaktuj się z nami.</p>
                         @endif
                         @if ($status === 'closed' && filled($td['rec_results'] ?? null))
                             <p class="mt-3 whitespace-pre-line text-ink">{{ $td['rec_results'] }}</p>

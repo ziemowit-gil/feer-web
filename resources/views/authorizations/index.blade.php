@@ -15,7 +15,7 @@
     <p class="mb-8 max-w-3xl text-muted">
         Publiczny wykaz pełnomocnictw i upoważnień udzielonych przez {{ $siteSettings->siteNameAccusative() }}.
         Aby zweryfikować dokument, wpisz jego numer lub nazwisko osoby umocowanej.
-        Rejestr prowadzony jest w odrębnym systemie — ta strona prezentuje jego aktualny stan.
+        Rejestr prowadzony jest w odrębnym systemie. Ta strona prezentuje jego aktualny stan.
     </p>
 
     {{-- Wyszukiwarka — zwykły formularz GET (działa też bez JS); Alpine tylko

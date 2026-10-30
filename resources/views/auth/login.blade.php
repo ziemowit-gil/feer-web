@@ -32,7 +32,7 @@
     @if ($emergency)
         <p class="{{ $notice }} font-bold">
             <i class="fa-solid fa-shield-halved mt-0.5 text-brand-dark" aria-hidden="true"></i>
-            <span>Dostęp awaryjny — logowanie hasłem.</span>
+            <span>Dostęp awaryjny: logowanie hasłem.</span>
         </p>
     @endif
 
@@ -54,7 +54,7 @@
         </a>
     @elseif ($msOnly && ! $emergency)
         {{-- Tryb „tylko Microsoft": wyłącznie przycisk Microsoft 365 --}}
-        <p class="mb-6 text-ink">Zaloguj się kontem organizacji — tymi samymi danymi, co do poczty elektronicznej.</p>
+        <p class="mb-6 text-ink">Zaloguj się kontem organizacji, tymi samymi danymi, co do poczty elektronicznej.</p>
         <a href="{{ route('auth.microsoft.redirect') }}" class="{{ $primary }}">
             @include('auth.partials.microsoft-logo')
             Zaloguj się przez Microsoft 365
@@ -178,7 +178,7 @@
                 <i class="fa-solid" :class="busy ? 'fa-circle-notch fa-spin' : 'fa-key'" aria-hidden="true"></i>
                 <span x-text="busy ? 'Potwierdź na urządzeniu…' : 'Zaloguj się kluczem dostępu'">Zaloguj się kluczem dostępu</span>
             </button>
-            <p x-show="supported" class="mt-2 text-sm text-ink">YubiKey, odcisk palca, Windows Hello albo telefon — jeśli dodano je w profilu.</p>
+            <p x-show="supported" class="mt-2 text-sm text-ink">YubiKey, odcisk palca, Windows Hello albo telefon, jeśli dodano je w profilu.</p>
             <p x-show="error" x-cloak class="mt-3 flex items-start gap-2 text-sm font-bold text-ink" role="alert">
                 <i class="fa-solid fa-circle-exclamation mt-0.5 text-brand-dark" aria-hidden="true"></i><span x-text="error"></span>
             </p>

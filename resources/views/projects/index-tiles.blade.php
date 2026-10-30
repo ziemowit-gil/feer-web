@@ -67,7 +67,7 @@
         @endif
 
         @if ($hasArchive)
-            <p class="mt-14"><a href="{{ route('projects.archive') }}" class="text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">To już zrobiliśmy — zrealizowane działania →</a></p>
+            <p class="mt-14"><a href="{{ route('projects.archive') }}" class="text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">To już zrobiliśmy: zrealizowane działania →</a></p>
         @endif
     </div>
 @endsection

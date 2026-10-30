@@ -41,7 +41,7 @@
         @else
             <tr>
                 <td style="padding:8px 28px 24px;font-size:13px;color:#6b7280;line-height:1.5;">
-                    Ta wiadomość została wysłana automatycznie — prosimy na nią nie odpowiadać, chyba że w treści podano inaczej.
+                    Ta wiadomość została wysłana automatycznie, prosimy na nią nie odpowiadać, chyba że w treści podano inaczej.
                 </td>
             </tr>
         @endunless

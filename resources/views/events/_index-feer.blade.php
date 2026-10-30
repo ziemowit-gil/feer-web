@@ -5,7 +5,7 @@
 <section class="mx-auto max-w-5xl px-4 py-10">
     <h1 class="text-2xl font-bold leading-tight text-ink md:text-3xl">Nadchodzące szkolenia i wydarzenia</h1>
     <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
-    <p class="mt-5 max-w-2xl text-lg text-ink">Sprawdź, co przygotowaliśmy. Zapisy prowadzimy do wyczerpania miejsc — kliknij wydarzenie, aby poznać szczegóły i się zapisać.</p>
+    <p class="mt-5 max-w-2xl text-lg text-ink">Sprawdź, co przygotowaliśmy. Zapisy prowadzimy do wyczerpania miejsc. Kliknij wydarzenie, aby poznać szczegóły i się zapisać.</p>
 
     @if ($events->isNotEmpty())
         @php $nearest = $events->first(); @endphp

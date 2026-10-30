@@ -39,13 +39,13 @@
             <template x-if="!saveSuccess && editMode">
                 <span class="flex items-center gap-1.5 font-medium text-brand">
                     <i class="fa-solid fa-grip-dots-vertical" aria-hidden="true"></i>
-                    Tryb edycji — przeciągaj sekcje lub użyj strzałek, by zmienić kolejność.
+                    Tryb edycji: przeciągaj sekcje lub użyj strzałek, by zmienić kolejność.
                 </span>
             </template>
             <template x-if="!saveSuccess && !editMode">
                 <span class="flex items-center gap-1.5">
                     <i class="fa-solid fa-wand-magic-sparkles text-brand" aria-hidden="true"></i>
-                    Tryb administratora — możesz edytować układ strony głównej.
+                    Tryb administratora: możesz edytować układ strony głównej.
                 </span>
             </template>
         </div>

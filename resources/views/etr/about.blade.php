@@ -74,11 +74,11 @@
                 <ul class="space-y-2" role="list">
                     <li class="flex items-start gap-3">
                         <i class="fa-solid fa-circle text-[0.45rem] mt-1.5 w-4 flex-none text-center text-base text-brand-dark" aria-hidden="true"></i>
-                        <span>Krótkie zdania — najlepiej jedno zdanie, jedna myśl.</span>
+                        <span>Krótkie zdania: najlepiej jedno zdanie, jedna myśl.</span>
                     </li>
                     <li class="flex items-start gap-3">
                         <i class="fa-solid fa-circle text-[0.45rem] mt-1.5 w-4 flex-none text-center text-base text-brand-dark" aria-hidden="true"></i>
-                        <span>Proste słowa — trudne słowa są wyjaśnione.</span>
+                        <span>Proste słowa: trudne słowa są wyjaśnione.</span>
                     </li>
                     <li class="flex items-start gap-3">
                         <i class="fa-solid fa-circle text-[0.45rem] mt-1.5 w-4 flex-none text-center text-base text-brand-dark" aria-hidden="true"></i>

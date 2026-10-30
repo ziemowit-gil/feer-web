@@ -62,13 +62,13 @@
         <header class="max-w-3xl">
             <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">Podcasty</h1>
             <span class="pd-bar" aria-hidden="true"></span>
-            <p class="text-lg leading-relaxed text-ink">Rozmowy o dostępności cyfrowej, edukacji i technologiach wspierających inkluzję. Słuchaj od razu na stronie — w swoim tempie.</p>
+            <p class="text-lg leading-relaxed text-ink">Rozmowy o dostępności cyfrowej, edukacji i technologiach wspierających inkluzję. Słuchaj od razu na stronie, w swoim tempie.</p>
         </header>
 
         <div class="pd-wrap mt-10">
             <div class="min-w-0">
                 @if ($podcasts->isEmpty())
-                    <p class="pd-box">Nie ma jeszcze żadnych odcinków. Zajrzyj wkrótce albo zapisz się na newsletter — damy znać o pierwszym.</p>
+                    <p class="pd-box">Nie ma jeszcze żadnych odcinków. Zajrzyj wkrótce albo zapisz się na newsletter, damy znać o pierwszym.</p>
                 @else
                     @if ($featured)
                         @php $fCover = $featured->getFirstMediaUrl('cover'); @endphp
@@ -135,7 +135,7 @@
                 @endif
                 <section class="pd-box is-brand">
                         <h2>Nie przegap odcinka</h2>
-                        <p>Zapisz się na newsletter — damy znać, gdy pojawi się nowa rozmowa.</p>
+                        <p>Zapisz się na newsletter, a damy znać, gdy pojawi się nowa rozmowa.</p>
                         <a href="{{ url('/newsletter') }}" class="pd-cta">Zapisz się <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
                     </section>
             </aside>

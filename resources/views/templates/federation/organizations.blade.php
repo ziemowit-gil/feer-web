@@ -87,7 +87,7 @@
                             </div>
                             <ul class="space-y-2 text-sm text-ink/80">
                                 <li><strong class="text-ink">1.</strong> Wpisz nazwę w wyszukiwarkę albo filtruj po miejscowości i formie prawnej.</li>
-                                <li><strong class="text-ink">2.</strong> Przełącz widok — kafelki albo tabela, jak Ci wygodniej.</li>
+                                <li><strong class="text-ink">2.</strong> Przełącz widok: kafelki albo tabela, jak Ci wygodniej.</li>
                                 <li><strong class="text-ink">3.</strong> Kliknij kartę organizacji, aby zobaczyć jej pełną wizytówkę.</li>
                                 <li><strong class="text-ink">4.</strong> „Mapa" pokazuje przybliżoną lokalizację w nowej karcie.</li>
                                 <li><strong class="text-ink">5.</strong> Jesteś przedstawicielem organizacji? Zaloguj się i edytuj swoje dane.</li>

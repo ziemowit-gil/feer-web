@@ -53,7 +53,7 @@
         <h1>Wgrywamy nową wersję portalu</h1>
         <span class="bar" aria-hidden="true"></span>
         <div role="status">
-            <p>Za kilkanaście sekund wszystko będzie działać. Strona odświeży się sama — nie musisz nic robić.</p>
+            <p>Za kilkanaście sekund wszystko będzie działać. Strona odświeży się sama. Nie musisz nic robić.</p>
         </div>
         <div class="progress" aria-hidden="true"><span></span></div>
         <p class="meta" aria-hidden="true">Odświeżenie za <strong id="countdown">{{ $retry }}</strong> s</p>

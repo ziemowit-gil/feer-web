@@ -85,7 +85,7 @@
 
         @if ($crTenders->isNotEmpty())
             @if ($crRecruitments->isNotEmpty())
-                <h3 class="mb-4 mt-10 text-xl font-bold text-ink">Zapytania ofertowe — termin składania ofert mija wkrótce</h3>
+                <h3 class="mb-4 mt-10 text-xl font-bold text-ink">Zapytania ofertowe: termin składania ofert mija wkrótce</h3>
             @endif
             <ul class="grid gap-3" role="list">
                 @foreach ($crTenders as $crItem)

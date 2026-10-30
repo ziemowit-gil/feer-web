@@ -22,7 +22,7 @@
 
     @if (session('status'))<p class="np__flash" role="status">{{ session('status') }}</p>@endif
     @if ($errors->any())<p class="np__err" role="alert">{{ $errors->first() }}</p>@endif
-    @if ($subscriber->status === 'unsubscribed')<p class="np__err" role="status" style="background:#FEF3C7;color:#78350F">Jesteś wypisany/-a. Zapisanie preferencji zapisze Cię ponownie — wyślemy e-mail z linkiem potwierdzającym.</p>@endif
+    @if ($subscriber->status === 'unsubscribed')<p class="np__err" role="status" style="background:#FEF3C7;color:#78350F">Jesteś wypisany/-a. Zapisanie preferencji zapisze Cię ponownie. Wyślemy e-mail z linkiem potwierdzającym.</p>@endif
 
     <form method="post" action="{{ route('newsletter.preferences.update', ['token' => $subscriber->token]) }}" class="np__grid">
         @csrf @method('PUT')
@@ -84,8 +84,8 @@
                 <h2 id="np-rodo" class="np__h2"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span>Twoje prawa (RODO)</h2>
                 <p class="np__hint">Przechowujemy tylko to, co widzisz na tej stronie, historię wysyłek i rejestr Twoich zgód. Masz prawo do:</p>
                 <ul style="margin:0 0 12px;padding-left:20px;font-size:14px;line-height:1.6">
-                    <li>dostępu i kopii danych — <a href="{{ route('newsletter.preferences.export', ['token' => $subscriber->token]) }}" class="np__link">pobierz moje dane (JSON)</a>,</li>
-                    <li>sprostowania (zmienisz je powyżej), usunięcia — przycisk pod formularzem, ograniczenia przetwarzania, przenoszenia i sprzeciwu,</li>
+                    <li>dostępu i kopii danych: <a href="{{ route('newsletter.preferences.export', ['token' => $subscriber->token]) }}" class="np__link">pobierz moje dane (JSON)</a>,</li>
+                    <li>sprostowania (zmienisz je powyżej), usunięcia (przycisk pod formularzem), ograniczenia przetwarzania, przenoszenia i sprzeciwu,</li>
                     <li>wycofania zgody w każdej chwili (<a href="{{ route('newsletter.unsubscribe', ['token' => $subscriber->token]) }}" class="np__link">wypisz się</a>) — bez wpływu na przetwarzanie sprzed wycofania,</li>
                     <li>skargi do Prezesa Urzędu Ochrony Danych Osobowych (uodo.gov.pl).</li>
                 </ul>
@@ -112,7 +112,7 @@
     }).then(function(sub){
       return fetch('{{ route('newsletter.preferences.push', ['token' => $subscriber->token]) }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: JSON.stringify(sub.toJSON()) });
     }).then(function(){ status.textContent = 'Powiadomienia push włączone w tej przeglądarce.'; })
-      .catch(function(){ status.textContent = 'Nie udało się włączyć powiadomień — sprawdź uprawnienia przeglądarki.'; toggle.checked = false; });
+      .catch(function(){ status.textContent = 'Nie udało się włączyć powiadomień. Sprawdź uprawnienia przeglądarki.'; toggle.checked = false; });
   });
 })();
 </script>

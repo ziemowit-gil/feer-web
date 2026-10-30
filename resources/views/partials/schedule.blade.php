@@ -23,7 +23,7 @@
         <i class="fa-solid fa-clock mt-0.5 text-amber-700" aria-hidden="true"></i>
         <div>
             <p class="font-bold text-amber-900">Harmonogram jeszcze nie został opublikowany</p>
-            <p class="text-sm text-amber-900">Pracujemy nad ustaleniem terminów — zapraszamy wkrótce.</p>
+            <p class="text-sm text-amber-900">Pracujemy nad ustaleniem terminów, zapraszamy wkrótce.</p>
         </div>
     </div>
 @else

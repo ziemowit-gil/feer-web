@@ -39,13 +39,13 @@
                 <template x-if="!saveSuccess && editMode">
                     <span class="flex items-center gap-1.5 font-medium text-brand">
                         <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                        Tryb edycji — zmień tytuł, lead poniżej albo kliknij w treść i edytuj ją z paskiem narzędzi.
+                        Tryb edycji: zmień tytuł, lead poniżej albo kliknij w treść i edytuj ją z paskiem narzędzi.
                     </span>
                 </template>
                 <template x-if="!saveSuccess && !editMode">
                     <span class="flex items-center gap-1.5">
                         <i class="fa-solid fa-newspaper text-brand" aria-hidden="true"></i>
-                        Tryb administratora — możesz edytować tę aktualność bez wchodzenia do panelu.
+                        Tryb administratora: możesz edytować tę aktualność bez wchodzenia do panelu.
                     </span>
                 </template>
             </div>

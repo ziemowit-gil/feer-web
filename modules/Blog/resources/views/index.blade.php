@@ -50,7 +50,7 @@
                 <header class="mb-8">
                     <h1 class="text-5xl text-ink md:text-6xl" style="font-family:'Caveat',cursive;font-weight:700;line-height:1.1">Wiem FEER</h1>
                     <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
-                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">Artykuły o dostępności cyfrowej, edukacji i empatii — miejsce, w którym dzielimy się wiedzą i doświadczeniem.</p>
+                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">Artykuły o dostępności cyfrowej, edukacji i empatii. To miejsce, w którym dzielimy się wiedzą i doświadczeniem.</p>
                 </header>
 
                 {{-- Slider bloga (Slidery → „Blog”) — tylko na pierwszej stronie listy, bez filtrów. --}}

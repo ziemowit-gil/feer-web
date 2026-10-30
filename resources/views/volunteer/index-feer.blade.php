@@ -21,7 +21,7 @@
     <div class="mx-auto max-w-6xl px-4 py-12">
         @if ($ads->isEmpty())
             <div class="rounded-md bg-gray-50 p-8 text-center text-ink">
-                Obecnie nie prowadzimy naboru. Zajrzyj wkrótce — albo napisz do nas przez
+                Obecnie nie prowadzimy naboru. Zajrzyj wkrótce albo napisz do nas przez
                 <a href="{{ route('contact.show') }}" class="font-bold text-brand-dark underline underline-offset-4 hover:no-underline">formularz kontaktowy</a>.
             </div>
         @else

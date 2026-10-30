@@ -14,7 +14,7 @@
     @endphp
     <div id="przesylki" class="{{ $sectionClass }}">
         <h2 class="mb-2 text-lg font-bold text-ink">Wyślij do nas przesyłkę</h2>
-        <p class="mb-4 max-w-2xl text-sm text-muted">{{ $shipNote ?: 'Możesz nadać do nas paczkę lub list — również na paczkomat.' }}</p>
+        <p class="mb-4 max-w-2xl text-sm text-muted">{{ $shipNote ?: 'Możesz nadać do nas paczkę lub list, również na paczkomat.' }}</p>
 
         <div class="rounded-lg border border-gray-200 p-4">
             <div class="mb-3 flex items-center gap-2">

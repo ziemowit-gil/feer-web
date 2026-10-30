@@ -122,7 +122,7 @@
                 <div class="max-w-2xl">
                     <span class="text-xs font-bold uppercase tracking-widest text-brand-dark">Newsletter</span>
                     <h2 id="zapis-h" class="mt-1 text-xl font-bold leading-snug">Nowe materiały prosto do Twojej skrzynki</h2>
-                    <p class="mt-3 text-sm leading-relaxed">Zapisz się na FEERletter — jako pierwsza osoba dowiesz się o nowych bezpłatnych materiałach, terminach szkoleń i webinarów online. FEERletter wychodzi raz na dwa tygodnie.</p>
+                    <p class="mt-3 text-sm leading-relaxed">Zapisz się na FEERletter, jako pierwsza osoba dowiesz się o nowych bezpłatnych materiałach, terminach szkoleń i webinarów online. FEERletter wychodzi raz na dwa tygodnie.</p>
                 </div>
                 <a href="{{ route('newsletter.show') }}"
                    class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-brand-dark px-6 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 motion-reduce:transition-none">

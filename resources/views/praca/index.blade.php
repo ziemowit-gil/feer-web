@@ -19,11 +19,11 @@
     <section class="mx-auto max-w-5xl px-4 py-12">
         <h1 class="mb-2 text-3xl font-bold text-ink">Oferty pracy</h1>
         @if ($feer)<span class="mb-5 mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
-        <p class="mb-8 max-w-2xl text-muted">Dołącz do naszego zespołu. Poniżej znajdziesz aktualne ogłoszenia o pracę — każde opisuje stanowisko, obowiązki i to, co oferujemy.</p>
+        <p class="mb-8 max-w-2xl text-muted">Dołącz do naszego zespołu. Poniżej znajdziesz aktualne ogłoszenia o pracę. Każde opisuje stanowisko, obowiązki i to, co oferujemy.</p>
 
         @if ($offers->isEmpty())
             <div class="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center text-muted">
-                Obecnie nie prowadzimy rekrutacji. Zajrzyj wkrótce — albo napisz do nas przez <a href="{{ route('contact.show') }}" class="font-bold text-brand hover:text-brand-dark">formularz kontaktowy</a>.
+                Obecnie nie prowadzimy rekrutacji. Zajrzyj wkrótce albo napisz do nas przez <a href="{{ route('contact.show') }}" class="font-bold text-brand hover:text-brand-dark">formularz kontaktowy</a>.
             </div>
         @else
             <ul class="flex flex-col divide-y divide-gray-100" role="list">

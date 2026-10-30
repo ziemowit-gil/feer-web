@@ -138,7 +138,7 @@
         @if ($hasArchive)
             <div class="mt-4 pt-4">
                 <a href="{{ route('projects.archive') }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-5 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
-                    To już zrobiliśmy — zobacz zrealizowane działania
+                    To już zrobiliśmy: zobacz zrealizowane działania
                 </a>
             </div>
         @endif

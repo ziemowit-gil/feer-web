@@ -76,12 +76,12 @@
                 Telefon: <a href="tel:{{ preg_replace('/\s+/', '', $phone) }}" class="font-bold text-brand hover:text-brand-dark">{{ $phone }}</a>.
             @endif
         </p>
-        <p class="fp-p">Tą samą drogą — lub przez formularz poniżej — można składać wnioski o udostępnienie informacji niedostępnej oraz żądania zapewnienia dostępności.</p>
+        <p class="fp-p">Tą samą drogą, lub przez formularz poniżej, można składać wnioski o udostępnienie informacji niedostępnej oraz żądania zapewnienia dostępności.</p>
         <p class="fp-p">
             Każdy ma prawo wystąpić z żądaniem zapewnienia dostępności cyfrowej strony internetowej, aplikacji mobilnej lub ich elementu.
             Żądanie powinno zawierać dane osoby zgłaszającej, wskazanie, o którą stronę lub element chodzi, oraz sposób kontaktu.
             Podmiot publiczny zrealizuje żądanie bez zbędnej zwłoki, nie później niż w ciągu 7 dni od dnia wystąpienia z żądaniem.
-            Jeżeli dotrzymanie tego terminu nie jest możliwe, poinformujemy o tym wnoszącego oraz o nowym terminie — nie dłuższym niż 2 miesiące.
+            Jeżeli dotrzymanie tego terminu nie jest możliwe, poinformujemy o tym wnoszącego oraz o nowym terminie, nie dłuższym niż 2 miesiące.
         </p>
 
         {{-- Procedura odwoławcza --}}
@@ -127,7 +127,7 @@
             <h2 class="fp-h2" style="margin-top:0">
                 <i class="fa-solid fa-universal-access text-brand" aria-hidden="true"></i> Zgłoś problem z dostępnością
             </h2>
-            <p class="fp-p" style="font-size:.95rem">Coś na stronie jest nieczytelne, nie działa z klawiaturą albo czytnikiem ekranu? Potrzebujesz treści w innej formie? Napisz — odpowiemy najpóźniej w ciągu 7 dni.</p>
+            <p class="fp-p" style="font-size:.95rem">Coś na stronie jest nieczytelne, nie działa z klawiaturą albo czytnikiem ekranu? Potrzebujesz treści w innej formie? Napisz, odpowiemy najpóźniej w ciągu 7 dni.</p>
 
             <ol class="mt-4 grid gap-2 text-sm text-ink sm:grid-cols-3" aria-label="Jak to działa">
                 <li class="flex items-center gap-2 rounded-md bg-gray-50 px-3 py-2"><i class="fa-solid fa-pen text-brand-dark" aria-hidden="true"></i> Opisujesz problem</li>
@@ -182,7 +182,7 @@
 
                     <div class="pt-4">
                         <label for="ar_page_url" class="mb-1 block font-bold text-ink">Adres strony lub nazwa elementu <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                        <p id="ar_page_url_hint" class="mb-2 text-sm text-muted">Np. adres podstrony, tytuł dokumentu albo nazwa przycisku.@if ($arPageUrl && ! old('page_url')) Podpowiedzieliśmy stronę, z której tu trafiono — popraw, jeśli to nie ta.@endif</p>
+                        <p id="ar_page_url_hint" class="mb-2 text-sm text-muted">Np. adres podstrony, tytuł dokumentu albo nazwa przycisku.@if ($arPageUrl && ! old('page_url')) Podpowiedzieliśmy stronę, z której tu trafiono. Popraw, jeśli to nie ta.@endif</p>
                         <input type="text" id="ar_page_url" name="page_url" value="{{ $arPageUrl }}" aria-describedby="ar_page_url_hint" @if ($errors->has('page_url')) aria-invalid="true" @endif
                                class="{{ $arInput }} min-h-12 {{ $arErr('page_url') }}">
                         @error('page_url') <p class="mt-1 text-sm font-bold text-red-700">{{ $message }}</p> @enderror
@@ -202,7 +202,7 @@
 
                     <div>
                         <label for="ar_message" class="mb-1 block font-bold text-ink">Opis problemu <span aria-hidden="true" class="text-red-700">*</span></label>
-                        <p id="ar_message_hint" class="mb-2 text-sm text-muted">Co próbowano zrobić i co się stało? Jeśli to ważne — z jakiego urządzenia, przeglądarki albo czytnika ekranu korzystasz.</p>
+                        <p id="ar_message_hint" class="mb-2 text-sm text-muted">Co próbowano zrobić i co się stało? Jeśli to ważne, podaj też, z jakiego urządzenia, przeglądarki albo czytnika ekranu korzystasz.</p>
                         <textarea id="ar_message" name="message" rows="6" required aria-required="true" maxlength="5000" aria-describedby="ar_message_hint" @if ($errors->has('message')) aria-invalid="true" @endif
                                   class="{{ $arInput }} py-2 {{ $arErr('message') }}">{{ old('message') }}</textarea>
                         @error('message') <p class="mt-1 text-sm font-bold text-red-700">{{ $message }}</p> @enderror

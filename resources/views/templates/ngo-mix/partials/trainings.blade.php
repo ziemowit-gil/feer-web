@@ -12,7 +12,7 @@
                     <h2 id="mix-trainings-heading" class="text-2xl font-extrabold text-gray-900 md:text-3xl">
                         Szkolenia i wydarzenia
                     </h2>
-                    <p class="mt-1 text-sm text-muted">Najbliższe terminy — zapisy przez stronę wydarzenia.</p>
+                    <p class="mt-1 text-sm text-muted">Najbliższe terminy. Zapisy przez stronę wydarzenia.</p>
                 </div>
                 <a href="{{ site_route('events.index') }}"
                     class="shrink-0 text-sm font-semibold text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">

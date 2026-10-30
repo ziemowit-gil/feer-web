@@ -23,13 +23,13 @@
             </template>
             <template x-if="!saveSuccess && editMode && dirty">
                 <span class="flex items-center gap-1.5 text-sm font-medium text-amber-700">
-                    <i class="fa-solid fa-circle-dot" aria-hidden="true"></i> Niezapisane zmiany — zapisz przyciskiem albo <kbd class="rounded border border-amber-300 bg-amber-50 px-1 text-xs">Ctrl+S</kbd>.
+                    <i class="fa-solid fa-circle-dot" aria-hidden="true"></i> Niezapisane zmiany: zapisz przyciskiem albo <kbd class="rounded border border-amber-300 bg-amber-50 px-1 text-xs">Ctrl+S</kbd>.
                 </span>
             </template>
             <template x-if="!saveSuccess && editMode && !dirty">
                 <span class="flex items-center gap-1.5 text-sm font-medium text-brand">
                     <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                    Tryb edycji — kliknij tytuł albo treść i edytuj bezpośrednio na stronie.
+                    Tryb edycji: kliknij tytuł albo treść i edytuj bezpośrednio na stronie.
                 </span>
             </template>
         </div>

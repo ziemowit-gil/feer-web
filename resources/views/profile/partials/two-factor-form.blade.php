@@ -29,7 +29,7 @@
 @if ($recoveryCodes)
     <div class="mb-5 rounded-lg border border-brand/30 bg-brand-light/60 p-4">
         <p class="mb-2 flex items-center gap-2 text-sm font-bold text-brand-dark">
-            <i class="fa-solid fa-key" aria-hidden="true"></i> Kody zapasowe — zapisz je w bezpiecznym miejscu
+            <i class="fa-solid fa-key" aria-hidden="true"></i> Kody zapasowe: zapisz je w bezpiecznym miejscu
         </p>
         <p class="mb-3 text-xs text-muted">Każdy kod działa jednorazowo. Użyj ich, gdy nie masz dostępu do aplikacji lub klucza.</p>
         <ul class="grid grid-cols-2 gap-x-6 gap-y-1 font-mono text-sm text-ink">

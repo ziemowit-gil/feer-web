@@ -560,7 +560,7 @@
                         @endif
                     </label>
 
-                    <p id="{{ $helpId }}" class="text-xs text-muted">{{ ($field['help_text'] ?? null) ?: 'Wpisz 10 cyfr numeru KRS — dane organizacji uzupełnimy z rejestru. Możesz je potem poprawić.' }}</p>
+                    <p id="{{ $helpId }}" class="text-xs text-muted">{{ ($field['help_text'] ?? null) ?: 'Wpisz 10 cyfr numeru KRS, dane organizacji uzupełnimy z rejestru. Możesz je potem poprawić.' }}</p>
 
                     <div class="{{ $feerForm ? 'ff-krs' : 'flex flex-wrap items-stretch gap-2' }}">
                         <input id="{{ $fid }}"
@@ -830,7 +830,7 @@
                 function lookup(force) {
                     var digits = input.value.replace(/\D/g, '');
                     if (!digits || digits.length > 10 || /^0+$/.test(digits)) {
-                        if (force) setStatus('Wpisz numer KRS — do 10 cyfr.', true);
+                        if (force) setStatus('Wpisz numer KRS, do 10 cyfr.', true);
                         return;
                     }
                     var krs = ('0000000000' + digits).slice(-10);

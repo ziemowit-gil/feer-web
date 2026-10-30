@@ -11,7 +11,7 @@
     @if (! ($szoKomunikaty['ok'] ?? false))
         <div role="alert" class="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             <i class="fa-solid fa-triangle-exclamation mt-0.5" aria-hidden="true"></i>
-            <span>Błąd połączenia — nie udało się pobrać komunikatów z systemu SZO. Spróbuj ponownie za chwilę.</span>
+            <span>Błąd połączenia: nie udało się pobrać komunikatów z systemu SZO. Spróbuj ponownie za chwilę.</span>
         </div>
     @elseif (empty($szoKomunikaty['items']))
         <p class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-muted">
