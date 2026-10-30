@@ -26,7 +26,18 @@
         <p class="mb-2 text-sm text-ink">Adres serwera: <code class="font-mono">{{ $endpoint }}</code></p>
         <p class="mb-1 text-sm text-ink">Polecenie dla Claude Code (wstaw swój token):</p>
         <pre class="overflow-x-auto rounded-md bg-gray-100 p-3 text-xs text-ink"><code>claude mcp add --transport http feer {{ $endpoint }} --header "Authorization: Bearer TOKEN"</code></pre>
-    </section>
+        <p class="mb-1 mt-4 text-sm text-ink">Konfiguracja dla Claude Desktop (<code class="font-mono">claude_desktop_config.json</code>, wstaw swój token):</p>
+        <pre class="overflow-x-auto rounded-md bg-gray-100 p-3 text-xs text-ink"><code>"feer": {
+  "command": "npx",
+  "args": [
+    "-y", "mcp-remote",
+    "{{ $endpoint }}",
+    "--transport", "http-only",
+    "--header", "Authorization:${FEER_AUTH}"
+  ],
+  "env": { "FEER_AUTH": "Bearer TOKEN" }
+}</code></pre>
+        <p class="mt-1 text-sm text-muted">Nagłówek zapisz bez spacji po dwukropku, a „Bearer …” podaj w zmiennej środowiskowej. Przełącznik <code class="font-mono">http-only</code> zapobiega mylącemu błędowi 405 z transportu SSE, którego serwer nie obsługuje.</p>
 
     <section class="mb-8" aria-labelledby="mcp-new">
         <h2 id="mcp-new" class="mb-2 text-base font-bold text-ink">Nowy token</h2>
