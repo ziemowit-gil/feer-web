@@ -723,6 +723,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('tresc/eksport', [AdminContentPortabilityController::class, 'export'])->name('tresc.export');
         Route::post('tresc/import', [AdminContentPortabilityController::class, 'import'])->name('tresc.import');
 
+        // Jakość tekstów: przegląd wzorców do poprawy w opublikowanych treściach (tylko odczyt).
+        Route::get('jakosc-tekstow', [\App\Http\Controllers\Admin\TextQualityController::class, 'index'])->name('jakosc-tekstow.index');
+
         // Klauzule RODO z SZO — import i widoczność na stronie ([klauzule-rodo]).
         Route::get('klauzule-rodo', [AdminGdprClauseController::class, 'index'])->name('klauzule-rodo.index');
         Route::post('klauzule-rodo/import', [AdminGdprClauseController::class, 'import'])->name('klauzule-rodo.import');

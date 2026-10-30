@@ -261,6 +261,7 @@ final class AdminMenu
                     ]),
                 $this->item('activity', 'Dziennik zdarzeń', 'admin.dziennik.index', 'fa-clock-rotate-left', active: 'admin.dziennik.*'),
                 $this->item('wcag', 'Skaner WCAG', 'admin.wcag-scans.index', 'fa-universal-access', active: 'admin.wcag-scans.*'),
+                $this->item('text_quality', 'Jakość tekstów', 'admin.jakosc-tekstow.index', 'fa-spell-check', active: 'admin.jakosc-tekstow.*'),
                 $this->item('gdpr', 'Klauzule RODO', 'admin.klauzule-rodo.index', 'fa-shield-halved', active: 'admin.klauzule-rodo.*'),
                 $this->item('modules', 'Instalacja modułów', 'admin.moduly.index', 'fa-puzzle-piece', active: 'admin.moduly.*'),
                 $this->item('health', 'Kondycja serwisu', 'admin.health.index', 'fa-heart-pulse', active: 'admin.health.*'),
