@@ -19,6 +19,6 @@ class AboutPageHideFounderSeederTest extends TestCase
         $this->seed(AboutPageHideFounderSeeder::class);
 
         $this->assertSame(['team', 'founder'], $page->fresh()->about_sections_hidden);
-        $this->assertNotContains('founder', $page->fresh()->aboutSections(true));
+        $this->assertNotContains('founder', $page->fresh()->orderedAboutSections(true));
     }
 }
