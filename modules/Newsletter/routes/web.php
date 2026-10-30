@@ -128,12 +128,12 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
             Route::post('kampanie/{campaign}/wstrzymaj', [AdminCampaignController::class, 'pause'])->name('kampanie.pause');
             Route::post('kampanie/{campaign}/wznow', [AdminCampaignController::class, 'resume'])->name('kampanie.resume');
             Route::post('kampanie/{campaign}/anuluj', [AdminCampaignController::class, 'cancel'])->name('kampanie.cancel');
+            Route::post('kampanie/{campaign}/ponow-nieudane', [AdminCampaignController::class, 'retryFailed'])->name('kampanie.retry');
         });
 
         // Raporty kampanii (zawierają adresy odbiorców).
         Route::middleware('can:newsletter.reports')->group(function (): void {
             Route::get('kampanie/{campaign}/raport', [AdminCampaignController::class, 'report'])->name('kampanie.report');
-            Route::post('kampanie/{campaign}/ponow-nieudane', [AdminCampaignController::class, 'retryFailed'])->name('kampanie.retry');
             Route::get('kampanie/{campaign}/raport.csv', [AdminCampaignController::class, 'reportCsv'])->name('kampanie.report.csv');
             Route::get('kampanie/{campaign}/raport.pdf', [AdminReportController::class, 'campaignPdf'])->name('kampanie.report.pdf');
             Route::get('raporty', [AdminReportController::class, 'index'])->name('raporty.index');

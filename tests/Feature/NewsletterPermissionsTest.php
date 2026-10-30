@@ -19,7 +19,9 @@ class NewsletterPermissionsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        \Closure::bind(function () {
+            static::$cached = null;
+        }, null, SiteSetting::class)();
     }
 
     private function user(string $role, array $groupPermissions = []): User
@@ -101,6 +103,17 @@ class NewsletterPermissionsTest extends TestCase
         $this->actingAs($user)->post(route('admin.newsletter.kampanie.duplicate', $campaign))->assertForbidden();
         $this->actingAs($user)->get(route('admin.newsletter.szablony.index'))->assertForbidden();
         $this->actingAs($user)->get(route('admin.newsletter.mosaico.gallery'))->assertForbidden();
+    }
+
+    public function test_ponowienie_nieudanych_dostaw_wymaga_uprawnienia_do_wysylki_a_nie_do_raportow(): void
+    {
+        $campaign = $this->campaign(NewsletterCampaign::STATUS_SENT);
+        $reports = $this->user(User::ROLE_EDITOR, [NewsletterPermissions::REPORTS]);
+        $publisher = $this->user(User::ROLE_NEWSLETTER_PUBLISHER);
+
+        // Ponowienie wysyła maile, więc samo oglądanie raportów nie wystarcza.
+        $this->actingAs($reports)->post(route('admin.newsletter.kampanie.retry', $campaign))->assertForbidden();
+        $this->actingAs($publisher)->post(route('admin.newsletter.kampanie.retry', $campaign))->assertRedirect();
     }
 
     public function test_bez_uprawnien_brak_dostepu_i_pozycji_w_menu(): void
