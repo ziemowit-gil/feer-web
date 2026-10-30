@@ -5,7 +5,7 @@
 <section class="mx-auto max-w-3xl px-4 py-10">
     <h1 class="text-2xl font-bold leading-tight text-ink md:text-3xl">Najczęstsze pytania</h1>
     <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
-    <p class="mt-5 max-w-2xl text-lg text-ink">Odpowiedzi na pytania, które słyszymy najczęściej. Nie znalazłeś swojego? <a href="{{ route('contact.show') }}" class="font-bold text-brand-dark underline underline-offset-4 hover:text-ink">Napisz do nas</a>.</p>
+    <p class="mt-5 max-w-2xl text-lg text-ink">Odpowiedzi na pytania, które słyszymy najczęściej. Nie ma tu Twojego pytania? <a href="{{ route('contact.show') }}" class="font-bold text-brand-dark underline underline-offset-4 hover:text-ink">Napisz do nas</a>.</p>
 
     @forelse ($groups as $category => $items)
         <div class="mt-10">
