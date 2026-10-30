@@ -56,7 +56,7 @@ return new class extends Migration
             'is_system'    => true,
             'show_in_menu' => false,
             'show_side_nav'=> false,
-            'hub_intro'    => 'Wybierz jak chcesz się zaangażować — każda forma jest cenna.',
+            'hub_intro'    => 'Wybierz, jak chcesz się zaangażować.',
             'hub_links'    => json_encode([
                 ['icon' => 'fa-solid fa-hands-helping', 'color' => 'blue',  'label' => 'Wolontariat', 'url' => '/wolontariat', 'description' => 'Działaj z nami jako wolontariusz — angażuj czas i umiejętności.', 'cta_label' => 'Dowiedz się więcej o wolontariacie'],
                 ['icon' => 'fa-solid fa-briefcase',     'color' => 'dark',  'label' => 'Praca',       'url' => '/praca',       'description' => 'Dołącz do zespołu FEER — sprawdź aktualne oferty zatrudnienia.', 'cta_label' => 'Dowiedz się więcej o pracy'],

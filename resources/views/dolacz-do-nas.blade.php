@@ -67,24 +67,27 @@
     .jn-path-t { display: block; font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
     .jn-path-d { display: block; margin-top: .5rem; font-size: 1rem; line-height: 1.5; }
     .jn-path-f { display: flex; align-items: center; justify-content: space-between; gap: 1rem; font-weight: 800; }
-    .jn-path-n { display: inline-flex; align-items: center; gap: .4rem; padding: .15rem .6rem; border: 2px solid currentColor; border-radius: .25rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+    .jn-path-n { display: inline-flex; align-items: center; gap: .4rem; font-size: .9rem; }
     .jn-path:hover .jn-path-arrow { transform: translateX(4px); } .jn-path-arrow { transition: transform .2s; }
     @media (prefers-reduced-motion: reduce) { .jn-path-arrow { transition: none; } }
     .jn-sec { margin-top: 3.5rem; }
+    /* Pierwsza sekcja po prawej zaczyna się od tej samej linii co kafle po lewej (bez pustego rogu). */
+    .jn-main > .jn-sec:first-child { margin-top: 0; }
     .jn-sec-h { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: .75rem 1.5rem; margin-bottom: 1.25rem; }
     .jn-h2 { margin: 0; padding-left: .75rem; border-left: 4px solid var(--color-brand-dark); font-size: 1.6rem; font-weight: 800; color: #1d1d1a; }
     .jn-h2 small { display: block; margin-top: .25rem; font-size: .95rem; font-weight: 500; color: #374151; }
     .jn-more { font-weight: 800; color: var(--color-brand-dark); text-decoration: underline; text-underline-offset: 3px; } .jn-more:hover { color: #1d1d1a; }
     .jn-cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
-    .jn-card { display: flex; flex-direction: column; gap: .6rem; padding: 1.25rem; border: 2px solid #d1d5db; border-radius: .5rem; background: #fff; }
-    .jn-card:hover, .jn-card:focus-within { border-color: var(--color-brand-dark); }
+    .jn-card { display: flex; flex-direction: column; gap: .6rem; padding: 1.25rem; border-radius: .5rem; background: #f3f4f6; transition: background-color .15s; }
+    .jn-card:hover, .jn-card:focus-within { background: var(--color-brand-light); }
+    @media (prefers-reduced-motion: reduce) { .jn-card { transition: none; } }
     .jn-meta { display: flex; flex-wrap: wrap; gap: .35rem .9rem; margin: 0; font-size: .85rem; color: #374151; } .jn-meta i { margin-right: .3rem; color: var(--color-brand-dark); }
     .jn-card h3 { margin: 0; font-size: 1.15rem; line-height: 1.3; font-weight: 800; }
     .jn-card h3 a { color: #1d1d1a; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; } .jn-card h3 a:hover { color: var(--color-brand-dark); }
     .jn-card h3 a:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 2px; border-radius: .25rem; }
     .jn-card p { margin: 0; color: #374151; }
     .jn-card .jn-cta { margin-top: auto; padding-top: .5rem; font-weight: 800; color: var(--color-brand-dark); }
-    .jn-empty { padding: 1.5rem; border: 2px dashed #9ca3af; border-radius: .5rem; color: #1d1d1a; }
+    .jn-empty { padding: 1.5rem; border-radius: .5rem; background: #f3f4f6; color: #1d1d1a; }
     .jn-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); counter-reset: step; }
     .jn-step { position: relative; padding: 1.25rem 1.25rem 1.25rem 4rem; border-radius: .5rem; background: #f3f4f6; }
     .jn-step::before { counter-increment: step; content: counter(step); position: absolute; left: 1.25rem; top: 1.25rem; display: flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; border-radius: 9999px; background: #1d1d1a; color: #fff; font-weight: 800; }
