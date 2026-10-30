@@ -46,7 +46,8 @@ class AboutPageTextsHumanizedSeeder extends Seeder
         $changed = $this->replaceInRows($page, 'about_stats', 'label', [
             'godzin przeprowadzonych szkoleń i zajęć' => 'godzin szkoleń i zajęć',
         ]) | $this->replaceInRows($page, 'about_stats', 'label', [
-            'dzieciaków które poznały niepełnosprawność' => 'dzieci, które poznały niepełnosprawność',
+            'dzieciaków które poznały niepełnosprawność' => 'dzieci na warsztatach o niepełnosprawności',
+            'dzieci, które poznały niepełnosprawność' => 'dzieci na warsztatach o niepełnosprawności',
         ]) | $this->replaceInRows($page, 'about_stats', 'value', [
             'więcej jak 1000' => 'ponad 1000',
         ]) | $this->replaceInRows($page, 'about_values', 'text', [

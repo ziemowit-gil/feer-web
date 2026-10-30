@@ -36,7 +36,7 @@ class AboutPageTextsHumanizedSeederTest extends TestCase
         $this->assertStringStartsWith('Świat staje się dostępny, gdy przestajemy się go bać.', $page->about_intro);
         $this->assertStringNotContainsString('lecz', $page->about_intro);
         $this->assertSame('ponad 1000', $page->about_stats[0]['value']);
-        $this->assertSame('dzieci, które poznały niepełnosprawność', $page->about_stats[0]['label']);
+        $this->assertSame('dzieci na warsztatach o niepełnosprawności', $page->about_stats[0]['label']);
         $this->assertSame('Nasza działalność zwalnia, mierzymy się z problemami.', $page->about_timeline[0]['text']);
         $this->assertSame('https://example.org', $page->about_timeline[0]['url'], 'pozostałe pola wpisu zostają');
         $this->assertSame('Tekst bez zmian', $page->about_timeline[1]['text']);
