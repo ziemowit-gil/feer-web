@@ -2,6 +2,7 @@
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Tools\CreateNewsDraftTool;
 use App\Mcp\Tools\GetNewsTool;
 use App\Mcp\Tools\GetPageTool;
 use App\Mcp\Tools\ListNewsTool;
@@ -13,7 +14,7 @@ use Laravel\Mcp\Server\Attributes\Version;
 
 #[Name('FEER CMS')]
 #[Version('0.1.0')]
-#[Instructions('Odczyt opublikowanych treści serwisu Fundacji FEER (feer.org.pl): strony i aktualności. Narzędzia są tylko do odczytu i zwracają wyłącznie treści publiczne.')]
+#[Instructions('Odczyt opublikowanych treści serwisu Fundacji FEER (feer.org.pl): strony i aktualności. Odczyt zwraca wyłącznie treści publiczne. Jedyny zapis to szkic aktualności (nieopublikowany, wymaga zakresu mcp:write).')]
 class FeerServer extends Server
 {
     protected array $tools = [
@@ -21,6 +22,7 @@ class FeerServer extends Server
         GetPageTool::class,
         ListNewsTool::class,
         GetNewsTool::class,
+        CreateNewsDraftTool::class,
     ];
 
     protected array $resources = [];

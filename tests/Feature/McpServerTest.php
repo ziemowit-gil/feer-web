@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Mcp\Servers\FeerServer;
+use App\Mcp\Tools\CreateNewsDraftTool;
 use App\Mcp\Tools\SearchPagesTool;
+use App\Models\News;
 use App\Models\Page;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -46,5 +48,30 @@ class McpServerTest extends TestCase
             ->assertOk()
             ->assertSee('fundacja-testowa')
             ->assertDontSee('fundacja-szkic');
+    }
+
+    public function test_creates_unpublished_news_draft_with_escaped_content(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        Sanctum::actingAs($admin, ['mcp:read', 'mcp:write']);
+
+        FeerServer::actingAs($admin)->tool(CreateNewsDraftTool::class, [
+            'title' => 'Szkic z MCP', 'content' => "Pierwszy <b>akapit</b>\n\nDrugi",
+        ])->assertOk()->assertSee('szkic');
+
+        $news = News::where('title', 'Szkic z MCP')->firstOrFail();
+        $this->assertFalse($news->is_published);
+        $this->assertStringContainsString('&lt;b&gt;', $news->content);
+        $this->assertSame($admin->id, $news->created_by);
+    }
+
+    public function test_draft_requires_write_ability(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        Sanctum::actingAs($admin, ['mcp:read']);
+
+        FeerServer::actingAs($admin)->tool(CreateNewsDraftTool::class, ['title' => 'Nie', 'content' => 'x'])
+            ->assertHasErrors();
+        $this->assertSame(0, News::count());
     }
 }
