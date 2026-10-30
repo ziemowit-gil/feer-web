@@ -64,8 +64,9 @@
                 @error('message')<p id="ask-message-err" class="mt-1 text-sm text-red-700">{{ $message }}</p>@enderror
             </div>
             <div>
-                <label for="ask-answer" class="mb-1 block text-sm font-bold text-ink">{{ $challenge['question'] }} <span class="text-red-700" aria-hidden="true">*</span></label>
-                <input id="ask-answer" type="text" name="{{ \App\Support\SpamGuard::ANSWER_FIELD }}" required aria-required="true" autocomplete="off" inputmode="numeric"
+                <label for="ask-answer" class="mb-1 block text-sm font-bold text-ink">Zadanie antyspamowe: {{ $challenge['question'] }} <span class="text-red-700" aria-hidden="true">*</span></label>
+                <p id="ask-answer-help" class="mb-1 text-sm text-ink">Pytanie chroni formularz przed automatycznym spamem. Wynik możesz wpisać cyfrą lub słownie.</p>
+                <input id="ask-answer" type="text" name="{{ \App\Support\SpamGuard::ANSWER_FIELD }}" required aria-required="true" autocomplete="off" inputmode="numeric" aria-describedby="ask-answer-help"
                     class="min-h-11 w-40 rounded-md border-gray-500 text-base focus:border-brand-dark focus:ring-brand-dark">
             </div>
             <label class="flex items-start gap-3 text-sm text-ink">

@@ -207,6 +207,20 @@
                     </label>
                     <p x-show="errors.consent" x-cloak class="text-sm text-red-700" x-text="errors.consent"></p>
 
+                    {{-- Antyspam bez obrazkowej CAPTCHY: ukryte pole-pułapka, żeton z czasem i proste zadanie tekstowe. --}}
+                    @php($lpSpam = \App\Support\SpamGuard::challenge())
+                    <div class="hidden" aria-hidden="true" style="display:none!important">
+                        <label for="lp-website">Zostaw to pole puste</label>
+                        <input id="lp-website" type="text" name="website" x-model="form.website" tabindex="-1" autocomplete="off">
+                    </div>
+                    <div x-init="form.form_check = @js($lpSpam['token'])">
+                        <label for="lp-answer" class="mb-1 block text-sm font-bold text-ink">Zadanie antyspamowe: {{ $lpSpam['question'] }}</label>
+                        <input id="lp-answer" name="form_answer" type="text" inputmode="numeric" autocomplete="off" required x-model="form.form_answer" aria-describedby="lp-answer-help"
+                            class="w-40 rounded-lg border-gray-300 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand">
+                        <p id="lp-answer-help" class="mt-1 text-sm text-ink">Pytanie chroni formularz przed automatycznym spamem. Wynik możesz wpisać cyfrą lub słownie.</p>
+                        <p x-show="errors.form_answer" x-cloak class="mt-1 text-sm text-red-700" x-text="errors.form_answer"></p>
+                    </div>
+
                     <button type="submit" :disabled="state === 'loading'"
                         class="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3 text-base font-bold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                         <i class="fa-solid fa-spinner fa-spin" x-show="state === 'loading'" x-cloak aria-hidden="true"></i>
@@ -222,7 +236,7 @@
             Alpine.data('lpRegister', (endpoint, csrf, extraInit = {}) => ({
                 state: 'idle', // idle | loading | success | error
                 message: '',
-                form: { name: '', email: '', phone: '', consent: false, extra: { ...extraInit } },
+                form: { name: '', email: '', phone: '', consent: false, extra: { ...extraInit }, website: '', form_check: '', form_answer: '' },
                 errors: {},
 
                 async submit() {

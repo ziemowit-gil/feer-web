@@ -70,6 +70,7 @@
                 @else
                     <form method="POST" action="{{ route('materials.subscribe') }}" class="mt-4">
                         @csrf
+                        @include('partials.spam-protection', ['spamScope' => 'materialy', 'flat' => true])
                         <div class="mx-auto flex max-w-md flex-col gap-2 sm:flex-row">
                             <label for="subscribe-email" class="sr-only">Adres e-mail</label>
                             <input type="email" id="subscribe-email" name="email" value="{{ old('email') }}" required

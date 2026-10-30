@@ -29,7 +29,20 @@ class LandingPageController extends Controller
     {
         $page = LandingPage::published()->where('slug', $slug)->firstOrFail();
 
-        $handler->handle($page, $request->validated());
+        $values = $request->validated();
+        $spam = \App\Support\SpamGuard::inspect($request, [$values['name'] ?? '', $values['email'] ?? '', $values['phone'] ?? '', implode(' ', array_filter((array) ($values['extra'] ?? []), 'is_string'))], 'landing-'.$page->id);
+        if ($spam) {
+            \Illuminate\Support\Facades\Log::warning('Zablokowano rejestrację na landing page jako spam', ['powód' => $spam['reason'], 'strona' => $page->slug, 'ip' => $request->ip()]);
+
+            // Bot dostaje „sukces”; człowiek z błędnym wynikiem zadania dostaje błąd przy polu zadania.
+            if (! $spam['silent']) {
+                return response()->json(['message' => $spam['message'], 'errors' => [\App\Support\SpamGuard::ANSWER_FIELD => [$spam['message']]]], 422);
+            }
+
+            return response()->json(['ok' => true, 'message' => $page->form_success ?: 'Dziękujemy! Twoje zgłoszenie zostało zapisane.']);
+        }
+
+        $handler->handle($page, $values);
 
         $message = $page->form_success ?: 'Dziękujemy! Twoje zgłoszenie zostało zapisane — szczegóły wyślemy na podany adres e-mail.';
 

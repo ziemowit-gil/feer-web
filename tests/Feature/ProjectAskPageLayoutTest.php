@@ -23,6 +23,9 @@ class ProjectAskPageLayoutTest extends TestCase
         $this->assertStringContainsString('Wiadomość trafi prosto do osoby kontaktowej: <strong>Ewelina Frączek</strong>', $html);
         $this->assertStringContainsString('Wróć do działania', $html);
         $this->assertStringContainsString('Wyślij pytanie', $html);
+        $this->assertStringContainsString('Zadanie antyspamowe: Ile wynosi', $html);
+        $this->assertStringContainsString('Pytanie chroni formularz przed automatycznym spamem', $html);
+        $this->assertStringContainsString('aria-describedby="ask-answer-help"', $html);
         $this->assertStringNotContainsString('bezpośrednio do osoby', $html);
     }
 }
