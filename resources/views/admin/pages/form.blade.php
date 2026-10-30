@@ -469,6 +469,7 @@
                     </div>
                 </details>
                 @include('admin.pages.partials.metka')
+                @include('admin.pages.partials.attachments-visibility')
                 <details class="pe-section rounded-md bg-white" data-pe-section="dostep" data-pe-toggles>
                     <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
                         <span>Dostęp i widoczność</span>

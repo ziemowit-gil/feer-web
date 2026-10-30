@@ -956,6 +956,7 @@ class PageController extends Controller
             'layout_data.slider' => ['nullable', 'boolean'],
             'layout_data.hero_slider_id' => ['nullable', 'integer'],
             'layout_data.hide_meta' => ['nullable', 'boolean'],
+            'layout_data.hide_attachments' => ['nullable', 'boolean'],
             // Metryczka: pokaż/ukryj na tej stronie (inherit = wg ustawień serwisu), podmiot publikujący.
             'layout_data.metka' => ['nullable', Rule::in(['inherit', 'show', 'hide'])],
             'layout_data.metka_entity' => ['nullable', 'boolean'],

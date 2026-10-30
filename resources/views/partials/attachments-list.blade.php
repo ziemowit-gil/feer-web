@@ -1,4 +1,10 @@
-@php $attachments ??= collect(); @endphp
+@php
+    $attachments ??= collect();
+    // Strona może ukryć listę „Pliki do pobrania” (panel: Lista plików na stronie); pliki zostają w panelu.
+    if (isset($page) && $page instanceof \App\Models\Page && ! empty(($page->layout_data ?? [])['hide_attachments'])) {
+        $attachments = collect();
+    }
+@endphp
 
 @if ($attachments->isNotEmpty())
     @include('partials.attachments-css')

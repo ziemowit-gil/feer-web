@@ -41,12 +41,7 @@
 
                     @if ($clause->remote_updated_at || $clause->version)
                         <p class="m-0 mt-1 pl-6 text-sm text-ink">
-                            @if ($clause->remote_updated_at)
-                                {{ $t['updated'] }}: <time datetime="{{ $clause->remote_updated_at->toDateString() }}">{{ $clause->remote_updated_at->format('d.m.Y') }}</time>
-                            @endif
-                            @if ($clause->version)
-                                @if ($clause->remote_updated_at), @endif{{ $t['version'] }} {{ $clause->version }}
-                            @endif
+                            @if ($clause->remote_updated_at){{ $t['updated'] }}: <time datetime="{{ $clause->remote_updated_at->toDateString() }}">{{ $clause->remote_updated_at->format('d.m.Y') }}</time>@endif{{ $clause->remote_updated_at && $clause->version ? ', ' : '' }}@if ($clause->version){{ $t['version'] }} {{ $clause->version }}@endif
                         </p>
                     @endif
 
