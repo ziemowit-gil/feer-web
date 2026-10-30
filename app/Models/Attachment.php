@@ -41,7 +41,7 @@ class Attachment extends Model implements HasMedia
     protected function fileSize(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->getFirstMedia('file')?->human_readable_size,
+            get: fn () => ($size = $this->getFirstMedia('file')?->human_readable_size) === null ? null : str_replace('.', ',', $size),
         );
     }
 }

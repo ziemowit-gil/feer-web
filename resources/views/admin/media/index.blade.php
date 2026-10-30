@@ -385,8 +385,11 @@
                                             </span>
                                         @endif
                                     </span>
-                                    <span class="mt-2 block truncate text-sm font-bold text-ink" title="{{ $item['file_name'] }}">{{ $item['file_name'] }}</span>
-                                    <span class="block text-xs text-muted">{{ $item['ext'] }} · {{ $item['size'] }}</span>
+                                    <span class="mt-2 flex items-baseline gap-1 text-sm" title="{{ $item['file_name'] }}">
+                                        <span class="min-w-0 truncate font-bold text-ink">{{ $item['file_name'] }}</span>
+                                        @if ($item['ext'] !== '')<span class="flex-none text-ink">({{ $item['ext'] }})</span>@endif
+                                    </span>
+                                    <span class="block text-xs text-muted">{{ $item['size'] }}</span>
                                     <span class="block text-xs {{ $item['usage'] ? 'text-ink' : 'text-muted' }}">
                                         {{ $item['usage'] ? 'Użyty: '.$item['usage'] : 'Nieużywany' }}@if ($item['versions']) · wersji: {{ $item['versions'] + 1 }}@endif
                                         @if ($item['is_image'] && ! $item['has_alt'] && $item['owner']['standalone']) · brak opisu alt @endif
@@ -394,6 +397,10 @@
                                         @if ($item['archived']) · w archiwum @endif
                                     </span>
                                 </button>
+                                <a href="{{ $item['url'] }}" download
+                                    class="mt-1 inline-flex min-h-11 items-center gap-1.5 rounded-md px-1 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                    <i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i> Pobierz<span class="sr-only"> plik: {{ $item['file_name'] }}@if ($item['ext'] !== '') ({{ $item['ext'] }}, {{ $item['size'] }})@endif</span>
+                                </a>
                             </li>
                         @endforeach
                     </ul>
@@ -410,6 +417,7 @@
                                     <th scope="col" class="px-4 py-3">Rozmiar</th>
                                     <th scope="col" class="px-4 py-3">Dodano</th>
                                     <th scope="col" class="px-4 py-3">Autor</th>
+                                    <th scope="col" class="px-4 py-3"><span class="sr-only">Pobieranie</span></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -431,12 +439,16 @@
                                                     @endif
                                                 </span>
                                                 <span class="min-w-0">
-                                                    <span class="block max-w-[22rem] truncate font-bold text-ink hover:underline">{{ $item['file_name'] }}</span>
-                                                    <span class="block text-xs text-muted">
-                                                        {{ $item['ext'] }}@if ($item['versions']) · wersji: {{ $item['versions'] + 1 }}@endif
-                                                        @if ($item['a11y']) · dostępność: {{ $a11yText[$item['a11y']] }} @endif
-                                                        @if ($item['archived']) · w archiwum @endif
+                                                    <span class="flex max-w-[26rem] items-baseline gap-1">
+                                                        <span class="min-w-0 truncate font-bold text-ink hover:underline">{{ $item['file_name'] }}</span>
+                                                        @if ($item['ext'] !== '')<span class="flex-none text-ink">({{ $item['ext'] }})</span>@endif
                                                     </span>
+                                                    @if ($item['versions'] || $item['a11y'] || $item['archived'])
+                                                        <span class="block text-xs text-muted">
+                                                            @php $notes = array_filter([$item['versions'] ? 'wersji: '.($item['versions'] + 1) : null, $item['a11y'] ? 'dostępność: '.$a11yText[$item['a11y']] : null, $item['archived'] ? 'w archiwum' : null]); @endphp
+                                                            {{ implode(' · ', $notes) }}
+                                                        </span>
+                                                    @endif
                                                 </span>
                                             </button>
                                         </td>
@@ -444,6 +456,12 @@
                                         <td class="whitespace-nowrap px-4 py-2 text-ink">{{ $item['size'] }}</td>
                                         <td class="whitespace-nowrap px-4 py-2 text-ink">{{ $item['created_at']->format('d.m.Y') }}</td>
                                         <td class="px-4 py-2 text-ink">{{ $item['author'] }}</td>
+                                        <td class="whitespace-nowrap px-4 py-2">
+                                            <a href="{{ $item['url'] }}" download
+                                                class="inline-flex min-h-11 items-center gap-1.5 rounded-md px-1 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                                <i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i> Pobierz<span class="sr-only"> plik: {{ $item['file_name'] }}@if ($item['ext'] !== '') ({{ $item['ext'] }}, {{ $item['size'] }})@endif</span>
+                                            </a>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>

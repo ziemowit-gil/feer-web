@@ -162,7 +162,7 @@ class SharedPartialsStyleTest extends TestCase
         }
     }
 
-    public function test_pliki_do_pobrania_bez_plakietek_z_rodzajem_zwyklym_tekstem(): void
+    public function test_pliki_do_pobrania_bez_plakietek_z_rodzajem_obok_tytulu_zwyklym_tekstem(): void
     {
         $html = view('partials.attachments-list', ['attachments' => collect([
             (object) ['label' => 'Regulamin', 'file_extension' => 'PDF', 'file_size' => '1,2 MB', 'file_url' => '/regulamin.pdf'],
@@ -170,11 +170,13 @@ class SharedPartialsStyleTest extends TestCase
         ])])->render();
 
         $this->assertFlatStyle($html, 'pliki');
-        $this->assertStringContainsString('PDF · 1,2 MB', $html);
-        $this->assertStringContainsString('DOCX', $html);
+        $this->assertMatchesRegularExpression('#Regulamin <span class="dl-ext">\(PDF\)</span>#', $html, 'rodzaj stoi obok tytułu');
+        $this->assertMatchesRegularExpression('#Formularz <span class="dl-ext">\(DOCX\)</span>#', $html);
+        $this->assertStringContainsString('1,2 MB', $html);
+        $this->assertStringNotContainsString('PDF · 1,2 MB', $html, 'rodzaj nie powtarza się w drugiej linii');
         $this->assertStringNotContainsString('dl-type', $html);
         $this->assertStringNotContainsString('#b91c1c', $html);
         $this->assertStringContainsString('class="dl-card"', $html);
-        $this->assertStringContainsString('Pobierz<span class="sr-only"> plik: Regulamin (PDF · 1,2 MB)</span>', $html);
+        $this->assertStringContainsString('Pobierz<span class="sr-only"> plik: Regulamin (PDF, 1,2 MB)</span>', $html);
     }
 }

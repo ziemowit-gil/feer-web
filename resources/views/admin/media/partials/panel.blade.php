@@ -45,6 +45,9 @@
             <a href="{{ $item->getUrl() }}" target="_blank" rel="noopener" class="{{ $btn }} bg-brand-dark text-white hover:bg-ink">
                 <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Otwórz<span class="sr-only"> plik w nowej karcie</span>
             </a>
+            <a href="{{ $item->getUrl() }}" download class="{{ $btn }} bg-white text-ink hover:bg-brand-light">
+                <i class="fa-solid fa-arrow-down" aria-hidden="true"></i> Pobierz ten plik<span class="sr-only"> ({{ $ext }}, {{ $item->human_readable_size }})</span>
+            </a>
             <button type="button" class="{{ $btn }} bg-white text-ink hover:bg-brand-light"
                 x-data="{ done: false }"
                 @click="navigator.clipboard.writeText(@js($item->getUrl())).then(() => { done = true; setTimeout(() => done = false, 2000) })">

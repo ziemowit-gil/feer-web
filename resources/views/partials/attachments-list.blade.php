@@ -20,20 +20,20 @@
                         in_array($ext, ['mp4', 'avi', 'mov', 'mkv', 'webm', 'mp3', 'wav', 'ogg', 'flac']) => 'fa-file-audio',
                         default                                           => 'fa-file-lines',
                     };
-                    // Rodzaj i rozmiar zwykłym tekstem, np. „PDF · 1,2 MB".
-                    $meta = collect([strtoupper($attachment->file_extension ?? ''), $attachment->file_size ?? ''])
-                        ->map(fn ($v) => trim((string) $v))->filter()->implode(' · ');
+                    // Rodzaj pliku stoi obok tytułu (np. „Klauzula (DOCX)"), pod spodem zostaje sam rozmiar.
+                    $type = strtoupper(trim((string) ($attachment->file_extension ?? '')));
+                    $meta = trim((string) ($attachment->file_size ?? ''));
                 @endphp
                 <li class="dl-card">
                     <div class="dl-top">
                         <i class="fa-solid {{ $fileIcon }} dl-icon" aria-hidden="true"></i>
                         <div class="min-w-0">
-                            <p class="dl-name">{{ $attachment->label }}</p>
+                            <p class="dl-name">{{ $attachment->label }}@if ($type !== '') <span class="dl-ext">({{ $type }})</span>@endif</p>
                             @if ($meta !== '')<p class="dl-meta">{{ $meta }}</p>@endif
                         </div>
                     </div>
                     <a href="{{ $attachment->file_url }}" download class="dl-btn">
-                        <i class="fa-solid fa-arrow-down" aria-hidden="true"></i> Pobierz<span class="sr-only"> plik: {{ $attachment->label }}@if ($meta !== '') ({{ $meta }})@endif</span>
+                        <i class="fa-solid fa-arrow-down" aria-hidden="true"></i> Pobierz<span class="sr-only"> plik: {{ $attachment->label }}@if ($type !== '' || $meta !== '') ({{ collect([$type, $meta])->filter()->implode(', ') }})@endif</span>
                     </a>
                 </li>
             @endforeach
