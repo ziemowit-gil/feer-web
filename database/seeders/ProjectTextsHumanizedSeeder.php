@@ -18,6 +18,9 @@ use Illuminate\Database\Seeder;
  *
  * Uruchomienie:
  *   php artisan db:seed --class=ProjectTextsHumanizedSeeder --force
+ *
+ * Wymuszenie (nadpisuje treść także wtedy, gdy była już zmieniana w panelu):
+ *   PROJECT_TEXTS_FORCE=1 php artisan db:seed --class=ProjectTextsHumanizedSeeder --force
  */
 class ProjectTextsHumanizedSeeder extends Seeder
 {
@@ -86,6 +89,8 @@ class ProjectTextsHumanizedSeeder extends Seeder
             ],
         ];
 
+        $force = filter_var(env('PROJECT_TEXTS_FORCE', false), FILTER_VALIDATE_BOOLEAN);
+
         foreach ($updates as $slug => $update) {
             $project = Project::withoutGlobalScopes()->where('slug', $slug)->first();
 
@@ -95,7 +100,7 @@ class ProjectTextsHumanizedSeeder extends Seeder
                 continue;
             }
 
-            if (! str_contains(html_entity_decode((string) $project->content), $update['marker'])) {
+            if (! $force && ! str_contains(html_entity_decode((string) $project->content), $update['marker'])) {
                 $this->command?->line("Pominięto {$slug}: treść była już zmieniana.");
 
                 continue;

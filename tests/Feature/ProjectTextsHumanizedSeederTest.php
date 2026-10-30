@@ -67,4 +67,21 @@ class ProjectTextsHumanizedSeederTest extends TestCase
         $this->assertStringNotContainsString('—', $s->fresh()->excerpt);
         $this->assertStringContainsString('także niewidomych i słabowidzących', $s->fresh()->excerpt);
     }
+
+    public function test_wymuszenie_nadpisuje_tresc_zmieniona_w_panelu(): void
+    {
+        putenv('PROJECT_TEXTS_FORCE=1');
+        $_ENV['PROJECT_TEXTS_FORCE'] = '1';
+
+        try {
+            $ngo = $this->project('wsparcie-ngo', '<p>Własny tekst redakcji.</p>');
+
+            $this->seed(ProjectTextsHumanizedSeeder::class);
+
+            $this->assertStringContainsString('Sprawy techniczne nie powinny', $ngo->fresh()->content);
+        } finally {
+            putenv('PROJECT_TEXTS_FORCE');
+            unset($_ENV['PROJECT_TEXTS_FORCE']);
+        }
+    }
 }
