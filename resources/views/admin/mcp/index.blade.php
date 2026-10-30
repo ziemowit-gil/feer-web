@@ -18,6 +18,19 @@
             <label for="new-token" class="sr-only">Nowy token</label>
             <input id="new-token" type="text" readonly value="{{ session('new_token') }}" onfocus="this.select()"
                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 font-mono text-xs text-ink">
+            <p class="mb-1 mt-4 font-bold">Claude Code — gotowe polecenie:</p>
+            <pre class="overflow-x-auto rounded-md bg-white p-3 text-xs text-ink"><code>claude mcp add --transport http feer {{ $endpoint }} --header "Authorization: Bearer {{ session('new_token') }}"</code></pre>
+            <p class="mb-1 mt-4 font-bold">Claude Desktop — gotowa konfiguracja (<code class="font-mono">claude_desktop_config.json</code>):</p>
+            <pre class="overflow-x-auto rounded-md bg-white p-3 text-xs text-ink"><code>"feer": {
+  "command": "npx",
+  "args": [
+    "-y", "mcp-remote",
+    "{{ $endpoint }}",
+    "--transport", "http-only",
+    "--header", "Authorization:${FEER_AUTH}"
+  ],
+  "env": { "FEER_AUTH": "Bearer {{ session('new_token') }}" }
+}</code></pre>
         </div>
     @endif
 
