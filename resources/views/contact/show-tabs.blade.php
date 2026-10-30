@@ -69,7 +69,7 @@
             <section class="border-b border-gray-100 bg-gray-50">
                 <div class="mx-auto max-w-6xl px-4 py-12 md:py-16">
                     <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">Kontakt</h1>
-                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">Napisz, zadzwoń albo odwiedź nas — odpowiadamy zwykle w ciągu jednego dnia roboczego.</p>
+                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">Napisz, zadzwoń albo odwiedź nas. Zwykle odpowiadamy w ciągu jednego dnia roboczego.</p>
                 </div>
             </section>
         @else

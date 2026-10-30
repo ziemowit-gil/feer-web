@@ -11,7 +11,7 @@
 @if ($showMeetings)
     @php
         $onlineLabel    = $siteSettings->contact_online_meeting_label ?: 'Wybierz dogodny termin';
-        $onlineText     = $siteSettings->contact_online_meeting_text ?: 'Najwygodniej spotkać się online — umów rozmowę w dogodnym dla Ciebie terminie.';
+        $onlineText     = $siteSettings->contact_online_meeting_text ?: 'Najwygodniej spotkać się online: umów rozmowę w terminie, który Ci odpowiada.';
         $remoteNote     = $siteSettings->contact_remote_note;
         $scheduleTitle  = $siteSettings->contact_schedule_title ?: 'Kiedy i gdzie jesteśmy w Krakowie';
         $showOnline     = filled($onlineUrl);
@@ -52,7 +52,7 @@
                 @if (session('meeting_signed_up'))
                     <div class="mb-4 flex max-w-2xl items-start gap-2 rounded border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
                         <i class="fa-solid fa-circle-check mt-0.5" aria-hidden="true"></i>
-                        <span>Dziękujemy! Zapisaliśmy Twoje zgłoszenie. Jeśli termin się zmieni — damy znać e-mailem.</span>
+                        <span>Dziękujemy! Zapisaliśmy Twoje zgłoszenie. Jeśli termin się zmieni, damy znać e-mailem.</span>
                     </div>
                 @endif
 

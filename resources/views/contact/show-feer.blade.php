@@ -25,7 +25,7 @@
                 @if ($siteSettings->contact_intro)
                     <div class="prose max-w-none text-ink">{!! $siteSettings->contact_intro !!}</div>
                 @else
-                    <p>Napisz, zadzwoń albo odwiedź nas — odpowiadamy zwykle w ciągu jednego dnia roboczego.</p>
+                    <p>Napisz, zadzwoń albo odwiedź nas.</p>
                 @endif
             </div>
         </div>

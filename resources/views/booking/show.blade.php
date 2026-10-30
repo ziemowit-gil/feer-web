@@ -25,7 +25,7 @@
         $hasSchedule    = $scheduleEnabled && ! empty($scheduleItems);
         $onlineUrl      = $siteSettings->contact_online_meeting_url;
         $onlineLabel    = $siteSettings->contact_online_meeting_label ?: 'Wybierz termin online';
-        $onlineText     = $siteSettings->contact_online_meeting_text ?: 'Najwygodniej spotkać się online — umów rozmowę w dogodnym dla Ciebie terminie.';
+        $onlineText     = $siteSettings->contact_online_meeting_text ?: 'Najwygodniej spotkać się online: umów rozmowę w terminie, który Ci odpowiada.';
         $onlineExternal = filled($onlineUrl) && \Illuminate\Support\Str::startsWith($onlineUrl, ['http://', 'https://']);
     @endphp
 
@@ -39,7 +39,7 @@
                 <i class="fa-solid fa-circle-check mt-0.5 flex-none text-green-600 text-lg" aria-hidden="true"></i>
                 <div>
                     <p class="font-bold">Zgłoszenie przyjęte!</p>
-                    <p class="mt-0.5 text-sm">Dziękujemy — zapisaliśmy Twoje zgłoszenie. Jeśli termin się zmieni, damy znać e-mailem.</p>
+                    <p class="mt-0.5 text-sm">Dziękujemy! Zapisaliśmy Twoje zgłoszenie. Jeśli termin się zmieni, damy znać e-mailem.</p>
                 </div>
             </div>
         @endif
