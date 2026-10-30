@@ -80,7 +80,7 @@ class DzialaniaPartnershipSeeder extends Seeder
                 ]],
                 'sections_as_tabs' => false,
                 'sections_nav' => 'sidebar',
-                'main_cta' => ['label' => 'Napisz do nas', 'url' => '/kontakt'],
+                'main_cta' => null, // bez niebieskiego przycisku „Napisz do nas” w kolumnie bocznej (kontakt jest w ramce „Masz pytania?”)
                 'is_published' => true,
             ],
         );
