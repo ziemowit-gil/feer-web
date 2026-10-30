@@ -189,6 +189,21 @@
         }
     @endphp
 
+    @php
+        // Misja w haśle: część po „by” (np. „oswajać niepełnosprawność”) podkreślona grubą linią.
+        // Kolor tekstu się nie zmienia, więc kontrast zostaje; linia to ozdoba (marka na jasnym, biała na tle marki).
+        $mottoLine = fn (string $color) => 'text-decoration:underline;text-decoration-color:'.$color.';text-decoration-thickness:.14em;text-underline-offset:.22em;text-decoration-skip-ink:none';
+        $mottoMarked = function (string $color) use ($page, $mottoLine) {
+            return collect(preg_split('/\R/u', (string) $page->about_motto))->map(function ($line) use ($color, $mottoLine) {
+                if (preg_match('/^(.*?\bby\s+)(.+?)([.!?…]*)$/u', trim($line), $m)) {
+                    return e($m[1]).'<span style="'.$mottoLine($color).'">'.e($m[2]).'</span>'.e($m[3]);
+                }
+
+                return e($line);
+            })->implode('<br>');
+        };
+    @endphp
+
     <article class="{{ ($siteSettings->site_template ?? 'default') === 'feer' ? 'about-feer' : '' }}" x-data="{ etr: false }">
         {{-- Hero: pełnokolorowe tło marki z dekoracją, jak w sekcji "wspolpraca" (bg-brand + rozmyte koła) --}}
         @if (($siteSettings->site_template ?? 'default') === 'feer')
@@ -199,7 +214,7 @@
                     @if ($page->about_motto)
                         {{-- Hasło organizacji: duże, pogrubione, cudzysłowy w kolorze marki (bez kursywy — czytelniej). --}}
                         <blockquote class="mt-6 max-w-4xl">
-                            <p class="text-2xl font-extrabold leading-snug tracking-tight text-ink md:text-4xl"><span class="text-brand-dark">„</span>{{ $page->about_motto }}<span class="text-brand-dark">”</span></p>
+                            <p class="text-2xl font-extrabold leading-snug tracking-tight text-ink md:text-4xl"><span class="text-brand-dark">„</span>{!! $mottoMarked('#1E6DFF') !!}<span class="text-brand-dark">”</span></p>
                             @if ($page->about_motto_author)
                                 <cite class="mt-3 block text-sm font-bold not-italic uppercase tracking-widest text-ink">— {{ $page->about_motto_author }}</cite>
                             @endif
@@ -218,7 +233,7 @@
                 @if ($aboutMission !== '')<p class="mx-auto mt-4 max-w-3xl text-lg font-bold leading-snug text-white md:text-xl">{{ $aboutMission }}</p>@endif
                 @if ($page->about_motto)
                     <blockquote class="mx-auto mt-8 max-w-3xl rounded-xl border border-white/20 bg-white/10 px-6 py-4 text-left backdrop-blur-sm">
-                        <p class="text-xl font-extrabold leading-snug text-white md:text-3xl">„{{ $page->about_motto }}”</p>
+                        <p class="text-xl font-extrabold leading-snug text-white md:text-3xl">„{!! $mottoMarked('#ffffff') !!}”</p>
                         @if ($page->about_motto_author)
                             <cite class="mt-3 block text-sm font-bold not-italic uppercase tracking-widest text-white/70">— {{ $page->about_motto_author }}</cite>
                         @endif

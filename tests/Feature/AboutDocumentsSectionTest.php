@@ -98,6 +98,18 @@ class AboutDocumentsSectionTest extends TestCase
         $this->assertStringNotContainsString('class="grid gap-6 sm:grid-cols-2">', substr($html, strpos($html, 'id="sekcja-values"')));
     }
 
+    public function test_misja_w_hasle_jest_podkreslona(): void
+    {
+        \Closure::bind(function () {
+            static::$cached = null;
+        }, null, SiteSetting::class)();
+        $page = Page::create(['title' => 'O nas', 'slug' => 'o-nas-test', 'type' => 'about', 'is_published' => true,
+            'about_motto' => "Edukujemy, by oswajać niepełnosprawność.\nWspieramy, by budować niezależność."]);
+
+        $html = $this->get($page->publicUrl())->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('#Edukujemy, by <span style="[^"]*text-decoration:underline[^"]*">oswajać niepełnosprawność</span>\.<br>Wspieramy, by <span style="[^"]*">budować niezależność</span>\.#u', $html);
+    }
+
     private function section(string $html): string
     {
         $start = strpos($html, 'id="sekcja-documents"');
