@@ -169,23 +169,23 @@ class SiteSetting extends Model implements HasMedia
      */
     /** Teksty strony „Dołącz do nas" (klucz => [etykieta w panelu, wartość domyślna]). */
     public const JOIN_US_TEXTS = [
-        'intro' => ['Zdanie pod tytułem (gdy strona „Dołącz do nas” nie ma własnego wstępu)', 'Wybierz, jak chcesz się zaangażować — każda forma jest cenna.'],
+        'intro' => ['Zdanie pod tytułem (gdy strona „Dołącz do nas” nie ma własnego wstępu)', 'Wybierz, jak chcesz się zaangażować.'],
         'paths_label' => ['Kafle — nazwa dla czytników ekranu', 'Sposoby zaangażowania'],
         'vol_title' => ['Kafel Wolontariat — tytuł', 'Wolontariat'],
-        'vol_text' => ['Kafel Wolontariat — opis', 'Działaj z nami — podaruj czas i umiejętności.'],
+        'vol_text' => ['Kafel Wolontariat — opis', 'Działaj z nami i podaruj czas oraz umiejętności.'],
         'job_title' => ['Kafel Praca — tytuł', 'Praca'],
-        'job_text' => ['Kafel Praca — opis', 'Dołącz do zespołu — sprawdź aktualne oferty.'],
+        'job_text' => ['Kafel Praca — opis', 'Dołącz do zespołu i sprawdź aktualne oferty.'],
         'coop_title' => ['Kafel Współpraca — tytuł', 'Współpraca'],
-        'coop_text' => ['Kafel Współpraca — opis', 'Zostań partnerem — biznes, samorząd, nauka lub NGO.'],
+        'coop_text' => ['Kafel Współpraca — opis', 'Zostań partnerem: biznes, samorząd, nauka lub NGO.'],
         'support_title' => ['Kafel Wsparcie — tytuł', 'Wsparcie'],
         'support_text' => ['Kafel Wsparcie — opis', 'Wesprzyj nasze działania darowizną.'],
         'news_title' => ['Kafel Newsletter — tytuł', 'Newsletter'],
-        'news_text' => ['Kafel Newsletter — opis', 'Bądź na bieżąco — zapisz się i opowiedz o nas innym.'],
+        'news_text' => ['Kafel Newsletter — opis', 'Zapisz się, bądź na bieżąco i opowiedz o nas innym.'],
         'hub_title' => ['Własne kafelki ze strony — nagłówek', 'Na skróty'],
         'vol_h' => ['Sekcja wolontariatu — nagłówek', 'Oferty wolontariatu'],
-        'vol_sub' => ['Sekcja wolontariatu — zdanie pod nagłówkiem', 'Dołącz do konkretnego działania — każda oferta mówi, na czym polega pomoc.'],
+        'vol_sub' => ['Sekcja wolontariatu — zdanie pod nagłówkiem', 'Dołącz do konkretnego działania. Każda oferta opisuje, na czym polega pomoc.'],
         'vol_more' => ['Sekcja wolontariatu — link „Wszystkie”', 'Wszystkie oferty'],
-        'vol_empty' => ['Sekcja wolontariatu — tekst, gdy brak ofert', 'Obecnie nie prowadzimy naboru wolontariuszy. Zajrzyj wkrótce albo napisz do nas — chętnie porozmawiamy o Twoich pomysłach.'],
+        'vol_empty' => ['Sekcja wolontariatu — tekst, gdy brak ofert', 'Obecnie nie prowadzimy naboru wolontariuszy. Zajrzyj wkrótce albo napisz do nas, chętnie porozmawiamy o Twoich pomysłach.'],
         'vol_cta' => ['Karta oferty — napis', 'Zobacz ofertę'],
         'job_h' => ['Sekcja pracy — nagłówek', 'Oferty pracy'],
         'job_sub' => ['Sekcja pracy — zdanie pod nagłówkiem (puste = „Dołącz do zespołu [nazwa organizacji]”)', ''],
@@ -194,12 +194,12 @@ class SiteSetting extends Model implements HasMedia
         'job_cta' => ['Karta oferty — napis', 'Zobacz ofertę'],
         'how_h' => ['„Jak to działa” — nagłówek', 'Jak to działa'],
         'how_1_t' => ['Krok 1 — tytuł', 'Wybierz formę'],
-        'how_1' => ['Krok 1 — opis', 'Wolontariat, praca, współpraca albo wsparcie — każda jest ważna.'],
+        'how_1' => ['Krok 1 — opis', 'Wolontariat, praca, współpraca albo wsparcie.'],
         'how_2_t' => ['Krok 2 — tytuł', 'Zgłoś się'],
         'how_2' => ['Krok 2 — opis', 'Wypełnij krótki formularz przy ofercie albo napisz do nas.'],
         'how_3_t' => ['Krok 3 — tytuł', 'Działamy razem'],
         'how_3' => ['Krok 3 — opis', 'Odezwiemy się, ustalimy szczegóły i zaczniemy wspólnie.'],
-        'contact_text' => ['Ramka kontaktu — tekst', 'Nie wiesz, która forma jest dla Ciebie? Napisz — doradzimy i podpowiemy, gdzie Twoja pomoc przyda się najbardziej.'],
+        'contact_text' => ['Ramka kontaktu — tekst', 'Nie wiesz, która forma jest dla Ciebie? Napisz, doradzimy, gdzie Twoja pomoc przyda się najbardziej.'],
         'contact_btn' => ['Ramka kontaktu — napis przycisku', 'Skontaktuj się z nami'],
     ];
 
@@ -425,7 +425,7 @@ class SiteSetting extends Model implements HasMedia
         'support_hero_cta_label' => 'Wpłać teraz',
 
         'support_benefits_title' => 'Na co przeznaczamy darowizny',
-        'support_benefits_subtitle' => 'Część naszych działań jest bezpłatna. Przy części prosimy uczestników o dołożenie się do kosztów — darowizny pozwalają te koszty obniżać i docierać tam, gdzie środków brakuje.',
+        'support_benefits_subtitle' => 'Część naszych działań jest bezpłatna. Przy części prosimy uczestników o dołożenie się do kosztów. Darowizny pozwalają te koszty obniżać i docierać tam, gdzie brakuje środków.',
         'support_benefit1_icon' => 'fa-solid fa-universal-access',
         'support_benefit1_title' => 'Szkolenia dla osób z dysfunkcją wzroku',
         'support_benefit1_text' => 'Uczymy obsługi komputera i sprzętu wspomagającego, aby więcej osób mogło samodzielnie korzystać z technologii.',
@@ -452,7 +452,7 @@ class SiteSetting extends Model implements HasMedia
         'support_method4_text' => 'Bezpieczna wpłata online przez zaufany portal dla organizacji pozarządowych.',
         'support_method4_cta_label' => 'Wpłać przez wpłacam.ngo.pl',
 
-        'support_outro_title' => 'Dzięki Tobie uczymy się razem — bez barier.',
+        'support_outro_title' => 'Dzięki Tobie uczymy się razem, bez barier.',
         'support_outro_subtitle' => 'Dziękujemy, że jesteś z nami.',
     ];
 
@@ -518,11 +518,11 @@ class SiteSetting extends Model implements HasMedia
 
         return $faq ?: [
             ['q' => 'Na co zostanie przeznaczona moja darowizna?', 'a' => 'Na cele statutowe Fundacji: szkolenia dla osób z dysfunkcją wzroku, zajęcia i materiały o niepełnosprawności dla dzieci i młodzieży oraz wsparcie technologiczne dla organizacji pozarządowych. Rozliczenia publikujemy w zakładce Sprawozdania.'],
-            ['q' => 'Dlaczego część zajęć jest płatna?', 'a' => 'Niektóre działania prowadzimy bezpłatnie. Przy tych, na które nie mamy środków lub są one ograniczone, prosimy uczestników o dołożenie się do kosztów. Darowizny pozwalają nam obniżać te kwoty.'],
-            ['q' => 'Czy płatność online jest bezpieczna?', 'a' => 'Płatności obsługuje Przelewy24 — możesz zapłacić BLIK-iem, szybkim przelewem lub kartą. Nie przechowujemy danych Twojej karty ani konta bankowego.'],
-            ['q' => 'Czy mogę wspierać regularnie?', 'a' => 'Tak. Najprościej ustawić w swoim banku zlecenie stałe na nasz numer konta — dane znajdziesz w sekcji „Przelew tradycyjny”. Stała pomoc pozwala nam planować działania z wyprzedzeniem.'],
+            ['q' => 'Dlaczego część zajęć jest płatna?', 'a' => 'Niektóre działania prowadzimy bezpłatnie. Przy tych, na które nie mamy środków albo mamy ich za mało, prosimy uczestników o dołożenie się do kosztów. Darowizny pozwalają nam obniżać te kwoty.'],
+            ['q' => 'Czy płatność online jest bezpieczna?', 'a' => 'Płatności obsługuje Przelewy24. Możesz zapłacić BLIK-iem, szybkim przelewem lub kartą. Nie przechowujemy danych Twojej karty ani konta bankowego.'],
+            ['q' => 'Czy mogę wspierać regularnie?', 'a' => 'Tak. Najprościej ustawić w banku zlecenie stałe na nasz numer konta (dane znajdziesz w sekcji „Przelew tradycyjny”). Stała pomoc pozwala nam planować działania z wyprzedzeniem.'],
             ['q' => 'Czy mogę wpłacić anonimowo?', 'a' => 'Tak. Przy darowiźnie online wybierasz, czy Twoje imię ma pojawić się na liście ostatnich wpłat.'],
-            ['q' => 'Do kogo mogę się zwrócić z pytaniami?', 'a' => 'Napisz do nas — dane kontaktowe znajdziesz na stronie Kontakt.'],
+            ['q' => 'Do kogo mogę się zwrócić z pytaniami?', 'a' => 'Napisz do nas. Dane kontaktowe znajdziesz na stronie Kontakt.'],
         ];
     }
 

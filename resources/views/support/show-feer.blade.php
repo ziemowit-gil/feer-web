@@ -188,7 +188,7 @@
     @if ($programs->isNotEmpty())
         <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="programs-heading">
             <h2 id="programs-heading" class="text-2xl font-bold text-ink md:text-3xl">Działania, które wspierasz</h2>
-            <p class="mt-2 max-w-2xl text-muted">Wybierz obszar, który jest Ci najbliższy — zobacz, co w nim robimy.</p>
+            <p class="mt-2 max-w-2xl text-muted">Wybierz obszar, który jest Ci najbliższy, i zobacz, co w nim robimy.</p>
             @php
                 // Kafle jak „Nasze działania” na stronie głównej: tła na zmianę jasnoszary / brand-light / ink,
                 // numer, duża ikona kategorii w tle (ozdobnik bez przezroczystości, ukryty przed czytnikami).
