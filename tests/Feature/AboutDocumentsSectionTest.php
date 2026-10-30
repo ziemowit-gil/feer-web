@@ -107,6 +107,7 @@ class AboutDocumentsSectionTest extends TestCase
             'about_motto' => "Edukujemy, by oswajać niepełnosprawność.\nWspieramy, by budować niezależność."]);
 
         $html = $this->get($page->publicUrl())->assertOk()->getContent();
+        $this->assertStringContainsString('Misja Fundacji', $html, 'hasło jest opisane jako misja');
         $this->assertMatchesRegularExpression('#Edukujemy, by <span style="[^"]*text-decoration:underline[^"]*">oswajać niepełnosprawność</span>\.<br>Wspieramy, by <span style="[^"]*">budować niezależność</span>\.#u', $html);
     }
 

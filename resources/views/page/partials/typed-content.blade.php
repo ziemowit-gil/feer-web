@@ -214,6 +214,7 @@
                     @if ($page->about_motto)
                         {{-- Hasło organizacji: duże, pogrubione, cudzysłowy w kolorze marki (bez kursywy — czytelniej). --}}
                         <blockquote class="mt-6 max-w-4xl">
+                            @if (filled($page->aboutLabel('motto_label')))<p class="mb-2 text-sm font-bold uppercase tracking-widest text-brand-dark">{{ $page->aboutLabel('motto_label') }}</p>@endif
                             <p class="text-2xl font-extrabold leading-snug tracking-tight text-ink md:text-4xl"><span class="text-brand-dark">„</span>{!! $mottoMarked('#1E6DFF') !!}<span class="text-brand-dark">”</span></p>
                             @if ($page->about_motto_author)
                                 <cite class="mt-3 block text-sm font-bold not-italic uppercase tracking-widest text-ink">— {{ $page->about_motto_author }}</cite>
@@ -233,6 +234,7 @@
                 @if ($aboutMission !== '')<p class="mx-auto mt-4 max-w-3xl text-lg font-bold leading-snug text-white md:text-xl">{{ $aboutMission }}</p>@endif
                 @if ($page->about_motto)
                     <blockquote class="mx-auto mt-8 max-w-3xl rounded-xl border border-white/20 bg-white/10 px-6 py-4 text-left backdrop-blur-sm">
+                        @if (filled($page->aboutLabel('motto_label')))<p class="mb-2 text-sm font-bold uppercase tracking-widest text-white">{{ $page->aboutLabel('motto_label') }}</p>@endif
                         <p class="text-xl font-extrabold leading-snug text-white md:text-3xl">„{!! $mottoMarked('#ffffff') !!}”</p>
                         @if ($page->about_motto_author)
                             <cite class="mt-3 block text-sm font-bold not-italic uppercase tracking-widest text-white/70">— {{ $page->about_motto_author }}</cite>

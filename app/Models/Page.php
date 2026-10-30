@@ -261,6 +261,7 @@ class Page extends Model
         'founder_kicker' => ['Słowo od Fundatora — napis nad imieniem', 'Słowo od Fundatora'],
         'stats_title' => ['Statystyki — nagłówek', 'W liczbach'],
         'gallery_title' => ['Galeria — nagłówek', 'Galeria'],
+        'motto_label' => ['Hasło (misja) — podpis nad hasłem', 'Misja Fundacji'],
         'values_title' => ['Wartości — nagłówek', 'Nasze wartości'],
         'timeline_title' => ['Historia — nagłówek', 'Nasza historia'],
         'timeline_more' => ['Historia — napis linku bez etykiety', 'Zobacz więcej'],
