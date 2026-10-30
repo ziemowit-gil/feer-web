@@ -481,7 +481,8 @@
             <section id="sekcja-values" class="bg-gray-50 px-4 py-16" aria-label="{{ $page->aboutLabel('values_title') }}">
                 <div class="mx-auto max-w-5xl">
                     <h2 class="mb-10 text-center text-2xl font-extrabold text-ink md:text-3xl">{{ $page->aboutLabel('values_title') }}</h2>
-                    <div class="grid gap-6 sm:grid-cols-2">
+                    {{-- Kolumny dopasowane do liczby kart, żeby ostatni rząd nie zostawiał pustego miejsca: 3 karty obok siebie, 2 i 4 w dwóch kolumnach. --}}
+                    <div class="grid gap-6" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,{{ $aboutValues->count() === 4 ? '24rem' : '16rem' }}),1fr))">
                         @foreach ($aboutValues as $value)
                             <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 transition hover:-translate-y-0.5 hover:shadow-md">
                                 @if (! empty($value['icon']))
@@ -641,7 +642,9 @@
                 $bipHref = $page->about_documents_bip_url ?: ($siteSettings->bipHref() ?? route('bip'));
             @endphp
             <section id="sekcja-documents" class="mx-auto max-w-6xl px-4 py-16" aria-labelledby="sekcja-documents-h">
-                <div class="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+                {{-- Układ: u góry nagłówek z opisem i ramka BIP obok, pod spodem pliki w dwóch kolumnach. --}}
+                <div class="space-y-10">
+                <div class="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start">
                     <div>
                         @php
                             // Moduł „Sprawozdania” włączony — słowo „sprawozdania” w nagłówku prowadzi do ich listy.
@@ -654,17 +657,6 @@
                         @if (filled($page->about_documents_intro))
                             <div class="mt-4 leading-relaxed text-ink">{!! nl2br(e($page->about_documents_intro)) !!}</div>
                         @endif
-                        @unless (($page->layout_data ?? [])['documents_hide_bip'] ?? false)
-                        <div class="mt-6 rounded-md bg-brand-light p-5">
-                            <p class="flex items-start gap-3 text-sm text-ink">
-                                <i class="fa-solid fa-landmark mt-0.5 text-brand-dark" aria-hidden="true"></i>
-                                <span>{{ $page->aboutLabel('documents_bip') }} <a href="{{ $bipHref }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline">Biuletynie Informacji Publicznej</a>.</span>
-                            </p>
-                            <a href="{{ $bipHref }}" class="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-5 font-bold text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
-                                {{ $page->aboutLabel('documents_more') }}<span class="sr-only"> dokumenty w BIP</span> <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-                            </a>
-                        </div>
-                        @endunless
                         @if (($aboutLd['about_registry'] ?? true) && $siteSettings->hasRegistryData())
                             <div class="mt-6">
                                 <h3 class="mb-2 text-sm font-bold uppercase tracking-widest text-ink">{{ $page->aboutLabel('registry_title') }}</h3>
@@ -676,13 +668,25 @@
                             </div>
                         @endif
                     </div>
+                        @unless (($page->layout_data ?? [])['documents_hide_bip'] ?? false)
+                        <div class="rounded-md bg-brand-light p-5">
+                            <p class="flex items-start gap-3 text-sm text-ink">
+                                <i class="fa-solid fa-landmark mt-0.5 text-brand-dark" aria-hidden="true"></i>
+                                <span>{{ $page->aboutLabel('documents_bip') }} <a href="{{ $bipHref }}" class="font-bold text-brand-dark underline underline-offset-2 hover:no-underline">Biuletynie Informacji Publicznej</a>.</span>
+                            </p>
+                            <a href="{{ $bipHref }}" class="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-5 font-bold text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
+                                {{ $page->aboutLabel('documents_more') }}<span class="sr-only"> dokumenty w BIP</span> <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        @endunless
+                </div>
                     <div class="space-y-8">
                         @forelse ($docGroups as $groupName => $docs)
                             <div>
                                 @if ($groupName !== '' && $docGroups->count() > 1)
                                     <h3 class="mb-3 text-sm font-bold uppercase tracking-widest text-ink">{{ $groupName }}</h3>
                                 @endif
-                                <ul class="space-y-2" role="list">
+                                <ul class="grid gap-3 sm:grid-cols-2" role="list">
                                     @foreach ($docs as $doc)
                                         @php
                                             $docMedia = $doc->getFirstMedia('file');
