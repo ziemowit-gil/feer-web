@@ -109,6 +109,21 @@
         </section>
     @endif
 
+    {{-- ══ Na co idą darowizny (korzyści): najpierw „po co”, potem „jak” — dzięki temu tła sekcji na zmianę, bez dwóch szarych obok siebie ══ --}}
+    <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="benefits-heading">
+        <h2 id="benefits-heading" class="text-2xl font-bold text-ink md:text-3xl">{{ $siteSettings->supportText('support_benefits_title') }}</h2>
+        <p class="mt-2 max-w-2xl text-muted">{{ $siteSettings->supportText('support_benefits_subtitle') }}</p>
+        <div class="mt-8 grid gap-8 sm:grid-cols-3">
+            @foreach (['1', '2', '3'] as $i)
+                <div>
+                    <i class="{{ $siteSettings->supportText('support_benefit'.$i.'_icon') }} text-2xl text-brand-dark" aria-hidden="true"></i>
+                    <h3 class="mt-3 text-lg font-bold text-ink">{{ $siteSettings->supportText('support_benefit'.$i.'_title') }}</h3>
+                    <p class="mt-1 text-sm leading-relaxed text-muted">{{ $siteSettings->supportText('support_benefit'.$i.'_text') }}</p>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
     {{-- ══ Jak wesprzeć: przelew (lewa) + metody online (prawa) ══ --}}
     <section id="sposoby" class="scroll-mt-24 bg-gray-50" aria-labelledby="methods-heading">
         <div class="mx-auto max-w-6xl px-4 py-14">
@@ -169,21 +184,6 @@
         </div>
     </section>
 
-    {{-- ══ Dlaczego warto (korzyści) ══ --}}
-    <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="benefits-heading">
-        <h2 id="benefits-heading" class="text-2xl font-bold text-ink md:text-3xl">{{ $siteSettings->supportText('support_benefits_title') }}</h2>
-        <p class="mt-2 max-w-2xl text-muted">{{ $siteSettings->supportText('support_benefits_subtitle') }}</p>
-        <div class="mt-8 grid gap-8 sm:grid-cols-3">
-            @foreach (['1', '2', '3'] as $i)
-                <div>
-                    <i class="{{ $siteSettings->supportText('support_benefit'.$i.'_icon') }} text-2xl text-brand-dark" aria-hidden="true"></i>
-                    <h3 class="mt-3 text-lg font-bold text-ink">{{ $siteSettings->supportText('support_benefit'.$i.'_title') }}</h3>
-                    <p class="mt-1 text-sm leading-relaxed text-muted">{{ $siteSettings->supportText('support_benefit'.$i.'_text') }}</p>
-                </div>
-            @endforeach
-        </div>
-    </section>
-
     {{-- ══ Działania, które wspierasz (kategorie działań) ══ --}}
     @if ($programs->isNotEmpty())
         <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="programs-heading">
@@ -228,7 +228,7 @@
     @if ($stats->isNotEmpty())
         <section class="bg-gray-50" aria-labelledby="stats-heading">
             <div class="mx-auto max-w-6xl px-4 py-14">
-                <h2 id="stats-heading" class="text-2xl font-bold text-ink md:text-3xl">Twoje wsparcie napędza konkretne działania</h2>
+                <h2 id="stats-heading" class="text-2xl font-bold text-ink md:text-3xl">Fundacja FEER w liczbach</h2>
                 <dl class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($stats as $stat)
                         <div>
