@@ -293,6 +293,16 @@
                                 @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
 
+                            @if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'layout_template'))
+                                @php $layoutTpl = old('layout_template', $project->layout_template ?? 'classic'); @endphp
+                                <fieldset class="mb-4">
+                                    <legend class="mb-1 text-sm font-bold">Szablon strony działania</legend>
+                                    @foreach (\App\Models\Project::LAYOUT_TEMPLATES_INFO as $tplKey => [$tplName, $tplDesc])
+                                        <label class="mt-1 flex items-start gap-2 text-sm"><input type="radio" name="layout_template" value="{{ $tplKey }}" @checked($layoutTpl === $tplKey) class="mt-0.5 text-brand-dark focus:ring-brand-dark">
+                                            <span><span class="font-bold">{{ $tplName }}</span>: {{ $tplDesc }}</span></label>
+                                    @endforeach
+                                </fieldset>
+                            @endif
                             <label class="flex items-start gap-2 text-sm">
                                 <input type="checkbox" name="image_hero" value="1" @checked(old('image_hero', $project->image_hero))
                                     class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">

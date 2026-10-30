@@ -510,6 +510,10 @@ class ProjectController extends Controller
         if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'hero_style')) {
             $data['hero_style'] = $request->input('hero_style') === 'band' ? 'band' : 'overlay';
         }
+        // Szablon strony działania — pomijany, dopóki na serwerze nie wykonano migracji.
+        if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'layout_template')) {
+            $data['layout_template'] = in_array($request->input('layout_template'), \App\Models\Project::LAYOUT_TEMPLATES, true) ? $request->input('layout_template') : 'classic';
+        }
         // Krótka nazwa do menu bocznego — pomijana, dopóki na serwerze nie wykonano migracji (wdrożenie samym `git pull`).
         if (! \Illuminate\Support\Facades\Schema::hasColumn('projects', 'nav_title')) {
             unset($data['nav_title']);

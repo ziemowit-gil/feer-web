@@ -45,7 +45,7 @@ class Project extends Model implements HasMedia
 
     protected $fillable = [
         'unpublish_at', 'reviewed_at',
-        'site_id', 'created_by', 'category_id', 'title', 'nav_title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'image_hero', 'content', 'blocks', 'why', 'outcomes', 'is_published', 'show_on_home', 'hero_style', 'coordinator_id', 'is_completed', 'completed_at', 'is_paid', 'pricing', 'order',
+        'site_id', 'created_by', 'category_id', 'title', 'nav_title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'image_hero', 'content', 'blocks', 'why', 'outcomes', 'is_published', 'show_on_home', 'hero_style', 'layout_template', 'coordinator_id', 'is_completed', 'completed_at', 'is_paid', 'pricing', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'coordinator_name', 'coordinator_email', 'coordinator_phone', 'coordinator_phone_hours', 'is_featured_contact', 'show_coordinator',
         'custom_sections', 'sections_as_tabs', 'sections_nav', 'sidebar_buttons', 'sidebar_note', 'parent_id', 'inherit', 'is_offered', 'paid_info_show', 'paid_info_text', 'terms', 'kind', 'quick_facts', 'easy_summary', 'main_cta', 'metrics', 'testimonials', 'faq', 'status', 'starts_on', 'ends_on', 'stages', 'team', 'funding', 'funding_notice', 'show_legacy_box', 'legacy_url',
@@ -188,6 +188,15 @@ class Project extends Model implements HasMedia
     }
 
     /** Rodzaje działania: zwykłe działanie albo usługa wyłącznie odpłatna. */
+    /** Szablony strony działania (wybór w panelu): klucz => [nazwa, opis]. Oba nowe mają menu podstron z boku; treść jest ta sama. */
+    public const LAYOUT_TEMPLATES_INFO = [
+        'classic' => ['Klasyczny (obecny)', 'Treść po lewej, panel boczny (menu podstron, kontakt, harmonogram) po prawej. Menu boczne albo zakładki, zależnie od ustawienia nawigacji.'],
+        'left' => ['Panel po lewej', 'Menu podstron po lewej, treść po prawej, jak w dokumentacji. Menu boczne włącza się samo.'],
+        'three' => ['Trzy kolumny', 'Wąskie menu podstron po lewej, treść pośrodku, kontakt i harmonogram po prawej. Menu boczne włącza się samo.'],
+    ];
+
+    public const LAYOUT_TEMPLATES = ['classic', 'left', 'three'];
+
     public const KINDS = ['project' => 'Działanie (bezpłatny lub z formami udziału)', 'paid_offer' => 'Usługa wyłącznie odpłatna'];
 
     /** Forma realizacji w „W skrócie". */
@@ -316,6 +325,11 @@ class Project extends Model implements HasMedia
     /** Tryb nawigacji sekcji na stronie działania: własny wybór działania, inaczej ustawienie serwisu ('tabs' | 'sidebar'). */
     public function sectionsNavMode(): string
     {
+        // Szablony z menu po boku („Panel po lewej”, „Trzy kolumny”) zawsze używają menu bocznego.
+        if (in_array($this->layout_template ?? null, ['left', 'three'], true)) {
+            return 'sidebar';
+        }
+
         $mode = $this->sections_nav ?: SiteSetting::current()->project_sections_nav;
 
         return $mode === 'sidebar' ? 'sidebar' : 'tabs';

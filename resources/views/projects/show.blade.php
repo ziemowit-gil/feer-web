@@ -278,9 +278,19 @@
                 .proj-cols > .proj-main { grid-column: 1; grid-row: 1 / span 3; }
                 .proj-cols > .proj-nav, .proj-cols > .proj-aside { grid-column: 2; }
                 .proj-aside { position: sticky; top: 6rem; }
+                /* Szablon „Panel po lewej”: kolumny zamienione miejscami. */
+                .proj-cols--left { grid-template-columns: 20rem minmax(0, 1fr); }
+                .proj-cols--left > .proj-main { grid-column: 2; grid-row: 1 / span 3; }
+                .proj-cols--left > .proj-nav, .proj-cols--left > .proj-aside { grid-column: 1; }
+                /* Szablon „Trzy kolumny”: wąskie menu po lewej, treść pośrodku, kontakt i harmonogram po prawej. */
+                .proj-cols--three { grid-template-columns: 15rem minmax(0, 1fr) 18rem; }
+                .proj-cols--three > .proj-nav { grid-column: 1; }
+                .proj-cols--three > .proj-main { grid-column: 2; grid-row: 1 / span 3; }
+                .proj-cols--three > .proj-aside { grid-column: 3; }
             }
         </style>
-        <div @class(['grid items-start gap-10', 'proj-cols' => $hasAside || $navSidebar])>
+        @php $layoutTpl = in_array($project->layout_template ?? 'classic', \App\Models\Project::LAYOUT_TEMPLATES, true) ? ($project->layout_template ?? 'classic') : 'classic'; @endphp
+        <div @class(['grid items-start gap-10', 'proj-cols' => $hasAside || $navSidebar, 'proj-cols--left' => ($hasAside || $navSidebar) && $layoutTpl === 'left', 'proj-cols--three' => $navSidebar && $hasAside && $layoutTpl === 'three'])>
         <div class="min-w-0 proj-main">
             @if ($heroInGrid)
                 <div class="mb-8 rounded-md bg-white p-6 sm:p-8">
