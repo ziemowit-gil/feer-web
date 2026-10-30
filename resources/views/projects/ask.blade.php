@@ -11,18 +11,27 @@
 @endsection
 
 @section('content')
-    <section class="mx-auto max-w-2xl px-4 py-12">
-        <p class="text-sm font-bold uppercase tracking-widest text-brand-dark">{{ $project->title }}</p>
-        <h1 class="mt-2 text-3xl font-extrabold leading-tight text-ink md:text-4xl">Zadaj pytanie</h1>
-        <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
-        <p class="mt-5 text-ink">Napisz, co chcesz wiedzieć o tym działaniu. Wiadomość trafi bezpośrednio do osoby kontaktowej:
-            <strong>{{ $project->coordinator_name ?: 'zespołu działania' }}</strong>.</p>
+    <section class="mx-auto max-w-6xl px-4 py-12">
+        <div class="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start">
+            {{-- Układ: opis po lewej (na szerokim ekranie przyklejony przy przewijaniu), formularz w jasnoszarej karcie po prawej. --}}
+            <div class="lg:sticky lg:top-8">
+                <p class="text-sm font-bold uppercase tracking-widest text-brand-dark">{{ $project->title }}</p>
+                <h1 class="mt-2 text-3xl font-extrabold leading-tight text-ink md:text-4xl">Zadaj pytanie</h1>
+                <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
+                <p class="mt-5 text-lg leading-relaxed text-ink">Napisz, co chcesz wiedzieć o tym działaniu. Wiadomość trafi prosto do osoby kontaktowej: <strong>{{ $project->coordinator_name ?: 'zespołu działania' }}</strong>.</p>
+                <p class="mt-6">
+                    <a href="{{ route('projects.show', $project) }}" class="inline-flex min-h-11 items-center gap-2 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                        <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i> Wróć do działania<span class="sr-only">: {{ $project->title }}</span>
+                    </a>
+                </p>
+            </div>
 
+            <div>
         @if ($errors->any())
-            <p class="mt-6 rounded-md bg-red-50 px-4 py-3 text-sm font-bold text-red-800" role="alert">Popraw zaznaczone pola i wyślij ponownie.</p>
+            <p class="mb-6 rounded-md bg-red-50 px-4 py-3 text-sm font-bold text-red-800" role="alert">Popraw zaznaczone pola i wyślij ponownie.</p>
         @endif
 
-        <form method="POST" action="{{ route('projects.ask.store', $project) }}" class="mt-8 space-y-5 rounded-md bg-gray-50 p-6">
+        <form method="POST" action="{{ route('projects.ask.store', $project) }}" class="space-y-5 rounded-lg bg-gray-50 p-6 sm:p-8">
             @csrf
             <input type="hidden" name="{{ \App\Support\SpamGuard::TOKEN_FIELD }}" value="{{ $challenge['token'] }}">
             <div class="absolute -left-[9999px]" aria-hidden="true">
@@ -67,5 +76,7 @@
                 Wyślij pytanie <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
             </button>
         </form>
+            </div>
+        </div>
     </section>
 @endsection

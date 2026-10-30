@@ -111,7 +111,7 @@
             </a>
             <button type="button" @click="clearTimeout(timer); open = ! open"
                     :aria-expanded="open.toString()" :aria-controls="$id('mega')" aria-label="Podmenu: {{ $item->label }}"
-                    class="flex min-h-8 min-w-8 items-center justify-center rounded px-1 pt-2 {{ $iconCls }} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current">
+                    style="min-width:1.5rem;margin-right:-.375rem;padding-left:0;padding-right:0" class="flex min-h-8 items-center justify-center rounded pt-2 {{ $iconCls }} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current">
                 <i class="fa-solid fa-chevron-down text-[10px] transition-transform" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
             </button>
         @else
