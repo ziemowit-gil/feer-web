@@ -245,7 +245,20 @@
         @include('partials.mobile-nav-toggle', ['panelId' => 'main-nav-panel', 'onBrand' => $inlineOnBrand, 'hideAt' => 'lg'])
 
         @php
-            $feerMaterials = ($siteSettings->site_template ?? 'default') === 'feer' && $siteSettings->isModuleEnabled('materials');
+            // Przycisk po prawej w nagłówku FEER: „Materiały edukacyjne”; w wariancie FEER IS ten przycisk jest wyłączony,
+            // a zamiast niego pokazuje się edytowalny (Ustawienia → Szablon → FEER IS), o ile ma napis i adres.
+            $isVariant = $siteSettings->themeVariant() === 'feer_is';
+            $headerCta = null;
+            if (($siteSettings->site_template ?? 'default') === 'feer') {
+                if ($isVariant) {
+                    $headerCta = filled($siteSettings->is_cta_label) && filled($siteSettings->is_cta_url)
+                        ? ['label' => $siteSettings->is_cta_label, 'url' => site_href($siteSettings->is_cta_url), 'icon' => 'fa-arrow-right']
+                        : null;
+                } elseif ($siteSettings->isModuleEnabled('materials')) {
+                    $headerCta = ['label' => 'Materiały edukacyjne', 'url' => site_route('materials.index'), 'icon' => 'fa-book-open'];
+                }
+            }
+            $feerMaterials = $headerCta !== null;
             // Szablon FEER: dwa rzędy — u góry logo i przycisk, pod spodem menu na pełną szerokość (więcej miejsca na pozycje).
             $feerTwoRows = ($siteSettings->site_template ?? 'default') === 'feer' && $headerLayout !== 'brand_bar';
         @endphp
@@ -269,15 +282,15 @@
                         </ul>
                     @endif
                     @if ($feerMaterials)
-                        <a href="{{ site_route('materials.index') }}"
+                        <a href="{{ $headerCta['url'] }}"
                            @class([
                                'inline-flex min-h-11 flex-none items-center gap-2 rounded-md px-5 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2',
                                // Kolor marki zamiast czerni — przycisk widoczny, ale nie konkuruje z menu (brand-dark na brand-light ≥ 4,5:1).
                                'bg-brand-light text-brand-dark hover:bg-brand-dark hover:text-white' => ! $handBrand,
                                'border-2 border-solid border-ink bg-white text-ink hover:bg-ink hover:text-white' => $handBrand,
                            ])>
-                            <i class="fa-solid fa-book-open" aria-hidden="true"></i>
-                            Materiały edukacyjne
+                            <i class="fa-solid {{ $headerCta['icon'] }}" aria-hidden="true"></i>
+                            {{ $headerCta['label'] }}
                         </a>
                     @endif
                 </div>
@@ -289,10 +302,10 @@
                     @include('partials.main-nav-items', ['onBrand' => $inlineOnBrand, 'navDarkText' => $siteSettings->navDarkText()])
                 </nav>
                 @if ($feerMaterials)
-                    <a href="{{ site_route('materials.index') }}"
+                    <a href="{{ $headerCta['url'] }}"
                        class="inline-flex min-h-11 flex-none items-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
-                        <i class="fa-solid fa-book-open" aria-hidden="true"></i>
-                        Materiały edukacyjne
+                        <i class="fa-solid {{ $headerCta['icon'] }}" aria-hidden="true"></i>
+                        {{ $headerCta['label'] }}
                     </a>
                 @endif
             </div>
@@ -316,6 +329,6 @@
         </nav>
     @endif
 
-    @include('partials.mobile-nav-panel', ['panelId' => 'main-nav-panel', 'hideAt' => 'lg', 'showSupport' => true, 'socials' => $siteSettings->socialLinks(), 'cta' => $feerMaterials ? ['label' => 'Materiały edukacyjne', 'url' => site_route('materials.index')] : null])
+    @include('partials.mobile-nav-panel', ['panelId' => 'main-nav-panel', 'hideAt' => 'lg', 'showSupport' => true, 'socials' => $siteSettings->socialLinks(), 'cta' => $headerCta])
 </div>
 @endif

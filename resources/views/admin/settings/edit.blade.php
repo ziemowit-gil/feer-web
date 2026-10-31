@@ -2851,6 +2851,25 @@
                     @error('services_tabs') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
+                <div class="space-y-3">
+                    <p class="text-sm font-bold">Przycisk w nagłówku <span class="font-normal text-ink">(tylko FEER IS; zastępuje „Materiały edukacyjne”)</span></p>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="is_cta_label" class="mb-1 block text-sm font-bold">Napis przycisku</label>
+                            <input type="text" id="is_cta_label" name="is_cta_label" maxlength="60" placeholder="np. Zapisz się na szkolenie"
+                                value="{{ old('is_cta_label', $settings->is_cta_label) }}"
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        </div>
+                        <div>
+                            <label for="is_cta_url" class="mb-1 block text-sm font-bold">Adres przycisku</label>
+                            <input type="text" id="is_cta_url" name="is_cta_url" maxlength="255" placeholder="/formularz/zapisy"
+                                value="{{ old('is_cta_url', $settings->is_cta_url) }}"
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        </div>
+                    </div>
+                    <p class="text-xs text-ink">Puste pola oznaczają brak przycisku w nagłówku.</p>
+                </div>
+
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label for="services_all_label" class="mb-1 block text-sm font-bold">Przycisk pod siatką usług</label>

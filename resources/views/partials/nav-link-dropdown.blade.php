@@ -25,7 +25,7 @@
     <div class="flex items-center gap-1 border-b-2 transition-colors {{ $isCurrent ? $activeBdr : 'border-transparent' }} {{ $mobile ? 'w-full justify-between' : 'pb-1' }}"
         :class="open ? '{{ $activeBdr }}' : ''">
         {{-- Nagłówek działa jak zwykły link — klik prowadzi pod adres pozycji. --}}
-        <a href="{{ $item->url }}" x-ref="linkTrigger"
+        <a href="{{ site_href($item->url) }}" x-ref="linkTrigger"
             @if ($item->isCurrent()) aria-current="page" @endif
             class="flex items-center gap-2 uppercase transition-colors {{ $hoverTxtCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $mobile ? 'py-2' : 'pt-2' }}">
             @if (($iconsNav ?? false) && $item->icon){!! icon_html($item->icon, 'nav-item-icon') !!}@endif
@@ -50,7 +50,7 @@
         {{-- Ręcznie dodane podpozycje menu. --}}
         @foreach ($item->children as $child)
             <li>
-                <a href="{{ $child->url }}" @if ($child->isCurrent()) aria-current="page" @endif
+                <a href="{{ site_href($child->url) }}" @if ($child->isCurrent()) aria-current="page" @endif
                     class="block px-5 py-3 text-base font-medium normal-case {{ $child->isCurrent() ? 'text-brand-dark' : 'text-ink' }} hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
                     {{ $child->label }}
                 </a>

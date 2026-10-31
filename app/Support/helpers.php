@@ -42,6 +42,27 @@ if (! function_exists('bip_route_is')) {
     }
 }
 
+if (! function_exists('site_href')) {
+    /**
+     * Adres z pola tekstowego (pozycja menu, skrót) wypisywany w widoku: ścieżka wewnętrzna „/coś” w witrynie z prefiksem
+     * (/{slug}) dostaje ten prefiks, żeby menu nie wyprowadzało na witrynę główną. Adresy bezwzględne, kotwice,
+     * mailto/tel i ścieżki już z prefiksem zostają bez zmian.
+     */
+    function site_href(?string $url): string
+    {
+        $url = (string) $url;
+        $slug = request()?->attributes->get('site_slug');
+
+        if (! $slug || ! request()->attributes->get('site_path_prefixed') || ! str_starts_with($url, '/') || str_starts_with($url, '//')) {
+            return $url;
+        }
+
+        $prefix = '/'.$slug;
+
+        return $url === $prefix || str_starts_with($url, $prefix.'/') || str_starts_with($url, $prefix.'?') ? $url : ($url === '/' ? $prefix : $prefix.$url);
+    }
+}
+
 if (! function_exists('admin_site_home')) {
     /**
      * Adres strony głównej witryny, nad którą pracujesz w panelu (aktywna witryna z sesji): dla witryny w sieci jej

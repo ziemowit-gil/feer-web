@@ -177,7 +177,7 @@
                                     <ul role="list" aria-labelledby="mega-done-{{ $item->id }}" class="space-y-0.5">
                                         @foreach ($projectExtras as $extra)
                                             <li>
-                                                <a href="{{ $extra->url }}" @if ($extra->isCurrent()) aria-current="page" @endif
+                                                <a href="{{ site_href($extra->url) }}" @if ($extra->isCurrent()) aria-current="page" @endif
                                                    class="block rounded-md px-2 py-1.5 {{ $sz['proj'] }} hover:bg-gray-50 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand {{ $extra->isCurrent() ? 'font-semibold text-brand-dark' : 'text-ink' }}">{{ $extra->label }}</a>
                                             </li>
                                         @endforeach

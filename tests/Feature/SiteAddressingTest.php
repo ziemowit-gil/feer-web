@@ -106,4 +106,30 @@ class SiteAddressingTest extends TestCase
                 ->assertSessionHasErrors('slug');
         }
     }
+
+    public function test_linki_menu_w_witrynie_z_prefiksem_dostaja_prefiks(): void
+    {
+        \App\Models\NavItem::withoutGlobalScopes()->create(['site_id' => $this->sub->id, 'label' => 'Kontakt menu', 'location' => 'main', 'url' => '/kontakt', 'type' => 'link', 'is_active' => true, 'order' => 1]);
+        \App\Models\NavItem::withoutGlobalScopes()->create(['site_id' => $this->sub->id, 'label' => 'Zewnętrzny', 'location' => 'main', 'url' => 'https://example.org/x', 'type' => 'link', 'is_active' => true, 'order' => 2]);
+
+        $html = $this->get('/szkolenia')->assertOk()->getContent();
+
+        $this->assertStringContainsString('href="/szkolenia/kontakt"', $html);
+        $this->assertStringContainsString('href="https://example.org/x"', $html);
+    }
+
+    public function test_site_href_nie_zmienia_adresow_poza_prefiksem_i_nie_dubluje_go(): void
+    {
+        $this->assertSame('/kontakt', site_href('/kontakt'));
+
+        $request = request();
+        $request->attributes->set('site_path_prefixed', true);
+        $request->attributes->set('site_slug', 'szkolenia');
+
+        $this->assertSame('/szkolenia/kontakt', site_href('/kontakt'));
+        $this->assertSame('/szkolenia/kontakt', site_href('/szkolenia/kontakt'));
+        $this->assertSame('/szkolenia', site_href('/'));
+        $this->assertSame('https://x.pl/a', site_href('https://x.pl/a'));
+        $this->assertSame('#kotwica', site_href('#kotwica'));
+    }
 }

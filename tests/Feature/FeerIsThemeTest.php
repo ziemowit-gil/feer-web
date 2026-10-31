@@ -182,4 +182,30 @@ class FeerIsThemeTest extends TestCase
 
         $this->get('/szkolenia')->assertOk()->assertSee('>accessibility_new</span>', false)->assertSee('role="tab"', false);
     }
+
+    public function test_naglowek_feer_is_nie_ma_przycisku_materialy_edukacyjne_a_ma_edytowalny(): void
+    {
+        $this->sub->forceFill(['is_cta_label' => 'Zapisz się na szkolenie', 'is_cta_url' => '/formularz/zapisy'])->save();
+
+        $is = $this->get('/szkolenia')->assertOk()->assertDontSee('Materiały edukacyjne')->assertSee('Zapisz się na szkolenie')->getContent();
+        $this->assertStringContainsString('href="/szkolenia/formularz/zapisy"', $is, 'adres przycisku zostaje w witrynie');
+
+        // Standardowy FEER (witryna główna) zostaje 1:1 z przyciskiem materiałów.
+        $this->get('/')->assertOk()->assertSee('Materiały edukacyjne')->assertDontSee('Zapisz się na szkolenie');
+    }
+
+    public function test_bez_ustawionego_przycisku_naglowek_feer_is_nie_ma_zadnego(): void
+    {
+        $this->get('/szkolenia')->assertOk()->assertDontSee('Materiały edukacyjne')->assertDontSee('fa-book-open', false);
+    }
+
+    public function test_przycisk_naglowka_zapisuje_sie_w_ustawieniach(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $payload = $this->settingsPayload() + ['is_cta_label' => 'Zapisy', 'is_cta_url' => '/zapisy'];
+
+        $this->actingAs($admin)->withSession(['admin_site_chosen' => true])->put(route('admin.ustawienia.update'), $payload)->assertSessionHasNoErrors();
+
+        $this->assertSame('Zapisy', SiteSetting::query()->find($this->main->id)->is_cta_label);
+    }
 }

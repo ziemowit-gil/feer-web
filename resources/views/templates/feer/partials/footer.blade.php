@@ -69,7 +69,7 @@
             <nav aria-label="Linki stopki">
                 <ul class="flex flex-wrap gap-x-5 gap-y-2" role="list">
                     @foreach ($footerNavItems as $item)
-                        <li><a href="{{ $item->url }}" class="{{ $footLink }}">{{ $item->label }}</a></li>
+                        <li><a href="{{ site_href($item->url) }}" class="{{ $footLink }}">{{ $item->label }}</a></li>
                     @endforeach
                     <li><a href="{{ route('accessibility.show') }}" class="{{ $footLink }}">Deklaracja dostępności</a></li>
                     <li><a href="{{ route('sitemap.page') }}" class="{{ $footLink }}">Mapa strony</a></li>

@@ -59,7 +59,7 @@
                 <ul role="list" aria-labelledby="{{ 'projects-done-' . $item->id }}">
                     @foreach ($item->children as $extra)
                         <li>
-                            <a href="{{ $extra->url }}" @if ($extra->isCurrent()) aria-current="page" @endif
+                            <a href="{{ site_href($extra->url) }}" @if ($extra->isCurrent()) aria-current="page" @endif
                                class="block px-4 py-2 text-sm font-medium normal-case {{ $extra->isCurrent() ? 'text-brand-dark' : 'text-ink' }} hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
                                 {{ $extra->label }}
                             </a>

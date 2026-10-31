@@ -57,7 +57,7 @@
                         @endphp
                         @php $card = ! $single && ! $strip; // zwykły kafel: układ pionowy, wszystkie kafle w rzędzie równej wysokości @endphp
                         <li class="flex {{ $qaSpan((int) ($qa->cols ?? 1)) }}">
-                            <a href="{{ $qa->url }}" @if ($external) target="_blank" rel="noopener" @endif
+                            <a href="{{ site_href($qa->url) }}" @if ($external) target="_blank" rel="noopener" @endif
                                class="group flex w-full {{ $single ? 'min-h-32 items-center gap-6 px-8 py-6' : ($strip ? 'min-h-14 items-center gap-3 px-4 py-2' : 'h-full min-h-44 flex-col gap-3 p-5') }} rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 {{ $filled ? '' : ($panelWhite ? 'bg-gray-50 hover:bg-brand-light' : 'bg-white hover:bg-brand-light') }}"
                                @if ($filled)
                                    style="background-color: {{ $pal['bg'] }}; color: {{ $pal['text'] }}"
