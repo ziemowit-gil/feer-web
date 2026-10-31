@@ -101,4 +101,30 @@ class FeerIsThemeTest extends TestCase
         $this->get('/szkolenia/aktualnosci/wpis')->assertOk()->assertSee('Powrót do aktualności');
         $this->get('/aktualnosci/wpis-glowny')->assertOk()->assertDontSee('Powrót do aktualności');
     }
+
+    public function test_usluga_pokazuje_swoja_ikone_a_bez_ikony_domyslna(): void
+    {
+        $osoby = $this->page('dla-osob');
+        $this->page('grupy-wsparcia', ['parent_id' => $osoby->id, 'title' => 'Grupy wsparcia', 'layout_data' => ['icon' => 'mi-groups']]);
+        $this->page('porada', ['parent_id' => $osoby->id, 'title' => 'Porada']);
+
+        $html = $this->get('/szkolenia')->assertOk()->getContent();
+
+        $this->assertStringContainsString('>groups</span>', $html);
+        $this->assertStringContainsString('>description</span>', $html, 'domyślna ikona dokumentu');
+    }
+
+    public function test_ikona_zapisuje_sie_w_edytorze_strony_i_odrzuca_zla_nazwe(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $page = $this->page('grupy-wsparcia');
+        $this->actingAs($admin)->withSession(['admin_site_chosen' => true, 'admin_active_site_id' => $this->sub->id]);
+
+        $this->get(route('admin.podstrony.edit', $page))->assertOk()->assertSee('Ikona w siatce usług (FEER IS)');
+
+        $payload = ['title' => 'Grupy wsparcia', 'slug' => 'grupy-wsparcia', 'type' => 'standard', 'content' => '<p>x</p>', 'is_published' => 1, 'parent_id' => null];
+        $this->put(route('admin.podstrony.update', $page), $payload + ['layout_data' => ['icon' => 'bad<script>']])->assertSessionHasErrors('layout_data.icon');
+        $this->put(route('admin.podstrony.update', $page), $payload + ['layout_data' => ['icon' => 'mi-groups']])->assertSessionHasNoErrors();
+        $this->assertSame('mi-groups', $page->fresh()->layout_data['icon']);
+    }
 }

@@ -64,6 +64,7 @@ class HomeController extends Controller
                 ? $page->publishedChildren()->get()->map(fn (Page $child) => [
                     'title' => $child->title,
                     'description' => $child->meta_description,
+                    'icon' => ($child->layout_data ?? [])['icon'] ?? null,
                     'url' => $child->publicUrl(),
                 ])
                 : collect();

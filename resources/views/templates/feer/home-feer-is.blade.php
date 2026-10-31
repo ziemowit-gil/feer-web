@@ -45,7 +45,7 @@
                             @foreach ($tab['services'] as $service)
                                 <li class="flex gap-4">
                                     <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-light text-brand-dark" aria-hidden="true">
-                                        <i class="fa-regular fa-file-lines"></i>
+                                        {{ icon_html($service['icon'] ?: 'mi-description', 'text-2xl') }}
                                     </span>
                                     <div class="min-w-0">
                                         <h3 class="text-base font-bold leading-snug">
