@@ -8,6 +8,14 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-10-31: fix 500 w witrynie z prefiksem ścieżki (`/szkolenia`): `site_route()` wraca do zwykłej trasy, gdy nie ma wariantu `site.<nazwa>` (np. `materials.index`); test `SiteRouteFallbackTest`.
+- 2026-10-31: uniwersalna rama `<x-proj-frame>` (płaska jasnoszara jak wiersze listy działań) na stronie działania; Beneficjent = „Ty lub osoba, która korzysta z działania”; seeder przepisujący stronę o odpłatnej działalności.
+- 2026-10-31: moduł „Jak wesprzeć w trzech krokach” na /wsparcie (edytowalny w Ustawienia → Wsparcie → Treść, przełącznik ukrycia, migracja); sekcja „na co idą darowizny” przed „jak pomóc”.
+- 2026-10-31: szablony strony działania w panelu (klasyczny, panel po lewej, trzy kolumny; kolumna `layout_template`, migracja); układ „najważniejszych informacji” jako kafelki.
+- 2026-10-31: antyspam (honeypot, żeton, zadanie tekstowe) w zapisie na materiały i rejestracji na landing page; opis zadania antyspamowego w „Zadaj pytanie”.
+- 2026-10-31: moduł panelu „Jakość tekstów” (`/panel/jakosc-tekstow`): skaner wzorców do poprawy w treściach, tylko odczyt.
+- 2026-10-31: CRM: skrypt `scripts/szo/create-contact-form.php` (formularz „kontakt” w SZO) i `ContactFormSzoLinkSeeder`; „ponów nieudane” w kampaniach pod `newsletter.send`.
+- 2026-10-31: pliki: rodzaj obok tytułu, pobieranie pojedynczego pliku w menedżerze, płaska strona RODO, przełącznik „Lista plików na stronie”.
 - 2026-10-30: seeder poprawionych tekstów podstron weCMS i tytułów działań weCMS / „Dostępność w praktyce”; testy.
 - 2026-10-30: podpis „Misja Fundacji” nad hasłem organizacji w O nas (etykieta edytowalna: `about_labels.motto_label`).
 - 2026-10-30: poprawione teksty domyślne „Dołącz do nas” i „Wesprzyj nas”, wstęp wolontariatu, seeder ofert wolontariatu.
