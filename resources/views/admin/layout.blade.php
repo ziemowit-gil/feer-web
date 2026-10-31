@@ -365,6 +365,8 @@
                 @include('admin.partials.blog-subnav')
             @endif
 
+            @include('admin.partials.active-site-bar')
+
             @yield('content')
         </main>
     </div>

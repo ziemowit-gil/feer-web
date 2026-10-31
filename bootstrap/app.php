@@ -68,6 +68,13 @@ return Application::configure(basePath: dirname(__DIR__))
             prepend: EnsureSiteBySlug::class,
         );
 
+        // To samo dla przełącznika witryny w panelu: ResolveAdminActiveSite musi znać aktywną witrynę (i przełączyć się
+        // na witrynę rekordu z adresu) zanim SubstituteBindings odpyta modele przez forCurrentSite().
+        $middleware->prependToPriorityList(
+            before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            prepend: ResolveAdminActiveSite::class,
+        );
+
         // Tryb konserwacji — dopięty na końcu grupy „web” (po starcie sesji, więc
         // rozpoznaje zalogowanych użytkowników panelu).
         $middleware->web(append: [

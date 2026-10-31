@@ -80,4 +80,14 @@ class SiteChooserTest extends TestCase
         $editor = User::factory()->create(['role' => User::ROLE_CONTENT_EDITOR]);
         $this->actingAs($editor)->get(route('admin.witryny.ustawienia'))->assertForbidden();
     }
+
+    public function test_panel_pokazuje_ktora_witryne_edytujesz(): void
+    {
+        $this->actingAs($this->admin())->withSession(['admin_site_chosen' => true])->get(route('admin.podstrony.index'))
+            ->assertOk()->assertSee('Edytujesz:')->assertSee('witryna główna');
+
+        $this->get(route('admin.podstrony.index'), [])->assertOk();
+        $this->withSession(['admin_site_chosen' => true, 'admin_active_site_id' => $this->sub->id])->get(route('admin.podstrony.index'))
+            ->assertOk()->assertSee('Szkolenia')->assertSee('witryna w sieci');
+    }
 }

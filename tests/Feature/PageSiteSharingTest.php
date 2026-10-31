@@ -125,4 +125,13 @@ class PageSiteSharingTest extends TestCase
         $this->assertSame('accordion', $grand->fresh()->side_nav_style, 'także zagnieżdżone');
         $this->assertSame('<p>Treść dziecko.</p>', $child->content);
     }
+
+    public function test_panel_przelacza_na_witryne_rekordu_zamiast_404(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $page = $this->page('oferta', ['site_id' => $this->sub->id]);
+
+        $this->actingAs($admin)->get(route('admin.podstrony.edit', $page))->assertOk();
+        $this->assertSame($this->sub->id, session('admin_active_site_id'));
+    }
 }
