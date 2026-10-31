@@ -127,4 +127,42 @@ class FeerIsThemeTest extends TestCase
         $this->put(route('admin.podstrony.update', $page), $payload + ['layout_data' => ['icon' => 'mi-groups']])->assertSessionHasNoErrors();
         $this->assertSame('mi-groups', $page->fresh()->layout_data['icon']);
     }
+
+    /** @return array<string, mixed> */
+    private function settingsPayload(): array
+    {
+        return [
+            'site_name' => 'Szkolenia', 'brand_color' => '#c31432', 'header_layout' => 'classic', 'site_template' => 'feer',
+            'content_editor' => 'tinymce', 'mail_transport' => 'default',
+            'contact_address' => 'ul. Testowa 1', 'contact_city' => '00-001 Warszawa', 'contact_email' => 'kontakt@example.pl',
+            'theme_variant' => 'feer_is', 'services_tabs' => 'Dla osób|dla-osob', 'services_all_label' => 'Wszystkie', 'services_all_url' => '/dzialania',
+        ];
+    }
+
+    public function test_zapis_ustawien_zapamietuje_wariant_i_zakladki(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->main->forceFill(['theme_variant' => null])->save();
+
+        $this->actingAs($admin)->put(route('admin.ustawienia.update'), $this->settingsPayload())->assertSessionHasNoErrors();
+
+        $fresh = SiteSetting::query()->find($this->main->id);
+        $this->assertSame('feer_is', $fresh->theme_variant);
+        $this->assertSame('Dla osób|dla-osob', $fresh->services_tabs);
+    }
+
+    public function test_zapis_ustawien_nie_pada_na_serwerze_bez_migracji_wariantu(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        \Illuminate\Support\Facades\Schema::table('site_settings', function (\Illuminate\Database\Schema\Blueprint $table) {
+            $table->dropColumn(['theme_variant', 'services_tabs', 'services_all_label', 'services_all_url']);
+        });
+        \Closure::bind(function () {
+            static::$cached = null;
+        }, null, SiteSetting::class)();
+
+        $this->actingAs($admin)->put(route('admin.ustawienia.update'), $this->settingsPayload())
+            ->assertSessionHasNoErrors()->assertRedirect();
+        $this->get('/')->assertOk();
+    }
 }

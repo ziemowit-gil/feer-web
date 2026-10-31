@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-11-01: fix zapisu ustawień przed migracją FEER IS (500 `Unknown column 'theme_variant'`): nowe kolumny dopisane do listy pomijanej przy braku kolumny w `SiteSettingController`; testy.
 - 2026-11-01: FEER IS: ikony usług w siatce (`layout_data.icon` strony, pole „Ikona w siatce usług” w edytorze strony przy wariancie FEER IS, domyślnie `mi-description`); testy.
 - 2026-11-01: „FEER IS”: wariant motywu FEER (`site_settings.theme_variant = feer_is`, tylko przy szablonie `feer`; migracja z `services_tabs`, `services_all_*`): nagłówek, stopka i podstrony FEER, strona główna jak portal usług gov.pl (zakładki odbiorców → podstrony wskazanych stron, aktualności, link „Powrót” we wpisie); wybór w Ustawienia → Szablon; test `FeerIsThemeTest`.
 - 2026-11-01: błędy w obszarze witryn: strony błędów (403/404/429/500/503 i pozostałe 4xx/5xx przez `errors/generic`) w oprawie witryny z domeny/prefiksu; 404 w panelu z aktywną witryną (trasa `Route::fallback` z `admin-site`); „Zobacz stronę” i „Wróć do strony” w panelu prowadzą do aktywnej witryny (`admin_site_home()`); testy `SiteErrorPagesTest`.
@@ -22,4 +23,3 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 - 2026-10-31: fix 500 w witrynie z prefiksem ścieżki (`/szkolenia`): `site_route()` wraca do zwykłej trasy, gdy nie ma wariantu `site.<nazwa>` (np. `materials.index`); test `SiteRouteFallbackTest`.
 - 2026-10-31: uniwersalna rama `<x-proj-frame>` (płaska jasnoszara jak wiersze listy działań) na stronie działania; Beneficjent = „Ty lub osoba, która korzysta z działania”; seeder przepisujący stronę o odpłatnej działalności.
 - 2026-10-31: moduł „Jak wesprzeć w trzech krokach” na /wsparcie (edytowalny w Ustawienia → Wsparcie → Treść, przełącznik ukrycia, migracja); sekcja „na co idą darowizny” przed „jak pomóc”.
-- 2026-10-31: szablony strony działania w panelu (klasyczny, panel po lewej, trzy kolumny; kolumna `layout_template`, migracja); układ „najważniejszych informacji” jako kafelki.
