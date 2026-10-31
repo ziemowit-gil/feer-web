@@ -90,4 +90,18 @@ class SiteChooserTest extends TestCase
         $this->withSession(['admin_site_chosen' => true, 'admin_active_site_id' => $this->sub->id])->get(route('admin.podstrony.index'))
             ->assertOk()->assertSee('Szkolenia')->assertSee('witryna w sieci');
     }
+
+    public function test_zobacz_strone_prowadzi_do_aktywnej_witryny(): void
+    {
+        $this->sub->forceFill(['domain' => 'szkolenia.example.test'])->save();
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->withSession(['admin_site_chosen' => true, 'admin_active_site_id' => $this->sub->id])
+            ->get(route('admin.podstrony.index'))->assertOk()
+            ->assertSee('href="https://szkolenia.example.test"', false);
+
+        app()->forgetInstance(SiteSetting::CURRENT_SITE_BINDING);
+        $this->withSession(['admin_site_chosen' => true, 'admin_active_site_id' => $this->main->id])
+            ->get(route('admin.podstrony.index'))->assertOk()->assertDontSee('href="https://szkolenia.example.test"', false);
+    }
 }

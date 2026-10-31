@@ -70,7 +70,7 @@
                     </ul>
                 </div>
             @endif
-            <a href="{{ route('home') }}" target="_blank" rel="noopener"
+            <a href="{{ admin_site_home() }}" target="_blank" rel="noopener"
                 class="inline-flex min-h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                 <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i> Podgląd strony<span class="sr-only"> (nowa karta)</span>
             </a>

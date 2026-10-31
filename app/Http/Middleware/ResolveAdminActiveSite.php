@@ -23,6 +23,12 @@ class ResolveAdminActiveSite
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // Trasa „fallback” obsługuje też zwykłe, publiczne 404 — sesja panelu ma tam wpływać tylko na adresy panelu.
+        $adminPrefix = (string) config('app.admin_prefix', 'admin');
+        if ($request->route()?->isFallback && ! $request->is($adminPrefix, $adminPrefix.'/*')) {
+            return $next($request);
+        }
+
         $this->followRecordSite($request);
 
         $siteId = session('admin_active_site_id');

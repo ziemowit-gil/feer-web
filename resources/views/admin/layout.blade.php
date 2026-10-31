@@ -162,7 +162,7 @@
             <div class="flex flex-none items-center gap-2 sm:gap-3">
 
                 {{-- Zobacz stronę (jak „View Site” w Joomla) --}}
-                <a href="{{ route('home') }}" target="_blank" rel="noopener" class="j-link hidden md:inline-flex">
+                <a href="{{ admin_site_home() }}" target="_blank" rel="noopener" class="j-link hidden md:inline-flex">
                     <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i> Zobacz stronę<span class="sr-only"> (otwiera się w nowej karcie)</span>
                 </a>
 

@@ -42,6 +42,19 @@ if (! function_exists('bip_route_is')) {
     }
 }
 
+if (! function_exists('admin_site_home')) {
+    /**
+     * Adres strony głównej witryny, nad którą pracujesz w panelu (aktywna witryna z sesji): dla witryny w sieci jej
+     * domena albo adres główny z prefiksem, dla głównej zwykła strona główna. Używany w linkach „Zobacz stronę”.
+     */
+    function admin_site_home(): string
+    {
+        $site = SiteSetting::current();
+
+        return $site->parent_site_id ? current_site_url($site) : route('home');
+    }
+}
+
 if (! function_exists('current_site_url')) {
     /** Public base URL for a given site — its own domain, or the main site's URL with the sub-site's path prefix. */
     function current_site_url(SiteSetting $site): string

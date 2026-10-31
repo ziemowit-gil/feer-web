@@ -8,7 +8,7 @@
 @if ($feerErr)
     {{-- Szablon FEER: lewostronny, spokojny układ — kod błędu jako dyskretny napis, tytuł z akcentem, wyszukiwarka i szybkie linki. --}}
     @php
-        $errTitle = match ((string) $code) { '403' => 'Brak dostępu', '500' => 'Coś poszło nie tak', default => 'Nie znaleziono strony' };
+        $errTitle = $title ?? match ((string) $code) { '403' => 'Brak dostępu', '500' => 'Coś poszło nie tak', default => 'Nie znaleziono strony' };
         $quick = array_filter([
             ['Działania', 'fa-diagram-project', \Illuminate\Support\Facades\Route::has('projects.index') ? route('projects.index') : null],
             ['Aktualności', 'fa-newspaper', \Illuminate\Support\Facades\Route::has('news.index') ? route('news.index') : null],

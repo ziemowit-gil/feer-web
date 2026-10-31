@@ -926,3 +926,8 @@ Route::get('/{blogPrefix}/{path?}', \App\Http\Controllers\BlogMovedController::c
 // slug collides with one of those is unreachable here, which is why
 // AdminPageController's slug generator treats reserved words as taken.
 Route::get('/{page:slug}', [PageController::class, 'show'])->name('page.show')->middleware('module:pages');
+
+// Adres, którego nie obsługuje żadna trasa, kończy się 404 w kontekście witryny: w panelu (/edycja/…) z aktywną
+// witryną z sesji, na froncie z witryną rozpoznaną z domeny albo prefiksu. Bez tej trasy wyjątek 404 powstaje, zanim
+// ruszy sesja i middleware panelu, więc strona błędu pokazywała zawsze witrynę główną.
+Route::fallback(fn () => abort(404))->middleware('admin-site');
