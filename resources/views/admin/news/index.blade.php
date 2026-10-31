@@ -111,7 +111,7 @@
                                 </a>
                                 @php $iconBtn = 'inline-flex h-11 w-11 items-center justify-center rounded-md text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark'; @endphp
                                 @if ($isLive)
-                                    <a href="{{ route('news.show', $item) }}" target="_blank" rel="noopener" class="{{ $iconBtn }}" title="Zobacz na stronie"><i class="fa-solid fa-eye" aria-hidden="true"></i><span class="sr-only">Zobacz na stronie: {{ $item->title }} (nowa karta)</span></a>
+                                    <a href="{{ $item->publicUrl() }}" target="_blank" rel="noopener" class="{{ $iconBtn }}" title="Zobacz na stronie"><i class="fa-solid fa-eye" aria-hidden="true"></i><span class="sr-only">Zobacz na stronie: {{ $item->title }} (nowa karta)</span></a>
                                 @else
                                     <a href="{{ $item->previewUrl() }}" target="_blank" rel="noopener" class="{{ $iconBtn }}" title="Podgląd wersji roboczej (link ważny 14 dni)"><i class="fa-solid fa-eye" aria-hidden="true"></i><span class="sr-only">Podgląd wersji roboczej: {{ $item->title }} (nowa karta)</span></a>
                                 @endif

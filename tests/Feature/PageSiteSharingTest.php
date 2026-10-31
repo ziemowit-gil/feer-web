@@ -134,4 +134,19 @@ class PageSiteSharingTest extends TestCase
         $this->actingAs($admin)->get(route('admin.podstrony.edit', $page))->assertOk();
         $this->assertSame($this->sub->id, session('admin_active_site_id'));
     }
+
+    public function test_podglad_i_adres_publiczny_dotycza_witryny_rekordu(): void
+    {
+        $page = $this->page('oferta', ['site_id' => $this->sub->id, 'is_published' => false]);
+        $news = \App\Models\News::withoutGlobalScopes()->create(['site_id' => $this->sub->id, 'title' => 'Wieść', 'slug' => 'wiesc', 'content' => '<p>x</p>', 'is_published' => false, 'published_at' => now()]);
+        $mainNews = \App\Models\News::withoutGlobalScopes()->create(['site_id' => $this->main->id, 'title' => 'Główna', 'slug' => 'glowna', 'content' => '<p>x</p>', 'is_published' => false, 'published_at' => now()]);
+
+        $this->assertMatchesRegularExpression('#^https?://szkolenia\.example\.test/oferta\?#', $page->previewUrl());
+        $this->assertMatchesRegularExpression('#^https?://szkolenia\.example\.test/aktualnosci/wiesc\?#', $news->previewUrl());
+        $this->assertMatchesRegularExpression('#^https?://szkolenia\.example\.test/aktualnosci/wiesc$#', $news->publicUrl());
+        $this->assertStringNotContainsString('szkolenia.example.test', $mainNews->publicUrl());
+
+        // Link działa na domenie witryny.
+        $this->get($news->previewUrl())->assertOk();
+    }
 }

@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-10-31: podgląd i „Zobacz na stronie” w panelu liczone według witryny rekordu (własna domena / prefiks): trait `BuildsSitePublicUrls`, `previewUrl()` i `publicUrl()` (strony, aktualności, działania); wcześniej treść witryny w sieci dawała 404 na witrynie głównej; test w `PageSiteSharingTest`.
 - 2026-10-31: skrzynki w panelu osobne per witryna: zgłoszenia formularzy, wiadomości kontaktowe i zapisy na materiały mają `site_id` (migracja `add_site_id_to_inbox_tables`, stare wpisy → witryna główna; e-mail zapisu na materiały unikalny per witryna); liczniki w menu i na pulpicie; test `InboxSiteScopingTest`.
 - 2026-10-31: audyt panelu pod kątem witryn w sieci: pulpit, kalendarz, statystyki wydarzeń, menu (liczniki, kolejność, „Wyczyść kolory”), oś czasu, wstawki edytora, lista partnerów w edytorze strony i „Jakość tekstów” liczą/zmieniają tylko aktywną witrynę (`forCurrentSite()`); test `AdminSiteScopingTest`.
 - 2026-10-31: panel na subwitrynach: `ResolveAdminActiveSite` działa przed `SubstituteBindings` (priorytet w `bootstrap/app.php`) i przełącza na witrynę rekordu z adresu zamiast 404; pasek „Edytujesz: <witryna>” w layoucie panelu (`admin/partials/active-site-bar`); testy.
@@ -22,4 +23,3 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 - 2026-10-31: moduł panelu „Jakość tekstów” (`/panel/jakosc-tekstow`): skaner wzorców do poprawy w treściach, tylko odczyt.
 - 2026-10-31: CRM: skrypt `scripts/szo/create-contact-form.php` (formularz „kontakt” w SZO) i `ContactFormSzoLinkSeeder`; „ponów nieudane” w kampaniach pod `newsletter.send`.
 - 2026-10-31: pliki: rodzaj obok tytułu, pobieranie pojedynczego pliku w menedżerze, płaska strona RODO, przełącznik „Lista plików na stronie”.
-- 2026-10-30: seeder poprawionych tekstów podstron weCMS i tytułów działań weCMS / „Dostępność w praktyce”; testy.

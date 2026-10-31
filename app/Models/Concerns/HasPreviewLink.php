@@ -2,8 +2,6 @@
 
 namespace App\Models\Concerns;
 
-use Illuminate\Support\Facades\URL;
-
 /**
  * Nadaje modelowi treści (Page/News/BlogArticle) możliwość wygenerowania
  * podpisanego linku do podglądu wersji roboczej — treść niepublikowaną można
@@ -13,13 +11,15 @@ use Illuminate\Support\Facades\URL;
  */
 trait HasPreviewLink
 {
+    use BuildsSitePublicUrls;
+
     /** Podpisany, wygasający link do podglądu tej treści przed publikacją. */
     public function previewUrl(int $days = 14): string
     {
-        return URL::temporarySignedRoute(
+        return $this->siteAwareRoute(
             $this->previewRouteName(),
-            now()->addDays($days),
             [$this->previewRouteParam() => $this->slug, 'preview' => 1],
+            now()->addDays($days),
         );
     }
 

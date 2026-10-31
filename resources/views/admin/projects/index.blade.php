@@ -90,7 +90,7 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex justify-end gap-1">
-                                    <a href="{{ route('projects.show', $project) }}" target="_blank" rel="noopener" class="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" title="Podgląd" aria-label="Podgląd: {{ $project->title }} (nowa karta)"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
+                                    <a href="{{ $project->publicUrl() }}" target="_blank" rel="noopener" class="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" title="Podgląd" aria-label="Podgląd: {{ $project->title }} (nowa karta)"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
                                     <a href="{{ route('admin.projekty.edit', $project) }}" class="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" title="Edytuj" aria-label="Edytuj: {{ $project->title }}"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                     <form method="POST" action="{{ route('admin.projekty.destroy', $project) }}" onsubmit="return confirm('Usunąć działanie &quot;{{ $project->title }}&quot;?');">
                                         @csrf

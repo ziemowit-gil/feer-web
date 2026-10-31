@@ -78,6 +78,12 @@ class News extends Model implements HasMedia
         return ['title', 'slug', 'excerpt', 'content', 'meta_title', 'meta_description'];
     }
 
+    /** Publiczny adres aktualności w jej witrynie (własna domena, prefiks ścieżki albo witryna główna). */
+    public function publicUrl(): string
+    {
+        return $this->siteAwareRoute('news.show', ['news' => $this->slug]);
+    }
+
     protected function previewRouteName(): string
     {
         return 'news.show';

@@ -16,6 +16,7 @@ class Project extends Model implements HasMedia
     use \App\Models\Concerns\Approvable;
     use \App\Models\Concerns\RedirectsOldSlug;
     use \App\Models\Concerns\BelongsToSite;
+    use \App\Models\Concerns\BuildsSitePublicUrls;
     use \App\Models\Concerns\ScopedByEditor;
     use \App\Models\Concerns\HasRevisions;
     use \App\Models\Concerns\LogsActivity;
@@ -243,6 +244,12 @@ class Project extends Model implements HasMedia
      * Nakłada wartości działania nadrzędnego na dziedziczone pola — tylko w odczycie publicznym (nie w panelu,
      * aby zapis formularza nie utrwalał cudzych wartości). Obraz dziedziczy accessor `image_url`.
      */
+    /** Publiczny adres działania w jego witrynie (własna domena albo witryna główna). */
+    public function publicUrl(): string
+    {
+        return $this->siteAwareRoute('projects.show', ['project' => $this->slug]);
+    }
+
     protected static function booted(): void
     {
         static::retrieved(function (Project $project) {

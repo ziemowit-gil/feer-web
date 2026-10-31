@@ -5,7 +5,7 @@
     $isOpen = in_array($node->id, $openIds, true);
 @endphp
 <li data-tree-node data-title="{{ \Illuminate\Support\Str::lower($node->title) }}"
-    data-id="{{ $node->id }}" data-label="{{ $node->title }}" data-published="{{ $node->is_published ? 1 : 0 }}" data-public-url="{{ route('projects.show', $node) }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
+    data-id="{{ $node->id }}" data-label="{{ $node->title }}" data-published="{{ $node->is_published ? 1 : 0 }}" data-public-url="{{ $node->publicUrl() }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
     <div class="pt-row">
         @if ($kids->isNotEmpty())
             <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $isOpen ? 'true' : 'false' }}" aria-controls="pt-branch-{{ $node->id }}"

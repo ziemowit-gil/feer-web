@@ -895,7 +895,7 @@ class Page extends Model
     {
         return $this->isAboutPerson()
             ? url('/' . $this->slug)
-            : route('page.show', $this);
+            : $this->siteAwareRoute('page.show', ['page' => $this->slug]);
     }
 
     /**

@@ -155,7 +155,7 @@
                         $selected->parent_id ? 'sub' : null,
                         $selected->parent_id && ! $selected->is_offered ? 'unavailable' : null,
                     ]));
-                    $publicUrl = route('projects.show', $selected);
+                    $publicUrl = $selected->publicUrl();
                     $publicPath = parse_url($publicUrl, PHP_URL_PATH) ?: '/';
                     $parent = $selected->parent_id ? $byParent->flatten()->firstWhere('id', $selected->parent_id) : null;
                     // Podstrony działania (zakładki, sekcje, menu boczne) — całe drzewo, także szkice.
