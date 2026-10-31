@@ -87,6 +87,9 @@
         </section>
     @endif
 
+    {{-- Jak wesprzeć w trzech krokach (moduł edytowalny w panelu) --}}
+    @include('support.partials.steps')
+
     @if (! empty($impacts))
         <section class="mx-auto mb-14 max-w-5xl px-4" aria-labelledby="impact-heading">
             <div class="mx-auto mb-8 max-w-2xl text-center">

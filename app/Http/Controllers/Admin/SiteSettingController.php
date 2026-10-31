@@ -349,6 +349,15 @@ class SiteSettingController extends Controller
             'support_benefits_title' => ['nullable', 'string', 'max:255'],
             'support_benefits_subtitle' => ['nullable', 'string', 'max:500'],
             'support_benefit1_icon' => ['nullable', 'string', 'max:100'],
+            'support_steps_hidden' => ['nullable', 'boolean'],
+            'support_steps_title' => ['nullable', 'string', 'max:255'],
+            'support_steps_subtitle' => ['nullable', 'string', 'max:500'],
+            'support_step1_title' => ['nullable', 'string', 'max:255'],
+            'support_step1_text' => ['nullable', 'string', 'max:500'],
+            'support_step2_title' => ['nullable', 'string', 'max:255'],
+            'support_step2_text' => ['nullable', 'string', 'max:500'],
+            'support_step3_title' => ['nullable', 'string', 'max:255'],
+            'support_step3_text' => ['nullable', 'string', 'max:500'],
             'support_benefit1_title' => ['nullable', 'string', 'max:255'],
             'support_benefit1_text' => ['nullable', 'string', 'max:500'],
             'support_benefit2_icon' => ['nullable', 'string', 'max:100'],
@@ -556,6 +565,7 @@ class SiteSettingController extends Controller
         $data['contact_show_bank_accounts'] = $request->boolean('contact_show_bank_accounts');
         $data['contact_show_coordinators'] = $request->boolean('contact_show_coordinators');
         $data['support_show_partners'] = $request->boolean('support_show_partners');
+        $data['support_steps_hidden'] = $request->boolean('support_steps_hidden');
         $data['cookie_banner_enabled'] = $request->boolean('cookie_banner_enabled');
         $data['matomo_cookieless'] = $request->boolean('matomo_cookieless');
         // Poza domeną feer.org.pl kredyt CMS w stopce nie może zostać ukryty
@@ -685,7 +695,7 @@ class SiteSettingController extends Controller
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['homepage_sections_enabled']);
 
         // Do czasu wykonania migracji (nowa kolumna) zapis ustawień nie może padać — pomijamy brakującą kolumnę.
-        foreach (['homepage_sections_hidden', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button'] as $newColumn) {
+        foreach (['support_steps_hidden', 'support_steps_title', 'support_steps_subtitle', 'support_step1_title', 'support_step1_text', 'support_step2_title', 'support_step2_text', 'support_step3_title', 'support_step3_text', 'homepage_sections_hidden', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button'] as $newColumn) {
             if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', $newColumn)) {
                 unset($data[$newColumn]);
             }

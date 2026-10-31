@@ -89,6 +89,9 @@
         </div>
     </section>
 
+    {{-- ══ Jak wesprzeć w trzech krokach (moduł edytowalny w panelu) ══ --}}
+    @include('support.partials.steps')
+
     {{-- ══ Co daje Twoja wpłata: duże liczby ══ --}}
     @if (! empty($impacts))
         <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="impact-heading">

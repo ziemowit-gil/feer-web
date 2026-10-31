@@ -12,7 +12,7 @@
         $supportSec = 'naglowek';
         $supportSecFields = [
             'naglowek' => ['support_image', 'remove_support_image', 'support_hero_'],
-            'tresc' => ['support_intro', 'support_benefits_', 'support_testimonial_', 'support_show_partners'],
+            'tresc' => ['support_intro', 'support_steps_', 'support_step', 'support_benefits_', 'support_testimonial_', 'support_show_partners'],
             'zbiorka' => ['support_fundraiser_', 'support_gallery', 'remove_support_gallery'],
             'wplaty' => ['donation_', 'bank_account_', 'support_buycoffee_url', 'support_faq', 'support_outro_', 'support_quick_transfer_url', 'support_transfer_title', 'support_wplacam_url', 'support_methods_title'],
         ];
@@ -1249,6 +1249,47 @@
                         <p class="mt-1 text-xs text-muted">Przycisk pojawia się tylko, gdy ustawiono link do szybkiego przelewu (poniżej).</p>
                         @error('support_hero_cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
+                </div>
+            </div>
+
+            <div x-show="sec === 'tresc'" x-cloak class="border-t border-gray-100 pt-5">
+                <p class="mb-1 text-sm font-bold">Sekcja „Jak wesprzeć w trzech krokach”</p>
+                <p class="mb-3 text-xs text-muted">Krótki opis w trzech krokach tuż pod nagłówkiem strony. Puste pole = tekst domyślny (widać go jako podpowiedź).</p>
+                <label class="mb-4 flex items-start gap-2 text-sm">
+                    <input type="hidden" name="support_steps_hidden" value="0">
+                    <input type="checkbox" name="support_steps_hidden" value="1" @checked(old('support_steps_hidden', $settings->support_steps_hidden)) class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    <span><span class="font-bold">Ukryj tę sekcję na stronie</span> (teksty zostają zapisane).</span>
+                </label>
+                <div class="space-y-4">
+                    <div>
+                        <label for="support_steps_title" class="mb-1 block text-sm font-bold">Tytuł sekcji</label>
+                        <input type="text" id="support_steps_title" name="support_steps_title" value="{{ old('support_steps_title', $settings->support_steps_title) }}"
+                            placeholder="{{ $sd['support_steps_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @error('support_steps_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="support_steps_subtitle" class="mb-1 block text-sm font-bold">Opis sekcji</label>
+                        <textarea id="support_steps_subtitle" name="support_steps_subtitle" rows="2"
+                            placeholder="{{ $sd['support_steps_subtitle'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('support_steps_subtitle', $settings->support_steps_subtitle) }}</textarea>
+                        @error('support_steps_subtitle') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    @foreach ([1, 2, 3] as $i)
+                        <div class="space-y-3 rounded-md bg-gray-50 p-4">
+                            <p class="text-sm font-bold">Krok {{ $i }}</p>
+                            <div>
+                                <label for="support_step{{ $i }}_title" class="mb-1 block text-sm font-bold">Tytuł</label>
+                                <input type="text" id="support_step{{ $i }}_title" name="support_step{{ $i }}_title" value="{{ old('support_step'.$i.'_title', $settings->{'support_step'.$i.'_title'}) }}"
+                                    placeholder="{{ $sd['support_step'.$i.'_title'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                                @error('support_step'.$i.'_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="support_step{{ $i }}_text" class="mb-1 block text-sm font-bold">Opis</label>
+                                <textarea id="support_step{{ $i }}_text" name="support_step{{ $i }}_text" rows="2"
+                                    placeholder="{{ $sd['support_step'.$i.'_text'] }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('support_step'.$i.'_text', $settings->{'support_step'.$i.'_text'}) }}</textarea>
+                                @error('support_step'.$i.'_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
 
