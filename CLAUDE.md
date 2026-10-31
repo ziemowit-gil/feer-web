@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-11-01: moduł „Szkolenia i zajęcia” (`courses`): tabele `courses`/`course_editions`/`course_registrations` (migracja `create_courses_tables`), modele `Course*`, publiczne `/zajecia` (lista z filtrami, karta, zapis Blade+Alpine z antyspamem, limit miejsc → `waitlist`), panel `admin/szkolenia-oferta` (terminy, uczestnicy, ręczne dodawanie, szybkie statusy); FEER IS: sekcja „Najbliższe szkolenia” na stronie głównej (`courses-upcoming`) i nagłówek portalu; testy `CoursesModuleTest`. Po wdrożeniu `migrate` i `route:clear`.
 - 2026-11-01: typy stron instytucji szkoleniowej (`training_offer`, `training_catalog` ze sliderem wyróżnionych, `trainer_profile`, `training_accreditations`; `app/PageTypes/Types`); FEER IS: bez „Naszych działań”, z modułami szkoleniowymi (szkolenia, najbliższe terminy), sliderem i misją dziedziczonymi z witryny głównej, nazwa „Nasze szkolenia”; link „Powrót do portalu Fundacji” w pasku witryny w sieci (edytowalny; migracja `parent_link_*`); testy.
 - 2026-11-01: fix zapisu ustawień przed migracją FEER IS (500 `Unknown column 'theme_variant'`): nowe kolumny dopisane do listy pomijanej przy braku kolumny w `SiteSettingController`; testy.
 - 2026-11-01: FEER IS: ikony usług w siatce (`layout_data.icon` strony, pole „Ikona w siatce usług” w edytorze strony przy wariancie FEER IS, domyślnie `mi-description`); testy.

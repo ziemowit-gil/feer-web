@@ -100,6 +100,9 @@ use App\Http\Controllers\VolunteerController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\Admin\CampaignController as AdminCampaignController;
 use App\Http\Controllers\JobOfferController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\Admin\CourseController as AdminCourseController;
+use App\Http\Controllers\Admin\CourseRegistrationController as AdminCourseRegistrationController;
 use App\Http\Controllers\Admin\JobOfferController as AdminJobOfferController;
 use App\Http\Controllers\SklepController;
 use App\Http\Controllers\Przelewy24WebhookController;
@@ -203,6 +206,13 @@ Route::middleware('module:sklep')->prefix('sklep')->name('sklep.')->group(functi
 Route::middleware('module:volunteering')->group(function () {
     Route::get('/wolontariat', [VolunteerController::class, 'index'])->name('volunteer.index');
     Route::get('/wolontariat/{ad:slug}', [VolunteerController::class, 'show'])->name('volunteer.show');
+});
+
+Route::middleware('module:courses')->group(function () {
+    Route::get('/zajecia', [CourseController::class, 'index'])->name('courses.index');
+    Route::post('/zajecia/{course:slug}/zapis', [CourseController::class, 'register'])->name('courses.register')->middleware('throttle:10,1');
+    Route::get('/zajecia/{course:slug}/zgloszenie/{reference}', [CourseController::class, 'done'])->name('courses.done');
+    Route::get('/zajecia/{course:slug}', [CourseController::class, 'show'])->name('courses.show');
 });
 
 Route::middleware('module:jobs')->group(function () {
@@ -528,6 +538,22 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::put('wolontariat/{wolontariat}/przywroc', [AdminVolunteerAdController::class, 'restore'])->name('wolontariat.restore');
         Route::post('wolontariat/{wolontariat}/klonuj', [AdminVolunteerAdController::class, 'clone'])->name('wolontariat.klonuj');
         Route::post('wolontariat/zbiorczo', [AdminVolunteerAdController::class, 'bulk'])->name('wolontariat.bulk');
+    });
+
+    Route::middleware(['module:courses', 'module-access:courses'])->prefix('szkolenia-oferta')->name('kursy.')->group(function () {
+        Route::get('/', [AdminCourseController::class, 'index'])->name('index');
+        Route::get('nowe', [AdminCourseController::class, 'create'])->name('create');
+        Route::post('/', [AdminCourseController::class, 'store'])->name('store');
+        Route::get('{course}/edytuj', [AdminCourseController::class, 'edit'])->name('edit');
+        Route::put('{course}', [AdminCourseController::class, 'update'])->name('update');
+        Route::delete('{course}', [AdminCourseController::class, 'destroy'])->name('destroy');
+        Route::post('{course}/terminy', [AdminCourseController::class, 'storeEdition'])->name('editions.store');
+        Route::put('terminy/{edition}', [AdminCourseController::class, 'updateEdition'])->name('editions.update');
+        Route::delete('terminy/{edition}', [AdminCourseController::class, 'destroyEdition'])->name('editions.destroy');
+        Route::get('terminy/{edition}/uczestnicy', [AdminCourseRegistrationController::class, 'index'])->name('registrations.index');
+        Route::post('terminy/{edition}/uczestnicy', [AdminCourseRegistrationController::class, 'store'])->name('registrations.store');
+        Route::put('uczestnicy/{registration}/status', [AdminCourseRegistrationController::class, 'status'])->name('registrations.status');
+        Route::delete('uczestnicy/{registration}', [AdminCourseRegistrationController::class, 'destroy'])->name('registrations.destroy');
     });
 
     Route::middleware(['module:jobs', 'module-access:jobs'])->group(function () {

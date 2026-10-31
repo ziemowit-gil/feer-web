@@ -161,6 +161,7 @@ final class AdminMenu
                     children: [
                         $this->child('Prowadzący', 'admin.prowadzacy.index', 'admin.prowadzacy.*'),
                     ]) : null,
+                $this->can('courses') ? $this->item('courses', 'Oferta szkoleń i zajęć', 'admin.kursy.index', 'fa-chalkboard-user', active: 'admin.kursy.*') : null,
                 $this->can('volunteering') ? $this->item('volunteering', 'Wolontariat', 'admin.wolontariat.index', 'fa-hands-helping', active: 'admin.wolontariat.*') : null,
                 $this->can('jobs')         ? $this->item('jobs', 'Ogłoszenia o pracę', 'admin.praca.index', 'fa-briefcase', active: 'admin.praca.*') : null,
                 $this->can('projects') ? $this->item('projects', 'Działania', 'admin.projekty.index', 'fa-diagram-project',
@@ -307,7 +308,7 @@ final class AdminMenu
             // „Działalność” — to, co organizacja robi i oferuje.
             $this->group($byKey, 'activity', 'Działalność', 'fa-diagram-project', [
                 ['Działania', 'content', ['projects', 'coordinators', 'help-map', 'organizations']],
-                ['Oferta', 'content', ['events', 'materials', 'shop']],
+                ['Oferta', 'content', ['events', 'courses', 'materials', 'shop']],
                 ['Zaangażowanie', 'content', ['volunteering', 'jobs']],
                 // Bez modułu BIP sprawozdania są tutaj — grupy „Dokumenty i BIP” wtedy nie ma.
                 ...($this->bipEnabled() ? [] : [['Sprawozdawczość', 'content', ['reports']]]),

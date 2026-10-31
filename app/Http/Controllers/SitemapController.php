@@ -99,6 +99,7 @@ class SitemapController extends Controller
             $on('projects') && $has('projects.index') ? ['Działania', route('projects.index'), 'fa-diagram-project', 'Projekty i programy'] : null,
             $on('news') && $has('news.index') ? ['Aktualności', route('news.index'), 'fa-newspaper', 'Wiadomości i komunikaty'] : null,
             $on('events') && $has('events.index') ? ['Wydarzenia', route('events.index'), 'fa-calendar-days', 'Szkolenia, spotkania, webinary'] : null,
+            $on('courses') && $has('courses.index') ? ['Szkolenia i zajęcia', route('courses.index'), 'fa-chalkboard-user', 'Oferta szkoleń i zapisy'] : null,
             $on('materials') && $has('materials.index') ? ['Materiały edukacyjne', route('materials.index'), 'fa-book-open', 'Poradniki i materiały do pobrania'] : null,
             $on('blog') && $has('blog.index') ? ['Wiem FEER', route('blog.index'), 'fa-feather-pointed', 'Blog o dostępności i empatii'] : null,
             $on('volunteering') && $has('volunteer.index') ? ['Wolontariat', route('volunteer.index'), 'fa-hands-holding-child', 'Oferty wolontariatu'] : null,
