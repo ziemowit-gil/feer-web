@@ -61,4 +61,25 @@ class SzkoleniaMainMenuSeederTest extends TestCase
 
         $this->get('/szkolenia')->assertOk()->assertSee('href="/szkolenia/katalog-szkolen"', false)->assertSee('Nasze szkolenia');
     }
+
+    public function test_seeder_moze_zbudowac_menu_dla_innej_witryny_przez_site_slug(): void
+    {
+        $main = SiteSetting::current();
+        $other = SiteSetting::create([
+            'site_name' => 'Test 2', 'slug' => 'test2', 'parent_site_id' => $main->id, 'site_kind' => 'standard',
+            'brand_color' => SiteSetting::DEFAULT_BRAND_COLOR, 'site_template' => 'feer', 'theme_variant' => 'feer_is',
+        ]);
+
+        putenv('SITE_SLUG=test2');
+        try {
+            $this->seed(SzkoleniaInstitutionPagesSeeder::class);
+            $this->seed(SzkoleniaMainMenuSeeder::class);
+        } finally {
+            putenv('SITE_SLUG');
+        }
+
+        $this->assertSame(5, NavItem::withoutGlobalScopes()->where('site_id', $other->id)->where('location', 'main')->count());
+        $this->assertSame(0, NavItem::withoutGlobalScopes()->where('site_id', $this->sub->id)->count(), 'witryna „szkolenia” nietknięta');
+        $this->assertSame(4, Page::withoutGlobalScopes()->where('site_id', $other->id)->where('title', '!=', 'Katalog szkoleń')->where('title', '!=', 'Akredytacje i jakość')->count());
+    }
 }

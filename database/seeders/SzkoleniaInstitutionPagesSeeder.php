@@ -19,15 +19,19 @@ use Illuminate\Database\Seeder;
  * Idempotentny: strony o tym samym tytule w tej witrynie nie są duplikowane ani nadpisywane.
  *
  *   php artisan db:seed --class=SzkoleniaInstitutionPagesSeeder --force
+ *   SITE_SLUG=test2 php artisan db:seed --class=SzkoleniaInstitutionPagesSeeder --force   (inna witryna sieci niż „szkolenia”)
  */
 class SzkoleniaInstitutionPagesSeeder extends Seeder
 {
     public function run(): void
     {
-        $site = SiteSetting::query()->notTrashed()->where('slug', 'szkolenia')->first();
+        // Witryna docelowa: zmienna środowiskowa SITE_SLUG z wiersza poleceń, domyślnie „szkolenia”.
+        $slug = trim((string) (getenv('SITE_SLUG') ?: ($_SERVER['SITE_SLUG'] ?? ''))) ?: 'szkolenia';
+
+        $site = SiteSetting::query()->notTrashed()->where('slug', $slug)->first();
 
         if (! $site) {
-            $this->command?->warn('Pominięto: brak witryny o slugu „szkolenia”.');
+            $this->command?->warn('Pominięto: brak witryny o slugu „'.$slug.'”.');
 
             return;
         }
