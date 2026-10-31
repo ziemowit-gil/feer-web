@@ -84,7 +84,7 @@
         main a { color: #000 !important; text-decoration: underline; }
         h1, h2, h3 { break-after: avoid; } li, blockquote, tr, details { break-inside: avoid; }
         details > *:not(summary) { display: block !important; }
-        .proj-note, .proj-callout, .cx-frame, .dl-card, .proj-price-card, .proj-metrics li { border: 1px solid #000 !important; background: #fff !important; color: #000 !important; }
+        .proj-note, .proj-frame, .proj-callout, .cx-frame, .dl-card, .proj-price-card, .proj-metrics li { border: 1px solid #000 !important; background: #fff !important; color: #000 !important; }
     </style>
     <script>
         /* Przed drukiem rozwijamy wszystkie sekcje <details> (akordeony), po druku przywracamy poprzedni stan. */

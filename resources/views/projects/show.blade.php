@@ -184,12 +184,6 @@
             .proj-callout, .proj-prose p[style*="text-align: center"], .proj-prose p[style*="text-align:center"] {
                 margin: 1.5rem 0; padding: 1rem 1.25rem; border-radius: .375rem; background: var(--color-brand-light); color: #1d1d1a; text-align: left !important; font-weight: 600;
             }
-            .proj-note { position: relative; margin: 0 0 1rem; padding: 1rem 4rem 1rem 1.25rem; border-radius: .375rem; background: var(--color-brand-light); color: #1d1d1a; font-size: 1.0625rem; line-height: 1.6; font-weight: 600; }
-            .proj-note-links { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .75rem; }
-            .proj-note-links a { font-weight: 800; color: var(--color-brand-dark); text-decoration: underline; text-underline-offset: 4px; }
-            .proj-note-links a:hover { text-decoration: none; }
-            .proj-note-links a:focus-visible { outline: 2px solid var(--color-brand-dark); outline-offset: 3px; border-radius: .25rem; }
-            .proj-note-ico { position: absolute; top: 1rem; right: 1.25rem; color: var(--color-brand-dark); font-size: 1.25rem; }
             /* Sekcje informacyjne: zwykły nagłówek bez paska i ramki (ikona w nagłówku ukryta). */
             .proj-frame { margin-top: 2.5rem; padding: 0; }
             .proj-frame-side { margin-top: 0; padding: 1.25rem; border-radius: .375rem; background: #f9fafb; }
@@ -300,21 +294,20 @@
             <div id="panel-opis" @if ($hasTabs && ! $navSidebar) role="tabpanel" aria-labelledby="tab-opis" @endif x-show="tab === 'opis'" class="proj-measure proj-flow">
                 @if ($project->isPaidOffer())
                     {{-- Usługa wyłącznie odpłatna: wyraźna informacja, objaśnienie i przycisk kontaktu. --}}
-                    <div class="proj-note">
-                        <span>Z tej usługi skorzystasz <strong>za opłatą</strong>. Cenę i zasady znajdziesz poniżej.</span>
+                    <x-proj-frame icon="fa-coins">
+                        Z tej usługi skorzystasz <strong>za opłatą</strong>. Część kosztów pokrywa <strong>Beneficjent</strong>, czyli Ty lub osoba, która korzysta z usługi. Cenę i zasady znajdziesz poniżej.
                         @if ($rulesPage = $siteSettings->paidInfoPage())
-                            <span class="proj-note-links"><a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a></span>
+                            <x-slot:links><a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a></x-slot:links>
                         @endif
-                        <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
-                    </div>
+                    </x-proj-frame>
                 @endif
                 @if ($siteSettings->projects_subprojects_enabled && $project->is_paid && $project->parent_id)
-                    <div class="proj-note"><span>Ta forma jest <strong>płatna</strong>.</span>
+                    <x-proj-frame icon="fa-coins">
+                        Ta forma jest <strong>płatna</strong>. Część kosztów pokrywa <strong>Beneficjent</strong>, czyli Ty lub osoba, która korzysta z działania.
                         @if ($rulesPage = $siteSettings->paidInfoPage())
-                            <span class="proj-note-links"><a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a></span>
+                            <x-slot:links><a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a></x-slot:links>
                         @endif
-                        <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
-                    </div>
+                    </x-proj-frame>
                 @endif
                 @php $subProjects = $siteSettings->projects_subprojects_enabled ? $project->publishedChildren : collect(); @endphp
                 @if ($subProjects->isNotEmpty())
@@ -339,7 +332,7 @@
                             @endif
                         </h2>
                         {{-- Prosty język (ETR): krótkie zdania, bez żargonu. --}}
-                        <div class="proj-note mb-4"><span>
+                        <x-proj-frame icon="fa-coins" class="mb-4">
                             @if ($only && $only->is_offered)
                                 @if ($only->is_paid)
                                     Z tego działania możesz skorzystać także <strong>za opłatą</strong>. Wtedy część kosztów pokrywa <strong>Beneficjent</strong>, czyli Ty lub osoba, która korzysta z działania. Dzieje się tak, bo na to działanie nie mamy dość środków, a fundacja nie zarabia na swoich działaniach.
@@ -355,8 +348,7 @@
                             @else
                                 Z tego działania skorzystasz <strong>bezpłatnie</strong>. Wybierz formę, która Ci odpowiada.
                             @endif
-                            </span>
-                            <span class="proj-note-links">
+                            <x-slot:links>
                                 @foreach ($subProjects as $sp)
                                     <a href="{{ route('projects.show', $sp) }}">
                                         {{ $sp->is_paid ? 'Zobacz, jak działa forma płatna' : 'Zobacz, jak działa forma bezpłatna' }}@unless ($sp->is_offered) (teraz niedostępna)@endunless <span aria-hidden="true">→</span><span class="sr-only">: {{ $sp->title }}</span>
@@ -365,9 +357,8 @@
                                 @if ($rulesPage = $siteSettings->paidInfoPage())
                                     <a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a>
                                 @endif
-                            </span>
-                            <span class="proj-note-ico" aria-hidden="true"><i class="fa-solid fa-coins"></i></span>
-                        </div>
+                            </x-slot:links>
+                        </x-proj-frame>
                     </section>
                 @endif
                 @if ($sectionTabs->isNotEmpty())
@@ -407,7 +398,7 @@
                     <div class="prose proj-prose max-w-none" @if ($canInlineEdit) data-inline-field="content" data-inline-kind="rich" @endif>{!! $projectContentHtml !!}</div>
                 @elseif (! $project->why && ! $project->outcomes && ! $project->excerpt)
                     {{-- Brak opisu: krótka wskazówka zamiast pustego miejsca (widoczna dla redakcji i odwiedzających). --}}
-                    <p class="proj-note"><span>Opis tego działania jest w przygotowaniu.@if (\Illuminate\Support\Facades\Route::has('projects.ask')) Masz pytanie? <a href="{{ route('projects.ask', ['project' => $project->slug]) }}" class="font-bold underline underline-offset-2">Zadaj pytanie</a>.@endif</span></p>
+                    <x-proj-frame>Opis tego działania jest w przygotowaniu.@if (\Illuminate\Support\Facades\Route::has('projects.ask')) Masz pytanie? <a href="{{ route('projects.ask', ['project' => $project->slug]) }}">Zadaj pytanie</a>.@endif</x-proj-frame>
                 @endif
 
                 @if ($project->why)
