@@ -60,6 +60,10 @@ class PageTypeRegistryTest extends TestCase
             'glossary' => 'Słownik pojęć (hasła z definicjami i indeksem liter)',
             'case_study' => 'Studium przypadku (wyzwanie, rozwiązanie, efekty, cytat)',
             'pricing' => 'Cennik i opłaty (karty cen, zasady płatności)',
+            'training_offer' => 'Szkolenie (program, terminy, cena, trener, zapisy)',
+            'training_catalog' => 'Katalog szkoleń (lista szkoleń z podstron, slider wyróżnionych)',
+            'trainer_profile' => 'Trener (specjalizacje, kwalifikacje, prowadzone szkolenia)',
+            'training_accreditations' => 'Akredytacje i jakość kształcenia (wpisy, certyfikaty, wyniki ankiet)',
             'team' => 'Zespół (osoby z rolą i krótkim opisem)',
             'documents' => 'Dokumenty (grupy odnośników do plików i stron)',
             'regulation' => 'Regulamin lub dokument (data obowiązywania, spis treści)',
@@ -76,7 +80,7 @@ class PageTypeRegistryTest extends TestCase
 
         $this->assertSame([
             'Treść i informacja' => ['standard', 'faq', 'glossary', 'guide', 'documents', 'regulation'],
-            'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution', 'recruitment', 'tyflo_consultations', 'tyflo_trainings'],
+            'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution', 'recruitment', 'tyflo_consultations', 'tyflo_trainings', 'training_offer', 'training_catalog', 'trainer_profile', 'training_accreditations'],
             'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets', 'reports', 'partners', 'tender'],
             'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
             'Kontakt i wydarzenia' => ['contact', 'form_page', 'event', 'schedule'],
@@ -93,12 +97,13 @@ class PageTypeRegistryTest extends TestCase
             'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
             'about' => 'fa-building', 'contact' => 'fa-envelope', 'wspolpraca' => 'fa-handshake', 'brand_assets' => 'fa-palette', 'legacy' => 'fa-clock-rotate-left',
             'training_institution' => 'fa-graduation-cap', 'form_page' => 'fa-pen-to-square',
+            'training_offer' => 'fa-chalkboard-user', 'training_catalog' => 'fa-graduation-cap', 'trainer_profile' => 'fa-user-tie', 'training_accreditations' => 'fa-award',
         ];
         ksort($expected);
         $this->assertSame($expected, $icons);
 
         $this->assertSame(
-            ['form_page', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'team', 'documents', 'regulation', 'redirect', 'menu_link', 'reports', 'partners', 'recruitment', 'tender', 'tyflo_consultations', 'tyflo_trainings'],
+            ['form_page', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'training_offer', 'training_catalog', 'trainer_profile', 'training_accreditations', 'team', 'documents', 'regulation', 'redirect', 'menu_link', 'reports', 'partners', 'recruitment', 'tender', 'tyflo_consultations', 'tyflo_trainings'],
             Page::typeDataTypes(),
         );
 
@@ -109,7 +114,7 @@ class PageTypeRegistryTest extends TestCase
 
         $listKeys = PageTypeRegistry::listKeys();
         sort($listKeys);
-        $this->assertSame(['audience', 'benefits', 'bonus', 'consultants', 'criteria', 'docs', 'members', 'notices', 'partner_groups', 'partners', 'price_rows', 'rec_faq', 'requirements', 'results', 'slots', 'steps', 'terms', 'tt_program', 'versions'], $listKeys);
+        $this->assertSame(['accreditations', 'audience', 'benefits', 'bonus', 'consultants', 'criteria', 'docs', 'editions', 'members', 'notices', 'outcomes', 'partner_groups', 'partners', 'price_rows', 'program', 'qualifications', 'quality_stats', 'rec_faq', 'requirements', 'results', 'slots', 'specializations', 'steps', 'terms', 'trainers', 'tt_program', 'versions'], $listKeys);
 
         // Każdy typ `type_data` ma widok publiczny i sekcję pól w panelu, które istnieją.
         foreach (PageTypeRegistry::all() as $key => $type) {

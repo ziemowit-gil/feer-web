@@ -55,6 +55,9 @@
             @endif
 
             {{-- Prawa strona: przełącznik ułatwień dostępu --}}
+            @if ($parentLink = $siteSettings->parentPortalLink())
+                <a href="{{ $parentLink['url'] }}" class="inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-ink underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"><i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i>{{ $parentLink['label'] }}</a>
+            @endif
             <div class="ml-auto flex shrink-0 items-center">
                 <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-controls="a11y-panel"
                     class="flex h-8 w-8 items-center justify-center rounded-full text-sm text-white/90 transition hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand"

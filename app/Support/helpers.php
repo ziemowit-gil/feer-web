@@ -63,11 +63,10 @@ if (! function_exists('current_site_url')) {
             return 'https://'.$site->domain;
         }
 
-        if ($site->slug) {
-            return url('/'.$site->slug);
-        }
+        // Korzeń z konfiguracji, nie z bieżącego żądania: w witrynie z prefiksem url() dokładałby jej prefiks.
+        $root = rtrim((string) config('app.url'), '/');
 
-        return url('/');
+        return $site->slug && $site->parent_site_id ? $root.'/'.$site->slug : $root;
     }
 }
 

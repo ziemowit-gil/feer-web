@@ -17,6 +17,11 @@
     @endphp
     <h1 class="sr-only">{{ $siteSettings->site_name }}</h1>
 
+    {{-- Slider jak na stronie głównej FEER; slajdy i misja dziedziczone z witryny głównej, gdy ta witryna nie ma własnych. --}}
+    @if ($siteSettings->isHomepageSectionEnabled('hero'))
+        @include('templates.feer.partials.hero')
+    @endif
+
     @if ($servicesTabs->isNotEmpty())
         <section aria-labelledby="feer-is-services-heading" x-data="{ tab: 0 }">
             <h2 id="feer-is-services-heading" class="sr-only">Usługi i informacje według odbiorcy</h2>
@@ -130,9 +135,12 @@
         </section>
     @endif
 
+    @include('templates.feer.partials.courses-upcoming')
+
+    {{-- Moduły szkoleniowe: wyróżnione szkolenia i najbliższe terminy (typy stron „Szkolenie”). Bez sekcji „Nasze działania”. --}}
+    @include('templates.feer.partials.training-modules')
     @if ($siteSettings->isHomepageSectionEnabled('events'))
         @include('templates.feer.partials.trainings')
     @endif
-    @include('templates.feer.partials.projects')
     @include('templates.feer.partials.support-cta')
 @endsection

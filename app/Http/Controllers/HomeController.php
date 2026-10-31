@@ -51,6 +51,53 @@ class HomeController extends Controller
     }
 
     /**
+     * Moduły szkoleniowe strony głównej „FEER IS”: wyróżnione szkolenia (typ „Szkolenie”; gdy żadne nie jest
+     * wyróżnione, najnowsze), najbliższe terminy ze wszystkich szkoleń oraz adres katalogu szkoleń.
+     *
+     * @return array{trainingOffers: Collection, trainingEditions: Collection, trainingCatalogUrl: ?string}
+     */
+    private function trainingModules(): array
+    {
+        $offers = Page::forCurrentSite()->where('type', 'training_offer')->where('is_published', true)->orderBy('order')->orderBy('title')->get();
+
+        $featured = $offers->filter(fn (Page $p) => ($p->typeData()['featured'] ?? '0') == '1');
+        $cards = ($featured->isNotEmpty() ? $featured : $offers)->take(6)->map(function (Page $p) {
+            $td = $p->typeData();
+
+            return [
+                'title' => $p->title, 'lead' => $td['lead'] ?? $p->meta_description, 'url' => $p->publicUrl(),
+                'duration' => $td['duration'] ?? null, 'mode' => $td['mode'] ?? null, 'price' => $td['price'] ?? null,
+                'category' => $td['category'] ?? null,
+            ];
+        })->values();
+
+        $today = now()->startOfDay();
+        $editions = $offers->flatMap(function (Page $p) use ($today) {
+            return collect($p->typeData()['editions'] ?? [])
+                ->filter(fn ($e) => filled($e['date'] ?? null) && \Illuminate\Support\Carbon::parse($e['date'])->gte($today))
+                ->map(fn ($e) => [
+                    'date' => \Illuminate\Support\Carbon::parse($e['date']), 'place' => $e['place'] ?? null, 'status' => $e['status'] ?? 'open',
+                    'title' => $p->title, 'url' => filled($e['url'] ?? null) ? $e['url'] : $p->publicUrl(),
+                ]);
+        })->sortBy('date')->take(6)->values();
+
+        $catalog = Page::forCurrentSite()->where('type', 'training_catalog')->where('is_published', true)->orderBy('order')->first();
+
+        return ['trainingOffers' => $cards, 'trainingEditions' => $editions, 'trainingCatalogUrl' => $catalog?->publicUrl()];
+    }
+
+    /** Widoczne teraz slajdy strony głównej wskazanej witryny (bez względu na bieżącą witrynę). */
+    private function heroSlidesOf(SiteSetting $site): Collection
+    {
+        $homeSliderId = \App\Models\Slider::query()->where('site_id', $site->id)->where('is_home', true)->orderBy('id')->value('id') ?? 0;
+
+        return HeroSlide::query()->where('site_id', $site->id)
+            ->where(fn ($q) => $q->whereNull('slider_id')->orWhere('slider_id', $homeSliderId))
+            ->orderBy('order')->orderBy('id')->get()
+            ->filter(fn (HeroSlide $slide) => $slide->isVisibleNow())->values();
+    }
+
+    /**
      * Zakładki portalu usług: dla każdej wpisanej w ustawieniach strony jej opublikowane podstrony jako „usługi”
      * (tytuł, opis z meta description). Zakładki bez usług są pomijane.
      *
@@ -186,21 +233,34 @@ class HomeController extends Controller
                 // Slajdy z terminem (od–do) poza nim pomijamy.
                 ->filter(fn (HeroSlide $slide) => $slide->isVisibleNow())->values();
 
-        if ($settings->hero_mission_slide && $slides->isNotEmpty()) {
-            $mottoTtl    = $settings->cacheEnabled('pages') ? $settings->cacheTtl('page_item', 3600) : 0;
-            $missionText = ($mottoTtl > 0
-                ? Cache::remember("page_about_motto_{$settings->id}", $mottoTtl, fn () => Page::forCurrentSite()->where('type', 'about')->value('about_motto'))
-                : Page::forCurrentSite()->where('type', 'about')->value('about_motto')
-            ) ?: $settings->tagline;
+        // Witryna w sieci z motywem „FEER IS” dziedziczy z witryny głównej slajdy (gdy nie ma własnych) i misję.
+        $parentSite = $settings->themeVariant() === 'feer_is' && $settings->parent_site_id
+            ? SiteSetting::query()->notTrashed()->find($settings->parent_site_id)
+            : null;
+
+        if ($parentSite && $slides->isEmpty()) {
+            $slides = $this->heroSlidesOf($parentSite);
+        }
+
+        $ownMotto = $parentSite ? Page::forCurrentSite()->where('type', 'about')->value('about_motto') : null;
+        $missionSite = $parentSite && ! filled($ownMotto) ? $parentSite : $settings;
+
+        if (($settings->hero_mission_slide || $missionSite->hero_mission_slide) && $slides->isNotEmpty()) {
+            $mottoTtl    = $missionSite->cacheEnabled('pages') ? $missionSite->cacheTtl('page_item', 3600) : 0;
+            $mottoQuery  = fn () => Page::withoutGlobalScopes()->where('site_id', $missionSite->id)->where('type', 'about')->value('about_motto');
+            $missionText = ($missionSite->is($settings) && filled($ownMotto) ? $ownMotto : ($mottoTtl > 0
+                ? Cache::remember("page_about_motto_{$missionSite->id}", $mottoTtl, $mottoQuery)
+                : $mottoQuery())
+            ) ?: $missionSite->tagline;
             if (filled($missionText)) {
                 $missionSlide = (object) [
                     'mission_text'   => $missionText,
-                    'logo_url'       => $settings->logoUrl(),
-                    'site_name'      => $settings->site_name,
-                    'mission_bg'     => $settings->hero_mission_bg ?? 'brand',
-                    'mission_img_url' => $settings->missionSlideImageUrl(),
+                    'logo_url'       => $missionSite->logoUrl(),
+                    'site_name'      => $missionSite->site_name,
+                    'mission_bg'     => $missionSite->hero_mission_bg ?? 'brand',
+                    'mission_img_url' => $missionSite->missionSlideImageUrl(),
                 ];
-                $position = max(0, min((int) ($settings->hero_mission_order ?? 1) - 1, $slides->count()));
+                $position = max(0, min((int) ($missionSite->hero_mission_order ?? 1) - 1, $slides->count()));
                 $slides = $slides->values()->take($position)->push($missionSlide)->toBase()->merge($slides->values()->slice($position));
             }
         }
@@ -259,6 +319,9 @@ class HomeController extends Controller
             if ($settings->themeVariant() === 'feer_is') {
                 return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home-feer-is', $quickLinks)
                     ->with('servicesTabs', $this->servicesTabs($settings))
+                    ->with($this->trainingModules())
+                    // Najbliższe terminy z oferty szkoleń (moduł „courses”), po jednym na szkolenie.
+                    ->with('courseEditions', $this->upcomingCourseEditions($settings))
                     // Wyróżniony wpis, dwa kolejne na liście i trzy karty.
                     ->with('newsItems', $settings->isModuleEnabled('news')
                         ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(6)->get()
@@ -282,5 +345,22 @@ class HomeController extends Controller
         }
 
         return view('home', compact('slides', 'news', 'events', 'poll', 'quickLinks', 'gallery', 'partners', 'sectionOrder', 'substackPosts'));
+    }
+
+    /** Do sześciu najbliższych terminów aktywnych szkoleń witryny z otwartą rekrutacją, po jednym na szkolenie. */
+    private function upcomingCourseEditions(SiteSetting $settings)
+    {
+        if (! $settings->isModuleEnabled('courses') || ! \Illuminate\Support\Facades\Schema::hasTable('course_editions')) {
+            return collect();
+        }
+
+        return \App\Models\CourseEdition::query()
+            ->whereHas('course', fn ($q) => $q->forCurrentSite()->visible())
+            ->where('enrollment_status', 'open')
+            ->whereDate('starts_on', '>=', today())
+            ->with('course')
+            ->orderBy('starts_on')
+            ->limit(24)->get()
+            ->unique('course_id')->take(6)->values();
     }
 }

@@ -37,6 +37,7 @@ class SiteSetting extends Model implements HasMedia
         'strategy' => 'Strategia organizacji (planowanie działań)',
         'authorizations' => 'Rejestr pełnomocnictw i upoważnień',
         'events' => 'Szkolenia i wydarzenia',
+        'courses' => 'Oferta szkoleń i zajęć (zapisy)',
         'jobs' => 'Oferty pracy',
         'volunteering' => 'Wolontariat',
         'materials' => 'Materiały edukacyjne',
@@ -78,6 +79,7 @@ class SiteSetting extends Model implements HasMedia
         'faq' => ['group' => 'content', 'icon' => 'fa-circle-question', 'desc' => 'Pytania i odpowiedzi pogrupowane tematycznie.'],
         'feer_bands' => ['group' => 'content', 'icon' => 'fa-grip-lines', 'desc' => 'Paski z tekstem i przyciskami wstawiane między sekcje strony.'],
         'events' => ['group' => 'community', 'icon' => 'fa-calendar-days', 'desc' => 'Kalendarz szkoleń i wydarzeń z zapisami.'],
+        'courses' => ['group' => 'community', 'icon' => 'fa-chalkboard-user', 'desc' => 'Oferta szkoleń z terminami, limitem miejsc, listą rezerwową i zapisami.'],
         'volunteering' => ['group' => 'community', 'icon' => 'fa-hands-holding-child', 'desc' => 'Oferty wolontariatu i zgłoszenia chętnych.'],
         'cooperation' => ['group' => 'community', 'icon' => 'fa-handshake', 'desc' => 'Formularz zgłoszeń współpracy i skrzynka odpowiedzi.'],
         'polls' => ['group' => 'community', 'icon' => 'fa-square-poll-vertical', 'desc' => 'Krótkie ankiety dla odwiedzających stronę.'],
@@ -255,6 +257,32 @@ class SiteSetting extends Model implements HasMedia
         'feer_is'  => 'FEER IS (portal usług, układ jak gov.pl: zakładki odbiorców, siatka usług, aktualności)',
     ];
 
+    /**
+     * Link „Powrót do portalu Fundacji” dla witryny w sieci (zawsze widoczny w górnym pasku); napis i adres można
+     * zmienić w ustawieniach tej witryny. Witryna główna nie ma takiego linku.
+     *
+     * @return array{label: string, url: string}|null
+     */
+    public function parentPortalLink(): ?array
+    {
+        if (! $this->parent_site_id) {
+            return null;
+        }
+
+        $parent = static::query()->find($this->parent_site_id);
+
+        return [
+            'label' => trim((string) ($this->parent_link_label ?? '')) ?: 'Powrót do portalu Fundacji',
+            'url' => trim((string) ($this->parent_link_url ?? '')) ?: ($parent ? current_site_url($parent) : rtrim((string) config('app.url'), '/')),
+        ];
+    }
+
+    /** Nazwa sekcji działań: w motywie FEER IS (instytucja szkoleniowa) „Nasze szkolenia”. */
+    public function projectsLabel(): string
+    {
+        return $this->themeVariant() === 'feer_is' ? 'Nasze szkolenia' : 'Nasze działania';
+    }
+
     /** Wariant motywu: `feer_is` tylko przy szablonie FEER, w pozostałych przypadkach `default`. */
     public function themeVariant(): string
     {
@@ -423,7 +451,7 @@ class SiteSetting extends Model implements HasMedia
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
         'news_layout', 'projects_layout', 'project_sections_nav', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button', 'projects_stages_enabled', 'projects_team_funding_enabled', 'volunteer_layout',
-        'site_template', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'municipality_shortcuts_slug', 'municipality_carousel_title',
+        'site_template', 'parent_link_label', 'parent_link_url', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'municipality_shortcuts_slug', 'municipality_carousel_title',
         'municipality_weather_lat', 'municipality_weather_lon', 'municipality_show_google_translate',
         'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_social_3', 'wide_mission_layout', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_show_mission', 'wide_mission_highlight_account', 'wide_mission_nav_align', 'wide_mission_search_in_nav', 'wide_mission_sidebar', 'wide_mission_sidebar_style', 'wide_mission_nav_style', 'wide_mission_nav_hover_white', 'wide_mission_nav_active_white', 'wide_mission_nav_icons_white', 'hero_mission_slide', 'hero_mission_bg', 'hero_mission_order', 'hero_single',
         'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',

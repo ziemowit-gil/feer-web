@@ -2804,6 +2804,30 @@
                 </div>
             </div>
 
+            {{-- Link powrotu do portalu głównego: tylko witryny w sieci --}}
+            @if ($settings->parent_site_id)
+                <div class="p-5 space-y-4 rounded-md bg-gray-50">
+                    <h3 class="text-sm font-bold text-ink">Link powrotu do portalu Fundacji</h3>
+                    <p class="text-xs text-ink">Zawsze widoczny w górnym pasku tej witryny. Możesz zmienić napis i adres; puste pola oznaczają napis „Powrót do portalu Fundacji” i adres witryny głównej.</p>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="parent_link_label" class="mb-1 block text-sm font-bold">Napis</label>
+                            <input type="text" id="parent_link_label" name="parent_link_label" maxlength="80" placeholder="Powrót do portalu Fundacji"
+                                value="{{ old('parent_link_label', $settings->parent_link_label) }}"
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            @error('parent_link_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="parent_link_url" class="mb-1 block text-sm font-bold">Adres</label>
+                            <input type="text" id="parent_link_url" name="parent_link_url" maxlength="255" placeholder="https://feer.org.pl"
+                                value="{{ old('parent_link_url', $settings->parent_link_url) }}"
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            @error('parent_link_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- Wariant motywu FEER (podmodel) „FEER IS”: układ strony głównej portalu usług --}}
             <div x-show="tpl === 'feer'" x-cloak class="p-5 space-y-5 rounded-md bg-gray-50">
                 <h3 class="text-sm font-bold text-ink">Wariant motywu FEER: FEER IS</h3>

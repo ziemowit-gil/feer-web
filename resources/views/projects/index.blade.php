@@ -23,7 +23,7 @@
         <div class="mx-auto max-w-6xl px-4 pb-4 pt-10 sm:pt-12">
             <div class="flex flex-wrap items-end justify-between gap-6">
                 <div class="min-w-0">
-                    <p class="text-sm font-bold uppercase tracking-widest text-brand-dark">Nasze działania</p>
+                    <p class="text-sm font-bold uppercase tracking-widest text-brand-dark">{{ $siteSettings->projectsLabel() }}</p>
                     <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-4xl">Działania</h1>
                     @if ($siteSettings->projects_intro)
                         <div class="prose mt-4 max-w-2xl text-ink">{!! $siteSettings->projects_intro !!}</div>

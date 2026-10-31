@@ -47,6 +47,13 @@
             </div>
         @endif
 
+        {{-- Witryna w sieci: zawsze link powrotu do portalu głównego (napis i adres z ustawień tej witryny). --}}
+        @if ($parentLink = $siteSettings->parentPortalLink())
+            <a href="{{ $parentLink['url'] }}" class="inline-flex min-h-9 min-w-0 items-center gap-1.5 rounded-md px-2 text-sm font-semibold underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 {{ $feerBar ? 'text-white' : 'text-ink' }}">
+                <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i><span class="truncate">{{ $parentLink['label'] }}</span>
+            </a>
+        @endif
+
         <div class="ml-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-3">
 
             {{-- Wyszukiwarka (gdy nie przeniesiona do paska menu) --}}
