@@ -247,6 +247,45 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     /**
+     * Warianty motywu FEER (podmodel szablonu `feer`): nagłówek, stopka i podstrony zostają FEER, zmienia się układ
+     * strony głównej. Wariant działa tylko przy szablonie `feer`.
+     */
+    public const THEME_VARIANTS = [
+        'default'  => 'Standardowy FEER (hero, skróty, aktualności, szkolenia, działania)',
+        'feer_is'  => 'FEER IS (portal usług, układ jak gov.pl: zakładki odbiorców, siatka usług, aktualności)',
+    ];
+
+    /** Wariant motywu: `feer_is` tylko przy szablonie FEER, w pozostałych przypadkach `default`. */
+    public function themeVariant(): string
+    {
+        return ($this->site_template ?? 'default') === 'feer'
+            && array_key_exists((string) ($this->theme_variant ?? ''), self::THEME_VARIANTS)
+            ? (string) $this->theme_variant
+            : 'default';
+    }
+
+    /**
+     * Zakładki odbiorców portalu usług z pola „Etykieta|slug strony”, jedna na wiersz. Usługi w zakładce to opublikowane
+     * podstrony wskazanej strony.
+     *
+     * @return list<array{label: string, slug: string}>
+     */
+    public function servicesTabs(): array
+    {
+        $tabs = [];
+
+        foreach (preg_split('/\R/u', (string) ($this->services_tabs ?? '')) ?: [] as $line) {
+            [$label, $slug] = array_pad(array_map('trim', explode('|', $line, 2)), 2, '');
+
+            if ($label !== '' && $slug !== '') {
+                $tabs[] = ['label' => $label, 'slug' => ltrim($slug, '/')];
+            }
+        }
+
+        return $tabs;
+    }
+
+    /**
      * Layouts for the main navigation bar, keyed by the value stored in
      * `header_layout`.
      */
@@ -384,7 +423,7 @@ class SiteSetting extends Model implements HasMedia
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
         'news_layout', 'projects_layout', 'project_sections_nav', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button', 'projects_stages_enabled', 'projects_team_funding_enabled', 'volunteer_layout',
-        'site_template', 'municipality_shortcuts_slug', 'municipality_carousel_title',
+        'site_template', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'municipality_shortcuts_slug', 'municipality_carousel_title',
         'municipality_weather_lat', 'municipality_weather_lon', 'municipality_show_google_translate',
         'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_social_3', 'wide_mission_layout', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_show_mission', 'wide_mission_highlight_account', 'wide_mission_nav_align', 'wide_mission_search_in_nav', 'wide_mission_sidebar', 'wide_mission_sidebar_style', 'wide_mission_nav_style', 'wide_mission_nav_hover_white', 'wide_mission_nav_active_white', 'wide_mission_nav_icons_white', 'hero_mission_slide', 'hero_mission_bg', 'hero_mission_order', 'hero_single',
         'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',

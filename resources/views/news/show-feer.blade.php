@@ -92,6 +92,9 @@
             <a href="{{ site_route('news.index') }}" class="mb-6 inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">← Wszystkie aktualności</a>
 
             <header class="mb-10 w-full">
+                @if ($siteSettings->themeVariant() === 'feer_is')
+                    <a href="{{ site_route('news.index') }}" class="mb-4 inline-flex items-center gap-1 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-chevron-left text-xs" aria-hidden="true"></i> Powrót do aktualności</a>
+                @endif
                 <p class="text-xs font-bold uppercase tracking-widest text-brand-dark">
                     {{ $news->category?->name ?? 'Aktualności' }}
                     <span class="font-medium text-muted"> · <time datetime="{{ $news->published_at->toDateString() }}">{{ $news->published_at->translatedFormat('j F Y') }}</time>

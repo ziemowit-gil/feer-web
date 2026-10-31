@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-11-01: „FEER IS”: wariant motywu FEER (`site_settings.theme_variant = feer_is`, tylko przy szablonie `feer`; migracja z `services_tabs`, `services_all_*`): nagłówek, stopka i podstrony FEER, strona główna jak portal usług gov.pl (zakładki odbiorców → podstrony wskazanych stron, aktualności, link „Powrót” we wpisie); wybór w Ustawienia → Szablon; test `FeerIsThemeTest`.
 - 2026-11-01: błędy w obszarze witryn: strony błędów (403/404/429/500/503 i pozostałe 4xx/5xx przez `errors/generic`) w oprawie witryny z domeny/prefiksu; 404 w panelu z aktywną witryną (trasa `Route::fallback` z `admin-site`); „Zobacz stronę” i „Wróć do strony” w panelu prowadzą do aktywnej witryny (`admin_site_home()`); testy `SiteErrorPagesTest`.
 - 2026-10-31: przepisany system witryn: jeden middleware `ResolveCurrentSite` (domena albo prefiks `/{slug}` jak podkatalog), bez tras `site.*`/`/site/{slug}`, `site_route()` = `route()`; wszystkie trasy publiczne działają pod prefiksem; stary `/site/{slug}` → 301; rezerwacja slugów z tras; testy `SiteAddressingTest`. Po wdrożeniu `route:clear`.
 - 2026-10-31: podgląd i „Zobacz na stronie” w panelu liczone według witryny rekordu (własna domena / prefiks): trait `BuildsSitePublicUrls`, `previewUrl()` i `publicUrl()` (strony, aktualności, działania); wcześniej treść witryny w sieci dawała 404 na witrynie głównej; test w `PageSiteSharingTest`.
@@ -22,4 +23,3 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 - 2026-10-31: moduł „Jak wesprzeć w trzech krokach” na /wsparcie (edytowalny w Ustawienia → Wsparcie → Treść, przełącznik ukrycia, migracja); sekcja „na co idą darowizny” przed „jak pomóc”.
 - 2026-10-31: szablony strony działania w panelu (klasyczny, panel po lewej, trzy kolumny; kolumna `layout_template`, migracja); układ „najważniejszych informacji” jako kafelki.
 - 2026-10-31: antyspam (honeypot, żeton, zadanie tekstowe) w zapisie na materiały i rejestracji na landing page; opis zadania antyspamowego w „Zadaj pytanie”.
-- 2026-10-31: moduł panelu „Jakość tekstów” (`/panel/jakosc-tekstow`): skaner wzorców do poprawy w treściach, tylko odczyt.

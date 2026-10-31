@@ -2804,6 +2804,45 @@
                 </div>
             </div>
 
+            {{-- Wariant motywu FEER (podmodel) „FEER IS”: układ strony głównej portalu usług --}}
+            <div x-show="tpl === 'feer'" x-cloak class="p-5 space-y-5 rounded-md bg-gray-50">
+                <h3 class="text-sm font-bold text-ink">Wariant motywu FEER: FEER IS</h3>
+                <p class="text-xs text-ink">Nagłówek, stopka i podstrony zostają FEER. „FEER IS” zmienia tylko układ strony głównej (portal usług jak gov.pl).</p>
+
+                <div>
+                    <label for="theme_variant" class="mb-1 block text-sm font-bold">Układ strony głównej</label>
+                    <select id="theme_variant" name="theme_variant" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @foreach (\App\Models\SiteSetting::THEME_VARIANTS as $variantKey => $variantLabel)
+                            <option value="{{ $variantKey }}" @selected(old('theme_variant', $settings->themeVariant()) === $variantKey)>{{ $variantLabel }}</option>
+                        @endforeach
+                    </select>
+                    @error('theme_variant') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="services_tabs" class="mb-1 block text-sm font-bold">Zakładki odbiorców (portal usług)</label>
+                    <textarea id="services_tabs" name="services_tabs" rows="4" maxlength="2000" placeholder="Dla osób z niepełnosprawnością|dla-osob&#10;Dla instytucji|dla-instytucji"
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('services_tabs', $settings->services_tabs) }}</textarea>
+                    <p class="mt-1 text-xs text-ink">Jedna zakładka na wiersz: <code>Nazwa zakładki|adres strony</code> (sam slug, bez ukośnika). Usługi w zakładce to opublikowane podstrony tej strony; opis usługi to jej opis meta.</p>
+                    @error('services_tabs') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="services_all_label" class="mb-1 block text-sm font-bold">Przycisk pod siatką usług</label>
+                        <input type="text" id="services_all_label" name="services_all_label" maxlength="80" placeholder="Zobacz wszystkie usługi"
+                            value="{{ old('services_all_label', $settings->services_all_label) }}"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    </div>
+                    <div>
+                        <label for="services_all_url" class="mb-1 block text-sm font-bold">Adres przycisku</label>
+                        <input type="text" id="services_all_url" name="services_all_url" maxlength="255" placeholder="/dzialania"
+                            value="{{ old('services_all_url', $settings->services_all_url) }}"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    </div>
+                </div>
+            </div>
+
             {{-- Ustawienia szablonu Gmina / urząd --}}
             <div x-show="tpl === 'municipality'" x-cloak class="p-5 space-y-5 rounded-md bg-gray-50">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Gmina / urząd</h3>

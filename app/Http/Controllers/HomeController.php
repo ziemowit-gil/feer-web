@@ -50,6 +50,28 @@ class HomeController extends Controller
         return view('templates.municipality.home', compact('slides', 'newsSidebar', 'newsGrid', 'shortcuts', 'partners'));
     }
 
+    /**
+     * Zakładki portalu usług: dla każdej wpisanej w ustawieniach strony jej opublikowane podstrony jako „usługi”
+     * (tytuł, opis z meta description). Zakładki bez usług są pomijane.
+     *
+     * @return \Illuminate\Support\Collection<int, array{label: string, services: \Illuminate\Support\Collection}>
+     */
+    private function servicesTabs(SiteSetting $settings): Collection
+    {
+        return collect($settings->servicesTabs())->map(function (array $tab) {
+            $page = Page::forCurrentSite()->where('is_published', true)->where('slug', $tab['slug'])->first();
+            $services = $page
+                ? $page->publishedChildren()->get()->map(fn (Page $child) => [
+                    'title' => $child->title,
+                    'description' => $child->meta_description,
+                    'url' => $child->publicUrl(),
+                ])
+                : collect();
+
+            return ['label' => $tab['label'], 'services' => $services];
+        })->filter(fn (array $tab) => $tab['services']->isNotEmpty())->values();
+    }
+
     /** Renderuje stronę główną w szablonie NGO/fundacja (rozbudowanym i mieszanym). */
     private function ngoHome(SiteSetting $settings, Collection $slides, Collection $partners, string $view = 'templates.ngo.home', ?Collection $quickLinks = null)
     {
@@ -233,6 +255,15 @@ class HomeController extends Controller
             if ($heroSingle) {
                 $slides = $slides->take(1)->values();
             }
+            if ($settings->themeVariant() === 'feer_is') {
+                return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home-feer-is', $quickLinks)
+                    ->with('servicesTabs', $this->servicesTabs($settings))
+                    // Wyróżniony wpis, dwa kolejne na liście i trzy karty.
+                    ->with('newsItems', $settings->isModuleEnabled('news')
+                        ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(6)->get()
+                        : collect());
+            }
+
             return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home', $quickLinks)
                 ->with('gallery', $gallery)->with('heroSingle', $heroSingle)->with('substackPosts', $substackPosts);
         }

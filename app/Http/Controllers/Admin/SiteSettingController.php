@@ -400,6 +400,10 @@ class SiteSettingController extends Controller
                     }
                 },
             ],
+            'theme_variant'                    => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_keys(SiteSetting::THEME_VARIANTS))],
+            'services_tabs'                    => ['nullable', 'string', 'max:2000'],
+            'services_all_label'               => ['nullable', 'string', 'max:80'],
+            'services_all_url'                 => ['nullable', 'string', 'max:255'],
             'municipality_shortcuts_slug'      => ['nullable', 'string', 'max:255'],
             'municipality_carousel_title'      => ['nullable', 'string', 'max:255'],
             'municipality_weather_lat'         => ['nullable', 'numeric', 'between:-90,90'],
