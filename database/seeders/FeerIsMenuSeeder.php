@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\File;
  * (SzkoleniaMainMenuSeeder wtedy nic nie robi). Stare pozycje menu głównego są usuwane, a ich kopia zapisywana w
  * storage/app/menu-backups/<witryna>-<data>.json (do ręcznego przywrócenia). Stopki i inne menu zostają bez zmian.
  *
- * Nowe menu: Nasze szkolenia (katalog, podmenu z opublikowanych szkoleń), po jednej pozycji na zakładkę odbiorców
+ * Nowe menu (mega menu z kolumnami z podstron wskazanych stron; w motywie FEER IS menu jest kompaktowe, w jednym rzędzie):
+ * Nasze szkolenia (katalog, podmenu z opublikowanych szkoleń), po jednej pozycji na zakładkę odbiorców
  * z ustawień FEER IS, Dla instytucji, Trenerzy, Akredytacje i jakość, Aktualności, Kontakt. Brakujące strony
  * (katalog, trenerzy, akredytacje) powstają jako szkice; pozycje do stron niepublikowanych działają po publikacji.
  *
@@ -49,20 +50,22 @@ class FeerIsMenuSeeder extends Seeder
         $accreditations = $this->page($site, 'Akredytacje i jakość', 'training_accreditations');
         $institutions = Page::withoutGlobalScopes()->where('site_id', $site->id)->where('title', 'Dla instytucji i firm szkoleniowych')->first();
 
-        $items = [['Nasze szkolenia', '/'.$catalog->slug, null]];
+        // Trzeci element: moduł menu, czwarty: mega menu (kolumny z podstron wskazanej strony), piąty: opis karty bocznej.
+        $items = [['Nasze szkolenia', '/'.$catalog->slug, null, true, 'Szkolenia, terminy i zapisy w jednym miejscu.']];
 
         foreach ($site->servicesTabs() as $tab) {
-            $items[] = [$tab['label'], '/'.$tab['slug'], null];
+            $items[] = [$tab['label'], '/'.$tab['slug'], null, true, null];
         }
         if ($institutions) {
-            $items[] = ['Dla instytucji', '/'.$institutions->slug, null];
+            $items[] = ['Dla instytucji', '/'.$institutions->slug, null, true, 'Szkolenia i współpraca dla firm i instytucji.'];
         }
-        array_push($items, ['Trenerzy', '/'.$trainers->slug, null], ['Akredytacje i jakość', '/'.$accreditations->slug, null], ['Aktualności', '/aktualnosci', 'news'], ['Kontakt', '/kontakt', null]);
+        array_push($items, ['Trenerzy', '/'.$trainers->slug, null, true, null], ['Akredytacje i jakość', '/'.$accreditations->slug, null, false, null], ['Aktualności', '/aktualnosci', 'news', false, null], ['Kontakt', '/kontakt', null, false, null]);
 
-        foreach ($items as $i => [$label, $url, $module]) {
+        foreach ($items as $i => [$label, $url, $module, $mega, $description]) {
             NavItem::withoutGlobalScopes()->create([
                 'site_id' => $site->id, 'label' => $label, 'url' => $url, 'type' => 'link', 'location' => 'main',
                 'module' => $module, 'is_active' => true, 'order' => $i + 1,
+                'is_mega' => $mega, 'mega_size' => $mega ? 'sm' : 'md', 'description' => $description,
             ]);
         }
 

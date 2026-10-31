@@ -80,4 +80,22 @@ class FeerIsMenuSeederTest extends TestCase
 
         $this->assertSame(0, NavItem::withoutGlobalScopes()->count());
     }
+
+    public function test_pozycje_z_podstronami_to_mega_menu_a_menu_jest_kompaktowe(): void
+    {
+        $this->run_();
+        $catalog = Page::withoutGlobalScopes()->where('site_id', $this->site->id)->where('type', 'training_catalog')->sole();
+        $catalog->forceFill(['is_published' => true])->save();
+        Page::withoutGlobalScopes()->create(['site_id' => $this->site->id, 'parent_id' => $catalog->id, 'title' => 'Szkolenie testowe', 'slug' => 'szkolenie-testowe', 'type' => 'training_offer', 'is_published' => true, 'content' => '', 'type_data' => []]);
+
+        $items = NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->where('location', 'main')->get()->keyBy('label');
+        $this->assertTrue((bool) $items['Nasze szkolenia']->is_mega);
+        $this->assertSame('sm', $items['Nasze szkolenia']->mega_size);
+        $this->assertFalse((bool) $items['Kontakt']->is_mega);
+
+        $html = $this->get('/test-dwa')->assertOk()->getContent();
+        $this->assertStringContainsString('text-sm font-bold uppercase tracking-wide xl:gap-5', $html, 'kompaktowe menu IS');
+        $this->assertStringNotContainsString('text-lg font-bold uppercase tracking-wide xl:gap-6', $html);
+        $this->assertStringContainsString('Szkolenie testowe', $html, 'oferta w panelu mega menu');
+    }
 }
