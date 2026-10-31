@@ -28,6 +28,12 @@ if (! function_exists('site_route')) {
                 return $absolute ? url('/'.$siteSlug) : '/'.$siteSlug;
             }
 
+            // Nie każda trasa ma wariant „site.<nazwa>” (np. materiały edukacyjne). Zamiast wyjątku (500 na całej
+            // witrynie, bo link jest w nagłówku) wracamy do zwykłej trasy głównej witryny.
+            if (! \Illuminate\Support\Facades\Route::has('site.'.$name)) {
+                return route($name, $parameters, $absolute);
+            }
+
             $parameters = is_array($parameters) ? $parameters : [$parameters];
             $parameters = ['siteSlug' => $siteSlug] + $parameters;
 
