@@ -260,8 +260,6 @@ class EventController extends Controller
         $clone->slug = $this->uniqueSlug($clone->title);
         $clone->is_published = false;
         $clone->is_featured = false;
-        $clone->starts_at = null;
-        $clone->ends_at = null;
         $clone->archived_at = null;
         // Klon to nowe, samodzielne wydarzenie — bez powiązania z serią
         $clone->recurrence_type = null;
@@ -274,7 +272,7 @@ class EventController extends Controller
         }
 
         return redirect()->route('admin.wydarzenia.edit', $clone)
-            ->with('status', 'Wydarzenie zostało sklonowane jako "' . $clone->title . '". Jest zapisane jako szkic — uzupełnij termin.');
+            ->with('status', 'Wydarzenie zostało sklonowane jako "' . $clone->title . '". Jest zapisane jako szkic — zmień termin (jest taki sam jak w oryginale).');
     }
 
     /** Wykonuje operację zbiorczą na zaznaczonych wydarzeniach (archiwizacja, przywrócenie, usunięcie). */

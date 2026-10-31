@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-10-31: fix „Klonuj” wydarzenia (500: `starts_at` jest NOT NULL; klon zachowuje termin oryginału); test.
 - 2026-10-31: „Kopiuj do witryny” także dla partnerów (z logo), aktualności (szkic, zdjęcie, tagi) i wydarzeń (szkic, FAQ); wspólny trait `CopiesToSite` i partial `admin/partials/copy-to-site`; seeder szkiców stron dla instytucji w witrynie /szkolenia (`SzkoleniaInstitutionPagesSeeder`); testy.
 - 2026-10-31: fix 500 w witrynie z prefiksem ścieżki (`/szkolenia`): `site_route()` wraca do zwykłej trasy, gdy nie ma wariantu `site.<nazwa>` (np. `materials.index`); test `SiteRouteFallbackTest`.
 - 2026-10-31: uniwersalna rama `<x-proj-frame>` (płaska jasnoszara jak wiersze listy działań) na stronie działania; Beneficjent = „Ty lub osoba, która korzysta z działania”; seeder przepisujący stronę o odpłatnej działalności.
@@ -22,4 +23,3 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 - 2026-10-30: poprawione teksty domyślne „Dołącz do nas” i „Wesprzyj nas”, wstęp wolontariatu, seeder ofert wolontariatu.
 - 2026-10-30: misja w haśle O nas podkreślona grubą linią w kolorze marki (część po „by”), oba warianty nagłówka.
 - 2026-10-30: O nas: wartości w pełnym rzędzie; sekcja dokumentów z ramką BIP u góry, pliki w dwóch kolumnach; seeder wyłączający dane organizacji (KRS, NIP, konto).
-- 2026-10-30: seedery poprawionych tekstów: „Dlaczego to robimy” w działaniach, partnerstwo, meta wsparcia NGO; FAQ, odpłatna działalność pożytku publicznego, podpowiedzi formularza wsparcia.

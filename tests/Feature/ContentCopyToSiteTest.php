@@ -96,4 +96,18 @@ class ContentCopyToSiteTest extends TestCase
             ->assertSessionHas('error');
         $this->assertSame(0, Partner::withoutGlobalScopes()->where('site_id', $this->sub->id)->count());
     }
+
+    public function test_klonowanie_wydarzenia_tworzy_szkic_z_terminem_oryginalu(): void
+    {
+        $event = Event::withoutGlobalScopes()->create([
+            'site_id' => $this->main->id, 'title' => 'Warsztat', 'slug' => 'warsztat', 'lead' => 'Opis',
+            'is_published' => true, 'starts_at' => now()->addWeek(), 'ends_at' => now()->addWeek()->addHours(2),
+        ]);
+
+        $this->actingAs($this->admin())->post(route('admin.wydarzenia.klonuj', $event))->assertRedirect();
+
+        $clone = Event::withoutGlobalScopes()->where('title', 'Warsztat (kopia)')->sole();
+        $this->assertFalse((bool) $clone->is_published);
+        $this->assertTrue($clone->starts_at->equalTo($event->starts_at));
+    }
 }
