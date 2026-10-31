@@ -283,6 +283,17 @@ class SiteSetting extends Model implements HasMedia
         return $this->themeVariant() === 'feer_is' ? 'Nasze szkolenia' : 'Nasze działania';
     }
 
+    /**
+     * Moduły zbędne w witrynie instytucji szkoleniowej (motyw FEER IS): działania (zastąpione ofertą szkoleń), praca,
+     * wolontariat, ankiety, mapa pomocy, strategia, pełnomocnictwa, oś czasu, sprawozdania, landing page, BIP,
+     * materiały edukacyjne i galeria. Zostają m.in. podstrony, aktualności, formularze, slajder, wydarzenia, szkolenia,
+     * FAQ, partnerzy i wsparcie. Stosuje FeerIsModulesSeeder; potem można je włączać z powrotem w Ustawienia → Moduły.
+     */
+    public const FEER_IS_DISABLED_MODULES = [
+        'projects', 'jobs', 'volunteering', 'polls', 'help_map', 'strategy', 'authorizations',
+        'timeline', 'reports', 'landing', 'bip', 'materials', 'gallery',
+    ];
+
     /** Wariant motywu: `feer_is` tylko przy szablonie FEER, w pozostałych przypadkach `default`. */
     public function themeVariant(): string
     {
@@ -2048,6 +2059,12 @@ class SiteSetting extends Model implements HasMedia
 
     public function isModuleEnabled(string $module): bool
     {
+        // Motyw FEER IS: moduły wyłączone dla tej witryny (FeerIsModulesSeeder / Ustawienia → Moduły) są wyłączone także
+        // wtedy, gdy to moduły zarządzane globalnie (praca, wolontariat, BIP, materiały…).
+        if ($this->themeVariant() === 'feer_is' && in_array($module, $this->disabled_modules ?? [], true)) {
+            return false;
+        }
+
         $manager = app(\App\Modules\ModuleManager::class);
         if ($manager->get($module) !== null) {
             return $manager->isActive($module);

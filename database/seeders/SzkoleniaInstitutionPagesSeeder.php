@@ -28,7 +28,7 @@ class SzkoleniaInstitutionPagesSeeder extends Seeder
         // Witryna docelowa: zmienna środowiskowa SITE_SLUG z wiersza poleceń, domyślnie „szkolenia”.
         $slug = trim((string) (getenv('SITE_SLUG') ?: ($_SERVER['SITE_SLUG'] ?? ''))) ?: 'szkolenia';
 
-        $site = SiteSetting::query()->notTrashed()->where('slug', $slug)->first();
+        $site = SiteSetting::query()->notTrashed()->where(fn ($q) => $q->where('slug', $slug)->orWhere('site_name', $slug))->first();
 
         if (! $site) {
             $this->command?->warn('Pominięto: brak witryny o slugu „'.$slug.'”.');

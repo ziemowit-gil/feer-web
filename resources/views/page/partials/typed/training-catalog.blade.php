@@ -8,7 +8,13 @@
     $offers = $page->publishedChildren()->get()->where('type', 'training_offer')->values();
     $categories = $offers->map(fn ($o) => $o->typeData()['category'] ?? null)->filter()->unique()->sort()->values();
     $activeCategory = (string) request('kategoria', '');
-    $visible = $activeCategory === '' ? $offers : $offers->filter(fn ($o) => ($o->typeData()['category'] ?? null) === $activeCategory)->values();
+    $activeMode = array_key_exists((string) request('forma', ''), $modeLabels) ? (string) request('forma') : '';
+    $visible = $offers
+        ->when($activeCategory !== '', fn ($c) => $c->filter(fn ($o) => ($o->typeData()['category'] ?? null) === $activeCategory))
+        ->when($activeMode !== '', fn ($c) => $c->filter(fn ($o) => ($o->typeData()['mode'] ?? null) === $activeMode))
+        ->values();
+    $presentModes = $offers->map(fn ($o) => $o->typeData()['mode'] ?? null)->filter()->unique()->values();
+    $filterUrl = fn (string $category, string $mode) => $page->publicUrl().(($category !== '' || $mode !== '') ? '?'.http_build_query(array_filter(['kategoria' => $category, 'forma' => $mode], fn ($v) => $v !== '')) : '');
 
     $featured = $offers->filter(fn ($o) => ($o->typeData()['featured'] ?? '0') == '1')->values();
     $slides = ($td['show_slider'] ?? '1') == '1'
@@ -27,18 +33,32 @@
     @include('page.partials.typed._head', ['print' => false])
     @include('partials.page-content-image')
 
+    @php $chip = 'inline-flex min-h-10 items-center rounded-md px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark'; @endphp
     @if ($categories->count() > 1)
-        <nav aria-label="Kategorie szkoleń" class="mb-8 flex flex-wrap gap-2">
-            @php $chip = 'inline-flex min-h-10 items-center rounded-md px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark'; @endphp
-            <a href="{{ $page->publicUrl() }}" @if ($activeCategory === '') aria-current="true" @endif class="{{ $chip }} {{ $activeCategory === '' ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-brand-light' }}">Wszystkie</a>
-            @foreach ($categories as $cat)
-                <a href="{{ $page->publicUrl() }}?kategoria={{ urlencode($cat) }}" @if ($activeCategory === $cat) aria-current="true" @endif class="{{ $chip }} {{ $activeCategory === $cat ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-brand-light' }}">{{ $cat }}</a>
-            @endforeach
+        <nav aria-labelledby="tc-cat-label" class="mb-6">
+            <p id="tc-cat-label" class="mb-2 text-sm font-bold text-ink">Kategoria</p>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ $filterUrl('', $activeMode) }}" @if ($activeCategory === '') aria-current="true" @endif class="{{ $chip }} {{ $activeCategory === '' ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-brand-light' }}">Wszystkie</a>
+                @foreach ($categories as $cat)
+                    <a href="{{ $filterUrl($cat, $activeMode) }}" @if ($activeCategory === $cat) aria-current="true" @endif class="{{ $chip }} {{ $activeCategory === $cat ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-brand-light' }}">{{ $cat }}</a>
+                @endforeach
+            </div>
+        </nav>
+    @endif
+    @if ($presentModes->count() > 1)
+        <nav aria-labelledby="tc-mode-label" class="mb-8">
+            <p id="tc-mode-label" class="mb-2 text-sm font-bold text-ink">Forma</p>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ $filterUrl($activeCategory, '') }}" @if ($activeMode === '') aria-current="true" @endif class="{{ $chip }} {{ $activeMode === '' ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-brand-light' }}">Każda</a>
+                @foreach ($presentModes as $mode)
+                    <a href="{{ $filterUrl($activeCategory, $mode) }}" @if ($activeMode === $mode) aria-current="true" @endif class="{{ $chip }} {{ $activeMode === $mode ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-brand-light' }}">{{ $modeLabels[$mode] }}</a>
+                @endforeach
+            </div>
         </nav>
     @endif
 
     @if ($visible->isEmpty())
-        <p class="rounded-md bg-gray-50 p-6 text-ink">Nie ma jeszcze szkoleń w tej kategorii. Zajrzyj tu wkrótce.</p>
+        <p class="rounded-md bg-gray-50 p-6 text-center text-ink">Nie znaleźliśmy szkoleń dla wybranych filtrów. <a href="{{ $page->publicUrl() }}" class="font-bold text-brand-dark underline underline-offset-4">Pokaż wszystkie</a>.</p>
     @else
         <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
             @foreach ($visible as $offer)

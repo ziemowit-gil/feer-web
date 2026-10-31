@@ -114,7 +114,7 @@ class PageTypeRegistryTest extends TestCase
 
         $listKeys = PageTypeRegistry::listKeys();
         sort($listKeys);
-        $this->assertSame(['accreditations', 'audience', 'benefits', 'bonus', 'consultants', 'criteria', 'docs', 'editions', 'members', 'notices', 'outcomes', 'partner_groups', 'partners', 'price_rows', 'program', 'qualifications', 'quality_stats', 'rec_faq', 'requirements', 'results', 'slots', 'specializations', 'steps', 'terms', 'trainers', 'tt_program', 'versions'], $listKeys);
+        $this->assertSame(['accreditations', 'audience', 'benefits', 'bonus', 'consultants', 'criteria', 'docs', 'editions', 'faq', 'members', 'notices', 'outcomes', 'partner_groups', 'partners', 'price_rows', 'program', 'qualifications', 'quality_stats', 'rec_faq', 'requirements', 'results', 'slots', 'specializations', 'steps', 'terms', 'testimonials', 'trainers', 'tt_program', 'versions'], $listKeys);
 
         // Każdy typ `type_data` ma widok publiczny i sekcję pól w panelu, które istnieją.
         foreach (PageTypeRegistry::all() as $key => $type) {

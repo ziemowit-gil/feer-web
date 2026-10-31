@@ -26,6 +26,24 @@
         <div><label for="td-to-price-note" class="{{ $lbl }}">Uwaga do ceny</label><input type="text" id="td-to-price-note" name="type_data[price_note]" value="{{ $td['price_note'] ?? '' }}" placeholder="np. cena zawiera materiały" class="{{ $inp }}"></div>
     </div>
 
+    <div class="grid gap-3 sm:grid-cols-3">
+        <div><label for="td-to-level" class="{{ $lbl }}">Poziom</label><input type="text" id="td-to-level" name="type_data[level]" value="{{ $td['level'] ?? '' }}" placeholder="np. podstawowy" class="{{ $inp }}"></div>
+        <div><label for="td-to-language" class="{{ $lbl }}">Język szkolenia</label><input type="text" id="td-to-language" name="type_data[language]" value="{{ $td['language'] ?? '' }}" placeholder="np. polski, PJM" class="{{ $inp }}"></div>
+        <div><label for="td-to-funding" class="{{ $lbl }}">Dofinansowanie</label><input type="text" id="td-to-funding" name="type_data[funding]" value="{{ $td['funding'] ?? '' }}" placeholder="np. możliwe z BUR i KFS" class="{{ $inp }}"></div>
+    </div>
+
+    <div class="rounded-md bg-gray-50 p-4 space-y-3">
+        <label class="flex items-start gap-3 text-sm text-ink">
+            <input type="hidden" name="type_data[closed_available]" value="0">
+            <input type="checkbox" name="type_data[closed_available]" value="1" class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(($td['closed_available'] ?? '0') == '1')>
+            <span><span class="font-bold">Możliwe szkolenie zamknięte</span> <span class="block text-ink">Na zamówienie dla instytucji lub firmy: na stronie pojawia się dodatkowy przycisk zapytania.</span></span>
+        </label>
+        <div class="grid gap-3 sm:grid-cols-2">
+            <div><label for="td-to-closed-label" class="{{ $lbl }}">Przycisk zapytania — napis</label><input type="text" id="td-to-closed-label" name="type_data[closed_label]" value="{{ $td['closed_label'] ?? '' }}" placeholder="Zapytaj o szkolenie dla Twojej instytucji" class="{{ $inp }}"></div>
+            <div><label for="td-to-closed-url" class="{{ $lbl }}">Przycisk zapytania — adres</label><input type="text" id="td-to-closed-url" name="type_data[closed_url]" value="{{ $td['closed_url'] ?? '' }}" placeholder="/kontakt" class="{{ $inp }}"></div>
+        </div>
+    </div>
+
     <label class="flex items-start gap-3 text-sm text-ink">
         <input type="hidden" name="type_data[featured]" value="0">
         <input type="checkbox" name="type_data[featured]" value="1" class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(($td['featured'] ?? '0') == '1')>
@@ -143,6 +161,46 @@
         </template>
     </div>
 
+    <div class="{{ $box }}" data-td-repeater>
+        <p class="text-xs font-bold uppercase text-muted">Opinie uczestników</p>
+        <div data-td-rows class="space-y-2">
+            @foreach ($tdRows('testimonials') as $i => $row)
+                <div data-td-row class="grid gap-2 sm:grid-cols-[2fr_1fr_auto]">
+                    <textarea name="type_data[testimonials][{{ $i }}][text]" rows="2" placeholder="Treść opinii" aria-label="Treść opinii" class="{{ $inp }}">{{ $row['text'] ?? '' }}</textarea>
+                    <input type="text" name="type_data[testimonials][{{ $i }}][author]" value="{{ $row['author'] ?? '' }}" placeholder="Autor (np. Anna, uczestniczka)" aria-label="Autor" class="{{ $inp }}">
+                    <button type="button" data-td-remove class="{{ $rmBtn }}" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                </div>
+            @endforeach
+        </div>
+        <button type="button" data-td-add class="{{ $addBtn }}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj opinię</button>
+        <template data-td-template>
+            <div data-td-row class="grid gap-2 sm:grid-cols-[2fr_1fr_auto]">
+                    <textarea name="type_data[testimonials][__INDEX__][text]" rows="2" placeholder="Treść opinii" aria-label="Treść opinii" class="{{ $inp }}"></textarea>
+                    <input type="text" name="type_data[testimonials][__INDEX__][author]" value="" placeholder="Autor (np. Anna, uczestniczka)" aria-label="Autor" class="{{ $inp }}">
+                <button type="button" data-td-remove class="{{ $rmBtn }}" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+            </div>
+        </template>
+    </div>
+    <div class="{{ $box }}" data-td-repeater>
+        <p class="text-xs font-bold uppercase text-muted">Najczęstsze pytania</p>
+        <div data-td-rows class="space-y-2">
+            @foreach ($tdRows('faq') as $i => $row)
+                <div data-td-row class="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
+                    <input type="text" name="type_data[faq][{{ $i }}][question]" value="{{ $row['question'] ?? '' }}" placeholder="Pytanie" aria-label="Pytanie" class="{{ $inp }}">
+                    <textarea name="type_data[faq][{{ $i }}][answer]" rows="2" placeholder="Odpowiedź" aria-label="Odpowiedź" class="{{ $inp }}">{{ $row['answer'] ?? '' }}</textarea>
+                    <button type="button" data-td-remove class="{{ $rmBtn }}" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                </div>
+            @endforeach
+        </div>
+        <button type="button" data-td-add class="{{ $addBtn }}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pytanie</button>
+        <template data-td-template>
+            <div data-td-row class="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
+                    <input type="text" name="type_data[faq][__INDEX__][question]" value="" placeholder="Pytanie" aria-label="Pytanie" class="{{ $inp }}">
+                    <textarea name="type_data[faq][__INDEX__][answer]" rows="2" placeholder="Odpowiedź" aria-label="Odpowiedź" class="{{ $inp }}"></textarea>
+                <button type="button" data-td-remove class="{{ $rmBtn }}" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+            </div>
+        </template>
+    </div>
     <div class="grid gap-3 sm:grid-cols-2">
         <div><label for="td-to-cta-label" class="{{ $lbl }}">Przycisk zapisów — etykieta</label><input type="text" id="td-to-cta-label" name="type_data[cta_label]" value="{{ $td['cta_label'] ?? '' }}" placeholder="np. Zapisz się" class="{{ $inp }}"></div>
         <div><label for="td-to-cta-url" class="{{ $lbl }}">Przycisk zapisów — adres</label><input type="text" id="td-to-cta-url" name="type_data[cta_url]" value="{{ $td['cta_url'] ?? '' }}" placeholder="/formularz/zapisy" class="{{ $inp }}"></div>

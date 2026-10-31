@@ -147,4 +147,36 @@ class TrainingPageTypesTest extends TestCase
         $this->assertSame('Nasze szkolenia', $this->sub->projectsLabel());
         $this->assertSame('Nasze działania', $this->main->projectsLabel());
     }
+
+    public function test_oferta_pokazuje_poziom_dofinansowanie_szkolenie_zamkniete_opinie_faq_i_powiazane(): void
+    {
+        $this->page('glowne', 'training_offer', [
+            'category' => 'Dostępność', 'level' => 'podstawowy', 'language' => 'polski, PJM', 'funding' => 'możliwe z BUR',
+            'closed_available' => '1', 'closed_label' => 'Zapytaj o szkolenie zamknięte', 'closed_url' => '/kontakt',
+            'testimonials' => [['text' => 'Świetne zajęcia', 'author' => 'Anna']],
+            'faq' => [['question' => 'Czy dostanę certyfikat?', 'answer' => 'Tak, zaświadczenie.']],
+        ], ['title' => 'Szkolenie główne']);
+        $this->page('pokrewne', 'training_offer', ['category' => 'Dostępność', 'duration' => '4 godziny'], ['title' => 'Szkolenie pokrewne']);
+        $this->page('inne', 'training_offer', ['category' => 'Komputer'], ['title' => 'Szkolenie obce']);
+
+        $html = $this->get('/szkolenia/glowne')->assertOk()
+            ->assertSee('podstawowy')->assertSee('polski, PJM')->assertSee('możliwe z BUR')
+            ->assertSee('Zapytaj o szkolenie zamknięte')->assertSee('Świetne zajęcia')->assertSee('Anna')
+            ->assertSee('Czy dostanę certyfikat?')->assertSee('Zobacz także')->assertSee('Szkolenie pokrewne')->assertDontSee('Szkolenie obce')
+            ->getContent();
+
+        $this->assertStringContainsString('"@type":"FAQPage"', $html);
+        $this->assertStringContainsString('href="/szkolenia/kontakt"', $html);
+    }
+
+    public function test_katalog_ma_filtr_formy_obok_kategorii(): void
+    {
+        $catalog = $this->page('katalog', 'training_catalog');
+        $this->page('stac', 'training_offer', ['mode' => 'stationary', 'category' => 'A'], ['parent_id' => $catalog->id, 'title' => 'Zajęcia stacjonarne']);
+        $this->page('onl', 'training_offer', ['mode' => 'online', 'category' => 'A'], ['parent_id' => $catalog->id, 'title' => 'Zajęcia zdalne']);
+
+        $all = $this->get('/szkolenia/katalog')->assertOk()->assertSee('Forma')->assertSee('Zajęcia stacjonarne')->assertSee('Zajęcia zdalne');
+        $online = $this->get('/szkolenia/katalog?forma=online')->assertOk()->assertSee('Zajęcia zdalne')->assertDontSee('Zajęcia stacjonarne');
+        $this->get('/szkolenia/katalog?forma=online&kategoria=Brak')->assertOk()->assertSee('Nie znaleźliśmy szkoleń dla wybranych filtrów');
+    }
 }

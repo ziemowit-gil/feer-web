@@ -54,6 +54,18 @@ class TrainingOffer extends PageType
             'type_data.certificate' => ['nullable', 'string', 'max:200'],
             'type_data.prerequisites' => ['nullable', 'string', 'max:2000'],
             'type_data.featured' => ['nullable', 'boolean'],
+            'type_data.level' => ['nullable', 'string', 'max:60'],
+            'type_data.language' => ['nullable', 'string', 'max:80'],
+            'type_data.funding' => ['nullable', 'string', 'max:300'],
+            'type_data.closed_available' => ['nullable', 'boolean'],
+            'type_data.closed_label' => ['nullable', 'string', 'max:80'],
+            'type_data.closed_url' => ['nullable', 'string', 'max:300'],
+            'type_data.faq' => ['nullable', 'array'],
+            'type_data.faq.*.question' => ['nullable', 'string', 'max:300'],
+            'type_data.faq.*.answer' => ['nullable', 'string', 'max:2000'],
+            'type_data.testimonials' => ['nullable', 'array'],
+            'type_data.testimonials.*.text' => ['nullable', 'string', 'max:600'],
+            'type_data.testimonials.*.author' => ['nullable', 'string', 'max:120'],
             'type_data.outcomes' => ['nullable', 'array'],
             'type_data.outcomes.*.text' => ['nullable', 'string', 'max:300'],
             'type_data.program' => ['nullable', 'array'],
@@ -74,7 +86,7 @@ class TrainingOffer extends PageType
 
     public function listKeys(): array
     {
-        return ['audience', 'outcomes', 'program', 'trainers', 'editions'];
+        return ['audience', 'outcomes', 'program', 'trainers', 'editions', 'faq', 'testimonials'];
     }
 
     public function frontView(): ?string
