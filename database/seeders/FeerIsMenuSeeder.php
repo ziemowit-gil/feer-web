@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\File;
  *
  * Nowe menu (mega menu z kolumnami z podstron wskazanych stron; w motywie FEER IS menu jest kompaktowe, w jednym rzędzie):
  * Nasze szkolenia (katalog, podmenu z opublikowanych szkoleń), po jednej pozycji na zakładkę odbiorców
- * z ustawień FEER IS, Dla instytucji, Trenerzy, Akredytacje i jakość, Aktualności, Kontakt. Brakujące strony
+ * z ustawień FEER IS, Dla instytucji, Trenerzy, O instytucji (podstrony: Akredytacje i jakość, Regulamin szkoleń, Cennik szkoleń), Aktualności, Kontakt. Brakujące strony
  * (katalog, trenerzy, akredytacje) powstają jako szkice; pozycje do stron niepublikowanych działają po publikacji.
  *
  *   SITE_SLUG=test2 php artisan db:seed --class=FeerIsMenuSeeder --force   (slug albo nazwa witryny; domyślnie „szkolenia”)
@@ -47,7 +47,16 @@ class FeerIsMenuSeeder extends Seeder
 
         $catalog = $this->page($site, 'Katalog szkoleń', 'training_catalog');
         $trainers = $this->page($site, 'Trenerzy', 'standard', '<p>[podstrony]</p>');
-        $accreditations = $this->page($site, 'Akredytacje i jakość', 'training_accreditations');
+
+        // „O instytucji szkoleniowej” (typ „Instytucja szkoleniowa”; dane RIS i BUR uzupełnia redakcja) z podstronami:
+        // akredytacje i jakość, regulamin szkoleń, cennik. Podstrony trafiają pod tę stronę tylko wtedy, gdy nie mają rodzica.
+        $about = $this->page($site, 'O instytucji szkoleniowej', 'training_institution', '<p>[podstrony]</p>');
+        foreach ([['Akredytacje i jakość', 'training_accreditations'], ['Regulamin szkoleń', 'regulation'], ['Cennik szkoleń', 'pricing']] as $order => [$title, $type]) {
+            $child = $this->page($site, $title, $type);
+            if (! $child->parent_id) {
+                $child->forceFill(['parent_id' => $about->id, 'order' => $order + 1])->save();
+            }
+        }
         $institutions = Page::withoutGlobalScopes()->where('site_id', $site->id)->where('title', 'Dla instytucji i firm szkoleniowych')->first();
 
         // Trzeci element: moduł menu, czwarty: mega menu (kolumny z podstron wskazanej strony), piąty: opis karty bocznej.
@@ -59,7 +68,7 @@ class FeerIsMenuSeeder extends Seeder
         if ($institutions) {
             $items[] = ['Dla instytucji', '/'.$institutions->slug, null, true, 'Szkolenia i współpraca dla firm i instytucji.'];
         }
-        array_push($items, ['Trenerzy', '/'.$trainers->slug, null, true, null], ['Akredytacje i jakość', '/'.$accreditations->slug, null, false, null], ['Aktualności', '/aktualnosci', 'news', false, null], ['Kontakt', '/kontakt', null, false, null]);
+        array_push($items, ['Trenerzy', '/'.$trainers->slug, null, true, null], ['O instytucji', '/'.$about->slug, null, true, 'Kim jesteśmy, akredytacje, regulamin i cennik szkoleń.'], ['Aktualności', '/aktualnosci', 'news', false, null], ['Kontakt', '/kontakt', null, false, null]);
 
         foreach ($items as $i => [$label, $url, $module, $mega, $description]) {
             NavItem::withoutGlobalScopes()->create([

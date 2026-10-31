@@ -53,7 +53,12 @@ class FeerIsMenuSeederTest extends TestCase
         $this->run_();
 
         $labels = NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->where('location', 'main')->orderBy('order')->pluck('label')->all();
-        $this->assertSame(['Nasze szkolenia', 'Dla osób', 'Dla instytucji szkoleniowych', 'Dla instytucji', 'Trenerzy', 'Akredytacje i jakość', 'Aktualności', 'Kontakt'], $labels);
+        $this->assertSame(['Nasze szkolenia', 'Dla osób', 'Dla instytucji szkoleniowych', 'Dla instytucji', 'Trenerzy', 'O instytucji', 'Aktualności', 'Kontakt'], $labels);
+
+        $about = Page::withoutGlobalScopes()->where('site_id', $this->site->id)->where('title', 'O instytucji szkoleniowej')->sole();
+        $this->assertSame('training_institution', $about->type);
+        $children = Page::withoutGlobalScopes()->where('parent_id', $about->id)->orderBy('order')->pluck('title')->all();
+        $this->assertSame(['Akredytacje i jakość', 'Regulamin szkoleń', 'Cennik szkoleń'], $children);
         $this->assertNotNull($footer->fresh(), 'stopka zostaje');
 
         $backups = File::files(storage_path('app/menu-backups'));
@@ -62,6 +67,7 @@ class FeerIsMenuSeederTest extends TestCase
 
         $this->assertSame(1, Page::withoutGlobalScopes()->where('site_id', $this->site->id)->where('type', 'training_catalog')->count());
         $this->assertSame(1, Page::withoutGlobalScopes()->where('site_id', $this->site->id)->where('title', 'Trenerzy')->count());
+        $this->assertSame(1, Page::withoutGlobalScopes()->where('site_id', $this->site->id)->where('type', 'training_accreditations')->count());
     }
 
     public function test_powtorne_uruchomienie_nie_dubluje_pozycji_ani_stron(): void

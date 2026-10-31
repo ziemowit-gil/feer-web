@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-11-01: `FeerIsMenuSeeder`: pozycja „O instytucji” (strona „O instytucji szkoleniowej”, typ `training_institution`) z podstronami Akredytacje i jakość, Regulamin szkoleń, Cennik szkoleń (mega menu); test.
 - 2026-11-01: menu IS: pozycje z podstronami jako mega menu (`FeerIsMenuSeeder`), menu kompaktowe w motywie FEER IS (`navCompact` w `main-nav-items`, jeden rząd); test.
 - 2026-11-01: `FeerIsMenuSeeder`: przebudowuje menu główne witryny IS także gdy już ma menu (kopia starego w `storage/app/menu-backups`, pozycje z zakładek odbiorców, Trenerzy, Akredytacje); `SITE_SLUG` = slug albo nazwa; test.
 - 2026-11-01: oferta szkoleniowa (`training_offer`): poziom, język, dofinansowanie, szkolenie zamknięte (przycisk zapytania), opinie, FAQ (+ FAQPage JSON-LD), „Zobacz także”; katalog z filtrem „Forma”; FEER IS: `FeerIsModulesSeeder` wyłącza niepotrzebne moduły (`SiteSetting::FEER_IS_DISABLED_MODULES`, także globalne praca/wolontariat/BIP/materiały — tylko w witrynie IS); seedery IS biorą `SITE_SLUG` (slug albo nazwa, np. test2); testy.
@@ -22,4 +23,3 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 - 2026-10-31: przepisany system witryn: jeden middleware `ResolveCurrentSite` (domena albo prefiks `/{slug}` jak podkatalog), bez tras `site.*`/`/site/{slug}`, `site_route()` = `route()`; wszystkie trasy publiczne działają pod prefiksem; stary `/site/{slug}` → 301; rezerwacja slugów z tras; testy `SiteAddressingTest`. Po wdrożeniu `route:clear`.
 - 2026-10-31: podgląd i „Zobacz na stronie” w panelu liczone według witryny rekordu (własna domena / prefiks): trait `BuildsSitePublicUrls`, `previewUrl()` i `publicUrl()` (strony, aktualności, działania); wcześniej treść witryny w sieci dawała 404 na witrynie głównej; test w `PageSiteSharingTest`.
 - 2026-10-31: skrzynki w panelu osobne per witryna: zgłoszenia formularzy, wiadomości kontaktowe i zapisy na materiały mają `site_id` (migracja `add_site_id_to_inbox_tables`, stare wpisy → witryna główna; e-mail zapisu na materiały unikalny per witryna); liczniki w menu i na pulpicie; test `InboxSiteScopingTest`.
-- 2026-10-31: audyt panelu pod kątem witryn w sieci: pulpit, kalendarz, statystyki wydarzeń, menu (liczniki, kolejność, „Wyczyść kolory”), oś czasu, wstawki edytora, lista partnerów w edytorze strony i „Jakość tekstów” liczą/zmieniają tylko aktywną witrynę (`forCurrentSite()`); test `AdminSiteScopingTest`.
