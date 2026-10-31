@@ -94,7 +94,7 @@ class FormDefinition extends Model
 
     public function unreadSubmissions(): HasMany
     {
-        return $this->hasMany(FormSubmission::class)->whereNull('read_at');
+        return $this->hasMany(FormSubmission::class)->whereNull('read_at')->forCurrentSite();
     }
 
     /** Normalizuje pola: generuje klucze ze słownikową de-duplikacją. */

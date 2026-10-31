@@ -3315,7 +3315,7 @@
             {{-- Stan integracji: skąd konfiguracja, zaległe wysyłki, co korzysta z SZO --}}
             @php
                 $szoActive = app(\App\Services\SzoClient::class)->enabled();
-                $szoFailedSubs = \App\Models\FormSubmission::query()->pendingSzo()->whereNotNull('szo_error')->count();
+                $szoFailedSubs = \App\Models\FormSubmission::query()->forCurrentSite()->pendingSzo()->whereNotNull('szo_error')->count();
                 $szoPendingDonations = \Illuminate\Support\Facades\Schema::hasTable('donations') ? \App\Models\Donation::query()->pendingSzo()->count() : 0;
                 $szoLinkedForms = \App\Models\FormDefinition::query()->get(['id', 'title', 'settings'])
                     ->filter(fn ($f) => filled($f->settings['szo_form_slug'] ?? null));

@@ -14,7 +14,7 @@ class ContactMessageController extends Controller
     {
         $filter = $request->query('filtr', 'wszystkie');
 
-        $query = ContactMessage::latest();
+        $query = ContactMessage::forCurrentSite()->latest();
 
         if ($filter === 'nieprzeczytane') {
             $query->unread();
@@ -40,7 +40,7 @@ class ContactMessageController extends Controller
     {
         $filter = $request->input('filtr', 'wszystkie');
 
-        $query = ContactMessage::query();
+        $query = ContactMessage::forCurrentSite();
         if ($filter === 'nieprzeczytane') {
             $query->unread();
         } elseif ($filter === 'przeczytane') {

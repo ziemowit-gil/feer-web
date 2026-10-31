@@ -144,7 +144,7 @@ final class AdminMenu
                 $this->can('podcasts') ? $this->item('podcasts', 'Podcasty', 'admin.podcasty.index', 'fa-podcast', active: 'admin.podcasty.*') : null,
                 $this->can('forms') ? $this->item('forms', 'Formularze', 'admin.formularze.index', 'fa-wpforms',
                     active: 'admin.formularze.*',
-                    badge: fn () => FormSubmission::whereNull('read_at')->count()) : null,
+                    badge: fn () => FormSubmission::forCurrentSite()->whereNull('read_at')->count()) : null,
                 $this->can('materials') ? $this->item('materials', 'Materiały edukacyjne', 'admin.materialy-edukacyjne.index', 'fa-graduation-cap',
                     active: ['admin.materialy-edukacyjne.*', 'admin.zapisy-materialy.*'],
                     children: [
@@ -584,7 +584,7 @@ final class AdminMenu
     {
         try {
             $form = FormDefinition::where('slug', ContactForm::SLUG)->first(['id']);
-            $hasArchive = ContactMessage::query()->exists();
+            $hasArchive = ContactMessage::forCurrentSite()->exists();
         } catch (\Throwable) {
             $form = null;
             $hasArchive = true;

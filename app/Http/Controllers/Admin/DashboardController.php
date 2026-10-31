@@ -188,7 +188,7 @@ class DashboardController extends Controller
             }
         }
         if ($can('forms') && \Illuminate\Support\Facades\Route::has('admin.formularze.index')) {
-            $unread = \App\Models\FormSubmission::whereNull('read_at')->count();
+            $unread = \App\Models\FormSubmission::forCurrentSite()->whereNull('read_at')->count();
             if ($unread > 0) {
                 $attention->push(['label' => 'Nowe zgłoszenia z formularzy', 'count' => $unread, 'url' => route('admin.formularze.index'), 'icon' => 'fa-inbox']);
             }

@@ -90,11 +90,11 @@ class FormularzeController extends Controller
     /** Lista zgłoszeń nadesłanych do formularza. */
     public function zgloszenia(FormDefinition $formularz)
     {
-        $formularz->submissions()
+        $formularz->submissions()->forCurrentSite()
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
-        $submissions = $formularz->submissions()
+        $submissions = $formularz->submissions()->forCurrentSite()
             ->orderByDesc('created_at')
             ->paginate(50);
 
@@ -108,7 +108,7 @@ class FormularzeController extends Controller
     public function eksportZgloszen(FormDefinition $formularz)
     {
         $fields      = $formularz->inputFields();
-        $submissions = $formularz->submissions()->orderByDesc('created_at')->get();
+        $submissions = $formularz->submissions()->forCurrentSite()->orderByDesc('created_at')->get();
         $filename    = 'formularz-' . $formularz->slug . '-zgloszenia.csv';
 
         return response()->streamDownload(function () use ($fields, $submissions) {

@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FormSubmission extends Model
 {
+    use \App\Models\Concerns\BelongsToSite;
+
     protected $fillable = [
+        'site_id',
         'form_definition_id',
         'data',
         'ip_address',

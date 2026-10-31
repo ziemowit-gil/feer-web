@@ -6,5 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MaterialSubscriber extends Model
 {
-    protected $fillable = ['email'];
+    use \App\Models\Concerns\BelongsToSite;
+
+    protected $fillable = ['site_id', 'email'];
 }

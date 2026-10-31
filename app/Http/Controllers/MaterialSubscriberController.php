@@ -34,7 +34,7 @@ class MaterialSubscriberController extends Controller
 
         // firstOrCreate keeps the list unique and treats a repeat sign-up as a
         // success rather than a "duplicate" error.
-        MaterialSubscriber::firstOrCreate(['email' => $data['email']]);
+        MaterialSubscriber::firstOrCreate(['site_id' => \App\Models\SiteSetting::current()->id, 'email' => $data['email']]);
 
         return redirect()
             ->route('materials.index')

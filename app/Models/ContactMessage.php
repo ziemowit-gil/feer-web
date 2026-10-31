@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class ContactMessage extends Model
 {
+    use \App\Models\Concerns\BelongsToSite;
+
     protected $fillable = [
-        'name', 'email', 'phone', 'subject', 'message', 'ip_address',
+        'site_id', 'name', 'email', 'phone', 'subject', 'message', 'ip_address',
         'email_sent_at', 'coordinator_name', 'coordinator_email', 'read_at', 'replied_at',
     ];
 
@@ -52,6 +54,6 @@ class ContactMessage extends Model
 
     public static function unreadCount(): int
     {
-        return static::unread()->count();
+        return static::forCurrentSite()->unread()->count();
     }
 }

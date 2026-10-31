@@ -19,8 +19,8 @@ class MaterialSubscriberController extends Controller
     public function index()
     {
         return view('admin.material-subscribers.index', [
-            'subscribers' => MaterialSubscriber::latest()->paginate(50),
-            'total' => MaterialSubscriber::count(),
+            'subscribers' => MaterialSubscriber::forCurrentSite()->latest()->paginate(50),
+            'total' => MaterialSubscriber::forCurrentSite()->count(),
         ]);
     }
 
@@ -43,7 +43,7 @@ class MaterialSubscriberController extends Controller
             $handle = fopen('php://output', 'w');
             fputcsv($handle, ['email', 'data zapisu']);
 
-            MaterialSubscriber::orderBy('created_at')->chunk(200, function ($chunk) use ($handle) {
+            MaterialSubscriber::forCurrentSite()->orderBy('created_at')->chunk(200, function ($chunk) use ($handle) {
                 foreach ($chunk as $subscriber) {
                     fputcsv($handle, [$subscriber->email, $subscriber->created_at->format('Y-m-d H:i')]);
                 }
