@@ -1783,8 +1783,11 @@ class SiteSetting extends Model implements HasMedia
 
     protected static function booted(): void
     {
+        static::deleted(fn () => \Illuminate\Support\Facades\Cache::forget(\App\Http\Middleware\ResolveCurrentSite::SLUG_MAP_CACHE_KEY));
+
         static::saved(function (self $site) {
             static::$cached = null;
+            \Illuminate\Support\Facades\Cache::forget(\App\Http\Middleware\ResolveCurrentSite::SLUG_MAP_CACHE_KEY);
             if (app()->bound(self::CURRENT_SITE_BINDING) && app(self::CURRENT_SITE_BINDING)->is($site)) {
                 app()->instance(self::CURRENT_SITE_BINDING, $site);
             }

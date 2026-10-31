@@ -222,7 +222,12 @@ class SiteController extends Controller
 
     private function validated(Request $request, ?SiteSetting $site = null): array
     {
-        $reserved = array_merge(Page::RESERVED_SLUGS, ['site']);
+        // Prefiks witryny to pierwszy segment adresu, więc nie może się zlać z żadną trasą ani panelem.
+        $routeSegments = collect(\Illuminate\Support\Facades\Route::getRoutes()->getRoutes())
+            ->map(fn ($route) => strtolower(explode('/', trim($route->uri(), '/'))[0] ?? ''))
+            ->filter(fn ($segment) => $segment !== '' && ! str_contains($segment, '{'))
+            ->unique()->values()->all();
+        $reserved = array_values(array_unique(array_merge(Page::RESERVED_SLUGS, ['site', (string) config('app.admin_prefix', 'admin')], $routeSegments)));
         // Witryna BIP może mieć adres /bip — pod nim i tak jest pokazywany BIP witryny nadrzędnej.
         if ($request->input('site_kind', $site?->site_kind) === 'bip') {
             $reserved = array_values(array_diff($reserved, ['bip']));

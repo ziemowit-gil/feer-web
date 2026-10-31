@@ -918,77 +918,11 @@ Route::get('/{blogPrefix}/{path?}', \App\Http\Controllers\BlogMovedController::c
     ->name('blog.moved');
 
 // ── Sub-witryny sieci (federacja + Ośrodki) ─────────────────────────────────
-// Ten sam zestaw podstawowych tras publicznych co na głównej witrynie, dostępny
-// pod trzema postaciami adresu: własna domena (zero zmian w routingu — patrz
-// middleware ResolveSiteByDomain), prefiks "/site/{siteSlug}" i „zamaskowana"
-// krótka postać "/{siteSlug}" (bez "site/"). Middleware EnsureSiteBySlug
-// (alias "site.bySlug") rozpoznaje sub-witrynę po slugu z parametru trasy
-// i wiąże jej SiteSetting jako bieżącą (SiteSetting::current()). Linki
-// generowane wewnątrz tego kontekstu powinny użyć helpera site_route()
-// (app/Support/helpers.php), nie route(), żeby zostać w obrębie sub-witryny —
-// on sam decyduje, czy wygenerować adres w postaci "/site/..." czy krótszej.
-//
-// Krótka postać strony głównej ("/{siteSlug}" bez dalszej ścieżki) nie jest
-// osobną trasą — kolidowałaby z uniwersalnym catch-allem stron poniżej.
-// Zamiast tego korzystamy z Route::missing() na catch-allu: gdy żadna
-// podstrona nie pasuje do sluga, sprawdzamy, czy to slug sub-witryny, zanim
-// zwrócimy 404. Głębsze adresy ("/{siteSlug}/aktualnosci" itd.) nie mają tego
-// problemu — żadna istniejąca trasa nie pasuje do dwuczłonowych ścieżek w tym
-// kształcie, więc rejestrujemy je wprost, bez ryzyka przechwycenia czegoś innego.
-$registerSiteContentRoutes = function () {
-    Route::middleware('module:news')->group(function () {
-        Route::get('/aktualnosci', [NewsController::class, 'index'])->name('news.index');
-        Route::get('/aktualnosci/rss.xml', [FeedController::class, 'news'])->name('news.feed');
-        Route::get('/aktualnosci/{news:slug}', [NewsController::class, 'show'])->name('news.show');
-        Route::get('/aktualnosci/{news:slug}/pdf', [NewsController::class, 'pdf'])->name('news.pdf');
-    });
-
-    Route::middleware('module:events')->group(function () {
-        Route::get('/wydarzenia', [EventController::class, 'index'])->name('events.index');
-        Route::get('/wydarzenia/{event:slug}', [EventController::class, 'show'])->name('events.show');
-    });
-
-    Route::get('/kontakt', [ContactController::class, 'index'])->name('contact.show');
-    Route::post('/kontakt', [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,1');
-
-    // BIP sub-witryny — także witryny rodzaju „bip", której stroną główną jest BIP.
-    Route::middleware('module:bip')->group(function () {
-        Route::get('/bip', [BipController::class, 'index'])->name('bip');
-        Route::get('/bip/rejestr-zmian', [BipController::class, 'changeLog'])->name('bip.changelog');
-        Route::get('/bip/instrukcja', [BipController::class, 'instructions'])->name('bip.instructions');
-        Route::get('/bip/{bipSlug}', [BipController::class, 'show'])->name('bip.document');
-    });
-
-    // Catch-all podstron tej sub-witryny — musi zostać ostatni w grupie.
-    Route::get('/{page:slug}', [PageController::class, 'show'])->name('page.show')->middleware('module:pages');
-};
-
-// Nazwana "site-long." (nie "site."), żeby route()/site_route() zawsze
-// generowały krótką, zamaskowaną postać poniżej — ta forma zostaje tylko
-// bezpośrednio osiągalna pod swoim adresem, nigdy jako cel linku.
-Route::name('site-long.')->prefix('site/{siteSlug}')->middleware('site.bySlug')->group(function () use ($registerSiteContentRoutes) {
-    Route::get('/', [HomeController::class, 'index'])->name('home');
-    $registerSiteContentRoutes();
-});
-
-// Krótka, zamaskowana postać — to ona nosi nazwy "site.*" używane przez
-// site_route() do generowania linków wewnątrz sub-witryny.
-Route::name('site.')->prefix('{siteSlug}')->middleware('site.bySlug')->group($registerSiteContentRoutes);
+// Nie mają osobnych tras: witrynę rozpoznaje middleware ResolveCurrentSite po domenie albo po prefiksie ścieżki
+// (/{slug}/…), a router widzi zwykłe trasy witryny głównej (patrz opis w tym middleware).
 
 // Catch-all for top-level pages (e.g. /fundacja instead of /strona/fundacja).
 // Kept last so every more specific route above always wins; a page whose
 // slug collides with one of those is unreachable here, which is why
 // AdminPageController's slug generator treats reserved words as taken.
-Route::get('/{page:slug}', [PageController::class, 'show'])->name('page.show')->middleware('module:pages')
-    ->missing(function (\Illuminate\Http\Request $request) {
-        $slug = trim($request->path(), '/');
-        $site = \App\Models\SiteSetting::query()->notTrashed()->whereNotNull('slug')->where('slug', $slug)->first();
-
-        abort_unless($site, 404);
-
-        app()->instance(\App\Models\SiteSetting::CURRENT_SITE_BINDING, $site);
-        $request->attributes->set('site_path_prefixed', true);
-        $request->attributes->set('site_slug', $slug);
-
-        return response(app(HomeController::class)->index());
-    });
+Route::get('/{page:slug}', [PageController::class, 'show'])->name('page.show')->middleware('module:pages');

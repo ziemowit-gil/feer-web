@@ -3,14 +3,13 @@
 use App\Http\Middleware\EnsureCanManageSites;
 use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureSiteAvailable;
-use App\Http\Middleware\EnsureSiteBySlug;
 use App\Http\Middleware\EnsureTwoFactorSetup;
 use App\Http\Middleware\EnsureUserCanAccessModule;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\HandleRedirects;
 use App\Http\Middleware\MinifyHtmlResponse;
 use App\Http\Middleware\ResolveAdminActiveSite;
-use App\Http\Middleware\ResolveSiteByDomain;
+use App\Http\Middleware\ResolveCurrentSite;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -35,17 +34,15 @@ return Application::configure(basePath: dirname(__DIR__))
             'edition' => \App\Http\Middleware\EnsureEditionAllows::class,
             'module-access' => EnsureUserCanAccessModule::class,
             '2fa' => EnsureTwoFactorSetup::class,
-            'site.bySlug' => EnsureSiteBySlug::class,
             'can-manage-sites' => EnsureCanManageSites::class,
         ]);
 
-        // Rozpoznanie sub-witryny po domenie (np. pokrzywdzeni.krafos.pl) musi
-        // zadziałać zanim ktokolwiek dotknie SiteSetting::current(), dlatego
-        // idzie przed wszystkim innym — także przed HandleRedirects. Jedno
-        // wywołanie z jawną kolejnością, żeby dwa kolejne prepend() się nie
-        // przestawiły względem siebie.
+        // Rozpoznanie witryny (domena albo prefiks ścieżki, patrz ResolveCurrentSite) musi zadziałać PRZED dopasowaniem
+        // trasy, bo przy prefiksie podmienia żądanie (baseUrl), a także zanim ktokolwiek dotknie
+        // SiteSetting::current(). Dlatego jest w stosie globalnym, tuż przed routerem.
+        $middleware->append(ResolveCurrentSite::class);
+
         $middleware->web(prepend: [
-            ResolveSiteByDomain::class,
             HandleRedirects::class,
         ]);
 
@@ -56,19 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ResolveAdminActiveSite::class,
         ]);
 
-        // EnsureSiteBySlug musi zadziałać PRZED SubstituteBindings — inaczej
-        // niejawne wiązanie modelu ({news:slug} itp.) próbuje odpytać
-        // News::forCurrentSite() zanim middleware zdąży podmienić bieżącą
-        // witrynę, i zawsze trafia w witrynę główną zamiast sub-witryny z
-        // adresu. SubstituteBindings jest częścią grupy „web” i domyślnie
-        // wykonuje się przed middleware'em przypisanym wprost do trasy, więc
-        // trzeba to jawnie wymusić priorytetem.
-        $middleware->prependToPriorityList(
-            before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            prepend: EnsureSiteBySlug::class,
-        );
-
-        // To samo dla przełącznika witryny w panelu: ResolveAdminActiveSite musi znać aktywną witrynę (i przełączyć się
+        // ResolveAdminActiveSite (panel) musi znać aktywną witrynę (i przełączyć się
         // na witrynę rekordu z adresu) zanim SubstituteBindings odpyta modele przez forCurrentSite().
         $middleware->prependToPriorityList(
             before: \Illuminate\Routing\Middleware\SubstituteBindings::class,
