@@ -53,7 +53,7 @@ class FeerIsMenuSeederTest extends TestCase
         $this->run_();
 
         $labels = NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->where('location', 'main')->orderBy('order')->pluck('label')->all();
-        $this->assertSame(['Nasze szkolenia', 'Dla osób', 'Dla instytucji szkoleniowych', 'Dla instytucji', 'Trenerzy', 'O instytucji', 'Aktualności', 'Kontakt'], $labels);
+        $this->assertSame(['Nasze szkolenia', 'Dla osób', 'Dla instytucji szkoleniowych', 'Trenerzy', 'O instytucji', 'Aktualności', 'Kontakt'], $labels);
 
         $about = Page::withoutGlobalScopes()->where('site_id', $this->site->id)->where('title', 'O instytucji szkoleniowej')->sole();
         $this->assertSame('training_institution', $about->type);
@@ -75,7 +75,7 @@ class FeerIsMenuSeederTest extends TestCase
         $this->run_();
         $this->run_();
 
-        $this->assertSame(8, NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->where('location', 'main')->count());
+        $this->assertSame(7, NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->where('location', 'main')->count());
         $this->assertSame(1, Page::withoutGlobalScopes()->where('site_id', $this->site->id)->where('type', 'training_accreditations')->count());
     }
 

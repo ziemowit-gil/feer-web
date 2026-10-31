@@ -65,7 +65,9 @@ class FeerIsMenuSeeder extends Seeder
         foreach ($site->servicesTabs() as $tab) {
             $items[] = [$tab['label'], '/'.$tab['slug'], null, true, null];
         }
-        if ($institutions) {
+        // Zakładka „Dla instytucji” (z ustawień FEER IS) już prowadzi do oferty dla instytucji, więc drugiej pozycji nie dodajemy.
+        $hasInstitutionsTab = collect($site->servicesTabs())->contains(fn ($t) => str_starts_with(mb_strtolower($t['label']), 'dla instytucji'));
+        if ($institutions && ! $hasInstitutionsTab) {
             $items[] = ['Dla instytucji', '/'.$institutions->slug, null, true, 'Szkolenia i współpraca dla firm i instytucji.'];
         }
         array_push($items, ['Trenerzy', '/'.$trainers->slug, null, true, null], ['O instytucji', '/'.$about->slug, null, true, 'Kim jesteśmy, akredytacje, regulamin i cennik szkoleń.'], ['Aktualności', '/aktualnosci', 'news', false, null], ['Kontakt', '/kontakt', null, false, null]);
