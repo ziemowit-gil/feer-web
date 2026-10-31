@@ -160,15 +160,15 @@ class TextQualityScanner
     /** @return iterable<array{source: string, title: string, edit_url: string, fields: array<string, ?string>}> */
     private function records(): iterable
     {
-        foreach (Page::query()->where('is_published', true)->get(['id', 'title', 'content', 'about_intro']) as $p) {
+        foreach (Page::forCurrentSite()->where('is_published', true)->get(['id', 'title', 'content', 'about_intro']) as $p) {
             yield ['source' => 'page', 'title' => (string) $p->title, 'edit_url' => route('admin.podstrony.edit', $p),
                 'fields' => ['Tytuł' => $p->title, 'Treść' => $p->content, 'Wstęp' => $p->about_intro]];
         }
-        foreach (News::query()->where('is_published', true)->get(['id', 'title', 'excerpt', 'content']) as $n) {
+        foreach (News::forCurrentSite()->where('is_published', true)->get(['id', 'title', 'excerpt', 'content']) as $n) {
             yield ['source' => 'news', 'title' => (string) $n->title, 'edit_url' => route('admin.newsy.edit', $n),
                 'fields' => ['Tytuł' => $n->title, 'Zajawka' => $n->excerpt, 'Treść' => $n->content]];
         }
-        foreach (Project::query()->where('is_published', true)->get(['id', 'title', 'excerpt', 'content', 'why']) as $p) {
+        foreach (Project::forCurrentSite()->where('is_published', true)->get(['id', 'title', 'excerpt', 'content', 'why']) as $p) {
             yield ['source' => 'project', 'title' => (string) $p->title, 'edit_url' => route('admin.projekty.edit', $p),
                 'fields' => ['Tytuł' => $p->title, 'Zajawka' => $p->excerpt, 'Treść' => $p->content, 'Dlaczego to robimy' => $p->why]];
         }

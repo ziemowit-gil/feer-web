@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-10-31: audyt panelu pod kątem witryn w sieci: pulpit, kalendarz, statystyki wydarzeń, menu (liczniki, kolejność, „Wyczyść kolory”), oś czasu, wstawki edytora, lista partnerów w edytorze strony i „Jakość tekstów” liczą/zmieniają tylko aktywną witrynę (`forCurrentSite()`); test `AdminSiteScopingTest`.
 - 2026-10-31: panel na subwitrynach: `ResolveAdminActiveSite` działa przed `SubstituteBindings` (priorytet w `bootstrap/app.php`) i przełącza na witrynę rekordu z adresu zamiast 404; pasek „Edytujesz: <witryna>” w layoucie panelu (`admin/partials/active-site-bar`); testy.
 - 2026-10-31: ekran wyboru witryny po logowaniu (`/panel/wybor-witryny`, raz na sesję); „Przenieś ustawienia” między witrynami (nagłówek, kolory, moduły; `SiteChooserController`); „Przenieś ustawienia na podstrony” w edytorze strony; „Kopiuj do witryny” także w edytorach stron, aktualności, wydarzeń i partnerów; fix „Klonuj” wydarzenia.
 - 2026-10-31: fix „Klonuj” wydarzenia (500: `starts_at` jest NOT NULL; klon zachowuje termin oryginału); test.
@@ -22,4 +23,3 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 - 2026-10-31: pliki: rodzaj obok tytułu, pobieranie pojedynczego pliku w menedżerze, płaska strona RODO, przełącznik „Lista plików na stronie”.
 - 2026-10-30: seeder poprawionych tekstów podstron weCMS i tytułów działań weCMS / „Dostępność w praktyce”; testy.
 - 2026-10-30: podpis „Misja Fundacji” nad hasłem organizacji w O nas (etykieta edytowalna: `about_labels.motto_label`).
-- 2026-10-30: poprawione teksty domyślne „Dołącz do nas” i „Wesprzyj nas”, wstęp wolontariatu, seeder ofert wolontariatu.

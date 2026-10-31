@@ -52,29 +52,29 @@ class DashboardController extends Controller
         $allStats = [
             'pages' => [
                 'label' => 'Podstrony',
-                'count' => Page::count(),
-                'sub'   => Page::where('is_published', true)->count().' opublikowanych',
+                'count' => Page::forCurrentSite()->count(),
+                'sub'   => Page::forCurrentSite()->where('is_published', true)->count().' opublikowanych',
                 'icon'  => 'fa-file-lines',
                 'route' => route('admin.podstrony.index'),
             ],
             'news' => [
                 'label' => 'Aktualności',
-                'count' => News::count(),
-                'sub'   => News::published()->count().' opublikowanych',
+                'count' => News::forCurrentSite()->count(),
+                'sub'   => News::forCurrentSite()->published()->count().' opublikowanych',
                 'icon'  => 'fa-newspaper',
                 'route' => route('admin.newsy.index'),
             ],
             'events' => [
                 'label' => 'Szkolenia i wydarzenia',
-                'count' => Event::count(),
-                'sub'   => Event::where('is_published', true)->count().' opublikowanych',
+                'count' => Event::forCurrentSite()->count(),
+                'sub'   => Event::forCurrentSite()->where('is_published', true)->count().' opublikowanych',
                 'icon'  => 'fa-calendar-days',
                 'route' => route('admin.wydarzenia.index'),
             ],
             'projects' => [
                 'label' => 'Działania',
-                'count' => Project::count(),
-                'sub'   => Project::where('is_published', true)->count().' opublikowanych',
+                'count' => Project::forCurrentSite()->count(),
+                'sub'   => Project::forCurrentSite()->where('is_published', true)->count().' opublikowanych',
                 'icon'  => 'fa-diagram-project',
                 'route' => route('admin.projekty.index'),
             ],
@@ -115,28 +115,28 @@ class DashboardController extends Controller
             ],
             'gallery' => [
                 'label' => 'Galeria',
-                'count' => GalleryImage::count(),
-                'sub'   => HeroSlide::count().' slajdów hero',
+                'count' => GalleryImage::forCurrentSite()->count(),
+                'sub'   => HeroSlide::forCurrentSite()->count().' slajdów hero',
                 'icon'  => 'fa-panorama',
                 'route' => route('admin.galeria.index'),
             ],
             'polls' => [
                 'label' => 'Ankiety',
-                'count' => Poll::count(),
-                'sub'   => Poll::where('is_active', true)->exists() ? 'jedna aktywna' : 'brak aktywnej',
+                'count' => Poll::forCurrentSite()->count(),
+                'sub'   => Poll::forCurrentSite()->where('is_active', true)->exists() ? 'jedna aktywna' : 'brak aktywnej',
                 'icon'  => 'fa-square-poll-vertical',
                 'route' => route('admin.ankiety.index'),
             ],
             'quick_actions' => [
                 'label' => 'Szybkie akcje',
-                'count' => QuickAction::count(),
+                'count' => QuickAction::forCurrentSite()->count(),
                 'sub'   => '',
                 'icon'  => 'fa-bolt',
                 'route' => route('admin.szybkie-akcje.index'),
             ],
             'partners' => [
                 'label' => 'Partnerzy',
-                'count' => Partner::count(),
+                'count' => Partner::forCurrentSite()->count(),
                 'sub'   => '',
                 'icon'  => 'fa-handshake',
                 'route' => route('admin.partnerzy.index'),
@@ -174,8 +174,8 @@ class DashboardController extends Controller
 
         $can = fn (string $module) => $settings->isModuleEnabled($module) && $user->canAccessModule($module);
 
-        $recentNews  = $can('news')  ? News::with('category')->orderByDesc('created_at')->limit(5)->get() : collect();
-        $recentPages = $can('pages') ? Page::orderByDesc('created_at')->limit(5)->get() : collect();
+        $recentNews  = $can('news')  ? News::forCurrentSite()->with('category')->orderByDesc('created_at')->limit(5)->get() : collect();
+        $recentPages = $can('pages') ? Page::forCurrentSite()->orderByDesc('created_at')->limit(5)->get() : collect();
         $activePoll  = $can('polls') ? Poll::active() : null;
 
         // „Wymaga uwagi": zatwierdzanie, zadania, komentarze, zgłoszenia — z uwzględnieniem uprawnień użytkownika.
@@ -209,15 +209,15 @@ class DashboardController extends Controller
                 continue;
             }
             $model = $src['model'];
-            $draftCount = $model::where('is_published', false)->count();
+            $draftCount = $model::forCurrentSite()->where('is_published', false)->count();
             if ($draftCount > 0) {
                 $draftCounts[] = ['label' => $src['label'], 'count' => $draftCount];
             }
             // Konkretne szkice do dokończenia (najświeższe), z linkiem do edycji.
-            foreach ($model::where('is_published', false)->orderByDesc('updated_at')->limit(6)->get() as $row) {
+            foreach ($model::forCurrentSite()->where('is_published', false)->orderByDesc('updated_at')->limit(6)->get() as $row) {
                 $drafts->push(['label' => $src['label'], 'icon' => $src['icon'], 'title' => $row->title, 'url' => route($src['edit'], $row), 'at' => $row->updated_at]);
             }
-            foreach ($model::orderByDesc('updated_at')->limit(8)->get() as $row) {
+            foreach ($model::forCurrentSite()->orderByDesc('updated_at')->limit(8)->get() as $row) {
                 $activity->push([
                     'type' => $src['module'], 'label' => $src['label'], 'icon' => $src['icon'], 'tone' => $src['tone'],
                     'title' => $row->title, 'url' => route($src['edit'], $row), 'at' => $row->updated_at,
@@ -234,7 +234,7 @@ class DashboardController extends Controller
         });
 
         $upcoming = $can('events')
-            ? Event::where('is_published', true)->where('starts_at', '>=', now())->orderBy('starts_at')->limit(4)->get()
+            ? Event::forCurrentSite()->where('is_published', true)->where('starts_at', '>=', now())->orderBy('starts_at')->limit(4)->get()
             : collect();
 
         return view('admin.dashboard', compact('stats', 'recentNews', 'recentPages', 'activePoll', 'attention', 'activity', 'draftCounts', 'drafts', 'upcoming'));

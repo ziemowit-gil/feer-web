@@ -45,7 +45,7 @@ class NavItemController extends Controller
             // (menu główne). Wykluczenie „samego siebie" odbywa się po stronie
             // klienta na podstawie edytowanego identyfikatora.
             'parentOptions' => $this->parentOptions(null, 'main'),
-            'pages' => Page::orderBy('title')->get(),
+            'pages' => Page::forCurrentSite()->orderBy('title')->get(),
             'pagePicker' => $this->pagePickerTree(),
             'bipDocuments' => BipDocument::published()->forCurrentSite()->orderBy('title')->get(),
             'pageTree' => $this->pageTree($location),
@@ -141,7 +141,7 @@ class NavItemController extends Controller
         ], ['page_ids.required' => 'Zaznacz co najmniej jedną stronę.']);
 
         $parentId = $data['location'] === 'main' ? ($data['parent_id'] ?? null) : null;
-        $order = (int) NavItem::where('location', $data['location'])->where('parent_id', $parentId)->max('order');
+        $order = (int) NavItem::forCurrentSite()->where('location', $data['location'])->where('parent_id', $parentId)->max('order');
         $existing = NavItem::forCurrentSite()->where('location', $data['location'])->pluck('url')
             ->map(fn ($u) => rtrim((string) parse_url((string) $u, PHP_URL_PATH), '/'))->flip();
 
@@ -172,7 +172,7 @@ class NavItemController extends Controller
         return view('admin.nav-items.form', [
             'navItem' => new NavItem(['location' => $location]),
             'parentOptions' => $this->parentOptions(null, $location),
-            'pages' => Page::orderBy('title')->get(),
+            'pages' => Page::forCurrentSite()->orderBy('title')->get(),
             'pagePicker' => $this->pagePickerTree(),
             'bipDocuments' => BipDocument::published()->forCurrentSite()->orderBy('title')->get(),
         ]);
@@ -186,7 +186,7 @@ class NavItemController extends Controller
         // Nowa pozycja bez podanej kolejności trafia na koniec swojej grupy
         // rodzeństwa (rodzic + lokalizacja), żeby nie kolidowała z istniejącymi.
         if (! $request->filled('order')) {
-            $data['order'] = 1 + (int) NavItem::where('location', $data['location'])
+            $data['order'] = 1 + (int) NavItem::forCurrentSite()->where('location', $data['location'])
                 ->where('parent_id', $data['parent_id'] ?? null)
                 ->max('order');
         }
@@ -202,7 +202,7 @@ class NavItemController extends Controller
         return view('admin.nav-items.form', [
             'navItem' => $navItem,
             'parentOptions' => $this->parentOptions($navItem, $navItem->location),
-            'pages' => Page::orderBy('title')->get(),
+            'pages' => Page::forCurrentSite()->orderBy('title')->get(),
             'pagePicker' => $this->pagePickerTree(),
             'bipDocuments' => BipDocument::published()->forCurrentSite()->orderBy('title')->get(),
         ]);

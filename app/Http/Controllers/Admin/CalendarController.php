@@ -35,7 +35,7 @@ class CalendarController extends Controller
         $byDay = [];
 
         if ($user->canAccessModule('news')) {
-            News::whereBetween('published_at', [$monthStart, $monthEnd])->get()->each(function (News $n) use (&$byDay) {
+            News::forCurrentSite()->whereBetween('published_at', [$monthStart, $monthEnd])->get()->each(function (News $n) use (&$byDay) {
                 $key = $n->published_at->format('Y-m-d');
                 $byDay[$key][] = [
                     'kind' => $n->published_at->isFuture() ? 'Zaplanowany news' : 'Aktualność',

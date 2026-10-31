@@ -25,7 +25,7 @@ class TimelineController extends Controller
     /** Wyświetla edytor osi czasu dla wybranej strony „O organizacji". */
     public function edit(Request $request)
     {
-        $pages = Page::where('type', 'about')->orderBy('order')->orderBy('title')->get();
+        $pages = Page::forCurrentSite()->where('type', 'about')->orderBy('order')->orderBy('title')->get();
 
         if ($pages->isEmpty()) {
             return view('admin.timeline.edit', ['page' => null, 'pages' => $pages]);

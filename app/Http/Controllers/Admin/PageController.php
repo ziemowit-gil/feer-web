@@ -565,7 +565,7 @@ class PageController extends Controller
             'isPersonForm' => false,
             'parentOptions' => Page::orderBy('title')->get(),
             'projectOptions' => Project::orderBy('title')->get(),
-            'partnerOptions' => \App\Models\Partner::orderBy('order')->orderBy('name')->get(),
+            'partnerOptions' => \App\Models\Partner::forCurrentSite()->orderBy('order')->orderBy('name')->get(),
         ]);
     }
 
@@ -651,7 +651,7 @@ class PageController extends Controller
             'isPersonForm' => false,
             'parentOptions' => Page::where('id', '!=', $page->id)->orderBy('title')->get(),
             'projectOptions' => Project::orderBy('title')->get(),
-            'partnerOptions' => \App\Models\Partner::orderBy('order')->orderBy('name')->get(),
+            'partnerOptions' => \App\Models\Partner::forCurrentSite()->orderBy('order')->orderBy('name')->get(),
         ]);
     }
 

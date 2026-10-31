@@ -78,16 +78,16 @@ class ClassicInserts
                 ->map(fn ($b) => ['value' => $b->id, 'type' => $b->type, 'label' => (ContentBlock::TYPES[$b->type] ?? $b->type).': '.$b->name])->all(),
             'blockTypes' => ContentBlock::TYPES,
             'newBlockTypes' => array_keys($site->availableOptions('content_block_types', ContentBlock::TYPES)),
-            'tilesGrids' => Page::where('is_published', true)->where('type', 'tiles_grid')->orderBy('title')->get(['slug', 'title'])
+            'tilesGrids' => Page::forCurrentSite()->where('is_published', true)->where('type', 'tiles_grid')->orderBy('title')->get(['slug', 'title'])
                 ->map(fn ($p) => ['value' => $p->slug, 'label' => $p->title])->all(),
             'bands' => $site->isModuleEnabled('feer_bands')
                 ? FeerBand::forCurrentSite()->active()->orderBy('order')->orderBy('title')->get(['id', 'title'])->map(fn ($b) => ['value' => $b->id, 'label' => (string) $b->title])->all()
                 : [],
             // „Przycisk CTA do harmonogramu" z menu „Wstaw link".
-            'schedules' => Page::where('is_published', true)->where('type', 'schedule')->orderBy('title')->get(['id', 'slug', 'title', 'type', 'parent_id'])
+            'schedules' => Page::forCurrentSite()->where('is_published', true)->where('type', 'schedule')->orderBy('title')->get(['id', 'slug', 'title', 'type', 'parent_id'])
                 ->map(fn (Page $p) => ['title' => $p->title, 'url' => '/'.$p->slug])->all(),
             'snippets' => collect(self::SNIPPETS)->map(fn ($s, $key) => ['key' => $key] + $s)->values()->all(),
-            'events' => Event::where('is_published', true)->orderByDesc('starts_at')->limit(30)->get()
+            'events' => Event::forCurrentSite()->where('is_published', true)->orderByDesc('starts_at')->limit(30)->get()
                 ->map(fn (Event $e) => ['title' => $e->title, 'html' => self::eventBox($e)])->all(),
             // Moduł Banery: strefy ([banery:slug]) i pojedyncze banery ([baner:ID]).
             'bannerZones' => self::bannerZones(),
@@ -120,7 +120,7 @@ class ClassicInserts
     public static function diagnostics(): array
     {
         $out = [];
-        foreach (Page::where('type', 'tiles_grid')->get(['id', 'slug', 'title', 'is_published', 'tiles']) as $p) {
+        foreach (Page::forCurrentSite()->where('type', 'tiles_grid')->get(['id', 'slug', 'title', 'is_published', 'tiles']) as $p) {
             $tiles = collect($p->tiles ?? [])->filter(fn ($t) => filled($t['label'] ?? null) && filled($t['url'] ?? null))->count();
             $out['[kafelki:'.$p->slug.']'] = [
                 'name' => $p->title, 'editUrl' => route('admin.podstrony.edit', $p),

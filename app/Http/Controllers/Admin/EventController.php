@@ -31,15 +31,15 @@ class EventController extends Controller
     /** Wyświetla stronę statystyk wydarzeń. */
     public function stats()
     {
-        $base = fn () => Event::whereNull('archived_at');
+        $base = fn () => Event::forCurrentSite()->whereNull('archived_at');
 
-        $total     = Event::count();
+        $total     = Event::forCurrentSite()->count();
         $active    = $base()->count();
-        $archived  = Event::whereNotNull('archived_at')->count();
+        $archived  = Event::forCurrentSite()->whereNotNull('archived_at')->count();
         $published = $base()->where('is_published', true)->count();
         $drafts    = $base()->where('is_published', false)->count();
 
-        $upcoming = Event::upcoming()->count();
+        $upcoming = Event::forCurrentSite()->upcoming()->count();
         $past = $base()->where('is_published', true)
             ->where(function ($q) {
                 $q->where('ends_at', '<', now())

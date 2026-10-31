@@ -53,7 +53,7 @@ class ColorController extends Controller
             'fields' => self::FIELDS,
             'presets' => self::PRESETS,
             'values' => collect(self::FIELDS)->map(fn ($meta, $key) => old($key, $settings->{$key} ?? ''))->all(),
-            'navColored' => Schema::hasColumn('nav_items', 'accent_color') ? NavItem::whereNotNull('accent_color')->count() : 0,
+            'navColored' => Schema::hasColumn('nav_items', 'accent_color') ? NavItem::forCurrentSite()->whereNotNull('accent_color')->count() : 0,
             'actionsCount' => QuickAction::forCurrentSite()->count(),
             'bandsEnabled' => $settings->isModuleEnabled('feer_bands'),
             'bandsCount' => $settings->isModuleEnabled('feer_bands') ? FeerBand::forCurrentSite()->count() : 0,
@@ -93,7 +93,7 @@ class ColorController extends Controller
     public function clearNavColors()
     {
         if (Schema::hasColumn('nav_items', 'accent_color')) {
-            NavItem::whereNotNull('accent_color')->update(['accent_color' => null]);
+            NavItem::forCurrentSite()->whereNotNull('accent_color')->update(['accent_color' => null]);
         }
 
         return redirect()->route('admin.kolory.edit')->with('status', 'Kolory pozycji menu zostały usunięte.');
