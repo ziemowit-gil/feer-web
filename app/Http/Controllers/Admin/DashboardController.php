@@ -38,6 +38,12 @@ class DashboardController extends Controller
         $settings = SiteSetting::current();
         $user = auth()->user();
 
+        // Po zalogowaniu administrator sieci witryn wybiera, nad którą pracuje (raz na sesję).
+        if (! session('admin_site_chosen') && ! session('admin_active_site_id') && (new \App\Http\Middleware\EnsureCanManageSites)->allows($user)
+            && \App\Http\Controllers\Admin\SiteChooserController::sites()->count() > 1) {
+            return redirect()->route('admin.wybor-witryny');
+        }
+
         // Aktywna witryna bloga „Wiem FEER” ma własny pulpit.
         if (BlogAdmin::isBlogSiteActive() && BlogAdmin::canAccess($user)) {
             return redirect()->route('admin.wiem.dashboard');

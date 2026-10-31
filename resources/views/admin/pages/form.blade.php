@@ -102,6 +102,12 @@
             @include('admin.partials.edit-lock', ['lockType' => 'page', 'lockId' => $page->id])
         @endif
 
+        @if ($page->exists && auth()->user()?->isAdmin())
+            <div class="mb-4 flex justify-end">
+                @include('admin.partials.copy-to-site', ['action' => route('admin.podstrony.copy-to-site', $page), 'siteId' => $page->site_id, 'label' => $page->title, 'note' => 'Kopia będzie szkicem w wybranej witrynie. Załączniki i galeria nie są kopiowane.'])
+            </div>
+        @endif
+
         <form id="page-edit-form" method="POST" action="{{ $page->exists ? route('admin.podstrony.update', $page) : route('admin.podstrony.store') }}" enctype="multipart/form-data"
             class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
             @csrf
@@ -416,6 +422,10 @@
                                     <button type="submit" form="page-nav-copy-form" class="mt-2 inline-flex min-h-10 items-center gap-2 rounded-md bg-gray-100 px-3 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                                         onclick="return confirm(@js('Przenieść ten styl menu na wszystkie podstrony „'.$page->title.'”? Zmieni się tylko styl nawigacji tych podstron.'));">
                                         <i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Przenieś typ menu na podstrony
+                                    </button>
+                                    <button type="submit" form="page-settings-copy-form" class="mt-2 inline-flex min-h-10 items-center gap-2 rounded-md bg-gray-100 px-3 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+                                        onclick="return confirm(@js('Przenieść ustawienia wyglądu (menu, szablon, galeria, kafelki, ukrywanie plików) na wszystkie podstrony „'.$page->title.'”? Treści i adresy zostaną bez zmian.'));">
+                                        <i class="fa-solid fa-sliders" aria-hidden="true"></i> Przenieś ustawienia na podstrony
                                     </button>
                                 @endif
                                     @foreach (\App\Models\Page::SIDE_NAV_STYLES as $styleKey => $styleLabel)
@@ -762,6 +772,7 @@
             <form id="page-delete-form" method="POST" action="{{ route('admin.podstrony.destroy', $page) }}" class="hidden">@csrf @method('DELETE')</form>
             @if ($page->exists && $page->children()->exists())
                 <form id="page-nav-copy-form" method="POST" action="{{ route('admin.podstrony.styl-na-podstrony', $page) }}" class="hidden">@csrf</form>
+                <form id="page-settings-copy-form" method="POST" action="{{ route('admin.podstrony.ustawienia-na-podstrony', $page) }}" class="hidden">@csrf</form>
             @endif
         @endif
 

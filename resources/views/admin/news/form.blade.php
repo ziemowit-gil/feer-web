@@ -80,6 +80,7 @@
                             @csrf
                             <button type="submit" class="{{ $btnSecondary }}" style="{{ $btnStyle }}"><i class="fa-solid fa-copy" aria-hidden="true"></i> Klonuj</button>
                         </form>
+                        @include('admin.partials.copy-to-site', ['action' => route('admin.newsy.copy-to-site', $news), 'siteId' => $news->site_id, 'label' => $news->title, 'note' => 'Kopia będzie szkicem. Zdjęcie i tagi są kopiowane.'])
                         <form method="POST" action="{{ route('admin.newsy.destroy', $news) }}" @if ($embedded) target="_top" @endif
                             data-confirm="Usunąć news „{{ $news->title }}”? Operacji nie można cofnąć."
                             @if (($clonesCount ?? 0) > 0) data-clone-count="{{ $clonesCount }}" @endif>

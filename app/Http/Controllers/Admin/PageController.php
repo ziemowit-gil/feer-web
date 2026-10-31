@@ -11,6 +11,7 @@ use App\Models\SiteSetting;
 use App\PageTypes\PageTypeRegistry;
 use App\Support\PageTypeFields;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -679,6 +680,46 @@ class PageController extends Controller
         return back()->with('status', $ids === []
             ? 'Ta strona nie ma podstron.'
             : 'Styl menu („'.Page::SIDE_NAV_STYLES[$style].'”) przeniesiono na '.count($ids).' '.(count($ids) === 1 ? 'podstronę' : 'podstron').'.');
+    }
+
+    /** Kolumny strony przenoszone przez „Przenieś ustawienia na podstrony”. */
+    private const CONFIG_FIELDS = ['show_side_nav', 'side_nav_style', 'page_template', 'show_gallery', 'hide_in_sitemap', 'tiles_enabled', 'tiles_content_position', 'content_image_width'];
+
+    /** Klucze `layout_data` (ustawienia wyglądu) przenoszone razem z kolumnami. */
+    private const CONFIG_LAYOUT_KEYS = ['hide_attachments', 'hide_meta'];
+
+    /**
+     * „Przenieś ustawienia na podstrony”: kopiuje konfigurację wyglądu tej strony (menu boczne, szablon, galeria,
+     * kafelki, ukrywanie plików i metadanych) na wszystkie jej podstrony, także zagnieżdżone. Treści, adresów,
+     * widoczności i dostępu nie rusza.
+     */
+    public function copySettingsToChildren(Page $page)
+    {
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
+        $ids = [];
+        $level = [$page->id];
+        for ($depth = 0; $depth < 10 && $level !== []; $depth++) {
+            $level = Page::forCurrentSite()->whereIn('parent_id', $level)->pluck('id')->all();
+            $ids = array_merge($ids, $level);
+        }
+
+        if ($ids === []) {
+            return back()->with('status', 'Ta strona nie ma podstron.');
+        }
+
+        $columns = array_values(array_filter(self::CONFIG_FIELDS, fn ($f) => \Illuminate\Support\Facades\Schema::hasColumn('pages', $f)));
+        $values = collect($columns)->mapWithKeys(fn ($f) => [$f => $page->getAttribute($f)])->all();
+        $layout = Arr::only((array) $page->layout_data, self::CONFIG_LAYOUT_KEYS);
+
+        foreach (Page::forCurrentSite()->whereIn('id', $ids)->get() as $child) {
+            $merged = Arr::except((array) $child->layout_data, self::CONFIG_LAYOUT_KEYS) + $layout;
+            $child->forceFill($values + ['layout_data' => $merged ?: null])->save();
+        }
+
+        return back()->with('status', 'Ustawienia wyglądu przeniesiono na '.count($ids).' '.(count($ids) === 1 ? 'podstronę' : 'podstron').'.');
     }
 
     /** Zapisuje zmiany podstrony z walidacją i blokowaniem dostępu do zablokowanych stron. */

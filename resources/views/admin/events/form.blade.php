@@ -18,6 +18,12 @@
         'templateFields' => ['type', 'mode', 'location', 'online_url', 'audience', 'registration_cta_label', 'contact_email', 'price_info'],
     ])
 
+    @if ($event->exists)
+        <div class="mt-4 flex justify-end">
+            @include('admin.partials.copy-to-site', ['action' => route('admin.wydarzenia.copy-to-site', $event), 'siteId' => $event->site_id, 'label' => $event->title, 'note' => 'Kopia będzie szkicem z tym samym terminem.'])
+        </div>
+    @endif
+
     <form id="event-form" method="POST" action="{{ $action }}" enctype="multipart/form-data" class="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start" data-readable
         x-data="{ mode: @js(old('mode', $event->mode ?: 'stacjonarnie')) }">
         @csrf

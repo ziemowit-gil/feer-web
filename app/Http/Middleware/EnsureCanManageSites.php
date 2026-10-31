@@ -18,6 +18,12 @@ class EnsureCanManageSites
 {
     private const EMERGENCY_ACCESS_EMAIL = 'serwis@local';
 
+    /** Czy użytkownik ma dostęp do zarządzania witrynami (bez przerywania żądania). */
+    public function allows(?\App\Models\User $user): bool
+    {
+        return (bool) ($user?->isAdmin() || $user?->email === self::EMERGENCY_ACCESS_EMAIL);
+    }
+
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();

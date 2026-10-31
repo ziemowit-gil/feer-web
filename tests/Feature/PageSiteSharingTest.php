@@ -108,4 +108,21 @@ class PageSiteSharingTest extends TestCase
         $page->update(['is_global' => true]);
         $this->assertTrue($page->fresh()->is_global);
     }
+
+    public function test_przenosi_ustawienia_wygladu_na_podstrony(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $parent = $this->page('rodzic', ['side_nav_style' => 'accordion', 'show_gallery' => false, 'layout_data' => ['hide_attachments' => true]]);
+        $child = $this->page('dziecko', ['parent_id' => $parent->id, 'layout_data' => ['metka' => 'x']]);
+        $grand = $this->page('wnuk', ['parent_id' => $child->id]);
+
+        $this->actingAs($admin)->post(route('admin.podstrony.ustawienia-na-podstrony', $parent))->assertRedirect()->assertSessionHas('status');
+
+        $child->refresh();
+        $this->assertSame('accordion', $child->side_nav_style);
+        $this->assertTrue($child->layout_data['hide_attachments']);
+        $this->assertSame('x', $child->layout_data['metka'], 'inne klucze layout_data zostają');
+        $this->assertSame('accordion', $grand->fresh()->side_nav_style, 'także zagnieżdżone');
+        $this->assertSame('<p>Treść dziecko.</p>', $child->content);
+    }
 }

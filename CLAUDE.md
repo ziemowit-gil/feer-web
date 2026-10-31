@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-10-31: ekran wyboru witryny po logowaniu (`/panel/wybor-witryny`, raz na sesję); „Przenieś ustawienia” między witrynami (nagłówek, kolory, moduły; `SiteChooserController`); „Przenieś ustawienia na podstrony” w edytorze strony; „Kopiuj do witryny” także w edytorach stron, aktualności, wydarzeń i partnerów; fix „Klonuj” wydarzenia.
 - 2026-10-31: fix „Klonuj” wydarzenia (500: `starts_at` jest NOT NULL; klon zachowuje termin oryginału); test.
 - 2026-10-31: „Kopiuj do witryny” także dla partnerów (z logo), aktualności (szkic, zdjęcie, tagi) i wydarzeń (szkic, FAQ); wspólny trait `CopiesToSite` i partial `admin/partials/copy-to-site`; seeder szkiców stron dla instytucji w witrynie /szkolenia (`SzkoleniaInstitutionPagesSeeder`); testy.
 - 2026-10-31: fix 500 w witrynie z prefiksem ścieżki (`/szkolenia`): `site_route()` wraca do zwykłej trasy, gdy nie ma wariantu `site.<nazwa>` (np. `materials.index`); test `SiteRouteFallbackTest`.
@@ -22,4 +23,3 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 - 2026-10-30: podpis „Misja Fundacji” nad hasłem organizacji w O nas (etykieta edytowalna: `about_labels.motto_label`).
 - 2026-10-30: poprawione teksty domyślne „Dołącz do nas” i „Wesprzyj nas”, wstęp wolontariatu, seeder ofert wolontariatu.
 - 2026-10-30: misja w haśle O nas podkreślona grubą linią w kolorze marki (część po „by”), oba warianty nagłówka.
-- 2026-10-30: O nas: wartości w pełnym rzędzie; sekcja dokumentów z ramką BIP u góry, pliki w dwóch kolumnach; seeder wyłączający dane organizacji (KRS, NIP, konto).

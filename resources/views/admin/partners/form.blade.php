@@ -3,6 +3,12 @@
 @section('title', $partner->exists ? 'Edytuj partnera' : 'Nowy partner')
 
 @section('content')
+    @if ($partner->exists)
+        <div class="mb-4 flex justify-end">
+            @include('admin.partials.copy-to-site', ['action' => route('admin.partnerzy.copy-to-site', $partner), 'siteId' => $partner->site_id, 'label' => $partner->name, 'note' => 'Logotyp jest kopiowany razem z partnerem.'])
+        </div>
+    @endif
+
     <form method="POST" action="{{ $partner->exists ? route('admin.partnerzy.update', $partner) : route('admin.partnerzy.store') }}"
         enctype="multipart/form-data" class="max-w-xl space-y-5 p-6 rounded-md bg-white">
         @csrf

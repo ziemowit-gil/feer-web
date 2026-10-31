@@ -121,7 +121,7 @@ class BlogDashboardTest extends BlogTestCase
     {
         $this->blogSite();
 
-        $this->actingAs($this->admin())->get(route('admin.dashboard'))
+        $this->actingAs($this->admin())->withSession(['admin_site_chosen' => true])->get(route('admin.dashboard'))
             ->assertOk()
             ->assertDontSee('Pulpit bloga — wpisy, moderacja');
     }

@@ -391,6 +391,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         // Edytor blokowy (styl Gutenberga) — pełnoekranowy, na stylach frontu.
         Route::get('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'editPage'])->name('podstrony.bloki.edit');
         Route::put('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'updatePage'])->name('podstrony.bloki.update');
+        Route::post('podstrony/{page}/ustawienia-na-podstrony', [AdminPageController::class, 'copySettingsToChildren'])->name('podstrony.ustawienia-na-podstrony');
         Route::post('podstrony/{page}/styl-menu-na-podstrony', [AdminPageController::class, 'copyNavStyleToChildren'])->name('podstrony.styl-na-podstrony');
         Route::post('podstrony/{page}/pliki', [AdminAttachmentController::class, 'storeForPage'])->name('podstrony.pliki.store');
         Route::get('podstrony/{page}/dostep/eksport', [AdminBrandAccessUserController::class, 'export'])->name('podstrony.dostep.eksport');
@@ -677,6 +678,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
             ->except(['show'])
             ->middleware('edition:multisite')
             ->parameters(['witryny' => 'site']);
+        Route::get('wybor-witryny', [\App\Http\Controllers\Admin\SiteChooserController::class, 'index'])->name('wybor-witryny');
+        Route::post('wybor-witryny/{site}', [\App\Http\Controllers\Admin\SiteChooserController::class, 'choose'])->name('wybor-witryny.choose');
+        Route::get('witryny-ustawienia', [\App\Http\Controllers\Admin\SiteChooserController::class, 'settingsForm'])->name('witryny.ustawienia');
+        Route::post('witryny-ustawienia', [\App\Http\Controllers\Admin\SiteChooserController::class, 'copySettings'])->name('witryny.ustawienia.copy');
         Route::post('witryny/{site}/przelacz', [\App\Http\Controllers\Admin\ActiveSiteController::class, 'switch'])
             ->name('witryny.przelacz');
         Route::get('witryny/{site}/usun', [\App\Http\Controllers\Admin\SiteController::class, 'confirmDestroy'])
