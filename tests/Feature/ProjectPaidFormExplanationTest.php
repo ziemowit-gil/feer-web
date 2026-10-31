@@ -41,7 +41,9 @@ class ProjectPaidFormExplanationTest extends TestCase
         $this->assertStringContainsString('Możesz też wybrać formę płatną', $html);
         $this->assertStringContainsString('część kosztów pokrywa <strong>Beneficjent</strong>', $html);
         $this->assertStringContainsString('Dzieje się tak, bo na to działanie nie mamy dość środków', $html);
+        $this->assertStringContainsString('czyli Ty lub osoba, która korzysta z działania', $html);
         $this->assertStringNotContainsString('Wtedy sam ustalasz termin i zakres', $html);
+        $this->assertStringNotContainsString('Termin i zakres ustalasz sam', $html);
     }
 
     public function test_forma_bezplatna_i_platna_razem_tez_wyjasnia_forme_platna(): void
@@ -51,5 +53,6 @@ class ProjectPaidFormExplanationTest extends TestCase
         $this->assertStringContainsString('Jeden jest <strong>bezpłatny</strong>', $html);
         $this->assertStringContainsString('część kosztów pokrywa <strong>Beneficjent</strong>', $html);
         $this->assertStringContainsString('Płatna forma istnieje, bo na nią nie mamy dość środków', $html);
+        $this->assertStringContainsString('czyli Ty lub osoba, która korzysta z działania', $html);
     }
 }

@@ -342,16 +342,16 @@
                         <div class="proj-note mb-4"><span>
                             @if ($only && $only->is_offered)
                                 @if ($only->is_paid)
-                                    Z tego działania możesz skorzystać także <strong>za opłatą</strong>. Wtedy część kosztów pokrywa <strong>Beneficjent</strong>, czyli osoba, która korzysta z działania. Dzieje się tak, bo na to działanie nie mamy dość środków, a fundacja nie zarabia na swoich działaniach. Termin i zakres ustalasz sam.
+                                    Z tego działania możesz skorzystać także <strong>za opłatą</strong>. Wtedy część kosztów pokrywa <strong>Beneficjent</strong>, czyli Ty lub osoba, która korzysta z działania. Dzieje się tak, bo na to działanie nie mamy dość środków, a fundacja nie zarabia na swoich działaniach.
                                 @else
                                     Z tego działania możesz skorzystać także <strong>bezpłatnie</strong>. Sprawdź, kto może wziąć udział.
                                 @endif
                             @elseif ($cnt === 0)
                                 Teraz nie prowadzimy tego działania. Zajrzyj tu później albo napisz do nas.
                             @elseif ($hasPaid && $hasFree)
-                                To samo działanie możesz wybrać na dwa sposoby. Jeden jest <strong>bezpłatny</strong>. Drugi jest <strong>płatny</strong>: część kosztów pokrywa <strong>Beneficjent</strong>, czyli osoba, która korzysta z działania. Płatna forma istnieje, bo na nią nie mamy dość środków, a fundacja nie zarabia na swoich działaniach. Wybierz ten sposób, który jest dla Ciebie lepszy.
+                                To samo działanie możesz wybrać na dwa sposoby. Jeden jest <strong>bezpłatny</strong>. Drugi jest <strong>płatny</strong>: część kosztów pokrywa <strong>Beneficjent</strong>, czyli Ty lub osoba, która korzysta z działania. Płatna forma istnieje, bo na nią nie mamy dość środków, a fundacja nie zarabia na swoich działaniach. Wybierz ten sposób, który jest dla Ciebie lepszy.
                             @elseif ($hasPaid)
-                                Z tego działania skorzystasz <strong>za opłatą</strong>: część kosztów pokrywa <strong>Beneficjent</strong>, czyli osoba, która korzysta z działania. Dzieje się tak, bo na to działanie nie mamy dość środków, a fundacja nie zarabia na swoich działaniach. Termin i zakres możesz ustalić sam.
+                                Z tego działania skorzystasz <strong>za opłatą</strong>: część kosztów pokrywa <strong>Beneficjent</strong>, czyli Ty lub osoba, która korzysta z działania. Dzieje się tak, bo na to działanie nie mamy dość środków, a fundacja nie zarabia na swoich działaniach.
                             @else
                                 Z tego działania skorzystasz <strong>bezpłatnie</strong>. Wybierz formę, która Ci odpowiada.
                             @endif

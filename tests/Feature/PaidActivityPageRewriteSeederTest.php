@@ -26,7 +26,7 @@ class PaidActivityPageRewriteSeederTest extends TestCase
         $this->seed(PaidActivityPageRewriteSeeder::class);
 
         $html = $page->fresh()->content;
-        $this->assertStringContainsString('<strong>Beneficjent</strong>, czyli osoba lub organizacja, która korzysta z działania, pokrywa część jego kosztów', $html);
+        $this->assertStringContainsString('<strong>Beneficjent</strong>, czyli Ty lub osoba, która korzysta z działania, pokrywa część jego kosztów', $html);
         foreach (['Co znaczy „odpłatne”?', 'Dlaczego tak jest?', 'Na co idą wpłaty?', 'Czym jest odpłatna działalność pożytku publicznego?', 'Jak płacić za płatne działania?', 'Masz pytania?'] as $h2) {
             $this->assertStringContainsString('<h2>'.$h2.'</h2>', $html);
         }

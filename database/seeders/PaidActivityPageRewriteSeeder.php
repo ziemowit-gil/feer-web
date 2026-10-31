@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * Strona „Odpłatna działalność pożytku publicznego” (slug odplatna-dzialalnosc-pozytku-publicznego): treść uporządkowana
- * w czytelne sekcje. Na górze krótka definicja: w formie odpłatnej część kosztów pokrywa Beneficjent (osoba korzystająca
+ * w czytelne sekcje. Na górze krótka definicja: w formie odpłatnej część kosztów pokrywa Beneficjent (Ty lub osoba korzystająca
  * z działania), potem wyjaśnienie, dlaczego tak jest, na co idą wpłaty, podstawa prawna i cztery zasady płatności.
  * Fakty bez zmian (tekst z dotychczasowej strony i FAQ), dochodzi tylko określenie roli Beneficjenta.
  *
@@ -44,7 +44,7 @@ class PaidActivityPageRewriteSeeder extends Seeder
     public static function html(): string
     {
         return <<<'HTML'
-<p><strong>Krótko:</strong> Fundacja FEER nie zarabia na swoich działaniach. W formie odpłatnej <strong>Beneficjent</strong>, czyli osoba lub organizacja, która korzysta z działania, pokrywa część jego kosztów. Opłata nie jest zyskiem fundacji. Idzie wyłącznie na koszty.</p>
+<p><strong>Krótko:</strong> Fundacja FEER nie zarabia na swoich działaniach. W formie odpłatnej <strong>Beneficjent</strong>, czyli Ty lub osoba, która korzysta z działania, pokrywa część jego kosztów. Opłata nie jest zyskiem fundacji. Idzie wyłącznie na koszty.</p>
 
 <h2>Co znaczy „odpłatne”?</h2>
 <p>Odpłatne działanie to takie, w którym część kosztów pokrywa Beneficjent. Pozostałą część pokrywa fundacja, m.in. dzięki dotacjom i darowiznom.</p>
