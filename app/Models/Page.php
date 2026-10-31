@@ -326,7 +326,7 @@ class Page extends Model
     protected $fillable = [
         'unpublish_at', 'reviewed_at',
         'metka_author', 'published_by_id',
-        'site_id', 'created_by', 'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'hide_in_sitemap', 'show_side_nav', 'side_nav_style', 'is_system', 'is_locked', 'order',
+        'site_id', 'is_global', 'created_by', 'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'hide_in_sitemap', 'show_side_nav', 'side_nav_style', 'is_system', 'is_locked', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
@@ -359,6 +359,7 @@ class Page extends Model
         'show_side_nav' => 'boolean',
         'is_system' => 'boolean',
         'is_locked' => 'boolean',
+        'is_global' => 'boolean',
         'show_gallery' => 'boolean',
         'schedule_items' => 'array',
         'schedule_pending' => 'boolean',
@@ -443,6 +444,27 @@ class Page extends Model
     }
 
     public function resolveRouteBinding($value, $field = null): ?self
+    {
+        $page = $this->resolveSitePage($value, $field);
+
+        // Podstrona globalna: gdy bieżąca witryna nie ma strony o tym slugu, pokazujemy globalną (z dowolnej witryny).
+        // Bez cache, więc zmiana w witrynie-właścicielu działa we wszystkich witrynach od razu.
+        if ($page === null && ($field ?? $this->getRouteKeyName()) === 'slug') {
+            return $this->resolveGlobalPage($value);
+        }
+
+        return $page;
+    }
+
+    private function resolveGlobalPage(mixed $slug): ?self
+    {
+        static $hasColumn = null;
+        $hasColumn ??= \Illuminate\Support\Facades\Schema::hasColumn('pages', 'is_global');
+
+        return $hasColumn ? static::query()->where('slug', $slug)->where('is_global', true)->first() : null;
+    }
+
+    private function resolveSitePage($value, $field = null): ?self
     {
         $resolveField = $field ?? $this->getRouteKeyName();
         $settings = SiteSetting::current();

@@ -558,6 +558,13 @@
                                     <input type="checkbox" name="is_locked" value="1" {{ old('is_locked', $page->is_locked ?? false) ? 'checked' : '' }}>
                                     <span><span class="{{ $rowTitle }}"><i class="fa-solid fa-lock mr-1 text-brand-dark" aria-hidden="true"></i>Zablokuj do edycji</span><span class="{{ $rowHint }}">Edytować, klonować i usuwać może tylko administrator.</span></span>
                                 </label>
+                                @if (\Illuminate\Support\Facades\Schema::hasColumn('pages', 'is_global'))
+                                    <label class="{{ $row }}">
+                                        <input type="hidden" name="is_global" value="0">
+                                        <input type="checkbox" name="is_global" value="1" {{ old('is_global', $page->is_global ?? false) ? 'checked' : '' }}>
+                                        <span><span class="{{ $rowTitle }}"><i class="fa-solid fa-globe mr-1 text-brand-dark" aria-hidden="true"></i>Podstrona globalna</span><span class="{{ $rowHint }}">Strona jest dostępna pod swoim adresem we wszystkich witrynach sieci (główna i sub-witryny), o ile witryna nie ma własnej strony o tym adresie. Edytujesz ją tylko tutaj. Link do niej w menu sub-witryny dodaj jako własny link.</span></span>
+                                    </label>
+                                @endif
                             @elseif ($page->is_locked ?? false)
                                 <p class="flex items-start gap-2 py-4 text-sm text-amber-900">
                                     <i class="fa-solid fa-lock mt-0.5" aria-hidden="true"></i>

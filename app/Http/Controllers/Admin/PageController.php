@@ -903,6 +903,44 @@ class PageController extends Controller
     }
 
     /**
+     * Kopiuje stronę do innej witryny sieci (np. sub-witryny): kopia trafia tam jako szkic, bez strony nadrzędnej,
+     * powiązania z działaniem i flagi globalnej, z unikalnym slugiem (slugi stron są unikalne globalnie).
+     * Załączniki i galeria nie są kopiowane (zostają przy oryginale); obrazy w treści działają, bo to ten sam adres pliku.
+     */
+    public function copyToSite(Request $request, Page $page)
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
+        $data = $request->validate(['target_site_id' => ['required', 'integer', 'exists:site_settings,id']]);
+        $target = \App\Models\SiteSetting::query()->notTrashed()->find($data['target_site_id']);
+
+        if (! $target || (int) $target->id === (int) $page->site_id) {
+            return back()->with('error', 'Wybierz inną witrynę niż ta, do której należy strona.');
+        }
+
+        $copy = $page->replicate();
+        $copy->site_id = $target->id;
+        $copy->parent_id = null;
+        $copy->project_id = null;
+        $copy->slug = $this->uniqueSlug($page->title);
+        $copy->is_published = false;
+        $copy->is_system = false;
+        $copy->is_locked = false;
+        if (array_key_exists('is_global', $copy->getAttributes())) {
+            $copy->is_global = false;
+        }
+        $copy->save();
+
+        $name = $target->site_name ?: ($target->slug ?: 'witryny');
+
+        return back()->with('status', "Skopiowano stronę „{$page->title}” do witryny „{$name}” jako szkic (adres: /{$copy->slug}). Przełącz się na tę witrynę, żeby ją dopracować i opublikować.");
+    }
+
+    /**
      * Zablokowanej treści nie mogą edytować osoby inne niż administrator.
      * Zwraca przekierowanie z komunikatem, gdy dostęp trzeba odmówić.
      */
@@ -1152,6 +1190,10 @@ class PageController extends Controller
         // Dla pozostałych nie dotykamy jej (przy tworzeniu = false, przy edycji zachowana).
         if ($request->user()->isAdmin()) {
             $data['is_locked'] = $request->boolean('is_locked');
+            // „Podstrona globalna” — do czasu migracji kolumny nie ma, więc zapis jej pomija.
+            if (\Illuminate\Support\Facades\Schema::hasColumn('pages', 'is_global')) {
+                $data['is_global'] = $request->boolean('is_global');
+            }
         }
         $data['order'] = $data['order'] ?? 0;
 

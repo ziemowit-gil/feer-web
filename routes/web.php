@@ -404,6 +404,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::delete('podstrony/zdjecia/{image}', [AdminPageImageController::class, 'destroy'])->name('podstrony.zdjecia.destroy');
         Route::post('podstrony/zbiorczo', [AdminPageController::class, 'bulk'])->name('podstrony.bulk');
         Route::post('podstrony/{page}/klonuj', [AdminPageController::class, 'clone'])->name('podstrony.clone');
+        Route::post('podstrony/{page}/kopiuj-do-witryny', [AdminPageController::class, 'copyToSite'])->name('podstrony.copy-to-site');
         Route::patch('podstrony/{page}/kolejnosc', [AdminPageController::class, 'updateOrder'])->name('podstrony.kolejnosc');
         Route::patch('podstrony/{page}/przenies', [AdminPageController::class, 'move'])->name('podstrony.przenies');
         Route::post('podstrony/{page}/do-projektu', [AdminPageController::class, 'moveToProject'])->name('podstrony.do-projektu');
