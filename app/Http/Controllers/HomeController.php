@@ -116,7 +116,7 @@ class HomeController extends Controller
                 ])
                 : collect();
 
-            return ['label' => $tab['label'], 'services' => $services];
+            return ['label' => $tab['label'], 'icon' => $tab['icon'], 'url' => $page?->publicUrl(), 'services' => $services];
         })->filter(fn (array $tab) => $tab['services']->isNotEmpty())->values();
     }
 

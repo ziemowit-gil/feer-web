@@ -30,9 +30,9 @@
     @if ($categories->count() > 1)
         <nav aria-label="Kategorie szkoleń" class="mb-8 flex flex-wrap gap-2">
             @php $chip = 'inline-flex min-h-10 items-center rounded-md px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark'; @endphp
-            <a href="{{ $page->publicUrl() }}" @if ($activeCategory === '') aria-current="true" @endif class="{{ $chip }} {{ $activeCategory === '' ? 'bg-brand-dark text-white' : 'bg-gray-100 text-ink hover:bg-brand-light' }}">Wszystkie</a>
+            <a href="{{ $page->publicUrl() }}" @if ($activeCategory === '') aria-current="true" @endif class="{{ $chip }} {{ $activeCategory === '' ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-brand-light' }}">Wszystkie</a>
             @foreach ($categories as $cat)
-                <a href="{{ $page->publicUrl() }}?kategoria={{ urlencode($cat) }}" @if ($activeCategory === $cat) aria-current="true" @endif class="{{ $chip }} {{ $activeCategory === $cat ? 'bg-brand-dark text-white' : 'bg-gray-100 text-ink hover:bg-brand-light' }}">{{ $cat }}</a>
+                <a href="{{ $page->publicUrl() }}?kategoria={{ urlencode($cat) }}" @if ($activeCategory === $cat) aria-current="true" @endif class="{{ $chip }} {{ $activeCategory === $cat ? 'bg-brand text-white' : 'bg-gray-100 text-ink hover:bg-brand-light' }}">{{ $cat }}</a>
             @endforeach
         </nav>
     @endif

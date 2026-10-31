@@ -23,51 +23,75 @@
     @endif
 
     @if ($servicesTabs->isNotEmpty())
-        <section aria-labelledby="feer-is-services-heading" x-data="{ tab: 0 }">
+        {{-- Układ jak strona „Działania”: po lewej lista kategorii z licznikami (pionowe zakładki), po prawej nagłówek kategorii
+             (ikona, tytuł ze strzałką, kreska w kolorze marki) i płaskie wiersze usług. Układ kolumn w stylu poniżej, bo wdrożenie nie buduje CSS. --}}
+        <style>
+            .feer-is-split { display: grid; gap: 2.5rem; }
+            @media (min-width: 1024px) { .feer-is-split { grid-template-columns: 15rem minmax(0, 1fr); } }
+        </style>
+        <section class="mx-auto max-w-6xl px-4 py-12" aria-labelledby="feer-is-services-heading" x-data="{ tab: 0 }">
             <h2 id="feer-is-services-heading" class="sr-only">Usługi i informacje według odbiorcy</h2>
-            <div class="bg-brand-dark">
-                <div class="mx-auto max-w-6xl px-4">
-                    <div role="tablist" aria-label="Odbiorca" class="flex flex-wrap gap-1 pt-2">
+            <div class="feer-is-split">
+                <div>
+                    <p class="mb-3 text-xs font-bold uppercase tracking-widest text-ink" id="feer-is-tabs-label">Kategorie</p>
+                    <div role="tablist" aria-orientation="vertical" aria-labelledby="feer-is-tabs-label" class="flex flex-col gap-1">
                         @foreach ($servicesTabs as $i => $tab)
                             <button type="button" role="tab" id="feer-is-tab-{{ $i }}" aria-controls="feer-is-panel-{{ $i }}"
                                 :aria-selected="(tab === {{ $i }}).toString()" :tabindex="tab === {{ $i }} ? 0 : -1"
                                 @click="tab = {{ $i }}"
-                                @keydown.arrow-right.prevent="tab = (tab + 1) % {{ $servicesTabs->count() }}; $nextTick(() => document.getElementById('feer-is-tab-' + tab).focus())"
-                                @keydown.arrow-left.prevent="tab = (tab + {{ $servicesTabs->count() - 1 }}) % {{ $servicesTabs->count() }}; $nextTick(() => document.getElementById('feer-is-tab-' + tab).focus())"
-                                :class="tab === {{ $i }} ? 'bg-white text-ink' : 'text-white hover:underline'"
-                                class="rounded-t-md px-4 py-3 text-sm font-bold uppercase tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
-                                {{ $tab['label'] }}
+                                @keydown.arrow-down.prevent="tab = (tab + 1) % {{ $servicesTabs->count() }}; $nextTick(() => document.getElementById('feer-is-tab-' + tab).focus())"
+                                @keydown.arrow-up.prevent="tab = (tab + {{ $servicesTabs->count() - 1 }}) % {{ $servicesTabs->count() }}; $nextTick(() => document.getElementById('feer-is-tab-' + tab).focus())"
+                                :class="tab === {{ $i }} ? 'bg-gray-100 text-brand-dark' : 'text-ink hover:bg-gray-50'"
+                                class="flex w-full items-center justify-between gap-3 rounded-md px-4 py-3 text-left text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                <span>{{ $tab['label'] }}</span>
+                                <span class="shrink-0">{{ $tab['services']->count() }}</span>
                             </button>
                         @endforeach
                     </div>
+                    <p class="mt-6">
+                        <a href="{{ $allUrl }}" class="text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $allLabel }} →</a>
+                    </p>
                 </div>
-            </div>
 
-            <div class="mx-auto max-w-6xl px-4 py-10">
-                @foreach ($servicesTabs as $i => $tab)
-                    <div role="tabpanel" id="feer-is-panel-{{ $i }}" aria-labelledby="feer-is-tab-{{ $i }}" x-show="tab === {{ $i }}" @if ($i > 0) x-cloak @endif tabindex="0" class="focus-visible:outline-none">
-                        <ul class="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-3" role="list">
-                            @foreach ($tab['services'] as $service)
-                                <li class="flex gap-4">
-                                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-light text-brand-dark" aria-hidden="true">
-                                        {{ icon_html($service['icon'] ?: 'mi-description', 'text-2xl') }}
-                                    </span>
-                                    <div class="min-w-0">
-                                        <h3 class="text-base font-bold leading-snug">
-                                            <a href="{{ $service['url'] }}" class="text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $service['title'] }}</a>
-                                        </h3>
-                                        @if (filled($service['description']))
-                                            <p class="mt-1 text-sm leading-relaxed text-ink">{{ $service['description'] }}</p>
+                <div class="min-w-0">
+                    @foreach ($servicesTabs as $i => $tab)
+                        <div role="tabpanel" id="feer-is-panel-{{ $i }}" aria-labelledby="feer-is-tab-{{ $i }}" x-show="tab === {{ $i }}" @if ($i > 0) x-cloak @endif tabindex="0" class="focus-visible:outline-none">
+                            <div class="mb-6 flex items-center gap-4">
+                                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-brand-light text-brand-dark" aria-hidden="true">
+                                    {{ icon_html($tab['icon'] ?: 'mi-groups', 'text-2xl') }}
+                                </span>
+                                <div>
+                                    <h3 class="text-2xl font-bold leading-tight text-ink">
+                                        @if (filled($tab['url'] ?? null))
+                                            <a href="{{ $tab['url'] }}" class="hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $tab['label'] }} <span class="text-brand-dark" aria-hidden="true">→</span></a>
+                                        @else
+                                            {{ $tab['label'] }}
                                         @endif
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endforeach
+                                    </h3>
+                                    <span class="mt-2 block h-1 w-10 bg-brand" aria-hidden="true"></span>
+                                </div>
+                            </div>
 
-                <div class="mt-10 text-center">
-                    <a href="{{ $allUrl }}" class="inline-flex min-h-12 items-center rounded-md border-2 border-brand-dark px-6 text-sm font-bold uppercase tracking-wide text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">{{ $allLabel }}</a>
+                            <ul class="space-y-2" role="list">
+                                @foreach ($tab['services'] as $service)
+                                    <li class="group relative flex items-center gap-4 rounded-md bg-gray-50 p-4 transition-colors hover:bg-gray-100 focus-within:ring-2 focus-within:ring-brand-dark">
+                                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-light text-brand-dark" aria-hidden="true">
+                                            {{ icon_html($service['icon'] ?: 'mi-description', 'text-2xl') }}
+                                        </span>
+                                        <div class="min-w-0 flex-1">
+                                            <h4 class="text-base font-bold leading-snug">
+                                                <a href="{{ $service['url'] }}" class="stretched-link text-ink hover:text-brand-dark focus-visible:outline-none">{{ $service['title'] }}</a>
+                                            </h4>
+                                            @if (filled($service['description']))
+                                                <p class="mt-1 text-sm leading-relaxed text-ink">{{ \Illuminate\Support\Str::limit($service['description'], 160) }}</p>
+                                            @endif
+                                        </div>
+                                        <span class="shrink-0 text-lg text-brand-dark" aria-hidden="true">→</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </section>

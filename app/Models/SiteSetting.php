@@ -293,20 +293,20 @@ class SiteSetting extends Model implements HasMedia
     }
 
     /**
-     * Zakładki odbiorców portalu usług z pola „Etykieta|slug strony”, jedna na wiersz. Usługi w zakładce to opublikowane
-     * podstrony wskazanej strony.
+     * Zakładki odbiorców portalu usług z pola „Etykieta|slug strony|ikona”, jedna na wiersz (ikona opcjonalna, np.
+     * mi-groups). Usługi w zakładce to opublikowane podstrony wskazanej strony.
      *
-     * @return list<array{label: string, slug: string}>
+     * @return list<array{label: string, slug: string, icon: string}>
      */
     public function servicesTabs(): array
     {
         $tabs = [];
 
         foreach (preg_split('/\R/u', (string) ($this->services_tabs ?? '')) ?: [] as $line) {
-            [$label, $slug] = array_pad(array_map('trim', explode('|', $line, 2)), 2, '');
+            [$label, $slug, $icon] = array_pad(array_map('trim', explode('|', $line, 3)), 3, '');
 
             if ($label !== '' && $slug !== '') {
-                $tabs[] = ['label' => $label, 'slug' => ltrim($slug, '/')];
+                $tabs[] = ['label' => $label, 'slug' => ltrim($slug, '/'), 'icon' => preg_match('/^(mi-|fa-|bi-)?[a-z0-9 _-]+$/i', $icon) ? $icon : ''];
             }
         }
 

@@ -65,6 +65,8 @@ class FeerIsThemeTest extends TestCase
             ->getContent();
 
         $this->assertStringContainsString('role="tablist"', $html);
+        $this->assertStringContainsString('aria-orientation="vertical"', $html, 'pionowa lista kategorii jak na stronie Działania');
+        $this->assertStringContainsString('Kategorie', $html);
         $this->assertStringContainsString('/szkolenia/wsparcie-psychologiczne', $html, 'linki usług zostają w witrynie');
     }
 
@@ -164,5 +166,20 @@ class FeerIsThemeTest extends TestCase
         $this->actingAs($admin)->put(route('admin.ustawienia.update'), $this->settingsPayload())
             ->assertSessionHasNoErrors()->assertRedirect();
         $this->get('/')->assertOk();
+    }
+
+    public function test_zakladka_moze_miec_ikone_w_trzecim_polu_wiersza(): void
+    {
+        $this->sub->forceFill(['services_tabs' => "Dla osób|dla-osob|mi-accessibility_new\nDla instytucji|dla-instytucji|zła ikona<>"])->save();
+
+        $this->assertSame([
+            ['label' => 'Dla osób', 'slug' => 'dla-osob', 'icon' => 'mi-accessibility_new'],
+            ['label' => 'Dla instytucji', 'slug' => 'dla-instytucji', 'icon' => ''],
+        ], $this->sub->fresh()->servicesTabs());
+
+        $osoby = $this->page('dla-osob');
+        $this->page('porada', ['parent_id' => $osoby->id, 'title' => 'Porada']);
+
+        $this->get('/szkolenia')->assertOk()->assertSee('>accessibility_new</span>', false)->assertSee('role="tab"', false);
     }
 }

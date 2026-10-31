@@ -2845,9 +2845,9 @@
 
                 <div>
                     <label for="services_tabs" class="mb-1 block text-sm font-bold">Zakładki odbiorców (portal usług)</label>
-                    <textarea id="services_tabs" name="services_tabs" rows="4" maxlength="2000" placeholder="Dla osób z niepełnosprawnością|dla-osob&#10;Dla instytucji|dla-instytucji"
+                    <textarea id="services_tabs" name="services_tabs" rows="4" maxlength="2000" placeholder="Dla osób z niepełnosprawnością|dla-osob|mi-accessibility_new&#10;Dla instytucji|dla-instytucji|mi-apartment"
                         class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('services_tabs', $settings->services_tabs) }}</textarea>
-                    <p class="mt-1 text-xs text-ink">Jedna zakładka na wiersz: <code>Nazwa zakładki|adres strony</code> (sam slug, bez ukośnika). Usługi w zakładce to opublikowane podstrony tej strony; opis usługi to jej opis meta.</p>
+                    <p class="mt-1 text-xs text-ink">Jedna zakładka na wiersz: <code>Nazwa zakładki|adres strony|ikona</code> (sam slug, bez ukośnika; ikona opcjonalna, np. <code>mi-groups</code>). Usługi w zakładce to opublikowane podstrony tej strony; opis usługi to jej opis meta.</p>
                     @error('services_tabs') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
