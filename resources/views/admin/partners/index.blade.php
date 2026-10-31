@@ -36,6 +36,7 @@
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3">
                                 <a href="{{ route('admin.partnerzy.edit', $partner) }}" class="text-muted hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                                @include('admin.partials.copy-to-site', ['action' => route('admin.partnerzy.copy-to-site', $partner), 'siteId' => $partner->site_id, 'label' => $partner->name, 'note' => 'Logotyp jest kopiowany razem z partnerem.'])
                                 <form method="POST" action="{{ route('admin.partnerzy.destroy', $partner) }}" onsubmit="return confirm('Usunąć partnera &quot;{{ $partner->name }}&quot;?');">
                                     @csrf
                                     @method('DELETE')

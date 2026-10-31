@@ -116,6 +116,7 @@
                                     <a href="{{ $item->previewUrl() }}" target="_blank" rel="noopener" class="{{ $iconBtn }}" title="Podgląd wersji roboczej (link ważny 14 dni)"><i class="fa-solid fa-eye" aria-hidden="true"></i><span class="sr-only">Podgląd wersji roboczej: {{ $item->title }} (nowa karta)</span></a>
                                 @endif
                                 <button type="submit" form="clone-{{ $item->id }}" class="{{ $iconBtn }}" title="Utwórz kopię"><i class="fa-solid fa-copy" aria-hidden="true"></i><span class="sr-only">Utwórz kopię: {{ $item->title }}</span></button>
+                                @include('admin.partials.copy-to-site', ['action' => route('admin.newsy.copy-to-site', $item), 'siteId' => $item->site_id, 'label' => $item->title, 'note' => 'Kopia będzie szkicem. Zdjęcie i tagi są kopiowane.'])
                                 <button type="submit" form="delete-{{ $item->id }}" class="{{ $iconBtn }} hover:text-red-700" title="Przenieś do kosza"><i class="fa-solid fa-trash" aria-hidden="true"></i><span class="sr-only">Przenieś do kosza: {{ $item->title }}</span></button>
                             </div>
                         </td>

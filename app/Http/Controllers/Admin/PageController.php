@@ -26,6 +26,7 @@ use Illuminate\Validation\Rule;
 class PageController extends Controller
 {
     use HandlesContentApproval;
+    use \App\Http\Controllers\Concerns\CopiesToSite;
 
     /** Wyświetla listę podstron z wyszukiwaniem i filtrowaniem statusu. */
     public function index(Request $request)
@@ -915,11 +916,9 @@ class PageController extends Controller
             return $response;
         }
 
-        $data = $request->validate(['target_site_id' => ['required', 'integer', 'exists:site_settings,id']]);
-        $target = \App\Models\SiteSetting::query()->notTrashed()->find($data['target_site_id']);
-
-        if (! $target || (int) $target->id === (int) $page->site_id) {
-            return back()->with('error', 'Wybierz inną witrynę niż ta, do której należy strona.');
+        $target = $this->copyTargetSite($request, $page);
+        if ($target instanceof \Illuminate\Http\RedirectResponse) {
+            return $target;
         }
 
         $copy = $page->replicate();
@@ -935,7 +934,7 @@ class PageController extends Controller
         }
         $copy->save();
 
-        $name = $target->site_name ?: ($target->slug ?: 'witryny');
+        $name = $this->siteLabel($target);
 
         return back()->with('status', "Skopiowano stronę „{$page->title}” do witryny „{$name}” jako szkic (adres: /{$copy->slug}). Przełącz się na tę witrynę, żeby ją dopracować i opublikować.");
     }

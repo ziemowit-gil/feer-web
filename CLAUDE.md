@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-10-31: „Kopiuj do witryny” także dla partnerów (z logo), aktualności (szkic, zdjęcie, tagi) i wydarzeń (szkic, FAQ); wspólny trait `CopiesToSite` i partial `admin/partials/copy-to-site`; seeder szkiców stron dla instytucji w witrynie /szkolenia (`SzkoleniaInstitutionPagesSeeder`); testy.
 - 2026-10-31: fix 500 w witrynie z prefiksem ścieżki (`/szkolenia`): `site_route()` wraca do zwykłej trasy, gdy nie ma wariantu `site.<nazwa>` (np. `materials.index`); test `SiteRouteFallbackTest`.
 - 2026-10-31: uniwersalna rama `<x-proj-frame>` (płaska jasnoszara jak wiersze listy działań) na stronie działania; Beneficjent = „Ty lub osoba, która korzysta z działania”; seeder przepisujący stronę o odpłatnej działalności.
 - 2026-10-31: moduł „Jak wesprzeć w trzech krokach” na /wsparcie (edytowalny w Ustawienia → Wsparcie → Treść, przełącznik ukrycia, migracja); sekcja „na co idą darowizny” przed „jak pomóc”.

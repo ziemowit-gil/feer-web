@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 class PartnerController extends Controller
 {
     use \App\Http\Controllers\Concerns\AttachesLibraryMedia;
+    use \App\Http\Controllers\Concerns\CopiesToSite;
 
     /** Wyświetla listę partnerów posortowaną wg kolejności. */
     public function index()
@@ -43,6 +44,22 @@ class PartnerController extends Controller
         }
 
         return redirect()->route('admin.partnerzy.index')->with('status', 'Partner został dodany.');
+    }
+
+    /** Kopiuje partnera (z logotypem) do innej witryny sieci. */
+    public function copyToSite(Request $request, Partner $partner)
+    {
+        $target = $this->copyTargetSite($request, $partner);
+        if ($target instanceof \Illuminate\Http\RedirectResponse) {
+            return $target;
+        }
+
+        $copy = $partner->replicate();
+        $copy->site_id = $target->id;
+        $copy->save();
+        $this->copyMediaTo($partner, $copy, 'logo');
+
+        return back()->with('status', "Skopiowano partnera „{$partner->name}” do witryny „{$this->siteLabel($target)}”.");
     }
 
     /** Wyświetla formularz edycji partnera. */

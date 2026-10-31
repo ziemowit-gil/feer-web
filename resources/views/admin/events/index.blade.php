@@ -131,6 +131,7 @@
                                             <span class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-700 px-2 py-0.5 text-xs font-normal text-white opacity-0 transition-opacity group-hover/btn:opacity-100" role="tooltip">Klonuj</span>
                                         </button>
                                     </form>
+                                    @include('admin.partials.copy-to-site', ['action' => route('admin.wydarzenia.copy-to-site', $event), 'siteId' => $event->site_id, 'label' => $event->title, 'note' => 'Kopia będzie szkicem z tym samym terminem.'])
                                     @if ($event->archived_at)
                                         <form method="POST" action="{{ route('admin.wydarzenia.restore', $event) }}">
                                             @csrf

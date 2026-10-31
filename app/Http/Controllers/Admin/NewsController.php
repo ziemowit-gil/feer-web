@@ -26,6 +26,7 @@ use Illuminate\Validation\Rule;
 class NewsController extends Controller
 {
     use HandlesContentApproval;
+    use \App\Http\Controllers\Concerns\CopiesToSite;
 
     /** Wyświetla listę aktualności z wyszukiwaniem, filtrowaniem statusu i kategorii. */
     public function index(Request $request)
@@ -270,6 +271,31 @@ class NewsController extends Controller
     }
 
     /** Klonuje aktualność jako szkic bez zdjęcia. */
+    /** Kopiuje aktualność (ze zdjęciem i tagami) do innej witryny sieci jako szkic. */
+    public function copyToSite(Request $request, News $news)
+    {
+        $target = $this->copyTargetSite($request, $news);
+        if ($target instanceof \Illuminate\Http\RedirectResponse) {
+            return $target;
+        }
+
+        $copy = $news->replicate();
+        $copy->site_id = $target->id;
+        $copy->project_id = null;
+        $copy->slug = $this->uniqueSlug($news->title);
+        $copy->is_published = false;
+        $copy->published_at = null;
+        $copy->pending_approval = false;
+        $copy->is_clone = false;
+        $copy->cloned_from_id = null;
+        $copy->save();
+
+        $copy->tags()->sync($news->tags->pluck('id')->all());
+        $this->copyMediaTo($news, $copy, 'image');
+
+        return back()->with('status', "Skopiowano aktualność „{$news->title}” do witryny „{$this->siteLabel($target)}” jako szkic. Przełącz się na tę witrynę, żeby ją dopracować i opublikować.");
+    }
+
     public function clone(News $news)
     {
         $clone = $news->replicate();

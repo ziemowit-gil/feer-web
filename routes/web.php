@@ -472,6 +472,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::patch('newsy/{news}/szybka-edycja', [AdminNewsController::class, 'quickUpdate'])->name('newsy.szybka-edycja');
         Route::post('newsy/{news}/pliki', [AdminAttachmentController::class, 'storeForNews'])->name('newsy.pliki.store');
         Route::post('newsy/{news}/klonuj', [AdminNewsController::class, 'clone'])->name('newsy.klonuj');
+        Route::post('newsy/{news}/kopiuj-do-witryny', [AdminNewsController::class, 'copyToSite'])->name('newsy.copy-to-site');
         Route::post('newsy/zbiorczo', [AdminNewsController::class, 'bulk'])->name('newsy.bulk');
         Route::post('kategorie-newsow/{newsCategory}/przesun', [AdminNewsCategoryController::class, 'move'])->name('kategorie-newsow.move');
         Route::resource('kategorie-newsow', AdminNewsCategoryController::class)->parameters(['kategorie-newsow' => 'newsCategory'])->except('show');
@@ -500,6 +501,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     });
 
     Route::middleware(['module:partners', 'module-access:partners'])->group(function () {
+        Route::post('partnerzy/{partner}/kopiuj-do-witryny', [AdminPartnerController::class, 'copyToSite'])->name('partnerzy.copy-to-site');
         Route::resource('partnerzy', AdminPartnerController::class)->parameters(['partnerzy' => 'partner'])->except('show');
     });
 
@@ -544,6 +546,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::put('wydarzenia/{event}/archiwizuj', [AdminEventController::class, 'archive'])->name('wydarzenia.archive');
         Route::put('wydarzenia/{event}/przywroc', [AdminEventController::class, 'restore'])->name('wydarzenia.restore');
         Route::post('wydarzenia/{event}/klonuj', [AdminEventController::class, 'clone'])->name('wydarzenia.klonuj');
+        Route::post('wydarzenia/{event}/kopiuj-do-witryny', [AdminEventController::class, 'copyToSite'])->name('wydarzenia.copy-to-site');
         Route::post('wydarzenia/zbiorczo', [AdminEventController::class, 'bulk'])->name('wydarzenia.bulk');
 
         Route::resource('prowadzacy', AdminFacilitatorController::class)

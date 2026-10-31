@@ -26,6 +26,8 @@ use Illuminate\Support\Str;
  */
 class EventController extends Controller
 {
+    use \App\Http\Controllers\Concerns\CopiesToSite;
+
     /** Wyświetla stronę statystyk wydarzeń. */
     public function stats()
     {
@@ -224,6 +226,33 @@ class EventController extends Controller
     }
 
     /** Klonuje wydarzenie jako szkic bez daty, kopiując powiązane FAQ. */
+    /** Kopiuje wydarzenie (z pytaniami FAQ i zdjęciem prowadzącej) do innej witryny sieci jako szkic. */
+    public function copyToSite(Request $request, Event $event)
+    {
+        $target = $this->copyTargetSite($request, $event);
+        if ($target instanceof \Illuminate\Http\RedirectResponse) {
+            return $target;
+        }
+
+        $copy = $event->replicate();
+        $copy->site_id = $target->id;
+        $copy->slug = $this->uniqueSlug($event->title);
+        $copy->is_published = false;
+        $copy->is_featured = false;
+        $copy->archived_at = null;
+        $copy->recurrence_type = null;
+        $copy->recurrence_ends_at = null;
+        $copy->recurrence_parent_id = null;
+        $copy->save();
+
+        foreach ($event->faqs()->get() as $faq) {
+            $copy->faqs()->create($faq->only(['question', 'answer', 'order']));
+        }
+        $this->copyMediaTo($event, $copy, 'facilitator_photo');
+
+        return back()->with('status', "Skopiowano wydarzenie „{$event->title}” do witryny „{$this->siteLabel($target)}” jako szkic. Sprawdź termin po przełączeniu na tę witrynę (został taki sam jak w oryginale).");
+    }
+
     public function clone(Event $event)
     {
         $clone = $event->replicate();
