@@ -7,26 +7,8 @@
     $navItems ??= collect();
     $bipHref = $siteSettings->bipHref();
     $z2Socials = $siteSettings->socialLinks(3);
-    $z2Route = request()->route('page');
-    $z2CurrentPageId = request()->routeIs('page.show') && is_object($z2Route) ? $z2Route->id : null;
     // Pozycje z flagą „mega” → panel mega menu w kolumnach; pozostałe z podpozycjami → pionowa lista.
-    $z2Items = $navItems->map(function ($item) use ($z2CurrentPageId) {
-        $sections = collect($item->megaSections($z2CurrentPageId))->map(fn ($sec) => [
-            'heading' => $sec['heading'] ? ['label' => $sec['heading']['label'], 'url' => $sec['heading']['url'] ? site_href($sec['heading']['url']) : null, 'current' => (bool) ($sec['heading']['current'] ?? false)] : null,
-            'links' => collect($sec['links'])->map(fn ($l) => ['url' => site_href($l[0]), 'label' => $l[1], 'description' => $l[2], 'current' => (bool) $l[4]])->all(),
-        ])->all();
-        $grouped = \App\Models\NavItem::sectionsAreGrouped($sections);
-        $flat = collect($sections)->flatMap(fn ($sec) => array_merge(
-            $sec['heading'] ? [['url' => $sec['heading']['url'], 'label' => $sec['heading']['label'], 'description' => null, 'current' => $sec['heading']['current']]] : [],
-            $sec['links']
-        ))->values()->all();
-
-        return (object) [
-            'label' => $item->label, 'url' => site_href($item->url), 'current' => $item->isCurrent(),
-            'mega' => $item->isMega() && $sections !== [], 'sections' => $sections, 'grouped' => $grouped, 'flat' => $flat,
-            'cols' => $grouped ? min(4, max(2, count($sections))) : max(2, min(4, (int) ceil(count($flat) / 4))),
-        ];
-    });
+    $z2Items = \App\Support\HeaderNav::items($navItems);
 @endphp
 
 @include('templates.test2.partials.inner')

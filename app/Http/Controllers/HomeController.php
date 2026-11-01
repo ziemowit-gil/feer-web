@@ -213,6 +213,31 @@ class HomeController extends Controller
         return view('templates.ngo_3.home', compact('slides', 'newsItems', 'projects', 'events', 'partners', 'quickLinks', 'stats'));
     }
 
+    /**
+     * Strona główna szablonu „test3” (portal miejski): slider z kaflami skrótów, dziewięć najnowszych aktualności z kategoriami
+     * (filtr na stronie), pas liczb na zdjęciu, galeria i partnerzy. Liczby bierzemy ze strony „O organizacji” albo z ustawień
+     * szablonu NGO 3; przykładowych liczb domyślnych nie pokazujemy.
+     */
+    private function test3Home(SiteSetting $settings, Collection $slides, Collection $partners, Collection $quickLinks, Collection $gallery)
+    {
+        $newsItems = $settings->isModuleEnabled('news')
+            ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(9)->get()
+            : collect();
+
+        $aboutPage = Page::where('type', 'about')->forCurrentSite()->first();
+        $stats = collect($aboutPage?->about_stats ?: ($settings->ngo_3_stats ?: []))
+            ->filter(fn ($row) => is_array($row) && filled($row['value'] ?? null))->values()->all();
+
+        // Zdjęcie pasa liczb: pierwsze zdjęcie slidera (slajd misji go nie ma).
+        $statsBg = $slides->map(fn ($slide) => data_get($slide, 'image_url'))->filter()->first();
+
+        return view('templates.test3.home', [
+            'slides' => $slides, 'quickLinks' => $quickLinks, 'newsItems' => $newsItems, 'stats' => $stats,
+            'statsBg' => $statsBg, 'statsText' => $settings->tagline, 'aboutUrl' => $aboutPage?->publicUrl(),
+            'gallery' => $gallery, 'partners' => $partners,
+        ]);
+    }
+
     /** Renderuje stronę główną w szablonie "wrzos" (siatka aktualności 4×2, blok "Kim jesteśmy?", karty wartości). */
     private function wrzosHome(SiteSetting $settings, Collection $partners)
     {
@@ -378,6 +403,9 @@ class HomeController extends Controller
         }
         if ($template === 'test2') {
             return $this->ngoHome($settings, $slides, $partners, 'templates.test2.home', $quickLinks);
+        }
+        if ($template === 'test3') {
+            return $this->test3Home($settings, $slides, $partners, $quickLinks, $gallery);
         }
         if ($template === 'wrzos') {
             return $this->wrzosHome($settings, $partners);
