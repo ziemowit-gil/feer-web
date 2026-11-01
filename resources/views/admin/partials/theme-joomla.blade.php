@@ -1,6 +1,6 @@
 {{--
     Motyw panelu w duchu Joomla (klasyczny „Control Panel”): ciepłe, jasne tło, kremowe pasy nagłówków,
-    karty i paski narzędzi z cienką ramką, kafle szybkich akcji na pulpicie. Działa na <body class="admin-joomla">,
+    karty i paski narzędzi z cienką ramką. Działa na <body class="admin-joomla">,
     więc da się go wyłączyć jedną klasą. Style wbudowane (push nie buduje CSS).
     Kontrast: ink #1a1a1a na kremie #f7f7e8 ≈ 16:1, brand-dark na kremie ≥ 6:1, biały na gray-600 (pigułki) ≥ 7:1.
 --}}
@@ -61,15 +61,6 @@
     .admin-joomla .j-panel-head { display: flex; align-items: center; gap: .5rem; padding: .5rem 1rem; background: var(--j-head); border-bottom: 1px solid var(--j-line); color: var(--color-brand-dark); font-weight: 700; }
     .admin-joomla .j-panel-head::before { content: ''; border-left: 6px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
 
-    /* Kafle szybkich akcji (pulpit). */
-    .j-tiles { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); }
-    .j-tile { display: flex; min-height: 7.5rem; flex-direction: column; align-items: center; justify-content: center; gap: .625rem; padding: 1rem .5rem; border: 1px solid var(--j-line, #d6d6c2); border-radius: 6px; background: var(--j-cream, #f7f7e8); color: var(--color-brand-dark); text-align: center; font-size: .8125rem; font-weight: 700; line-height: 1.25; transition: background-color .15s, border-color .15s; }
-    .j-tile i { font-size: 2rem; }
-    .j-tile:hover { background: var(--color-brand-light); border-color: var(--color-brand-dark); }
-    .j-tile:focus-visible { outline: 3px solid var(--color-brand-dark); outline-offset: 2px; }
-    .j-tile .j-tile-count { margin-top: -.25rem; color: #4b5563; font-size: .75rem; font-weight: 400; }
-    @media (prefers-reduced-motion: reduce) { .j-tile { transition: none; } }
-
     /* Tryby wysokiego kontrastu panelu mają pierwszeństwo. */
-    html.contrast .admin-joomla, html.contrast .admin-joomla .tm-head, html.contrast .j-tile { background: #fff; color: #1a1a1a; }
+    html.contrast .admin-joomla, html.contrast .admin-joomla .tm-head { background: #fff; color: #1a1a1a; }
 </style>

@@ -129,6 +129,15 @@ final class AdminMenu
         return $defined->diff($placed)->diff(self::OUTSIDE_MAIN_LAYOUT)->unique()->values()->all();
     }
 
+    /**
+     * Czy moduł jest włączony i dostępny dla użytkownika — ta sama reguła co widoczność pozycji menu
+     * (menedżer modułów albo ustawienia witryny, plus uprawnienie roli). Pulpit używa jej do skrótów „Utwórz”.
+     */
+    public static function moduleAllowed(User $user, string $module): bool
+    {
+        return (new self($user))->can($module);
+    }
+
     /** @return Collection<string, array<string, mixed>> */
     private function sectionsByKey(): Collection
     {

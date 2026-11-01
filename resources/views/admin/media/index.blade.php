@@ -171,6 +171,29 @@
                         </label>
                     </form>
                 </nav>
+
+                {{-- Zalecane wymiary grafik (przeniesione z pulpitu): zwijany akapit przy narzędziach plików. --}}
+                <section class="rounded-md bg-white p-3" x-data="{ open: false }" aria-labelledby="nav-sizes">
+                    <h2 id="nav-sizes">
+                        <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-controls="media-sizes"
+                            class="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs font-bold uppercase tracking-widest text-muted hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                            Zalecane wymiary grafik
+                            <i class="fa-solid fa-chevron-down text-[0.65rem] transition-transform" :class="open ? 'rotate-180' : ''" aria-hidden="true"></i>
+                        </button>
+                    </h2>
+                    <div id="media-sizes" x-show="open" x-cloak class="px-2 pb-1 pt-2">
+                        <p class="mb-3 text-xs text-muted">Zdjęcia są przycinane, więc inne proporcje też zadziałają — poniższe dają najostrzejszy wygląd.</p>
+                        <ul role="list" class="space-y-2 text-sm">
+                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Logo</span><span class="text-right text-muted">400×400 px, PNG/SVG</span></li>
+                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Slajder hero</span><span class="text-right text-muted">1600×600 px</span></li>
+                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">OG / udostępnianie</span><span class="text-right text-muted">1200×630 px</span></li>
+                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Miniatury</span><span class="text-right text-muted">800×600 px</span></li>
+                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Zdjęcie działania</span><span class="text-right text-muted">1200×500 px</span></li>
+                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Galeria</span><span class="text-right text-muted">min. 600×450 px</span></li>
+                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Logo partnera</span><span class="text-right text-muted">do 300 px, PNG</span></li>
+                        </ul>
+                    </div>
+                </section>
                 </div>
             </aside>
 

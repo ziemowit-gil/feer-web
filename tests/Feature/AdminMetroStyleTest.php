@@ -77,22 +77,19 @@ class AdminMetroStyleTest extends TestCase
         $this->assertStringContainsString('x-show="fly && $store.adminNav.flyout()"', $html);
     }
 
-    public function test_pulpit_metro_to_grupy_kafli_zamiast_klasycznego_ukladu(): void
+    public function test_pulpit_metro_to_kafle_na_dzis_i_utworz_zamiast_klasycznego_ukladu(): void
     {
         $html = $this->actingAs($this->metroAdmin())->get(route('admin.dashboard'))->assertOk()->getContent();
 
-        foreach (['mt-today' => 'Na dziś', 'mt-create' => 'Utwórz', 'mt-group-0' => 'Treści', 'mt-group-1' => 'Struktura i wygląd', 'mt-group-2' => 'Administracja', 'mt-stats' => 'Zawartość serwisu'] as $id => $title) {
+        foreach (['mt-today' => 'Na dziś', 'mt-create' => 'Utwórz'] as $id => $title) {
             $this->assertMatchesRegularExpression('~<h2 id="'.$id.'" class="metro-group-title">'.preg_quote($title, '~').'</h2>~u', $html, "Brak grupy kafli: $title");
         }
-        $this->assertStringContainsString('href="'.route('admin.uzytkownicy.index').'" class="metro-tile" data-tone="mist"', $html);
-        $this->assertStringContainsString('href="'.route('admin.newsy.index').'" class="metro-tile" data-tone="sky"', $html);
-        $this->assertStringContainsString('class="metro-tile metro-tile--count" data-tone="paper"', $html);
+        $this->assertStringContainsString('href="'.route('admin.newsy.create').'" class="metro-tile" data-tone="brand"', $html);
         $this->assertStringContainsString('<span class="sr-only">Utwórz: </span>', $html);
-        // Klasyczne kafle Joomla i lista „Zawartość serwisu” nie są dublowane.
-        $this->assertStringNotContainsString('class="j-tile', $html);
-        $this->assertStringNotContainsString('id="dash-stats"', $html);
-        // Wspólne dolne sekcje zostają.
-        $this->assertStringContainsString('id="dash-activity"', $html);
+        // Pulpit jest prosty: bez kafli modułów, liczników i klasycznych kafli Joomla (menu boczne zastępuje skróty do modułów).
+        foreach (['mt-group-', 'mt-stats', 'class="j-tile', 'id="dash-stats"', 'id="dash-tiles"', 'Panel sterowania', 'Zawartość serwisu'] as $gone) {
+            $this->assertStringNotContainsString($gone, $html, $gone);
+        }
     }
 
     public function test_pulpit_metro_bez_spraw_do_decyzji_pokazuje_kafel_komunikat(): void
@@ -118,16 +115,15 @@ class AdminMetroStyleTest extends TestCase
         $this->assertStringNotContainsString('Wszystko załatwione', $html);
     }
 
-    public function test_redaktor_w_metro_nie_widzi_kafli_administracyjnych(): void
+    public function test_koordynator_w_metro_ma_kafle_utworz_tylko_ze_swojego_zakresu(): void
     {
-        $editor = User::factory()->create(['role' => User::ROLE_CONTENT_EDITOR, 'admin_scheme' => 'metro']);
+        $coordinator = User::factory()->create(['role' => User::ROLE_COORDINATOR, 'admin_scheme' => 'metro']);
 
-        $html = $this->actingAs($editor)->get(route('admin.dashboard'))->assertOk()->getContent();
+        $html = $this->actingAs($coordinator)->get(route('admin.dashboard'))->assertOk()->getContent();
 
-        $this->assertStringContainsString('class="metro-group-title">Treści</h2>', $html);
-        $this->assertStringNotContainsString('href="'.route('admin.uzytkownicy.index').'" class="metro-tile', $html);
-        $this->assertStringNotContainsString('href="'.route('admin.ustawienia.edit').'" class="metro-tile', $html);
-        $this->assertStringNotContainsString('class="metro-group-title">Administracja</h2>', $html);
+        $this->assertStringContainsString('href="'.route('admin.wydarzenia.create').'" class="metro-tile" data-tone="brand"', $html);
+        $this->assertStringNotContainsString('href="'.route('admin.newsy.create').'" class="metro-tile', $html);
+        $this->assertStringNotContainsString('href="'.route('admin.podstrony.create').'" class="metro-tile', $html);
     }
 
     #[DataProvider('widokiPanelu')]
@@ -167,8 +163,8 @@ class AdminMetroStyleTest extends TestCase
             $this->assertStringNotContainsString('admin-metro', $html, $scheme);
             $this->assertStringNotContainsString('metro-tile', $html, $scheme);
             $this->assertStringNotContainsString('family=Montserrat', $html, $scheme);
-            $this->assertStringContainsString('class="j-tile w-full"', $html, $scheme);
-            $this->assertStringContainsString('id="dash-stats"', $html, $scheme);
+            $this->assertStringContainsString('id="dash-attention"', $html, $scheme);
+            $this->assertStringContainsString('id="dash-create-menu"', $html, $scheme);
         }
     }
 
@@ -177,7 +173,7 @@ class AdminMetroStyleTest extends TestCase
     {
         $tones = AdminMetro::tones($brand);
 
-        $this->assertSame(['brand', 'sky', 'sand', 'mist', 'amber', 'paper'], array_keys($tones));
+        $this->assertSame(['brand', 'amber', 'paper'], array_keys($tones));
         foreach ($tones as $name => $tone) {
             foreach (['bg' => 'normalny', 'hover' => 'najechany', 'active' => 'wciśnięty'] as $state => $label) {
                 $ratio = Color::contrast($tone[$state], $tone['fg']);
@@ -245,10 +241,10 @@ class AdminMetroStyleTest extends TestCase
         $html = $this->actingAs($this->metroAdmin())->get(route('admin.podstrony.index'))->assertOk()->getContent();
         $this->assertStringContainsString('--m-bg: '.AdminMetro::SURFACES['page'].';', $html);
         $this->assertStringContainsString('--m-side: '.AdminMetro::SURFACES['side'].';', $html);
-        foreach (['brand', 'sky', 'sand', 'mist', 'amber', 'paper'] as $tone) {
+        foreach (['brand', 'amber', 'paper'] as $tone) {
             $this->assertStringContainsString('.metro-tile[data-tone="'.$tone.'"] {', $html);
         }
-        foreach (['ink', 'deep', 'slate'] as $removed) {
+        foreach (['ink', 'deep', 'slate', 'sky', 'sand', 'mist'] as $removed) {
             $this->assertStringNotContainsString('.metro-tile[data-tone="'.$removed.'"]', $html, "Ciemny ton {$removed} został usunięty");
         }
     }

@@ -1,7 +1,7 @@
 {{--
     Styl panelu „Metro” — alternatywa dla schematów kolorów (Mój profil → Wygląd panelu, User::ADMIN_SCHEMES['metro']).
     Wzorowany na Metro UI 5 (metroui.org.ua): jasne tło strony i pasek boczny z akcentem przy aktywnej pozycji, białe pola,
-    kafle 150 px z odstępem 10 px (etykieta u dołu, ikona pośrodku, licznik w rogu) w jasnych odcieniach marki, płaskie
+    kafle 150 px z odstępem 10 px (etykieta u dołu, ikona pośrodku, licznik w rogu) w kolorach marki, płaskie
     przyciski i pola. Ładowany po theme-joomla tylko dla tego schematu; działa na <body class="admin-joomla admin-metro">,
     więc ten sam markup obsługuje oba style. Style wbudowane (push nie buduje CSS). Zaokrąglenie ustawia jedna zmienna:
     --m-radius; jasność teł: App\Support\AdminMetro::SURFACES (strona, menu) i ::tones() (kafle).
@@ -167,7 +167,6 @@
     a.metro-tile:focus-visible { z-index: 1; outline: 3px solid var(--m-focus); outline-offset: 3px; }
     .metro-tile-icon { position: absolute; top: 50%; left: 50%; font-size: 2.75rem; line-height: 1; transform: translate(-50%, -62%); }
     .metro-tile-label { position: relative; font-size: .9375rem; font-weight: 600; line-height: 1.25; }
-    .metro-tile-sub { position: relative; margin-top: .125rem; font-size: .8125rem; line-height: 1.3; }
     .metro-tile-badge { position: absolute; top: .625rem; right: .625rem; display: inline-flex; min-width: 1.75rem; height: 1.75rem; align-items: center; justify-content: center; padding: 0 .5rem; background: var(--t-fg); color: var(--t-bg); font-size: .875rem; font-weight: 700; }
     .metro-tile--count .metro-tile-count { position: absolute; top: .5rem; left: .875rem; font-family: var(--m-font-heading); font-size: 3rem; font-weight: 300; line-height: 1; letter-spacing: -.02em; }
     .metro-tile--count .metro-tile-icon { top: .875rem; right: .875rem; left: auto; font-size: 1.25rem; transform: none; }

@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/** Motyw panelu w duchu Joomla: nagłówek, pasek narzędzi, menu i kafle „Panel sterowania” na pulpicie. */
+/** Motyw panelu w duchu Joomla: nagłówek, pasek narzędzi, menu i uproszczony pulpit (Na dziś, Utwórz, listy). */
 class AdminJoomlaThemeTest extends TestCase
 {
     use RefreshDatabase;
@@ -18,7 +18,7 @@ class AdminJoomlaThemeTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
     }
 
-    public function test_pulpit_admina_ma_motyw_naglowek_i_kafle(): void
+    public function test_pulpit_admina_ma_motyw_naglowek_i_uproszczony_uklad(): void
     {
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
@@ -29,20 +29,22 @@ class AdminJoomlaThemeTest extends TestCase
         $this->assertMatchesRegularExpression('~<h1 class="j-title[^"]*">\s*<span class="j-title-icon" aria-hidden="true"><i class="fa-solid fa-[a-z-]+"></i></span>~u', $html);
         $this->assertStringContainsString('Zobacz stronę<span class="sr-only"> (otwiera się w nowej karcie)</span>', $html);
         $this->assertStringContainsString('<button type="submit" class="j-link"><i class="fa-solid fa-right-from-bracket text-xs" aria-hidden="true"></i> Wyloguj</button>', $html);
-        $this->assertStringContainsString('<h2 id="dash-tiles"', $html);
-        $this->assertStringContainsString('Panel sterowania', $html);
-        $this->assertStringContainsString('href="'.route('admin.uzytkownicy.index').'" class="j-tile w-full"', $html);
-        $this->assertStringContainsString('href="'.route('admin.kopie.index').'" class="j-tile w-full"', $html);
+        // Pulpit jest przeglądem: sprawy „Na dziś” i lista „Utwórz”; kafle „Panel sterowania” duplikowały menu boczne.
+        $this->assertStringContainsString('<h2 id="dash-attention"', $html);
+        $this->assertStringContainsString('aria-controls="dash-create-menu"', $html);
+        $this->assertStringNotContainsString('Panel sterowania', $html);
+        $this->assertStringNotContainsString('class="j-tile', $html);
     }
 
-    public function test_redaktor_nie_widzi_kafli_administracyjnych(): void
+    public function test_redaktor_ma_skroty_utworz_tylko_ze_swojego_zakresu(): void
     {
         $editor = User::factory()->create(['role' => User::ROLE_CONTENT_EDITOR]);
 
         $html = $this->actingAs($editor)->get(route('admin.dashboard'))->assertOk()->getContent();
 
-        $this->assertStringNotContainsString('href="'.route('admin.uzytkownicy.index').'" class="j-tile', $html);
-        $this->assertStringNotContainsString('href="'.route('admin.ustawienia.edit').'" class="j-tile', $html);
+        $this->assertStringContainsString('href="'.route('admin.newsy.create').'"', $html);
+        $this->assertStringNotContainsString('class="j-tile', $html);
+        $this->assertStringNotContainsString('Panel sterowania', $html);
     }
 
     public function test_inne_strony_panelu_tez_maja_motyw(): void
