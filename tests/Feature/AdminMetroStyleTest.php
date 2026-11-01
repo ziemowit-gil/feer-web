@@ -84,8 +84,8 @@ class AdminMetroStyleTest extends TestCase
         foreach (['mt-today' => 'Na dziś', 'mt-create' => 'Utwórz', 'mt-group-0' => 'Treści', 'mt-group-1' => 'Struktura i wygląd', 'mt-group-2' => 'Administracja', 'mt-stats' => 'Zawartość serwisu'] as $id => $title) {
             $this->assertMatchesRegularExpression('~<h2 id="'.$id.'" class="metro-group-title">'.preg_quote($title, '~').'</h2>~u', $html, "Brak grupy kafli: $title");
         }
-        $this->assertStringContainsString('href="'.route('admin.uzytkownicy.index').'" class="metro-tile" data-tone="ink"', $html);
-        $this->assertStringContainsString('href="'.route('admin.newsy.index').'" class="metro-tile" data-tone="brand"', $html);
+        $this->assertStringContainsString('href="'.route('admin.uzytkownicy.index').'" class="metro-tile" data-tone="mist"', $html);
+        $this->assertStringContainsString('href="'.route('admin.newsy.index').'" class="metro-tile" data-tone="sky"', $html);
         $this->assertStringContainsString('class="metro-tile metro-tile--count" data-tone="paper"', $html);
         $this->assertStringContainsString('<span class="sr-only">Utwórz: </span>', $html);
         // Klasyczne kafle Joomla i lista „Zawartość serwisu” nie są dublowane.
@@ -175,9 +175,9 @@ class AdminMetroStyleTest extends TestCase
     #[DataProvider('kolorMarki')]
     public function test_kafle_maja_kontrast_co_najmniej_4_5_w_kazdym_stanie(string $brand): void
     {
-        $tones = AdminMetro::tones(Color::darken($brand, 0.25));
+        $tones = AdminMetro::tones($brand);
 
-        $this->assertSame(['brand', 'deep', 'ink', 'slate', 'amber', 'paper'], array_keys($tones));
+        $this->assertSame(['brand', 'sky', 'sand', 'mist', 'amber', 'paper'], array_keys($tones));
         foreach ($tones as $name => $tone) {
             foreach (['bg' => 'normalny', 'hover' => 'najechany', 'active' => 'wciśnięty'] as $state => $label) {
                 $ratio = Color::contrast($tone[$state], $tone['fg']);
@@ -190,7 +190,8 @@ class AdminMetroStyleTest extends TestCase
     {
         $tones = AdminMetro::tones('nie-kolor');
 
-        $this->assertSame('#1752bf', $tones['brand']['bg']);
+        // Domyślna marka FEER (#1e6dff) przyciemniona dokładnie tyle, by biały tekst miał ≥ 4,5:1.
+        $this->assertSame('#1d68f2', $tones['brand']['bg']);
         $this->assertSame('#ffffff', $tones['brand']['fg']);
         foreach ($tones as $tone) {
             foreach (['bg', 'fg', 'hover', 'active'] as $key) {
@@ -213,17 +214,42 @@ class AdminMetroStyleTest extends TestCase
 
     public function test_akcent_stylu_i_komunikaty_maja_kontrast(): void
     {
-        $brand = AdminMetro::tones(SiteSetting::current()->brandPalette()['dark'])['brand'];
+        $brand = AdminMetro::tones(SiteSetting::current()->brandPalette()['color'])['brand'];
 
         $this->assertGreaterThanOrEqual(4.5, Color::contrast($brand['bg'], $brand['fg']));
         $this->assertGreaterThanOrEqual(4.5, Color::contrast(AdminMetro::DANGER, AdminMetro::WHITE));
         // Obrys pól i paneli (komponent interfejsu) ≥ 3:1 na bieli i na szarym tle panelu.
         $this->assertGreaterThanOrEqual(3.0, Color::contrast('#767676', '#ffffff'));
-        $this->assertGreaterThanOrEqual(3.0, Color::contrast('#767676', '#ececec'));
-        // Tekst pomocniczy na szarych powierzchniach (tło strony, pasek boczny, najechany wiersz paska).
-        foreach (['#ececec', '#e1e1e1', '#d3d3d3', '#e4e4e4'] as $surface) {
-            $this->assertGreaterThanOrEqual(4.5, Color::contrast('#4b5563', $surface), $surface);
-            $this->assertGreaterThanOrEqual(4.5, Color::contrast(AdminMetro::INK, $surface), $surface);
+        $this->assertGreaterThanOrEqual(3.0, Color::contrast('#767676', AdminMetro::SURFACES['page']));
+        // Tekst pomocniczy i ink na szarych powierzchniach (tło strony, pasek boczny, najechany wiersz paska i listy, nagłówki tabel).
+        foreach (AdminMetro::SURFACES as $name => $surface) {
+            $this->assertGreaterThanOrEqual(4.5, Color::contrast(AdminMetro::MUTED, $surface), $name);
+            $this->assertGreaterThanOrEqual(4.5, Color::contrast(AdminMetro::INK, $surface), $name);
+        }
+    }
+
+    public function test_tla_metro_sa_jasne_i_pochodza_z_jednego_miejsca(): void
+    {
+        // Tło strony, menu i kafle są jasne: żadna powierzchnia (poza żywym akcentem i pomarańczem) nie jest ciemniejsza niż ok. #c6c6c6 nawet po wciśnięciu.
+        foreach (AdminMetro::SURFACES as $name => $surface) {
+            $this->assertLessThanOrEqual(1.4, Color::contrast($surface, '#ffffff'), "Powierzchnia {$name} jest za ciemna");
+        }
+        foreach (AdminMetro::tones('#1e6dff') as $name => $tone) {
+            if (in_array($name, ['brand', 'amber'], true)) {
+                continue; // żywy akcent z białym albo ciemnym tekstem
+            }
+            $this->assertLessThanOrEqual(1.8, Color::contrast($tone['active'], '#ffffff'), "Kafel {$name} jest za ciemny");
+        }
+
+        // Arkusz Metro wypisuje dokładnie te kolory (jedno źródło prawdy: AdminMetro).
+        $html = $this->actingAs($this->metroAdmin())->get(route('admin.podstrony.index'))->assertOk()->getContent();
+        $this->assertStringContainsString('--m-bg: '.AdminMetro::SURFACES['page'].';', $html);
+        $this->assertStringContainsString('--m-side: '.AdminMetro::SURFACES['side'].';', $html);
+        foreach (['brand', 'sky', 'sand', 'mist', 'amber', 'paper'] as $tone) {
+            $this->assertStringContainsString('.metro-tile[data-tone="'.$tone.'"] {', $html);
+        }
+        foreach (['ink', 'deep', 'slate'] as $removed) {
+            $this->assertStringNotContainsString('.metro-tile[data-tone="'.$removed.'"]', $html, "Ciemny ton {$removed} został usunięty");
         }
     }
 }

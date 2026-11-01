@@ -67,7 +67,7 @@ class User extends Authenticatable implements Subscribable
         'niebieski' => ['Niebieski', 'Jasne błękity w kolorze marki FEER.', ['#eef3fb', '#f3f7ff', '#c9d6ee']],
         'szalwia' => ['Szałwiowy', 'Delikatna, przygaszona zieleń.', ['#f1f5f1', '#f5f9f4', '#cddbcb']],
         'pierwotny' => ['Pierwotny', 'Kolory dawnego panelu — białe karty na szarym tle.', ['#f3f4f6', '#ffffff', '#e5e7eb']],
-        'metro' => ['Metro', 'Alternatywny styl wzorowany na Metro UI: płaskie kafle na pulpicie, kanciaste elementy, szare menu z akcentem.', ['#ececec', '#1652bf', '#1d1d1a']],
+        'metro' => ['Metro', 'Alternatywny styl wzorowany na Metro UI: jasne płaskie kafle na pulpicie, kanciaste elementy, jasne menu z akcentem.', ['#f3f3f3', '#1d68f2', '#d7e5ff']],
     ];
 
     public const DEFAULT_ADMIN_SCHEME = 'krem';

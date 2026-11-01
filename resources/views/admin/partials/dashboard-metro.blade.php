@@ -7,9 +7,9 @@
 @php
     // Grupy kafli „Panelu sterowania”: tytuł, ton koloru (AdminMetro::tones), trasy z $tileMap (brak uprawnień lub trasy = kafla nie ma).
     $metroGroups = [
-        ['title' => 'Treści', 'tone' => 'brand', 'routes' => ['admin.newsy.create', 'admin.newsy.index', 'admin.podstrony.index', 'admin.projekty.index', 'admin.wydarzenia.index', 'admin.multimedia.index', 'admin.newsletter.dashboard']],
-        ['title' => 'Struktura i wygląd', 'tone' => 'deep', 'routes' => ['admin.pozycje-menu.index', 'admin.szablony.manage']],
-        ['title' => 'Administracja', 'tone' => 'ink', 'routes' => ['admin.uzytkownicy.index', 'admin.ustawienia.edit', 'admin.kopie.index', 'admin.health.index']],
+        ['title' => 'Treści', 'tone' => 'sky', 'routes' => ['admin.newsy.create', 'admin.newsy.index', 'admin.podstrony.index', 'admin.projekty.index', 'admin.wydarzenia.index', 'admin.multimedia.index', 'admin.newsletter.dashboard']],
+        ['title' => 'Struktura i wygląd', 'tone' => 'sand', 'routes' => ['admin.pozycje-menu.index', 'admin.szablony.manage']],
+        ['title' => 'Administracja', 'tone' => 'mist', 'routes' => ['admin.uzytkownicy.index', 'admin.ustawienia.edit', 'admin.kopie.index', 'admin.health.index']],
     ];
 @endphp
 

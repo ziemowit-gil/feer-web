@@ -1,31 +1,33 @@
 {{--
     Styl panelu „Metro” — alternatywa dla schematów kolorów (Mój profil → Wygląd panelu, User::ADMIN_SCHEMES['metro']).
-    Wzorowany na Metro UI 5 (metroui.org.ua): jasnoszary pasek boczny z akcentem przy aktywnej pozycji, białe pola na szarym
-    tle, kafle 150 px z odstępem 10 px (etykieta u dołu, ikona pośrodku, licznik w rogu), płaskie przyciski i pola.
-    Ładowany po theme-joomla tylko dla tego schematu; działa na <body class="admin-joomla admin-metro">, więc ten sam
-    markup obsługuje oba style. Style wbudowane (push nie buduje CSS). Zaokrąglenie ustawia jedna zmienna: --m-radius.
+    Wzorowany na Metro UI 5 (metroui.org.ua): jasne tło strony i pasek boczny z akcentem przy aktywnej pozycji, białe pola,
+    kafle 150 px z odstępem 10 px (etykieta u dołu, ikona pośrodku, licznik w rogu) w jasnych odcieniach marki, płaskie
+    przyciski i pola. Ładowany po theme-joomla tylko dla tego schematu; działa na <body class="admin-joomla admin-metro">,
+    więc ten sam markup obsługuje oba style. Style wbudowane (push nie buduje CSS). Zaokrąglenie ustawia jedna zmienna:
+    --m-radius; jasność teł: App\Support\AdminMetro::SURFACES (strona, menu) i ::tones() (kafle).
     Kontrast (WCAG): tekst ≥ 4,5:1 w stanach normalny / najechany / aktywny / otwarty, bez opacity na treści; pary kolorów
     kafli wylicza App\Support\AdminMetro (kolor marki przez Color::button), obrysy pól #767676 (≥ 3:1 na bieli i szarościach).
 --}}
 @php
-    $mtTones = \App\Support\AdminMetro::tones($brandPalette['dark']);
+    $mtTones = \App\Support\AdminMetro::tones($brandPalette['color']);
     $mtBrand = $mtTones['brand'];
-    // Akcent jako kolor TEKSTU (np. licznik na białym kafelku) tylko wtedy, gdy czyta się na najciemniejszej powierzchni (#d3d3d3).
-    $mtAccentInk = \App\Support\Color::contrast($mtBrand['bg'], '#d3d3d3') >= 4.5 ? $mtBrand['bg'] : \App\Support\AdminMetro::INK;
+    $mtSurf = \App\Support\AdminMetro::SURFACES;
+    // Akcent jako kolor TEKSTU (np. licznik na białym kafelku): ciemny odcień marki, jeśli czyta się na najciemniejszej powierzchni, inaczej ink.
+    $mtAccentInk = \App\Support\Color::contrast($brandPalette['dark'], $mtSurf['side_hover']) >= 4.5 ? $brandPalette['dark'] : \App\Support\AdminMetro::INK;
 @endphp
 <style>
     /* ── Tokeny ──────────────────────────────────────────────────────────────────────────────── */
     body.admin-metro {
         --m-radius: 0;
-        --m-bg: #ececec;
+        --m-bg: {{ $mtSurf['page'] }};
         --m-surface: #fff;
-        --m-side: #e1e1e1;
-        --m-side-hover: #d3d3d3;
-        --m-hover: #f2f2f2;
-        --m-head: #e4e4e4;
+        --m-side: {{ $mtSurf['side'] }};
+        --m-side-hover: {{ $mtSurf['side_hover'] }};
+        --m-hover: {{ $mtSurf['row_hover'] }};
+        --m-head: {{ $mtSurf['head'] }};
         --m-ink: {{ \App\Support\AdminMetro::INK }};
-        --m-muted: #4b5563;
-        --m-line: #cfcfcf;
+        --m-muted: {{ \App\Support\AdminMetro::MUTED }};
+        --m-line: #d9d9d9;
         --m-line-strong: #767676;
         --m-accent: {{ $mtBrand['bg'] }};
         --m-accent-fg: {{ $mtBrand['fg'] }};
