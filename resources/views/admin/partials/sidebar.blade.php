@@ -117,10 +117,13 @@
                         </li>
                     @endforeach
                 </ul>
-                <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 border-t border-gray-100 px-2 pt-2 text-xs">
-                    <a href="{{ route('admin.wybor-witryny') }}" class="font-bold text-brand-dark hover:underline">Ekran wyboru</a>
-                    <a href="{{ route('admin.witryny.index') }}" class="font-bold text-brand-dark hover:underline">Zarządzaj witrynami</a>
-                    <a href="{{ route('admin.witryny.ustawienia') }}" class="font-bold text-brand-dark hover:underline">Przenieś ustawienia</a>
+                <div class="mt-1 flex flex-wrap gap-x-3 border-t border-gray-100 px-2 pt-1 text-sm">
+                    <a href="{{ route('admin.wybor-witryny') }}" class="inline-flex min-h-11 items-center font-bold text-brand-dark hover:underline">Ekran wyboru</a>
+                    <a href="{{ route('admin.witryny.index') }}" class="inline-flex min-h-11 items-center font-bold text-brand-dark hover:underline">Zarządzaj subwitrynami</a>
+                    @if (Route::has('admin.witryny.nazwa'))
+                        <a href="{{ route('admin.witryny.nazwa', $siteSettings) }}" class="inline-flex min-h-11 items-center font-bold text-brand-dark hover:underline">Zmień nazwę i adres<span class="sr-only"> tej witryny</span></a>
+                    @endif
+                    <a href="{{ route('admin.witryny.ustawienia') }}" class="inline-flex min-h-11 items-center font-bold text-brand-dark hover:underline">Przenieś ustawienia</a>
                 </div>
             </div>
         </div>

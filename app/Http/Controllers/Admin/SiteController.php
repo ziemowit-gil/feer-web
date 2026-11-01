@@ -23,14 +23,68 @@ use Illuminate\Validation\Rule;
  */
 class SiteController extends Controller
 {
+    /**
+     * „Zarządzaj subwitrynami”: witryna główna u góry, a pod nią wszystkie subwitryny (także zagnieżdżone) jako płaska
+     * lista z głębokością. Witryny w koszu są osobno (sekcja „Kosz”).
+     */
     public function index()
     {
-        $mainSite = SiteSetting::whereNull('parent_site_id')->orderBy('id')->first();
-        // Witryny w koszu osobno (sekcja „Kosz” na liście) — w drzewie tylko aktywne.
-        $sites = SiteSetting::notTrashed()->with(['subsites' => fn ($q) => $q->notTrashed()])->orderBy('id')->get();
-        $trashed = SiteRemoval::trashed();
+        $sites = SiteSetting::notTrashed()->orderBy('id')->get();
+        $mains = $sites->whereNull('parent_site_id')->values();
+        $children = $sites->whereNotNull('parent_site_id')->groupBy('parent_site_id');
 
-        return view('admin.sites.index', compact('mainSite', 'sites', 'trashed'));
+        $rows = [];
+        $walk = function (int $parentId, int $depth, ?SiteSetting $parent) use (&$walk, &$rows, $children): void {
+            foreach ($children->get($parentId, collect()) as $site) {
+                $rows[] = ['site' => $site, 'depth' => $depth, 'parent' => $parent];
+                $walk($site->id, $depth + 1, $site);
+            }
+        };
+        foreach ($mains as $main) {
+            $walk($main->id, 0, $main);
+        }
+
+        return view('admin.sites.index', ['mains' => $mains, 'rows' => $rows, 'trashed' => SiteRemoval::trashed()]);
+    }
+
+    /** Zmień nazwę i adres: nazwa witryny oraz (dla subwitryn) adres skrócony i własna domena. */
+    public function identity(SiteSetting $site)
+    {
+        abort_if($site->isTrashed(), 404);
+
+        return view('admin.sites.identity', ['site' => $site, 'isMain' => $site->parent_site_id === null]);
+    }
+
+    public function updateIdentity(Request $request, SiteSetting $site)
+    {
+        abort_if($site->isTrashed(), 404);
+        $isMain = $site->parent_site_id === null;
+
+        $this->normalizeAddress($request);
+        $rules = ['site_name' => ['required', 'string', 'max:255']];
+        // Adres witryny głównej to adres serwera (APP_URL) — tu zmienia się tylko jej nazwa.
+        if (! $isMain) {
+            $rules['slug'] = $this->slugRules($site, $site->site_kind);
+            $rules['domain'] = $this->domainRules($site);
+        }
+        $data = $request->validate($rules, $this->addressMessages());
+
+        $before = $site->only(['site_name', 'slug', 'domain']);
+        $site->update($data);
+        $changed = array_keys(array_filter($data, fn ($value, $key) => ($before[$key] ?? null) !== $value, ARRAY_FILTER_USE_BOTH));
+
+        if ($changed !== [] && function_exists('activity')) {
+            activity('system')->causedBy($request->user())->event('updated')
+                ->withProperties(['site' => $site->site_name, 'before' => $before, 'after' => $site->only(['site_name', 'slug', 'domain'])])
+                ->log('Zmieniono nazwę lub adres witryny „'.$before['site_name'].'”');
+        }
+
+        $status = 'Zapisano nazwę i adres witryny „'.$site->site_name.'”.';
+        if (! $isMain) {
+            $status .= ' Publiczny adres: '.current_site_url($site).'.';
+        }
+
+        return redirect()->route('admin.witryny.index')->with('status', $status);
     }
 
     public function create()
@@ -225,7 +279,37 @@ class SiteController extends Controller
         }
     }
 
-    private function validated(Request $request, ?SiteSetting $site = null): array
+    /**
+     * Adres witryny wpisany po ludzku („https://Szkolenia.Przyklad.PL/”, „ Osrodek ”) zamieniamy na postać, którą rozpoznaje
+     * ResolveCurrentSite: domena bez protokołu i ścieżki, małymi literami; slug małymi literami (middleware porównuje małe litery).
+     */
+    private function normalizeAddress(Request $request): void
+    {
+        if ($request->has('domain')) {
+            $host = preg_replace('#^[a-z][a-z0-9+.\-]*://#i', '', trim((string) $request->input('domain')));
+            $host = strtolower(trim(explode('/', (string) $host)[0], " ."));
+            $request->merge(['domain' => $host === '' ? null : $host]);
+        }
+        if ($request->has('slug')) {
+            $slug = strtolower(trim((string) $request->input('slug')));
+            $request->merge(['slug' => $slug === '' ? null : $slug]);
+        }
+    }
+
+    /** Komunikaty błędów adresu — po polsku i z podpowiedzią, co poprawić. */
+    private function addressMessages(): array
+    {
+        return [
+            'slug.alpha_dash' => 'Adres skrócony może zawierać tylko litery bez polskich znaków, cyfry, myślniki i podkreślenia.',
+            'slug.not_in' => 'Ten adres jest zarezerwowany dla witryny głównej albo panelu — wybierz inny.',
+            'slug.unique' => 'Ten adres jest już zajęty przez inną witrynę albo stronę.',
+            'domain.regex' => 'Podaj samą nazwę domeny, np. przyklad.pl (bez http:// i bez ukośników).',
+            'domain.unique' => 'Ta domena jest już przypisana do innej witryny.',
+        ];
+    }
+
+    /** Slugi, które nie mogą być prefiksem witryny (zlałyby się z trasą albo panelem). */
+    private function reservedSlugs(?string $kind): array
     {
         // Prefiks witryny to pierwszy segment adresu, więc nie może się zlać z żadną trasą ani panelem.
         $routeSegments = collect(\Illuminate\Support\Facades\Route::getRoutes()->getRoutes())
@@ -234,9 +318,45 @@ class SiteController extends Controller
             ->unique()->values()->all();
         $reserved = array_values(array_unique(array_merge(Page::RESERVED_SLUGS, ['site', (string) config('app.admin_prefix', 'admin')], $routeSegments)));
         // Witryna BIP może mieć adres /bip — pod nim i tak jest pokazywany BIP witryny nadrzędnej.
-        if ($request->input('site_kind', $site?->site_kind) === 'bip') {
+        if ($kind === 'bip') {
             $reserved = array_values(array_diff($reserved, ['bip']));
         }
+
+        return $reserved;
+    }
+
+    /** @return array<int, mixed> */
+    private function slugRules(?SiteSetting $site, ?string $kind): array
+    {
+        return [
+            'nullable', 'string', 'max:255', 'alpha_dash',
+            Rule::notIn($this->reservedSlugs($kind)),
+            Rule::unique('site_settings', 'slug')->ignore($site?->id),
+            Rule::unique('pages', 'slug'),
+        ];
+    }
+
+    /** @return array<int, mixed> */
+    private function domainRules(?SiteSetting $site): array
+    {
+        return [
+            'nullable', 'string', 'max:255',
+            // Co najmniej dwie etykiety (przyklad.pl), litery bez polskich znaków, cyfry i myślniki (IDN w postaci xn--…).
+            'regex:/^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/',
+            Rule::unique('site_settings', 'domain')->ignore($site?->id),
+            // Domena witryny głównej (adres serwera) nie może należeć do subwitryny — przejęłaby całą witrynę główną.
+            function ($attribute, $value, $fail) {
+                $appHost = strtolower((string) parse_url((string) config('app.url'), PHP_URL_HOST));
+                if ($value !== null && $appHost !== '' && strtolower((string) $value) === $appHost) {
+                    $fail('Ta domena to adres witryny głównej — wpisz inną dla subwitryny.');
+                }
+            },
+        ];
+    }
+
+    private function validated(Request $request, ?SiteSetting $site = null): array
+    {
+        $this->normalizeAddress($request);
         $parentId = $site?->parent_site_id ?? SiteSetting::current()->id;
 
         return $request->validate([
@@ -268,17 +388,9 @@ class SiteController extends Controller
             ],
             'tagline' => ['nullable', 'string', 'max:255'],
             'brand_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
-            'slug' => [
-                'nullable', 'string', 'max:255', 'alpha_dash',
-                Rule::notIn($reserved),
-                Rule::unique('site_settings', 'slug')->ignore($site?->id),
-                Rule::unique('pages', 'slug'),
-            ],
-            'domain' => [
-                'nullable', 'string', 'max:255',
-                Rule::unique('site_settings', 'domain')->ignore($site?->id),
-            ],
+            'slug' => $this->slugRules($site, $request->input('site_kind', $site?->site_kind)),
+            'domain' => $this->domainRules($site),
             'logo' => ['nullable', 'image', 'max:4096'],
-        ]);
+        ], $this->addressMessages());
     }
 }

@@ -345,7 +345,7 @@ final class AdminMenu
                 $this->item('backups', 'Kopie zapasowe', 'admin.kopie.index', 'fa-box-archive', active: 'admin.kopie.*'),
                 $this->item('database', 'Baza MySQL', 'admin.baza-mysql.index', 'fa-database', active: 'admin.baza-mysql.*'),
                 $this->item('cron', 'Harmonogram (cron)', 'admin.cron.index', 'fa-clock', active: 'admin.cron.*'),
-                $this->item('sites', 'Witryny sieci', 'admin.witryny.index', 'fa-sitemap', active: 'admin.witryny.*'),
+                $this->item('sites', 'Zarządzaj subwitrynami', 'admin.witryny.index', 'fa-sitemap', active: 'admin.witryny.*'),
             ]) : null,
         ];
     }

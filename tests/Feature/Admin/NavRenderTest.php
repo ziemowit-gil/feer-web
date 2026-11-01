@@ -41,7 +41,7 @@ class NavRenderTest extends TestCase
         $this->actingAs($editor)->get(route('admin.dashboard'))
             ->assertOk()
             ->assertDontSee('Ustawienia strony')
-            ->assertDontSee('Witryny sieci');
+            ->assertDontSee('Zarządzaj subwitrynami');
     }
 
     public function test_editor_sidebar_renders_without_error(): void

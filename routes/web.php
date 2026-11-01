@@ -716,6 +716,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('witryny-ustawienia', [\App\Http\Controllers\Admin\SiteChooserController::class, 'copySettings'])->name('witryny.ustawienia.copy');
         Route::post('witryny/{site}/przelacz', [\App\Http\Controllers\Admin\ActiveSiteController::class, 'switch'])
             ->name('witryny.przelacz');
+        Route::get('witryny/{site}/nazwa-i-adres', [\App\Http\Controllers\Admin\SiteController::class, 'identity'])
+            ->middleware('edition:multisite')->name('witryny.nazwa');
+        Route::put('witryny/{site}/nazwa-i-adres', [\App\Http\Controllers\Admin\SiteController::class, 'updateIdentity'])
+            ->middleware('edition:multisite')->name('witryny.nazwa.update');
         Route::get('witryny/{site}/usun', [\App\Http\Controllers\Admin\SiteController::class, 'confirmDestroy'])
             ->middleware('edition:multisite')->name('witryny.confirm-destroy');
         Route::post('witryny/{site}/przywroc', [\App\Http\Controllers\Admin\SiteController::class, 'restore'])
