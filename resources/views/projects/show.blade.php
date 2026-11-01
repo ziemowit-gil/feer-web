@@ -184,8 +184,10 @@
             .proj-callout, .proj-prose p[style*="text-align: center"], .proj-prose p[style*="text-align:center"] {
                 margin: 1.5rem 0; padding: 1rem 1.25rem; border-radius: .375rem; background: var(--color-brand-light); color: #1d1d1a; text-align: left !important; font-weight: 600;
             }
-            /* Sekcje informacyjne: zwykły nagłówek bez paska i ramki (ikona w nagłówku ukryta). */
-            .proj-sec { margin-top: 2.5rem; padding: 0; }
+            /* Sekcje informacyjne: jak bloki menu bocznego — jasnoszara karta z nagłówkiem, wiersze na białym (ikona w nagłówku ukryta). */
+            .proj-sec { margin-top: 1.5rem; padding: 1.25rem; border-radius: .375rem; background: #f9fafb; }
+            .proj-sec .proj-frame-h { font-size: 1.125rem; }
+            .proj-sec .proj-terms-row, .proj-sec .proj-easy-text { background: #fff; }
             .proj-frame-side { margin-top: 0; padding: 1.25rem; border-radius: .375rem; background: #f9fafb; }
             .proj-frame-side .proj-frame-h { font-size: 1.125rem; }
             .proj-frame-h { display: block; margin: 0 0 1rem; font-size: 1.5rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
