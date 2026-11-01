@@ -30,23 +30,35 @@
         $isAdmin = $user->isAdmin();
         $tile = fn (string $route, string $label, string $icon, bool $allowed = true) => $allowed && \Illuminate\Support\Facades\Route::has($route)
             ? ['url' => route($route), 'label' => $label, 'icon' => $icon] : null;
-        $tiles = array_values(array_filter([
-            $tile('admin.newsy.create', 'Nowa aktualność', 'fa-file-circle-plus', $can('news')),
-            $tile('admin.newsy.index', 'Aktualności', 'fa-newspaper', $can('news')),
-            $tile('admin.podstrony.index', 'Strony', 'fa-file-lines', $can('pages')),
-            $tile('admin.projekty.index', 'Działania', 'fa-diagram-project', $can('projects')),
-            $tile('admin.wydarzenia.index', 'Wydarzenia', 'fa-calendar-days', $can('events')),
-            $tile('admin.multimedia.index', 'Multimedia', 'fa-photo-film'),
-            $tile('admin.pozycje-menu.index', 'Menu', 'fa-bars', $isAdmin),
-            $tile('admin.newsletter.dashboard', 'Newsletter', 'fa-envelope-open-text', $user->canAccessModule('newsletter')),
-            $tile('admin.uzytkownicy.index', 'Użytkownicy', 'fa-users', $isAdmin),
-            $tile('admin.ustawienia.edit', 'Ustawienia', 'fa-sliders', $isAdmin),
-            $tile('admin.szablony.manage', 'Szablony', 'fa-clone', $isAdmin),
-            $tile('admin.kopie.index', 'Kopie zapasowe', 'fa-box-archive', $isAdmin),
-            $tile('admin.health.index', 'Kondycja serwisu', 'fa-heart-pulse', $isAdmin),
-        ]));
+        $tileMap = [];
+        foreach ([
+            ['admin.newsy.create', 'Nowa aktualność', 'fa-file-circle-plus', $can('news')],
+            ['admin.newsy.index', 'Aktualności', 'fa-newspaper', $can('news')],
+            ['admin.podstrony.index', 'Strony', 'fa-file-lines', $can('pages')],
+            ['admin.projekty.index', 'Działania', 'fa-diagram-project', $can('projects')],
+            ['admin.wydarzenia.index', 'Wydarzenia', 'fa-calendar-days', $can('events')],
+            ['admin.multimedia.index', 'Multimedia', 'fa-photo-film', true],
+            ['admin.pozycje-menu.index', 'Menu', 'fa-bars', $isAdmin],
+            ['admin.newsletter.dashboard', 'Newsletter', 'fa-envelope-open-text', $user->canAccessModule('newsletter')],
+            ['admin.uzytkownicy.index', 'Użytkownicy', 'fa-users', $isAdmin],
+            ['admin.ustawienia.edit', 'Ustawienia', 'fa-sliders', $isAdmin],
+            ['admin.szablony.manage', 'Szablony', 'fa-clone', $isAdmin],
+            ['admin.kopie.index', 'Kopie zapasowe', 'fa-box-archive', $isAdmin],
+            ['admin.health.index', 'Kondycja serwisu', 'fa-heart-pulse', $isAdmin],
+        ] as [$tileRoute, $tileLabel, $tileIcon, $tileAllowed]) {
+            if ($built = $tile($tileRoute, $tileLabel, $tileIcon, $tileAllowed)) {
+                $tileMap[$tileRoute] = $built;
+            }
+        }
+        $tiles = array_values($tileMap);
+
+        // Alternatywny styl panelu „Metro” (Mój profil → Wygląd panelu): pulpit jako grupy kafli (admin/partials/dashboard-metro).
+        $metro = $user->adminScheme() === 'metro';
     @endphp
 
+    @if ($metro)
+        @include('admin.partials.dashboard-metro')
+    @else
     {{-- ── Nagłówek: powitanie + „Utwórz” ───────────────────────────── --}}
     <header class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -108,6 +120,7 @@
                 @endforeach
             </ul>
         </section>
+    @endif
     @endif
 
     {{-- ── Główna siatka ─────────────────────────────────────────────── --}}
@@ -188,7 +201,8 @@
 
         {{-- Panel boczny ------------------------------------------------------- --}}
         <div class="space-y-6">
-            {{-- Zawartość serwisu: zwarta lista zamiast dużych kafli --}}
+            {{-- Zawartość serwisu: zwarta lista zamiast dużych kafli (w stylu Metro są to kafle z licznikami, wyżej) --}}
+            @unless ($metro)
             <section aria-labelledby="dash-stats" class="rounded-md bg-white">
                 <h2 id="dash-stats" class="j-panel-head border-b border-gray-100 px-5 py-4 text-base font-bold">Zawartość serwisu</h2>
                 <ul role="list" class="divide-y divide-gray-100">
@@ -206,6 +220,7 @@
                     @endforeach
                 </ul>
             </section>
+            @endunless
 
             @if ($upcoming->isNotEmpty())
                 <section aria-labelledby="dash-events" class="p-5 rounded-md bg-white">

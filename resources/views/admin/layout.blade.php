@@ -122,10 +122,20 @@
             box-shadow: 0 0 0 1px #d9dde4, 0 1px 2px rgba(16, 24, 40, .05);
         }
     </style>
+    @php $adminScheme = auth()->user()?->adminScheme() ?? \App\Models\User::DEFAULT_ADMIN_SCHEME; @endphp
     @include('admin.partials.theme-joomla')
+    {{-- Alternatywny styl „Metro” (Mój profil → Wygląd panelu): dodatkowe style i krój Montserrat tylko dla tego schematu. --}}
+    @if ($adminScheme === 'metro')
+        <link rel="preload" as="style"
+              href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap"
+              onload="this.onload=null;this.rel='stylesheet'">
+        <noscript>
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap">
+        </noscript>
+        @include('admin.partials.theme-metro')
+    @endif
 </head>
-@php $adminScheme = auth()->user()?->adminScheme() ?? \App\Models\User::DEFAULT_ADMIN_SCHEME; @endphp
-<body data-scheme="{{ $adminScheme }}" class="admin-joomla flex min-h-screen text-ink antialiased" data-admin-pickers x-data :class="{ 'overflow-hidden lg:overflow-auto': $store.adminNav.mobileOpen }">
+<body data-scheme="{{ $adminScheme }}" class="admin-joomla{{ $adminScheme === 'metro' ? ' admin-metro' : '' }} flex min-h-screen text-ink antialiased" data-admin-pickers x-data :class="{ 'overflow-hidden lg:overflow-auto': $store.adminNav.mobileOpen }">
 
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-brand-dark focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-brand-dark">Przejdź do treści</a>
 

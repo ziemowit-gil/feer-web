@@ -59,6 +59,7 @@ class User extends Authenticatable implements Subscribable
     /**
      * Schematy kolorów panelu (Mój profil → Wygląd panelu): klucz => [nazwa, opis, próbki kolorów].
      * Style w admin/partials/theme-joomla (atrybut data-scheme na <body>); „pierwotny” = kolory dawnego panelu.
+     * „metro” to alternatywny styl całego panelu (admin/partials/theme-metro): płaskie kafle, kanciaste elementy, pulpit z kaflami.
      */
     public const ADMIN_SCHEMES = [
         'krem' => ['Krem', 'Ciepłe, jasne tło i kremowe pasy.', ['#f4f4ee', '#f7f7e8', '#d6d6c2']],
@@ -66,6 +67,7 @@ class User extends Authenticatable implements Subscribable
         'niebieski' => ['Niebieski', 'Jasne błękity w kolorze marki FEER.', ['#eef3fb', '#f3f7ff', '#c9d6ee']],
         'szalwia' => ['Szałwiowy', 'Delikatna, przygaszona zieleń.', ['#f1f5f1', '#f5f9f4', '#cddbcb']],
         'pierwotny' => ['Pierwotny', 'Kolory dawnego panelu — białe karty na szarym tle.', ['#f3f4f6', '#ffffff', '#e5e7eb']],
+        'metro' => ['Metro', 'Alternatywny styl wzorowany na Metro UI: płaskie kafle na pulpicie, kanciaste elementy, szare menu z akcentem.', ['#ececec', '#1652bf', '#1d1d1a']],
     ];
 
     public const DEFAULT_ADMIN_SCHEME = 'krem';
