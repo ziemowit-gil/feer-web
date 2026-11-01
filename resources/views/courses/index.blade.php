@@ -32,6 +32,8 @@
                 <ul class="flex flex-wrap gap-2" role="list" aria-labelledby="f-cat">
                     <li><a href="{{ $url(['format' => $format]) }}" @if (! $category) aria-current="true" @endif class="{{ $chip }} {{ ! $category ? 'bg-brand-dark text-white' : 'bg-gray-50 text-ink hover:bg-gray-100' }}">Wszystkie</a></li>
                     @foreach (\App\Models\Course::CATEGORIES as $key => $label)
+                        {{-- W FEER IS bez filtra „Inne” (takie szkolenia widać pod „Wszystkie”). --}}
+                        @continue($isPortal && $key === 'other')
                         <li><a href="{{ $url(['kategoria' => $key, 'format' => $format]) }}" @if ($category === $key) aria-current="true" @endif class="{{ $chip }} {{ $category === $key ? 'bg-brand-dark text-white' : 'bg-gray-50 text-ink hover:bg-gray-100' }}">{{ $label }}</a></li>
                     @endforeach
                 </ul>

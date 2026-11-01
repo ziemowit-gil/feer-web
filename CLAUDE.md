@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-11-01: FEER IS: katalog szkoleń (`/zajecia`) bez filtra kategorii „Inne” (`courses/index.blade.php`; poza IS zostaje, takie szkolenia widać pod „Wszystkie”); test.
 - 2026-11-01: FEER IS: nowy układ strony głównej „kafle” (`templates/feer/home-feer-is.blade.php`): po jednym dużym kafelku na odbiorcę (ikona, nazwa, liczba usług; kolory brand/brand-dark/ink) zamiast zakładek i siatki usług; kafel prowadzi na stronę odbiorcy; reszta (slider, aktualności, szkolenia, terminy) bez zmian; testy `FeerIsThemeTest` zaktualizowane.
 - 2026-11-01: `test2`: zwykłe podmenu pionowe (jedna kolumna), pozycje z flagą „mega” jako mega menu na szerokość paska (kolumny = sekcje z nagłówkami, „Zobacz wszystko”); test.
 - 2026-11-01: `test2`: czcionka Roboto w menu (link Google Fonts + `font-family` na `.z2-nav` w `partials/header`); test.

@@ -158,6 +158,20 @@ class CoursesModuleTest extends TestCase
         $this->get('/zajecia')->assertOk()->assertSee('bg-brand-dark', false);
     }
 
+    public function test_filtr_kategorii_inne_jest_tylko_poza_feer_is(): void
+    {
+        $this->course(['category' => 'other', 'title' => 'Kurs z innej kategorii', 'slug' => 'inny']);
+
+        $this->get('/zajecia')->assertOk()->assertSee('>Inne<', false);
+
+        $this->site->forceFill(['site_template' => 'feer', 'theme_variant' => 'feer_is'])->save();
+        \Closure::bind(function () {
+            static::$cached = null;
+        }, null, SiteSetting::class)();
+
+        $this->get('/zajecia')->assertOk()->assertDontSee('>Inne<', false)->assertSee('Kurs z innej kategorii')->assertSee('Tyfloinformatyka');
+    }
+
     private function subSiteWithCourse(): void
     {
         $sub = SiteSetting::create(['site_name' => 'Szkolenia', 'slug' => 'szkolenia', 'parent_site_id' => $this->site->id, 'site_kind' => 'standard', 'brand_color' => SiteSetting::DEFAULT_BRAND_COLOR, 'site_template' => 'feer', 'theme_variant' => 'feer_is']);
