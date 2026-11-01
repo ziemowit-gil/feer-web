@@ -72,6 +72,7 @@
     </style>
 </head>
 <body>
+    @include('errors.partials.construction-backdrop')
     <main class="card" role="main">
         @if ($settings->logoUrl())
             <img class="logo" src="{{ $settings->logoUrl() }}" alt="{{ $settings->logoAltText() }}">

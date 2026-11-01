@@ -851,6 +851,28 @@
                 @error('site_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
+            <div class="border-t border-gray-100 pt-6" x-data="{ building: {{ old('under_construction', $settings->under_construction) ? 'true' : 'false' }} }">
+                <h2 class="text-base font-bold text-ink">Strona „dopiero tworzymy”</h2>
+                <p class="mt-1 text-xs text-muted">Zamiast witryny odwiedzający zobaczą krótką stronę informacyjną, że witryna jest w budowie. Zalogowani użytkownicy panelu widzą witrynę normalnie. Nowe sub-witryny startują z włączoną stroną.</p>
+                <label class="mt-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm">
+                    <input type="checkbox" name="under_construction" value="1" x-model="building"
+                        @checked(old('under_construction', $settings->under_construction))
+                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    <span>
+                        <span class="font-bold text-sky-900">Pokaż stronę „dopiero tworzymy”</span>
+                        <span class="block text-xs text-sky-800">Wyłącz, gdy witryna jest gotowa do publikacji.</span>
+                    </span>
+                </label>
+                <div class="mt-4" x-show="building" x-cloak>
+                    <label for="under_construction_message" class="mb-1 block text-sm font-bold">Tekst na stronie</label>
+                    <textarea id="under_construction_message" name="under_construction_message" rows="3"
+                        placeholder="{{ \App\Models\SiteSetting::DEFAULT_UNDER_CONSTRUCTION_MESSAGE }}"
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('under_construction_message', $settings->under_construction_message) }}</textarea>
+                    <p class="mt-1 text-xs text-muted">Puste = tekst domyślny (widoczny jako podpowiedź).</p>
+                    @error('under_construction_message') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
             <div class="border-t border-gray-100 pt-6">
                 <h2 class="text-base font-bold text-ink">Tryb konserwacji (przerwa techniczna)</h2>
                 <p class="mt-1 text-xs text-muted">Po włączeniu zwykli użytkownicy zobaczą komunikat o przerwie technicznej. Zalogowani administratorzy dalej mają dostęp do panelu i strony, aby móc wyłączyć tryb.</p>

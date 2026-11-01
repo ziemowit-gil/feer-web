@@ -55,6 +55,11 @@ class SiteController extends Controller
             $data += BipSite::inheritedAttributes($parent);
         }
 
+        // Nowa sub-witryna startuje ze stroną „dopiero tworzymy” (do wyłączenia w Ustawienia → Serwis).
+        if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'under_construction')) {
+            $data['under_construction'] = true;
+        }
+
         $site = SiteSetting::create($data);
 
         if ($request->hasFile('logo')) {

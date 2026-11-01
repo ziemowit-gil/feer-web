@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Globalny tryb konserwacji (przerwa techniczna). Gdy jest włączony:
+ * Tryb konserwacji (przerwa techniczna) albo strona „dopiero tworzymy” (osobny przełącznik
+ * witryny, pierwszeństwo ma konserwacja). Gdy któryś jest włączony:
  *  - zwykli (niezalogowani) użytkownicy widzą komunikat o przerwie (HTTP 503),
  *  - zalogowani użytkownicy panelu pracują normalnie (mogą go wyłączyć),
  *  - logowanie hasłem pozostaje dostępne, aby admin mógł się zalogować,
@@ -25,7 +26,7 @@ class EnsureSiteAvailable
 
         $settings = SiteSetting::current();
 
-        if (! $settings->maintenance_mode) {
+        if (! $settings->maintenance_mode && ! $settings->under_construction) {
             return $next($request);
         }
 
@@ -41,6 +42,14 @@ class EnsureSiteAvailable
         // złapałoby tylko GET), inaczej samo zalogowanie kończyłoby się 503.
         if ($request->routeIs('logout', 'password.*') || $request->is('login', 'up')) {
             return $next($request);
+        }
+
+        // Przerwa techniczna ma pierwszeństwo przed stroną „dopiero tworzymy”.
+        if (! $settings->maintenance_mode) {
+            return response()->view('errors.under-construction', [
+                'settings' => $settings,
+                'message' => $settings->underConstructionMessage(),
+            ], 503, ['Retry-After' => 86400]);
         }
 
         return response()->view('errors.maintenance', [
