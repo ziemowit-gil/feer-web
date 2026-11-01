@@ -82,6 +82,20 @@ class CoursesModuleTest extends TestCase
             ->assertSee('poniedziałki 17:00-19:00')->assertSee('Wolne miejsca: 2 z 2')->assertSee('Potrzeby i dostosowania');
     }
 
+    public function test_strona_kursu_ma_czytelny_uklad_z_tabela_terminow_i_spisem_sekcji(): void
+    {
+        $c = $this->course(['description' => '<p>Opis szkolenia.</p>', 'audience' => "Osoby niewidome\nOsoby słabowidzące"]);
+        $this->edition($c, ['location' => 'Warszawa']);
+
+        $html = $this->get('/zajecia/czytnik')->assertOk()
+            ->assertSee('Na tej stronie')->assertSee('Terminy szkolenia Czytnik ekranu od podstaw')->assertSee('Warszawa')
+            ->getContent();
+
+        $this->assertStringContainsString('<table class="cs-table">', $html);
+        $this->assertStringContainsString('href="#terminy"', $html);
+        $this->assertStringNotContainsString('cs-edition', $html, 'terminy to tabela, nie karty');
+    }
+
     public function test_zapis_do_limitu_potem_lista_rezerwowa(): void
     {
         $e = $this->edition($this->course(), ['capacity' => 1]);

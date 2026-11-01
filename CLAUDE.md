@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-11-01: strona szkolenia `/zajecia/{slug}` w czytelniejszym układzie (`courses/show.blade.php`): jedna wąska kolumna tekstu (duża czcionka, interlinia 1,7), spis sekcji jako linki, zwykłe listy zamiast kart, program jako lista numerowana, terminy jako tabela (na telefonie wiersze z etykietami), cena jako zwykłe zdanie, trener ze zdjęciem w kółku, FAQ z plusem/minusem, przyklejona karta zapisu; style inline `cs-`; test.
 - 2026-11-01: FEER IS: katalog szkoleń (`/zajecia`) bez filtra kategorii „Inne” (`courses/index.blade.php`; poza IS zostaje, takie szkolenia widać pod „Wszystkie”); test.
 - 2026-11-01: FEER IS: nowy układ strony głównej „kafle” (`templates/feer/home-feer-is.blade.php`): po jednym dużym kafelku na odbiorcę (ikona, nazwa, liczba usług; kolory brand/brand-dark/ink) zamiast zakładek i siatki usług; kafel prowadzi na stronę odbiorcy; reszta (slider, aktualności, szkolenia, terminy) bez zmian; testy `FeerIsThemeTest` zaktualizowane.
 - 2026-11-01: `test2`: zwykłe podmenu pionowe (jedna kolumna), pozycje z flagą „mega” jako mega menu na szerokość paska (kolumny = sekcje z nagłówkami, „Zobacz wszystko”); test.

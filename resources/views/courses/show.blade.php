@@ -1,9 +1,9 @@
 {{--
-    Strona szkolenia (moduł „Szkolenia i zajęcia”). Układ: biały nagłówek z kategorią, tytułem, leadem, metryczką (cena, czas,
-    poziom, certyfikat) i dwoma przyciskami; pasek „Na tej stronie”; po lewej treść w sekcjach (opis, dla kogo, efekty,
-    program jako lista kroków, terminy jako karty z paskiem zajętości, trener z dużym zdjęciem, cennik, warunki, FAQ);
-    po prawej przyklejona karta zapisu. Płasko, bez cieni, kolory marki; klasy tylko z już zbudowanego CSS plus kilka stylów
-    inline w bloku <style> (wdrożenie nie buduje Tailwinda). Kontrast tekstu ≥ 4,5:1.
+    Strona szkolenia (moduł „Szkolenia i zajęcia”). Układ nastawiony na czytelność: jedna wąska kolumna tekstu (do 46 rem),
+    duża czcionka, interlinia 1,7, sekcje rozdzielone cienką linią, zwykłe listy zamiast
+    kart, terminy jako tabela (termin, miejsce, miejsca, akcja), cena jako zwykłe zdanie; po prawej przyklejona karta zapisu.
+    Bez ikon dekoracyjnych i bez kolorowych tła. Style inline z prefiksem cs- (wdrożenie nie buduje Tailwinda).
+    Kontrast: tekst #1d1d1a na bieli, linki i przyciski #1752bf (≥ 6,9:1), opisy #4b5563 (≥ 7:1).
 --}}
 @extends('layouts.site')
 
@@ -42,8 +42,6 @@
         'warunki' => filled($course->terms) ? 'Warunki' : null,
         'faq' => $course->faqItems() ? 'Pytania' : null,
     ]);
-    $h2 = 'text-2xl font-bold text-ink md:text-3xl';
-    $card = 'rounded-md bg-gray-50 p-6';
 @endphp
 
 @push('structured_data')
@@ -63,180 +61,208 @@
 
 @section('content')
 <style>
-    .cs-grid { display: grid; gap: 3rem; }
-    @media (min-width: 1024px) { .cs-grid { grid-template-columns: minmax(0, 1fr) 24rem; align-items: start; } .cs-sticky { position: sticky; top: 1.5rem; } }
-    .cs-facts { display: grid; gap: 1px; background: #e5e7eb; border-radius: .375rem; overflow: hidden; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    @media (min-width: 768px) { .cs-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    .cs-fact { background: #f9fafb; padding: 1rem 1.25rem; }
-    .cs-nav { display: flex; gap: .25rem; overflow-x: auto; scrollbar-width: none; border-bottom: 2px solid #e5e7eb; }
-    .cs-nav a { display: inline-flex; align-items: center; min-height: 3rem; padding: 0 1rem; white-space: nowrap; font-weight: 700; font-size: .875rem; color: #1d1d1a; border-bottom: 3px solid transparent; margin-bottom: -2px; }
-    .cs-nav a:hover { border-bottom-color: #1d1d1a; }
-    .cs-step { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: 1.25rem; }
-    .cs-step + .cs-step { margin-top: 1rem; }
-    .cs-num { display: flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; border-radius: .375rem; background: #1d1d1a; color: #fff; font-weight: 800; font-size: 1.125rem; }
-    .cs-bar { height: .5rem; border-radius: 9999px; background: #e5e7eb; overflow: hidden; }
-    .cs-bar > span { display: block; height: 100%; background: #1752bf; }
-    .cs-edition[data-selected="1"] { outline: 3px solid #1752bf; outline-offset: -3px; }
-    .cs-trainer { display: grid; gap: 1.5rem; }
-    @media (min-width: 640px) { .cs-trainer { grid-template-columns: 12rem minmax(0, 1fr); } }
+    .cs { color: #1d1d1a; font-size: 1.125rem; line-height: 1.7; }
+    .cs a { color: #1752bf; text-underline-offset: 3px; }
+    .cs a:hover { color: #12409a; }
+    .cs :focus-visible { outline: 3px solid #1d1d1a; outline-offset: 2px; }
+    .cs-wrap { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
+    .cs-head { padding: 2.5rem 0 2.25rem; border-bottom: 1px solid #d1d5db; }
+    .cs-kicker { margin: 0; font-size: .95rem; font-weight: 700; color: #1752bf; }
+    .cs-title { margin: .5rem 0 1rem; max-width: 46rem; font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; line-height: 1.15; letter-spacing: -.01em; }
+    .cs-lead { margin: 0; max-width: 46rem; font-size: 1.3rem; line-height: 1.6; }
+    .cs-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
+    .cs .cs-btn { display: inline-flex; align-items: center; min-height: 3rem; padding: 0 1.5rem; border-radius: .375rem; background: #1752bf; color: #fff; font-weight: 700; font-size: 1rem; text-decoration: none; border: 2px solid #1752bf; }
+    .cs .cs-btn:hover { background: #12409a; border-color: #12409a; color: #fff; }
+    .cs .cs-btn-o { background: #fff; color: #1d1d1a; border-color: #1d1d1a; }
+    .cs .cs-btn-o:hover { background: #f3f4f6; color: #1d1d1a; border-color: #1d1d1a; }
+    .cs-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1.25rem 2rem; margin: 2.25rem 0 0; max-width: 56rem; }
+    .cs-facts dt { font-size: .9rem; font-weight: 700; color: #4b5563; line-height: 1.4; }
+    .cs-facts dd { margin: .15rem 0 0; font-size: 1.2rem; font-weight: 700; line-height: 1.4; }
+    .cs-layout { display: grid; gap: 3rem; padding: 2rem 0 4rem; }
+    @media (min-width: 1024px) { .cs-layout { grid-template-columns: minmax(0, 46rem) 22rem; justify-content: space-between; align-items: start; } .cs-aside { position: sticky; top: 1.5rem; } }
+    .cs-toc { margin: 0 0 1rem; padding: 0 0 1.5rem; border-bottom: 1px solid #d1d5db; }
+    .cs-toc p { margin: 0 0 .5rem; font-size: .9rem; font-weight: 700; color: #4b5563; }
+    .cs-toc ul { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; margin: 0; padding: 0; list-style: none; }
+    .cs-toc a { display: inline-block; padding: .25rem 0; font-weight: 700; }
+    .cs-sec { padding: 2.25rem 0; border-top: 1px solid #d1d5db; scroll-margin-top: 1.5rem; }
+    .cs-sec:first-of-type { border-top: 0; padding-top: 1rem; }
+    .cs-sec h2 { margin: 0 0 1rem; font-size: 1.75rem; font-weight: 800; line-height: 1.25; }
+    .cs-sec h3 { margin: 0; font-size: 1.2rem; font-weight: 700; line-height: 1.4; }
+    .cs-sec p { margin: 0 0 1rem; }
+    .cs-list { margin: 0; padding-left: 1.5rem; list-style: disc; }
+    .cs-list li { margin: 0 0 .5rem; padding-left: .25rem; }
+    .cs-list li::marker { color: #1752bf; }
+    .cs-prog { margin: 0; padding-left: 1.75rem; }
+    .cs-prog li { margin: 0 0 1.25rem; padding-left: .25rem; }
+    .cs-prog li::marker { font-weight: 700; }
+    .cs-hours { font-weight: 400; color: #4b5563; font-size: 1rem; white-space: nowrap; }
+    .cs-prose { max-width: none; font-size: 1.125rem; line-height: 1.7; color: #1d1d1a; }
+    .cs-table { width: 100%; border-collapse: collapse; font-size: 1rem; line-height: 1.5; }
+    .cs-table caption { text-align: left; }
+    .cs-table th { padding: .5rem .75rem .6rem 0; text-align: left; font-size: .9rem; font-weight: 700; color: #4b5563; border-bottom: 2px solid #1d1d1a; }
+    .cs-table td { padding: 1rem .75rem 1rem 0; vertical-align: top; border-bottom: 1px solid #d1d5db; }
+    .cs-table td strong { display: block; font-size: 1.1rem; }
+    .cs-table small { display: block; color: #4b5563; font-size: .9rem; }
+    .cs-table tr[data-selected="1"] td { background: #f3f4f6; }
+    @media (max-width: 720px) {
+        .cs-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+        .cs-table, .cs-table tbody, .cs-table tr, .cs-table td { display: block; }
+        .cs-table td { padding: .25rem 0; border: 0; }
+        .cs-table td[data-label]::before { content: attr(data-label) ": "; font-weight: 700; }
+        .cs-table tr { padding: 1rem 0; border-bottom: 1px solid #d1d5db; }
+    }
+    .cs-trainer { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
+    .cs-trainer img, .cs-trainer .cs-nophoto { width: 8rem; height: 8rem; border-radius: 50%; object-fit: cover; flex: none; }
+    .cs-trainer .cs-nophoto { background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #4b5563; }
+    .cs-trainer > div { flex: 1 1 18rem; min-width: 0; }
+    .cs-price { margin: 0; font-size: 2.25rem; font-weight: 800; line-height: 1.2; }
+    .cs-faq details { border-bottom: 1px solid #d1d5db; }
+    .cs-faq summary { display: flex; justify-content: space-between; gap: 1rem; padding: 1rem 0; font-size: 1.15rem; font-weight: 700; cursor: pointer; list-style: none; }
+    .cs-faq summary::-webkit-details-marker { display: none; }
+    .cs-faq summary::after { content: "+"; font-size: 1.5rem; line-height: 1; flex: none; }
+    .cs-faq details[open] summary::after { content: "–"; }
+    .cs-faq details > div { padding: 0 0 1.25rem; }
+    .cs-aside { padding: 1.5rem; background: #f3f4f6; border-radius: .375rem; scroll-margin-top: 1.5rem; }
+    .cs-aside h2 { margin: 0 0 .75rem; font-size: 1.5rem; font-weight: 800; line-height: 1.25; }
+    .cs-aside p { margin: 0 0 1rem; font-size: 1rem; }
+    .cs-aside .cs-btn { width: 100%; justify-content: center; }
+    .cs-status { margin: 1.5rem 0 0; padding: 1rem 1.25rem; border: 2px solid #1d1d1a; border-radius: .375rem; font-weight: 700; }
 </style>
 
-    {{-- Nagłówek: biały, lewostronny, z paskiem w kolorze marki nad kategorią. --}}
-    <header class="border-b border-gray-200">
-        <div class="mx-auto max-w-6xl px-4 pb-10 pt-10 md:pt-14">
-            <span class="block h-1.5 w-16 bg-brand" aria-hidden="true"></span>
-            <p class="mt-5 text-xs font-bold uppercase tracking-widest text-brand-dark">{{ $course->categoryLabel() }} · {{ $course->formatLabel() }}</p>
-            <h1 class="mt-3 max-w-4xl text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $course->title }}</h1>
-            @if ($course->lead)<p class="mt-5 max-w-3xl text-lg leading-relaxed text-ink md:text-xl">{{ $course->lead }}</p>@endif
+<div class="cs">
+    <header class="cs-head">
+        <div class="cs-wrap">
+            <p class="cs-kicker">{{ $course->categoryLabel() }} · {{ $course->formatLabel() }}</p>
+            <h1 class="cs-title">{{ $course->title }}</h1>
+            @if ($course->lead)<p class="cs-lead">{{ $course->lead }}</p>@endif
 
-            <div class="mt-8 flex flex-wrap gap-3">
+            <div class="cs-actions">
                 @if ($openEditions->isNotEmpty())
-                    <a href="#zapis" class="inline-flex min-h-12 items-center gap-2 rounded-md bg-brand-dark px-6 text-base font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Zapisz się</a>
+                    <a class="cs-btn" href="#zapis">Zapisz się</a>
                 @endif
-                <a href="#terminy" class="inline-flex min-h-12 items-center gap-2 rounded-md border-2 border-ink px-6 text-base font-bold text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Zobacz terminy</a>
+                <a class="cs-btn cs-btn-o" href="#terminy">Zobacz terminy</a>
             </div>
 
             @if ($facts)
-                <dl class="cs-facts mt-10" aria-label="Najważniejsze informacje">
+                <dl class="cs-facts" aria-label="Najważniejsze informacje">
                     @foreach ($facts as [$icon, $label, $value])
-                        <div class="cs-fact">
-                            <dt class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted"><i class="fa-solid {{ $icon }} text-brand-dark" aria-hidden="true"></i>{{ $label }}</dt>
-                            <dd class="mt-1 text-lg font-bold text-ink">{{ $value }}</dd>
-                        </div>
+                        <div><dt>{{ $label }}</dt><dd>{{ $value }}</dd></div>
                     @endforeach
                 </dl>
             @endif
         </div>
     </header>
 
-    <div class="mx-auto max-w-6xl px-4">
-        <nav class="cs-nav mt-2" aria-label="Na tej stronie">
-            @foreach ($sections as $id => $label)<a href="#{{ $id }}">{{ $label }}</a>@endforeach
-        </nav>
-    </div>
-
-    <div class="mx-auto max-w-6xl px-4 py-12">
+    <div class="cs-wrap">
         @if (session('status'))
-            <p role="status" class="mb-8 rounded-md bg-brand-light p-4 font-bold text-ink">{{ session('status') }}</p>
+            <p role="status" class="cs-status">{{ session('status') }}</p>
         @endif
 
-        <div class="cs-grid">
-            <div class="min-w-0 space-y-14">
+        <div class="cs-layout">
+            <div class="cs-main">
+                <nav class="cs-toc" aria-label="Na tej stronie">
+                    <p>Na tej stronie</p>
+                    <ul>@foreach ($sections as $id => $label)<li><a href="#{{ $id }}">{{ $label }}</a></li>@endforeach</ul>
+                </nav>
+
                 @if (filled($course->description))
-                    <section id="opis" class="scroll-mt-24" aria-labelledby="c-desc">
-                        <h2 id="c-desc" class="{{ $h2 }}">O szkoleniu</h2>
-                        <div class="prose mt-4 max-w-none text-lg leading-relaxed text-ink">{!! \App\Support\SafeHtml::demoteHeadings(\App\Support\SafeHtml::clean($course->description), 1) !!}</div>
+                    <section id="opis" class="cs-sec" aria-labelledby="c-desc">
+                        <h2 id="c-desc">O szkoleniu</h2>
+                        <div class="prose cs-prose">{!! \App\Support\SafeHtml::demoteHeadings(\App\Support\SafeHtml::clean($course->description), 1) !!}</div>
                     </section>
                 @endif
 
-                @if ($course->listOf('audience') || $course->listOf('outcomes'))
-                    <div class="grid gap-6 md:grid-cols-2">
-                        @if ($course->listOf('audience'))
-                            <section id="dla-kogo" class="{{ $card }} scroll-mt-24" aria-labelledby="c-audience">
-                                <h2 id="c-audience" class="flex items-center gap-3 text-xl font-bold text-ink"><i class="fa-solid fa-users text-brand-dark" aria-hidden="true"></i>Dla kogo</h2>
-                                <ul class="mt-4 space-y-2 text-ink">@foreach ($course->listOf('audience') as $row)<li class="flex gap-3"><i class="fa-solid fa-circle mt-2 text-[.4rem] text-brand-dark" aria-hidden="true"></i><span>{{ $row }}</span></li>@endforeach</ul>
-                            </section>
-                        @endif
-                        @if ($course->listOf('outcomes'))
-                            <section id="efekty" class="{{ $card }} scroll-mt-24" aria-labelledby="c-outcomes">
-                                <h2 id="c-outcomes" class="flex items-center gap-3 text-xl font-bold text-ink"><i class="fa-solid fa-bullseye text-brand-dark" aria-hidden="true"></i>Czego się nauczysz</h2>
-                                <ul class="mt-4 space-y-2 text-ink">@foreach ($course->listOf('outcomes') as $row)<li class="flex gap-3"><i class="fa-solid fa-check mt-1 text-brand-dark" aria-hidden="true"></i><span>{{ $row }}</span></li>@endforeach</ul>
-                            </section>
-                        @endif
-                    </div>
+                @if ($course->listOf('audience'))
+                    <section id="dla-kogo" class="cs-sec" aria-labelledby="c-audience">
+                        <h2 id="c-audience">Dla kogo</h2>
+                        <ul class="cs-list">@foreach ($course->listOf('audience') as $row)<li>{{ $row }}</li>@endforeach</ul>
+                    </section>
+                @endif
+
+                @if ($course->listOf('outcomes'))
+                    <section id="efekty" class="cs-sec" aria-labelledby="c-outcomes">
+                        <h2 id="c-outcomes">Czego się nauczysz</h2>
+                        <ul class="cs-list">@foreach ($course->listOf('outcomes') as $row)<li>{{ $row }}</li>@endforeach</ul>
+                    </section>
                 @endif
 
                 @if ($course->programModules())
-                    <section id="program" class="scroll-mt-24" aria-labelledby="c-program">
-                        <div class="flex flex-wrap items-end justify-between gap-3">
-                            <h2 id="c-program" class="{{ $h2 }}">Program</h2>
-                            @php $hours = collect($course->programModules())->sum(fn ($m) => (float) str_replace(',', '.', $m['hours'])); @endphp
-                            @if ($hours > 0)<p class="text-sm font-bold text-ink">Razem {{ rtrim(rtrim(number_format($hours, 1, ',', ' '), '0'), ',') }} godz.</p>@endif
-                        </div>
-                        <ol class="mt-6">
-                            @foreach ($course->programModules() as $i => $row)
-                                <li class="cs-step">
-                                    <span class="cs-num" aria-hidden="true">{{ $i + 1 }}</span>
-                                    <div class="min-w-0 border-b border-gray-200 pb-4">
-                                        <h3 class="flex flex-wrap items-baseline justify-between gap-2 text-lg font-bold text-ink">
-                                            <span><span class="sr-only">Moduł {{ $i + 1 }}: </span>{{ $row['title'] }}</span>
-                                            @if ($row['hours'] !== '')<span class="text-sm font-semibold text-ink">{{ $row['hours'] }} godz.</span>@endif
-                                        </h3>
-                                        @if ($row['text'] !== '')<p class="mt-1 leading-relaxed text-ink">{{ $row['text'] }}</p>@endif
-                                    </div>
+                    <section id="program" class="cs-sec" aria-labelledby="c-program">
+                        <h2 id="c-program">Program</h2>
+                        @php $hours = collect($course->programModules())->sum(fn ($m) => (float) str_replace(',', '.', $m['hours'])); @endphp
+                        @if ($hours > 0)<p>Razem {{ rtrim(rtrim(number_format($hours, 1, ',', ' '), '0'), ',') }} godz.</p>@endif
+                        <ol class="cs-prog">
+                            @foreach ($course->programModules() as $row)
+                                <li>
+                                    <h3>{{ $row['title'] }}@if ($row['hours'] !== '') <span class="cs-hours">({{ $row['hours'] }} godz.)</span>@endif</h3>
+                                    @if ($row['text'] !== '')<p style="margin:.25rem 0 0">{{ $row['text'] }}</p>@endif
                                 </li>
                             @endforeach
                         </ol>
                     </section>
                 @endif
 
-                <section id="terminy" class="scroll-mt-24" aria-labelledby="c-editions">
-                    <h2 id="c-editions" class="{{ $h2 }}">Terminy</h2>
+                <section id="terminy" class="cs-sec" aria-labelledby="c-editions">
+                    <h2 id="c-editions">Terminy</h2>
                     @if ($editions->isEmpty())
-                        <p class="mt-4 {{ $card }} text-ink">Nie ma jeszcze zaplanowanych terminów. Zajrzyj tu wkrótce albo napisz do nas przez <a href="{{ route('contact.show') }}" class="font-bold text-brand-dark underline underline-offset-4">formularz kontaktowy</a>.</p>
+                        <p>Nie ma jeszcze zaplanowanych terminów. Zajrzyj tu wkrótce albo napisz do nas przez <a href="{{ route('contact.show') }}">formularz kontaktowy</a>.</p>
                     @else
-                        <ul class="mt-6 grid gap-4 md:grid-cols-2" role="list">
-                            @foreach ($editions as $e)
-                                @php $taken = max(0, $e->capacity - $e->free_seats); $pct = $e->capacity > 0 ? min(100, (int) round($taken / $e->capacity * 100)) : 0; @endphp
-                                <li class="cs-edition {{ $card }} flex flex-col gap-3" data-selected="{{ $selected && $selected->id === $e->id ? 1 : 0 }}">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <h3 class="text-lg font-bold text-ink"><i class="fa-solid fa-calendar-days mr-2 text-brand-dark" aria-hidden="true"></i>{{ $e->datesLabel() }}</h3>
-                                        @if ($selected && $selected->id === $e->id)<span class="shrink-0 rounded-md bg-brand-dark px-2 py-1 text-xs font-bold text-white">Wybrany</span>@endif
-                                    </div>
-                                    <dl class="space-y-1 text-sm text-ink">
-                                        @if ($e->schedule)<div class="flex gap-2"><dt class="w-28 shrink-0 font-bold">Harmonogram</dt><dd>{{ $e->schedule }}</dd></div>@endif
-                                        @if ($e->location)<div class="flex gap-2"><dt class="w-28 shrink-0 font-bold">Miejsce</dt><dd>{{ $e->location }}</dd></div>@endif
-                                        @if ($e->instructor)<div class="flex gap-2"><dt class="w-28 shrink-0 font-bold">Prowadzi</dt><dd>{{ $e->instructor }}</dd></div>@endif
-                                    </dl>
-                                    <div class="mt-auto">
-                                        @if ($e->enrollment_status !== 'open')
-                                            <p class="text-sm font-bold text-ink">{{ $e->enrollmentLabel() }}</p>
-                                        @else
-                                            <div class="flex items-center justify-between text-sm">
-                                                <span class="font-bold text-ink">{{ $e->isFull() ? 'Brak miejsc, lista rezerwowa' : 'Wolne miejsca: '.$e->free_seats.' z '.$e->capacity }}</span>
-                                                <span class="text-muted">{{ $pct }}% zajęte</span>
-                                            </div>
-                                            <div class="cs-bar mt-2" role="img" aria-label="Zajęte {{ $pct }} procent miejsc"><span style="width: {{ $pct }}%"></span></div>
-                                        @endif
-                                        @if ($registrationOn && $e->acceptsRegistrations())
-                                            <a href="{{ route('courses.show', [$course, 'termin' => $e->id]) }}#zapis" class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-md {{ $e->isFull() ? 'border-2 border-ink text-ink hover:bg-gray-100' : 'bg-brand-dark text-white hover:bg-ink' }} px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
-                                                {{ $e->isFull() ? 'Zapisz się na listę rezerwową' : 'Wybierz ten termin' }}<span class="sr-only"> ({{ $e->datesLabel() }})</span>
-                                            </a>
-                                        @endif
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
+                        <table class="cs-table">
+                            <caption class="sr-only">Terminy szkolenia {{ $course->title }}</caption>
+                            <thead><tr><th scope="col">Termin</th><th scope="col">Miejsce</th><th scope="col">Miejsca</th><th scope="col"><span class="sr-only">Zapis</span></th></tr></thead>
+                            <tbody>
+                                @foreach ($editions as $e)
+                                    <tr data-selected="{{ $selected && $selected->id === $e->id ? 1 : 0 }}">
+                                        <td>
+                                            <strong>{{ $e->datesLabel() }}@if ($selected && $selected->id === $e->id) (wybrany)@endif</strong>
+                                            @if ($e->schedule)<small>{{ $e->schedule }}</small>@endif
+                                            @if ($e->instructor)<small>Prowadzi: {{ $e->instructor }}</small>@endif
+                                        </td>
+                                        <td data-label="Miejsce">{{ $e->location ?: '—' }}</td>
+                                        <td data-label="Miejsca">
+                                            @if ($e->enrollment_status !== 'open')
+                                                {{ $e->enrollmentLabel() }}
+                                            @else
+                                                {{ $e->isFull() ? 'Brak miejsc, lista rezerwowa' : 'Wolne miejsca: '.$e->free_seats.' z '.$e->capacity }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($registrationOn && $e->acceptsRegistrations())
+                                                <a href="{{ route('courses.show', [$course, 'termin' => $e->id]) }}#zapis">{{ $e->isFull() ? 'Zapisz się na listę rezerwową' : 'Wybierz ten termin' }}<span class="sr-only"> ({{ $e->datesLabel() }})</span></a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     @endif
                 </section>
 
                 @if (filled($course->prerequisites))
-                    <section class="{{ $card }}" aria-labelledby="c-prereq">
-                        <h2 id="c-prereq" class="flex items-center gap-3 text-xl font-bold text-ink"><i class="fa-solid fa-list-check text-brand-dark" aria-hidden="true"></i>Wymagania wstępne</h2>
-                        <p class="mt-3 leading-relaxed text-ink">{!! nl2br(e($course->prerequisites)) !!}</p>
+                    <section class="cs-sec" aria-labelledby="c-prereq">
+                        <h2 id="c-prereq">Wymagania wstępne</h2>
+                        <p>{!! nl2br(e($course->prerequisites)) !!}</p>
                     </section>
                 @endif
 
                 @if ($trainer)
-                    <section id="trener" class="scroll-mt-24" aria-labelledby="c-trainer">
-                        <h2 id="c-trainer" class="{{ $h2 }}">Prowadzi</h2>
-                        <div class="cs-trainer mt-6">
+                    <section id="trener" class="cs-sec" aria-labelledby="c-trainer">
+                        <h2 id="c-trainer">Prowadzi</h2>
+                        <div class="cs-trainer">
                             @if ($trainer->photoUrl())
-                                <img src="{{ $trainer->photoUrl() }}" alt="{{ $trainer->name }}" class="aspect-square w-full rounded-md object-cover">
+                                <img src="{{ $trainer->photoUrl() }}" alt="{{ $trainer->name }}">
                             @else
-                                <span class="flex aspect-square w-full items-center justify-center rounded-md bg-brand-light text-6xl text-brand-dark" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
+                                <span class="cs-nophoto" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
                             @endif
-                            <div class="min-w-0">
-                                <h3 class="text-2xl font-bold text-ink">{{ $trainer->name }}</h3>
-                                @if ($trainer->role)<p class="mt-1 text-lg text-brand-dark">{{ $trainer->role }}</p>@endif
-                                @if ($trainer->bio)<div class="prose mt-4 max-w-none text-ink">{!! \App\Support\SafeHtml::clean($trainer->bio) !!}</div>@endif
+                            <div>
+                                <h3 style="font-size:1.4rem">{{ $trainer->name }}</h3>
+                                @if ($trainer->role)<p style="margin:.15rem 0 .75rem;color:#4b5563">{{ $trainer->role }}</p>@endif
+                                @if ($trainer->bio)<div class="prose cs-prose">{!! \App\Support\SafeHtml::clean($trainer->bio) !!}</div>@endif
                                 @php $links = array_filter(['Strona WWW' => $trainer->website, 'LinkedIn' => $trainer->linkedin, 'Facebook' => $trainer->facebook, 'Instagram' => $trainer->instagram, 'X' => $trainer->twitter]); @endphp
                                 @if ($links)
-                                    <ul class="mt-4 flex flex-wrap gap-2" role="list">
-                                        @foreach ($links as $label => $url)
-                                            <li><a href="{{ $url }}" target="_blank" rel="noopener" class="inline-flex min-h-10 items-center rounded-md bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $label }}<span class="sr-only"> (otwiera się w nowej karcie)</span></a></li>
-                                        @endforeach
-                                    </ul>
+                                    <p style="margin:1rem 0 0">
+                                        @foreach ($links as $label => $url)<a href="{{ $url }}" target="_blank" rel="noopener" style="margin-right:1.25rem;font-weight:700">{{ $label }}<span class="sr-only"> (otwiera się w nowej karcie)</span></a>@endforeach
+                                    </p>
                                 @endif
                             </div>
                         </div>
@@ -244,62 +270,48 @@
                 @endif
 
                 @if ($course->price !== null || filled($course->price_note) || filled($course->funding))
-                    <section id="cennik" class="scroll-mt-24" aria-labelledby="c-pricing">
-                        <h2 id="c-pricing" class="{{ $h2 }}">Cennik</h2>
-                        <div class="mt-6 grid gap-4 sm:grid-cols-2">
-                            <div class="rounded-md bg-ink p-6 text-white">
-                                <p class="text-xs font-bold uppercase tracking-wide">Cena za osobę</p>
-                                <p class="mt-2 text-4xl font-extrabold">{{ $course->priceLabel() }}</p>
-                                @if (filled($course->price_note))<p class="mt-2 text-sm">{{ $course->price_note }}</p>@endif
-                            </div>
-                            @if (filled($course->funding))
-                                <div class="{{ $card }}">
-                                    <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted"><i class="fa-solid fa-hand-holding-dollar text-brand-dark" aria-hidden="true"></i>Dofinansowanie</p>
-                                    <p class="mt-2 text-lg font-bold text-ink">{{ $course->funding }}</p>
-                                </div>
-                            @endif
-                        </div>
+                    <section id="cennik" class="cs-sec" aria-labelledby="c-pricing">
+                        <h2 id="c-pricing">Cennik</h2>
+                        <p class="cs-price">{{ $course->priceLabel() }} <span style="font-size:1rem;font-weight:400">za osobę</span></p>
+                        @if (filled($course->price_note))<p style="margin-top:.5rem">{{ $course->price_note }}</p>@endif
+                        @if (filled($course->funding))<p><strong>Dofinansowanie:</strong> {{ $course->funding }}</p>@endif
                     </section>
                 @endif
 
                 @if (filled($course->terms))
-                    <section id="warunki" class="scroll-mt-24" aria-labelledby="c-terms">
-                        <h2 id="c-terms" class="{{ $h2 }}">Warunki udziału</h2>
-                        <div class="prose mt-4 max-w-none text-ink">{!! \App\Support\SafeHtml::demoteHeadings(\App\Support\SafeHtml::clean($course->terms), 1) !!}</div>
+                    <section id="warunki" class="cs-sec" aria-labelledby="c-terms">
+                        <h2 id="c-terms">Warunki udziału</h2>
+                        <div class="prose cs-prose">{!! \App\Support\SafeHtml::demoteHeadings(\App\Support\SafeHtml::clean($course->terms), 1) !!}</div>
                     </section>
                 @endif
 
                 @if ($course->faqItems())
-                    <section id="faq" class="scroll-mt-24" aria-labelledby="c-faq">
-                        <h2 id="c-faq" class="{{ $h2 }}">Najczęstsze pytania</h2>
-                        <div class="mt-6 space-y-2">
-                            @foreach ($course->faqItems() as $row)
-                                <details class="group rounded-md bg-gray-50">
-                                    <summary class="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 text-lg font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark [&::-webkit-details-marker]:hidden">
-                                        <span>{{ $row['question'] }}</span>
-                                        <i class="fa-solid fa-plus text-brand-dark transition-transform group-open:rotate-45" aria-hidden="true"></i>
-                                    </summary>
-                                    <div class="px-5 pb-5 leading-relaxed text-ink">{!! nl2br(e($row['answer'])) !!}</div>
-                                </details>
-                            @endforeach
-                        </div>
+                    <section id="faq" class="cs-sec cs-faq" aria-labelledby="c-faq">
+                        <h2 id="c-faq">Najczęstsze pytania</h2>
+                        @foreach ($course->faqItems() as $row)
+                            <details>
+                                <summary>{{ $row['question'] }}</summary>
+                                <div>{!! nl2br(e($row['answer'])) !!}</div>
+                            </details>
+                        @endforeach
                     </section>
                 @endif
             </div>
 
-            <aside id="zapis" class="cs-sticky scroll-mt-6 rounded-md bg-brand-light p-6" aria-labelledby="c-signup">
-                <h2 id="c-signup" class="text-2xl font-bold text-ink">{{ $registrationOn ? 'Zapisz się' : 'Chcesz wziąć udział?' }}</h2>
+            <aside id="zapis" class="cs-aside" aria-labelledby="c-signup">
+                <h2 id="c-signup">{{ $registrationOn ? 'Zapisz się' : 'Chcesz wziąć udział?' }}</h2>
                 @if (! $registrationOn)
-                    <p class="mt-3 leading-relaxed text-ink">Zapisy online są na razie wyłączone. Napisz do nas, a odpowiemy na pytania i zapiszemy Cię na wybrany termin.</p>
-                    <a href="{{ route('contact.show') }}" class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-brand-dark px-6 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Napisz do nas</a>
+                    <p>Zapisy online są na razie wyłączone. Napisz do nas, a odpowiemy na pytania i zapiszemy Cię na wybrany termin.</p>
+                    <a class="cs-btn" href="{{ route('contact.show') }}">Napisz do nas</a>
                 @elseif ($selected)
-                    <p class="mt-1 text-sm text-ink">Wybrany termin: <strong>{{ $selected->datesLabel() }}</strong>. Możesz go zmienić w polu poniżej.</p>
+                    <p>Wybrany termin: <strong>{{ $selected->datesLabel() }}</strong>. Możesz go zmienić w polu poniżej.</p>
                     @include('courses.partials.form', ['course' => $course, 'editions' => $editions, 'selected' => $selected])
                 @else
-                    <p class="mt-3 leading-relaxed text-ink">Rekrutacja jest teraz zamknięta. Napisz do nas, a damy znać o następnym terminie.</p>
-                    <a href="{{ route('contact.show') }}" class="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-brand-dark px-6 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Napisz do nas</a>
+                    <p>Rekrutacja jest teraz zamknięta. Napisz do nas, a damy znać o następnym terminie.</p>
+                    <a class="cs-btn" href="{{ route('contact.show') }}">Napisz do nas</a>
                 @endif
             </aside>
         </div>
     </div>
+</div>
 @endsection
