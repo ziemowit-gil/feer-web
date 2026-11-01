@@ -54,6 +54,18 @@ class TemplateTest2Test extends TestCase
         SiteSetting::current()->forceFill(['site_template' => 'test2'])->save();
         $this->resetSettingsCache();
 
-        $this->get('/kontakt')->assertOk()->assertSee('z2-header', false);
+        $this->get('/kontakt')->assertOk()->assertSee('z2-header', false)
+            ->assertSee('template-test2', false)
+            ->assertSee('.template-test2 main details', false)
+            ->assertSee('details > summary', false);
+    }
+
+    public function test_other_templates_have_no_test2_body_class_or_styles(): void
+    {
+        $this->resetSettingsCache();
+        SiteSetting::current()->forceFill(['site_template' => 'default'])->save();
+        $this->resetSettingsCache();
+
+        $this->get('/kontakt')->assertOk()->assertDontSee('template-test2', false);
     }
 }

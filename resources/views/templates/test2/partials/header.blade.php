@@ -19,6 +19,8 @@
     });
 @endphp
 
+@include('templates.test2.partials.inner')
+
 <style>
     .z2-header { --z2-blue: #0b4f9e; --z2-blue-dark: #083a75; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.06); position: relative; z-index: 30; }
     .z2-wrap { max-width: 1160px; margin: 0 auto; padding: 0 1rem; }

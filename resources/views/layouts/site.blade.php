@@ -95,7 +95,7 @@
         })();
     </script>
 </head>
-<body @class(['flex min-h-screen flex-col bg-white text-ink antialiased', 'template-vm' => ($siteSettings->site_template ?? 'default') === 'vm'])>
+<body @class(['flex min-h-screen flex-col bg-white text-ink antialiased', 'template-vm' => ($siteSettings->site_template ?? 'default') === 'vm', 'template-test2' => ($siteSettings->site_template ?? 'default') === 'test2'])>
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white">
         Przejdź do treści
     </a>
