@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-11-01: `test2`: zwykłe podmenu pionowe (jedna kolumna), pozycje z flagą „mega” jako mega menu na szerokość paska (kolumny = sekcje z nagłówkami, „Zobacz wszystko”); test.
 - 2026-11-01: `test2`: czcionka Roboto w menu (link Google Fonts + `font-family` na `.z2-nav` w `partials/header`); test.
 - 2026-11-01: fix `test2`: 500 na stronie głównej (`Undefined property: stdClass::$image_url`) — slajd misji to obiekt bez zdjęcia; hero renderuje go jako niebieski panel z tekstem misji; test.
 - 2026-11-01: `test2`: podstrony wewnętrzne (`templates/test2/partials/inner.blade.php`, style pod `body.template-test2`): okruszki z kreską, tytuł strony jako niebieski pasek, akordeony jako kolorowe belki, tabele z niebieskim nagłówkiem i szarymi wierszami; testy.
