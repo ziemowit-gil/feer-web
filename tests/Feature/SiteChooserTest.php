@@ -91,6 +91,21 @@ class SiteChooserTest extends TestCase
             ->assertOk()->assertSee('Szkolenia')->assertSee('witryna w sieci');
     }
 
+    public function test_pulpit_nie_ma_paska_edytowanej_witryny_a_inne_strony_maja(): void
+    {
+        $this->actingAs($this->admin())->withSession(['admin_site_chosen' => true]);
+
+        // Pulpit: bez paska „Edytujesz: …” (nazwa witryny jest w nagłówku pulpitu, wybór w menu bocznym).
+        $this->get(route('admin.dashboard'))->assertOk()
+            ->assertDontSee('Edytujesz:', false)
+            ->assertSee('id="nav-site-list"', false);
+
+        // Pozostałe strony zachowują pasek, bo ostrzega przy edycji witryny w sieci.
+        $this->withSession(['admin_site_chosen' => true, 'admin_active_site_id' => $this->sub->id])
+            ->get(route('admin.dashboard'))->assertOk()->assertDontSee('Edytujesz:', false);
+        $this->get(route('admin.podstrony.index'))->assertOk()->assertSee('Edytujesz:', false)->assertSee('witryna w sieci');
+    }
+
     public function test_zobacz_strone_prowadzi_do_aktywnej_witryny(): void
     {
         $this->sub->forceFill(['domain' => 'szkolenia.example.test'])->save();

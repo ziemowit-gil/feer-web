@@ -1,5 +1,7 @@
-{{-- Pasek „którą witrynę edytujesz”: widoczny dla administratora sieci, gdy jest więcej niż jedna witryna. --}}
-@if ((new \App\Http\Middleware\EnsureCanManageSites)->allows(auth()->user()) && \App\Http\Controllers\Admin\SiteChooserController::sites()->count() > 1 && ! request()->routeIs('admin.wybor-witryny'))
+{{-- Pasek „którą witrynę edytujesz”: widoczny dla administratora sieci, gdy jest więcej niż jedna witryna. Bez paska jest ekran
+     wyboru witryny i pulpit (nazwa witryny jest w nagłówku pulpitu, a wybór w menu bocznym); na pozostałych stronach ostrzega,
+     że edytujesz witrynę w sieci. --}}
+@if ((new \App\Http\Middleware\EnsureCanManageSites)->allows(auth()->user()) && \App\Http\Controllers\Admin\SiteChooserController::sites()->count() > 1 && ! request()->routeIs('admin.wybor-witryny', 'admin.dashboard'))
     @php
         $barSite = \App\Models\SiteSetting::current();
         $barIsSub = (bool) $barSite->parent_site_id;
