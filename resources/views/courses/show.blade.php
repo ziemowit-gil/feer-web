@@ -51,7 +51,7 @@
 @push('structured_data')
     <script type="application/ld+json">
         {!! json_encode(array_filter([
-            '@context' => 'https://schema.org', '@type' => 'Course',
+            '@@context' => 'https://schema.org', '@type' => 'Course',
             'name' => $course->title, 'description' => $course->lead,
             'provider' => ['@type' => 'Organization', 'name' => $siteSettings->site_name],
             'hasCourseInstance' => $editions->map(fn ($e) => array_filter([

@@ -57,10 +57,11 @@
         @include('partials.theme-feer')
     @endif
 
-    {{-- Dane strukturalne: organizacja (globalnie) + slot na typ strony (Article/Event) --}}
+    {{-- Dane strukturalne: organizacja (globalnie) + slot na typ strony (Article/Event).
+         Klucz piszemy '@@context': goły @context w {!! !!} to dyrektywa Blade (Laravel 13.20), a @@ daje literalne @. --}}
     <script type="application/ld+json">
         {!! json_encode(array_filter([
-            '@context' => 'https://schema.org',
+            '@@context' => 'https://schema.org',
             '@type' => 'Organization',
             'name' => $siteSettings->site_name,
             'url' => url('/'),

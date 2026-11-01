@@ -29,7 +29,7 @@
 @push('structured_data')
     <script type="application/ld+json">
         {!! json_encode(array_filter([
-            '@context' => 'https://schema.org',
+            '@@context' => 'https://schema.org',
             '@type' => 'DefinedTermSet',
             'name' => $page->title,
             'description' => $td['lead'] ?? ($page->meta_description ?: null),

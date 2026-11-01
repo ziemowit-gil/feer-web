@@ -125,7 +125,7 @@
     {{-- Dane strukturalne recenzji (schema.org Review) --}}
     <script type="application/ld+json">
         {!! json_encode(array_filter([
-            '@context' => 'https://schema.org',
+            '@@context' => 'https://schema.org',
             '@type' => 'Review',
             'name' => $news->title,
             'itemReviewed' => array_filter(['@type' => 'SoftwareApplication', 'name' => $td['tool_name'] ?? null, 'url' => $td['tool_url'] ?? null, 'applicationCategory' => 'WebApplication']),

@@ -40,7 +40,7 @@
 @push('structured_data')
     <script type="application/ld+json">
         {!! json_encode(array_filter([
-            '@context' => 'https://schema.org',
+            '@@context' => 'https://schema.org',
             '@type' => 'Course',
             'name' => $page->title,
             'description' => $td['lead'] ?? ($page->meta_description ?: null),
@@ -60,7 +60,7 @@
     @push('structured_data')
         <script type="application/ld+json">
             {!! json_encode([
-                '@context' => 'https://schema.org',
+                '@@context' => 'https://schema.org',
                 '@type' => 'FAQPage',
                 'mainEntity' => $faq->map(fn ($r) => ['@type' => 'Question', 'name' => $r['question'], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $r['answer']]])->all(),
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}

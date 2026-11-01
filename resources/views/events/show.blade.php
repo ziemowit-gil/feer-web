@@ -6,7 +6,7 @@
 @push('structured_data')
     <script type="application/ld+json">
         {!! json_encode(array_filter([
-            '@context' => 'https://schema.org',
+            '@@context' => 'https://schema.org',
             '@type' => 'Event',
             'name' => $event->title,
             'description' => $event->lead,
