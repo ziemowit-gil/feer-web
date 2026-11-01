@@ -29,8 +29,20 @@
         ['fa-chalkboard', 'Forma', $course->formatLabel()],
         ['fa-signal', 'Poziom', $course->level],
         ['fa-award', 'Certyfikat', $course->certificate],
-        ['fa-calendar-days', 'Najbliższy termin', $nextEdition?->datesLabel()],
     ], fn ($f) => filled($f[2]));
+    $seatsText = function ($e) {
+        if ($e->enrollment_status !== 'open') {
+            return $e->enrollmentLabel();
+        }
+        if ($e->isFull()) {
+            return 'Brak miejsc, lista rezerwowa';
+        }
+        $t = 'Wolne miejsca: '.$e->free_seats.' z '.$e->capacity;
+
+        return ($e->free_seats <= 3 && $e->capacity >= 5) ? $t.' (ostatnie miejsca)' : $t;
+    };
+    $contactPhone = $siteSettings->contact_phone;
+    $contactEmail = $siteSettings->contact_email;
     $sections = array_filter([
         'opis' => filled($course->description) ? 'O szkoleniu' : null,
         'dla-kogo' => $course->listOf('audience') ? 'Dla kogo' : null,
@@ -41,6 +53,7 @@
         'cennik' => ($course->price !== null || filled($course->price_note) || filled($course->funding)) ? 'Cennik' : null,
         'warunki' => filled($course->terms) ? 'Warunki' : null,
         'faq' => $course->faqItems() ? 'Pytania' : null,
+        'zobacz-takze' => ($related ?? collect())->isNotEmpty() ? 'Zobacz także' : null,
     ]);
 @endphp
 
@@ -126,12 +139,50 @@
     .cs-aside h2 { margin: 0 0 .75rem; font-size: 1.5rem; font-weight: 800; line-height: 1.25; }
     .cs-aside p { margin: 0 0 1rem; font-size: 1rem; }
     .cs-aside .cs-btn { width: 100%; justify-content: center; }
+    .cs-back { margin: 0 0 1rem; font-size: 1rem; }
+    .cs-back a { font-weight: 700; }
+    .cs-next { margin-top: 1.75rem; padding: 1rem 1.25rem; max-width: 36rem; border-left: 6px solid #1752bf; background: #f3f4f6; }
+    .cs-next p { margin: 0; line-height: 1.5; }
+    .cs-next-label { font-size: .9rem; font-weight: 700; color: #4b5563; }
+    .cs-next-date { font-size: 1.4rem; font-weight: 800; }
+    .cs-next-meta { font-size: 1rem; }
+    .cs-card-link { display: inline-block; margin-top: 1.25rem; font-weight: 700; font-size: 1rem; }
+    .cs-toc { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.5rem; }
+    .cs-toc p { margin: 0; }
+    .cs-toc ul { flex: 1 1 24rem; }
+    .cs-toc a[aria-current="location"] { text-decoration-thickness: 3px; color: #1d1d1a; }
+    .cs-size { display: flex; align-items: center; gap: .35rem; }
+    .cs-size button { min-width: 2.75rem; min-height: 2.75rem; border: 2px solid #1d1d1a; border-radius: .375rem; background: #fff; color: #1d1d1a; font-weight: 700; cursor: pointer; }
+    .cs-size button[aria-pressed="true"] { background: #1d1d1a; color: #fff; }
+    .cs-main[data-size="2"] .cs-sec, .cs-main[data-size="2"] .cs-prose, .cs-main[data-size="2"] .cs-table { font-size: 1.35rem; }
+    .cs-main[data-size="3"] .cs-sec, .cs-main[data-size="3"] .cs-prose, .cs-main[data-size="3"] .cs-table { font-size: 1.6rem; }
+    @media (min-width: 1024px) { .cs-toc { position: sticky; top: 0; z-index: 6; background: #fff; padding-top: .75rem; } .cs-toc ul { flex-wrap: nowrap; overflow-x: auto; } }
+    .cs-rel { margin: 0; padding: 0; list-style: none; }
+    .cs-rel li { padding: .9rem 0; border-bottom: 1px solid #d1d5db; }
+    .cs-rel strong { font-size: 1.15rem; }
+    .cs-rel small { display: block; color: #4b5563; font-size: .95rem; }
+    .cs-sticky { display: none; }
+    @media (max-width: 1023px) {
+        .cs { padding-bottom: 5.5rem; }
+        .cs-sticky { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; align-items: center; justify-content: space-between; gap: 1rem; padding: .6rem 1rem; background: #fff; border-top: 2px solid #1d1d1a; }
+        .cs-sticky.is-hidden { display: none; }
+        .cs-sticky strong { display: block; font-size: 1rem; line-height: 1.3; }
+        .cs-sticky span { display: block; font-size: .875rem; color: #4b5563; line-height: 1.3; }
+        .cs-sticky .cs-btn { flex: none; }
+    }
+    .cs-input { display: block; width: 100%; min-height: 3rem; border: 2px solid #6b7280; border-radius: .5rem; padding: .5rem .75rem; font-size: 1rem; color: #1d1d1a; background: #fff; }
+    .cs-input[aria-invalid="true"] { border-color: #b91c1c; }
+    .cs-err { margin: .25rem 0 0; font-weight: 700; color: #b91c1c; font-size: .95rem; }
+    .cs-contact { margin: 1.25rem 0 0; padding-top: 1rem; border-top: 1px solid #d1d5db; font-size: 1rem; }
+    .cs-contact a { font-weight: 700; }
+    .cs-change { font-weight: 700; }
     .cs-status { margin: 1.5rem 0 0; padding: 1rem 1.25rem; border: 2px solid #1d1d1a; border-radius: .375rem; font-weight: 700; }
 </style>
 
 <div class="cs">
     <header class="cs-head">
         <div class="cs-wrap">
+            <p class="cs-back"><a href="{{ route('courses.index') }}">← Wszystkie szkolenia</a></p>
             <p class="cs-kicker">{{ $course->categoryLabel() }} · {{ $course->formatLabel() }}</p>
             <h1 class="cs-title">{{ $course->title }}</h1>
             @if ($course->lead)<p class="cs-lead">{{ $course->lead }}</p>@endif
@@ -143,6 +194,14 @@
                 <a class="cs-btn cs-btn-o" href="#terminy">Zobacz terminy</a>
             </div>
 
+            @if ($nextEdition)
+                <div class="cs-next" role="group" aria-label="Najbliższy termin">
+                    <p class="cs-next-label">Najbliższy termin</p>
+                    <p class="cs-next-date">{{ $nextEdition->datesLabel() }}</p>
+                    <p class="cs-next-meta">@if ($nextEdition->location){{ $nextEdition->location }} · @endif{{ $seatsText($nextEdition) }}</p>
+                </div>
+            @endif
+
             @if ($facts)
                 <dl class="cs-facts" aria-label="Najważniejsze informacje">
                     @foreach ($facts as [$icon, $label, $value])
@@ -150,6 +209,7 @@
                     @endforeach
                 </dl>
             @endif
+            <a class="cs-card-link" href="{{ route('courses.card', $course) }}">Pobierz kartę szkolenia (PDF)</a>
         </div>
     </header>
 
@@ -159,10 +219,15 @@
         @endif
 
         <div class="cs-layout">
-            <div class="cs-main">
+            <div class="cs-main" id="cs-main" data-size="1">
                 <nav class="cs-toc" aria-label="Na tej stronie">
                     <p>Na tej stronie</p>
-                    <ul>@foreach ($sections as $id => $label)<li><a href="#{{ $id }}">{{ $label }}</a></li>@endforeach</ul>
+                    <ul>@foreach ($sections as $id => $label)<li><a href="#{{ $id }}" data-spy="{{ $id }}">{{ $label }}</a></li>@endforeach</ul>
+                    <div class="cs-size" role="group" aria-label="Rozmiar tekstu">
+                        <button type="button" data-size="1" aria-pressed="true" aria-label="Tekst normalny">A</button>
+                        <button type="button" data-size="2" aria-pressed="false" aria-label="Większy tekst" style="font-size:1.2rem">A</button>
+                        <button type="button" data-size="3" aria-pressed="false" aria-label="Największy tekst" style="font-size:1.45rem">A</button>
+                    </div>
                 </nav>
 
                 @if (filled($course->description))
@@ -220,13 +285,10 @@
                                         </td>
                                         <td data-label="Miejsce">{{ $e->location ?: '—' }}</td>
                                         <td data-label="Miejsca">
-                                            @if ($e->enrollment_status !== 'open')
-                                                {{ $e->enrollmentLabel() }}
-                                            @else
-                                                {{ $e->isFull() ? 'Brak miejsc, lista rezerwowa' : 'Wolne miejsca: '.$e->free_seats.' z '.$e->capacity }}
-                                            @endif
+                                            {{ $seatsText($e) }}
                                         </td>
                                         <td>
+                                            <a href="{{ route('courses.ics', [$course, $e]) }}" style="display:block;margin-bottom:.35rem">Dodaj do kalendarza<span class="sr-only"> ({{ $e->datesLabel() }}, plik .ics)</span></a>
                                             @if ($registrationOn && $e->acceptsRegistrations())
                                                 <a href="{{ route('courses.show', [$course, 'termin' => $e->id]) }}#zapis">{{ $e->isFull() ? 'Zapisz się na listę rezerwową' : 'Wybierz ten termin' }}<span class="sr-only"> ({{ $e->datesLabel() }})</span></a>
                                             @endif
@@ -296,6 +358,17 @@
                         @endforeach
                     </section>
                 @endif
+
+                @if ($related->isNotEmpty())
+                    <section id="zobacz-takze" class="cs-sec" aria-labelledby="c-rel">
+                        <h2 id="c-rel">Zobacz także</h2>
+                        <ul class="cs-rel">
+                            @foreach ($related as $r)
+                                <li><a href="{{ route('courses.show', $r) }}"><strong>{{ $r->title }}</strong></a><small>{{ $r->categoryLabel() }} · {{ $r->formatLabel() }}</small>@if ($r->lead)<span>{{ \Illuminate\Support\Str::limit($r->lead, 120) }}</span>@endif</li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
             </div>
 
             <aside id="zapis" class="cs-aside" aria-labelledby="c-signup">
@@ -304,14 +377,88 @@
                     <p>Zapisy online są na razie wyłączone. Napisz do nas, a odpowiemy na pytania i zapiszemy Cię na wybrany termin.</p>
                     <a class="cs-btn" href="{{ route('contact.show') }}">Napisz do nas</a>
                 @elseif ($selected)
-                    <p>Wybrany termin: <strong>{{ $selected->datesLabel() }}</strong>. Możesz go zmienić w polu poniżej.</p>
+                    <p>Wybrany termin: <strong>{{ $selected->datesLabel() }}</strong> (<a class="cs-change" href="#terminy">zobacz wszystkie terminy</a>). Możesz go zmienić w polu poniżej.</p>
                     @include('courses.partials.form', ['course' => $course, 'editions' => $editions, 'selected' => $selected])
                 @else
-                    <p>Rekrutacja jest teraz zamknięta. Napisz do nas, a damy znać o następnym terminie.</p>
-                    <a class="cs-btn" href="{{ route('contact.show') }}">Napisz do nas</a>
+                    @if ($canNotify)
+                        <p>Rekrutacja jest teraz zamknięta. Zostaw adres e-mail, a damy znać, gdy pojawi się nowy termin.</p>
+                        @if ($errors->any())
+                            <div role="alert" tabindex="-1" x-data x-init="$el.focus()" class="cs-status" style="margin:0 0 1rem;background:#fff">
+                                <ul style="margin:0;padding-left:1.25rem">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                            </div>
+                        @endif
+                        <form method="POST" action="{{ route('courses.notify', $course) }}" novalidate>
+                            @csrf
+                            <label for="notify_email" style="display:block;margin-bottom:.25rem;font-weight:700">Adres e-mail <span aria-hidden="true">*</span></label>
+                            <input id="notify_email" name="notify_email" type="email" autocomplete="email" required aria-required="true" value="{{ old('notify_email') }}" class="cs-input" @error('notify_email') aria-invalid="true" @enderror>
+                            <div style="display:flex;gap:.75rem;align-items:flex-start;margin:1rem 0">
+                                <input id="notify_consent" name="notify_consent" type="checkbox" value="1" required aria-required="true" @checked(old('notify_consent')) style="margin-top:.35rem;width:1.25rem;height:1.25rem">
+                                <label for="notify_consent" style="font-size:1rem">Zgadzam się na wysłanie jednej wiadomości o nowym terminie tego szkolenia. <span aria-hidden="true">*</span></label>
+                            </div>
+                            @include('partials.spam-protection', ['spamScope' => 'szkolenie-powiadomienie', 'flat' => false])
+                            <button type="submit" class="cs-btn" style="width:100%;justify-content:center;margin-top:.5rem">Powiadom mnie o terminie</button>
+                        </form>
+                    @else
+                        <p>Rekrutacja jest teraz zamknięta. Napisz do nas, a damy znać o następnym terminie.</p>
+                        <a class="cs-btn" href="{{ route('contact.show') }}">Napisz do nas</a>
+                    @endif
+                @endif
+
+                @if (filled($contactPhone) || filled($contactEmail))
+                    <p class="cs-contact">Wolisz zapisać się bez formularza?
+                        @if (filled($contactPhone))Zadzwoń: <a href="tel:{{ preg_replace('/\s+/', '', $contactPhone) }}">{{ $contactPhone }}</a>@endif
+                        @if (filled($contactPhone) && filled($contactEmail)) albo napisz: @elseif (filled($contactEmail)) Napisz: @endif
+                        @if (filled($contactEmail))<a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a>@endif
+                    </p>
                 @endif
             </aside>
         </div>
     </div>
+
+    @if ($nextEdition)
+        <div class="cs-sticky" id="cs-sticky" role="region" aria-label="Szybki zapis">
+            <div><strong>{{ $nextEdition->datesLabel() }}</strong><span>{{ $seatsText($nextEdition) }}</span></div>
+            @if ($registrationOn && $nextEdition->acceptsRegistrations())
+                <a class="cs-btn" href="#zapis">Zapisz się</a>
+            @else
+                <a class="cs-btn" href="#terminy">Terminy</a>
+            @endif
+        </div>
+    @endif
 </div>
+
+<script>
+(function () {
+    var main = document.getElementById('cs-main');
+    // Rozmiar tekstu (A A A) z zapamiętaniem wyboru; bez localStorage strona działa tak samo.
+    var buttons = document.querySelectorAll('.cs-size button');
+    function setSize(v) {
+        if (main) main.dataset.size = v;
+        buttons.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.size === v ? 'true' : 'false'); });
+    }
+    try { var saved = localStorage.getItem('course-text-size'); if (saved) setSize(saved); } catch (e) {}
+    buttons.forEach(function (b) {
+        b.addEventListener('click', function () { setSize(b.dataset.size); try { localStorage.setItem('course-text-size', b.dataset.size); } catch (e) {} });
+    });
+
+    if (!('IntersectionObserver' in window)) return;
+    // Spis sekcji: podświetla bieżącą sekcję (aria-current="location").
+    var links = {};
+    document.querySelectorAll('.cs-toc a[data-spy]').forEach(function (a) { links[a.dataset.spy] = a; });
+    var spy = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+            if (!en.isIntersecting) return;
+            Object.keys(links).forEach(function (k) { links[k].removeAttribute('aria-current'); });
+            if (links[en.target.id]) links[en.target.id].setAttribute('aria-current', 'location');
+        });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    Object.keys(links).forEach(function (id) { var el = document.getElementById(id); if (el) spy.observe(el); });
+
+    // Pasek zapisu na telefonie znika, gdy widać już kartę zapisu.
+    var bar = document.getElementById('cs-sticky'), aside = document.getElementById('zapis');
+    if (bar && aside) {
+        new IntersectionObserver(function (e) { bar.classList.toggle('is-hidden', e[0].isIntersecting); }).observe(aside);
+    }
+})();
+</script>
 @endsection

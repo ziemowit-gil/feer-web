@@ -96,6 +96,87 @@ class CoursesModuleTest extends TestCase
         $this->assertStringNotContainsString('cs-edition', $html, 'terminy to tabela, nie karty');
     }
 
+    public function test_strona_kursu_ma_blok_terminu_pasek_mobilny_kontakt_i_zobacz_takze(): void
+    {
+        $this->site->forceFill(['contact_phone' => '12 616 7555', 'contact_email' => 'biuro@example.com'])->save();
+        \Closure::bind(function () {
+            static::$cached = null;
+        }, null, SiteSetting::class)();
+
+        $c = $this->course();
+        $this->edition($c, ['capacity' => 10]);
+        $this->course(['title' => 'Excel dla każdego', 'slug' => 'excel', 'category' => 'm365']);
+
+        $this->get('/zajecia/czytnik')->assertOk()
+            ->assertSee('Najbliższy termin')->assertSee('id="cs-sticky"', false)
+            ->assertSee('Wolne miejsca: 10 z 10')->assertSee('tel:126167555', false)->assertSee('biuro@example.com')
+            ->assertSee('Zobacz także')->assertSee('Excel dla każdego')
+            ->assertSee('Pobierz kartę szkolenia (PDF)')->assertSee('Rozmiar tekstu')->assertSee('Dodaj do kalendarza');
+    }
+
+    public function test_ostatnie_miejsca_sa_opisane_tekstem(): void
+    {
+        $c = $this->course();
+        $this->edition($c, ['capacity' => 6])->registrations()->createMany(
+            collect(range(1, 4))->map(fn ($i) => ['first_name' => 'A', 'last_name' => 'B', 'email' => "u$i@example.com", 'status' => 'confirmed', 'source' => 'web'])->all()
+        );
+
+        $this->get('/zajecia/czytnik')->assertOk()->assertSee('Wolne miejsca: 2 z 6 (ostatnie miejsca)');
+    }
+
+    public function test_termin_do_kalendarza_zwraca_plik_ics(): void
+    {
+        $c = $this->course();
+        $e = $this->edition($c, ['location' => 'Warszawa, ul. Długa 1', 'starts_on' => '2027-03-10', 'ends_on' => '2027-03-12']);
+        $other = $this->course(['title' => 'Inne', 'slug' => 'inne']);
+
+        $res = $this->get("/zajecia/czytnik/termin/{$e->id}.ics")->assertOk();
+        $this->assertStringContainsString('text/calendar', $res->headers->get('Content-Type'));
+        $body = $res->getContent();
+        $this->assertStringContainsString('BEGIN:VEVENT', $body);
+        $this->assertStringContainsString('DTSTART;VALUE=DATE:20270310', $body);
+        $this->assertStringContainsString('DTEND;VALUE=DATE:20270313', $body, 'koniec całodniowego wydarzenia jest dniem po ostatnim');
+        $this->assertStringContainsString('LOCATION:Warszawa\\, ul. Długa 1', $body);
+
+        $this->get("/zajecia/{$other->slug}/termin/{$e->id}.ics")->assertNotFound();
+    }
+
+    public function test_karta_szkolenia_pobiera_sie_jako_pdf(): void
+    {
+        $c = $this->course(['description' => '<p>Opis szkolenia.</p>']);
+        $this->edition($c);
+
+        $res = $this->get('/zajecia/czytnik/karta.pdf')->assertOk();
+        $this->assertStringContainsString('application/pdf', $res->headers->get('Content-Type'));
+        $this->assertStringStartsWith('%PDF', $res->getContent());
+    }
+
+    public function test_powiadom_mnie_zapisuje_adres_bez_duplikatow_i_wymaga_zgody(): void
+    {
+        $c = $this->course();
+
+        $challenge = SpamGuard::challenge();
+        $this->travel(10)->seconds();
+        $payload = [
+            'notify_email' => 'Ola@Example.com', 'notify_consent' => 1,
+            SpamGuard::TOKEN_FIELD => $challenge['token'], SpamGuard::ANSWER_FIELD => (string) $this->answer($challenge['question']),
+        ];
+
+        \App\Models\CourseNotification::create(['course_id' => $c->id, 'email' => 'ola@example.com']);
+
+        $this->post('/zajecia/czytnik/powiadom', $payload)->assertRedirect(route('courses.show', $c))->assertSessionHas('status');
+        $this->assertSame(1, \App\Models\CourseNotification::where('course_id', $c->id)->where('email', 'ola@example.com')->count());
+
+        $this->post('/zajecia/czytnik/powiadom', ['notify_email' => 'zly', 'notify_consent' => null] + $payload)->assertSessionHasErrors(['notify_email', 'notify_consent']);
+    }
+
+    public function test_bez_terminow_strona_pokazuje_formularz_powiadomienia(): void
+    {
+        $this->course();
+
+        $this->get('/zajecia/czytnik')->assertOk()->assertSee('Powiadom mnie o terminie')->assertSee('name="notify_email"', false);
+    }
+
     public function test_zapis_do_limitu_potem_lista_rezerwowa(): void
     {
         $e = $this->edition($this->course(), ['capacity' => 1]);

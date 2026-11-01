@@ -25,7 +25,10 @@
         <div role="alert" tabindex="-1" x-init="$el.focus()" class="rounded-md bg-white p-4 text-ink" style="outline:2px solid #b91c1c">
             <p class="font-bold">Popraw zaznaczone pola:</p>
             <ul class="mt-1 list-inside list-disc">
-                @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                @foreach ($errors->messages() as $key => $messages)
+                    {{-- Komunikat prowadzi do pola: klik przenosi fokus na nie. --}}
+                    <li>@if ($key !== 'spam')<a href="#{{ $key }}" class="font-bold underline" @click.prevent="document.getElementById('{{ $key }}')?.focus()">{{ $messages[0] }}</a>@else{{ $messages[0] }}@endif</li>
+                @endforeach
             </ul>
         </div>
     @endif
@@ -52,9 +55,9 @@
         </div>
     @endforeach
 
-    <div>
-        <label for="accessibility_needs" class="mb-1 block font-bold text-ink">Potrzeby i dostosowania (niewymagane)</label>
-        <p id="needs-help" class="mb-2 text-sm text-ink">Na przykład: czytnik ekranu, powiększenie, napisy, tłumacz języka migowego, dostępny dojazd, asystent.</p>
+    <div class="rounded-md bg-white p-4" style="outline:2px solid #1d1d1a">
+        <label for="accessibility_needs" class="mb-1 block text-lg font-bold text-ink">Potrzeby i dostosowania: powiedz, czego potrzebujesz (niewymagane)</label>
+        <p id="needs-help" class="mb-2 text-sm text-ink">Powiedz nam, co ułatwi Ci udział. Na przykład: czytnik ekranu, powiększenie, napisy, tłumacz języka migowego, dostępny dojazd, asystent. Przygotujemy się przed zajęciami.</p>
         <textarea id="accessibility_needs" name="accessibility_needs" maxlength="2000" aria-describedby="needs-help @error('accessibility_needs') err-accessibility_needs @enderror" class="cr-input">{{ old('accessibility_needs') }}</textarea>
         @error('accessibility_needs')<p id="err-accessibility_needs" class="mt-1 font-bold text-red-700">{{ $message }}</p>@enderror
     </div>

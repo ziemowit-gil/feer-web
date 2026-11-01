@@ -211,6 +211,9 @@ Route::middleware('module:volunteering')->group(function () {
 Route::middleware('module:courses')->group(function () {
     Route::get('/zajecia', [CourseController::class, 'index'])->name('courses.index');
     Route::post('/zajecia/{course:slug}/zapis', [CourseController::class, 'register'])->name('courses.register')->middleware('throttle:10,1');
+    Route::post('/zajecia/{course:slug}/powiadom', [CourseController::class, 'notify'])->name('courses.notify')->middleware('throttle:10,1');
+    Route::get('/zajecia/{course:slug}/termin/{edition}.ics', [CourseController::class, 'ics'])->whereNumber('edition')->name('courses.ics');
+    Route::get('/zajecia/{course:slug}/karta.pdf', [CourseController::class, 'card'])->name('courses.card');
     Route::get('/zajecia/{course:slug}/zgloszenie/{reference}', [CourseController::class, 'done'])->name('courses.done');
     Route::get('/zajecia/{course:slug}', [CourseController::class, 'show'])->name('courses.show');
 });

@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\CourseEdition;
+use App\Models\CourseNotification;
 use App\Models\CourseRegistration;
 use App\Support\SpamGuard;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -15,7 +19,7 @@ use Illuminate\Validation\Rule;
  * Publiczna oferta szkoleń i zajęć: lista z filtrami, karta szkolenia z terminami i zapis uczestnika.
  * Gdy w terminie brakuje miejsc, zgłoszenie trafia na listę rezerwową.
  *
- * Metody: index(), show(), register(), done().
+ * Metody: index(), show(), register(), done(), notify(), ics(), card().
  *
  * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
  */
@@ -46,7 +50,12 @@ class CourseController extends Controller
         $editions = $course->upcomingEditions()->values();
         $selected = $editions->firstWhere('id', (int) old('edition_id', $request->query('termin'))) ?? $editions->first(fn (CourseEdition $e) => $e->acceptsRegistrations());
 
-        return view('courses.show', compact('course', 'editions', 'selected'));
+        // „Zobacz także”: pokrewne szkolenia (ta sama kategoria najpierw), bez bieżącego.
+        $related = Course::forCurrentSite()->visible()->whereKeyNot($course->id)
+            ->orderByRaw('category = ? desc', [$course->category])->orderByDesc('is_featured')->orderBy('order')->limit(3)->get();
+        $canNotify = Schema::hasTable('course_notifications');
+
+        return view('courses.show', compact('course', 'editions', 'selected', 'related', 'canNotify'));
     }
 
     /** Zapis na termin: walidacja, antyspam, blokada terminu na czas liczenia miejsc, status `pending` albo `waitlist`. */
@@ -124,5 +133,71 @@ class CourseController extends Controller
             ->firstOrFail();
 
         return view('courses.done', compact('course', 'registration'));
+    }
+
+    /** „Powiadom mnie o terminie”: zapis adresu e-mail (bez duplikatów) z antyspamem i zgodą. */
+    public function notify(Request $request, Course $course)
+    {
+        abort_unless($course && $course->status === 'active', 404);
+        abort_unless(Schema::hasTable('course_notifications'), 404);
+
+        $data = $request->validate([
+            'notify_email' => ['required', 'email:rfc', 'max:255'],
+            'notify_consent' => ['accepted'],
+        ], [
+            'notify_email.required' => 'Podaj adres e-mail.',
+            'notify_email.email' => 'Adres e-mail wygląda na niepoprawny.',
+            'notify_consent.accepted' => 'Potwierdź zgodę na przesłanie powiadomienia, żeby się zapisać.',
+        ]);
+
+        if ($spam = SpamGuard::inspect($request, ['email' => $data['notify_email']], 'szkolenie-powiadomienie')) {
+            Log::warning('Zablokowano zapis na powiadomienie o szkoleniu jako spam', ['powód' => $spam['reason'], 'ip' => $request->ip()]);
+
+            return $spam['silent']
+                ? redirect()->route('courses.show', $course)->with('status', 'Dziękujemy, damy znać o nowym terminie.')
+                : back()->withErrors(['spam' => $spam['message']])->withInput();
+        }
+
+        CourseNotification::firstOrCreate(['course_id' => $course->id, 'email' => mb_strtolower(trim($data['notify_email']))]);
+
+        return redirect()->route('courses.show', $course)->with('status', 'Dziękujemy. Damy znać e-mailem, gdy pojawi się nowy termin.');
+    }
+
+    /** Termin do kalendarza (plik .ics, wydarzenie całodniowe). */
+    public function ics(Course $course, CourseEdition $edition)
+    {
+        abort_unless($course && $course->status === 'active' && $edition->course_id === $course->id, 404);
+
+        $esc = fn (?string $v) => str_replace(["\\", ';', ',', "\r\n", "\n", "\r"], ['\\\\', '\\;', '\\,', '\\n', '\\n', '\\n'], (string) $v);
+        $start = $edition->starts_on->format('Ymd');
+        $end = ($edition->ends_on ?? $edition->starts_on)->copy()->addDay()->format('Ymd');
+        $lines = array_filter([
+            'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//FEER//Szkolenia//PL', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT',
+            'UID:course-edition-'.$edition->id.'@'.request()->getHost(),
+            'DTSTAMP:'.now()->utc()->format('Ymd\THis\Z'),
+            'DTSTART;VALUE=DATE:'.$start, 'DTEND;VALUE=DATE:'.$end,
+            'SUMMARY:'.$esc($course->title),
+            filled($edition->location) ? 'LOCATION:'.$esc($edition->location) : null,
+            'DESCRIPTION:'.$esc(trim(($edition->schedule ?? '')."\n".route('courses.show', $course))),
+            'URL:'.route('courses.show', $course),
+            'END:VEVENT', 'END:VCALENDAR',
+        ]);
+
+        return response(implode("\r\n", $lines)."\r\n", 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="'.Str::slug($course->title).'-'.$start.'.ics"',
+        ]);
+    }
+
+    /** Karta szkolenia do pobrania (PDF): opis, program, najbliższe terminy, cena, kontakt. */
+    public function card(Course $course)
+    {
+        abort_unless($course && $course->status === 'active', 404);
+        $course->load('editions');
+
+        return Pdf::loadView('courses.pdf', [
+            'course' => $course, 'editions' => $course->upcomingEditions()->values(),
+            'siteSettings' => \App\Models\SiteSetting::current(), 'printedAt' => now()->format('d.m.Y'),
+        ])->setPaper('a4')->download(Str::slug($course->title).'-karta.pdf');
     }
 }
