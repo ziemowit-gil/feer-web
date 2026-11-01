@@ -81,8 +81,8 @@
          rozwijana w dół pod przyciskiem (nie wyjeżdża poza pasek). W zwężonej szynie zostaje sama ikona z podpowiedzią. --}}
     @if ($adminSites->count() > 1)
         @php $siteIsSub = (bool) $siteSettings->parent_site_id; @endphp
-        <div class="nav-site flex-none border-b border-gray-200 px-2 py-2" x-data="{ open: false }" @keydown.escape.stop="open = false" @click.outside="open = false">
-            <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-controls="nav-site-list"
+        <div class="nav-site relative flex-none border-b border-gray-200 px-2 py-2" x-data="{ open: false }" @keydown.escape.stop="open = false; $refs.siteBtn.focus()" @click.outside="open = false">
+            <button type="button" x-ref="siteBtn" @click="open = ! open; if (open) $nextTick(() => $refs.siteList.querySelector('button, a')?.focus())" :aria-expanded="open.toString()" aria-controls="nav-site-list" aria-haspopup="dialog"
                     class="nav-site-btn flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                     :class="open && 'bg-gray-100'"
                     title="Witryna: {{ $siteSettings->site_name }}">
@@ -96,8 +96,11 @@
                 <i class="nav-label fa-solid fa-chevron-down text-xs text-gray-500 transition-transform" :class="open && 'rotate-180'" aria-hidden="true"></i>
                 <span class="sr-only">Zmień witrynę (bieżąca: {{ $siteSettings->site_name }}, {{ $siteIsSub ? 'witryna w sieci' : 'witryna główna' }})</span>
             </button>
-            <div id="nav-site-list" x-show="open" x-cloak class="nav-site-list" role="group" aria-label="Wybierz witrynę">
-                <ul class="mt-1 space-y-0.5" role="list">
+            {{-- Pop-up obok przycisku: nad paskiem bocznym, nie rozpycha menu; w zwężonej szynie wysuwa się w prawo od ikony. --}}
+            <div id="nav-site-list" x-show="open" x-cloak x-ref="siteList" role="dialog" aria-label="Wybierz witrynę"
+                 class="nav-site-list absolute left-2 right-2 top-full z-50 mt-1 rounded-lg border border-gray-200 bg-white p-2 shadow-xl">
+                <p class="px-2 pb-1 text-[10px] font-bold uppercase tracking-wide text-muted">Witryny</p>
+                <ul class="space-y-0.5" role="list">
                     @foreach ($adminSites as $adminSite)
                         @php $isCurrent = $adminSite->is($siteSettings); @endphp
                         <li>
@@ -121,7 +124,7 @@
             </div>
         </div>
         <style>
-            .admin-sidebar.is-collapsed .nav-site-list { display: none !important; }
+            .admin-sidebar.is-collapsed .nav-site-list { left: 100%; right: auto; top: 0; margin: 0 0 0 .5rem; width: 18rem; }
             .admin-sidebar.is-collapsed .nav-site-btn { justify-content: center; padding-left: .25rem; padding-right: .25rem; }
         </style>
     @endif
