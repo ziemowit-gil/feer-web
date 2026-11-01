@@ -213,6 +213,7 @@ class SiteSettingController extends Controller
             'matomo_url' => ['nullable', 'url:https', 'max:255', 'required_with:matomo_site_id'],
             'matomo_site_id' => ['nullable', 'string', 'max:16', 'regex:/^\d+$/', 'required_with:matomo_url'],
             'matomo_cookieless' => ['sometimes', 'boolean'],
+            'clarity_project_id' => ['nullable', 'string', 'max:32', 'regex:/^[a-z0-9]+$/i'],
             'bip_mode' => ['nullable', 'string', 'in:internal,external'],
             'bip_url' => ['nullable', 'string', 'max:255'],
             'bip_intro' => ['nullable', 'string', 'max:20000'],
@@ -704,7 +705,7 @@ class SiteSettingController extends Controller
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['homepage_sections_enabled']);
 
         // Do czasu wykonania migracji (nowa kolumna) zapis ustawień nie może padać — pomijamy brakującą kolumnę.
-        foreach (['support_steps_hidden', 'support_steps_title', 'support_steps_subtitle', 'support_step1_title', 'support_step1_text', 'support_step2_title', 'support_step2_text', 'support_step3_title', 'support_step3_text', 'homepage_sections_hidden', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'parent_link_label', 'parent_link_url', 'is_cta_label', 'is_cta_url', 'contact_branches', 'contact_branches_title', 'courses_registration_enabled'] as $newColumn) {
+        foreach (['support_steps_hidden', 'support_steps_title', 'support_steps_subtitle', 'support_step1_title', 'support_step1_text', 'support_step2_title', 'support_step2_text', 'support_step3_title', 'support_step3_text', 'homepage_sections_hidden', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'parent_link_label', 'parent_link_url', 'is_cta_label', 'is_cta_url', 'contact_branches', 'contact_branches_title', 'courses_registration_enabled', 'clarity_project_id'] as $newColumn) {
             if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', $newColumn)) {
                 unset($data[$newColumn]);
             }

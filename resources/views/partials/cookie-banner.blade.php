@@ -65,14 +65,14 @@
                 } catch (e) {}
             }
 
-            // Usuwa ciasteczka statystyk (GA: _ga*, _gid, _gat*; Matomo: _pk_*, mtm_*) z bieżącej domeny i domen nadrzędnych.
+            // Usuwa ciasteczka statystyk (GA: _ga*, _gid, _gat*; Matomo: _pk_*, mtm_*; Clarity: _clck, _clsk, CLID) z bieżącej domeny i domen nadrzędnych.
             function clearAnalyticsCookies() {
                 var parts = location.hostname.split('.');
                 var domains = [''];
                 for (var i = 0; i < parts.length - 1; i++) domains.push('; domain=.' + parts.slice(i).join('.'));
                 document.cookie.split(';').forEach(function (c) {
                     var name = c.split('=')[0].trim();
-                    if (/^(_ga|_gid|_gat|_pk_|mtm_)/.test(name)) {
+                    if (/^(_ga|_gid|_gat|_pk_|mtm_|_clck|_clsk|CLID|ANONCHK|MR|MUID|SM)$|^(_ga|_gid|_gat|_pk_|mtm_)/.test(name)) {
                         domains.forEach(function (d) {
                             document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + d;
                         });
@@ -115,7 +115,7 @@
                 clearAnalyticsCookies();
                 hide();
                 // Skrypty statystyk już działają na tej stronie — przeładowanie je wyłącza.
-                if (hadConsent && (window.__gaLoaded || window.__matomoLoaded)) location.reload();
+                if (hadConsent && (window.__gaLoaded || window.__matomoLoaded || window.__clarityLoaded)) location.reload();
             });
 
             banner.addEventListener('keydown', function (e) {

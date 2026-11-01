@@ -92,6 +92,7 @@
                         ['matomo_url',         'text',     'string?',  'Adres instancji Matomo (https://…/)'],
                         ['matomo_site_id',     'text',     'string?',  'ID witryny w Matomo'],
                         ['matomo_cookieless',  'boolean',  'bool',     'Matomo bez cookies (działa bez zgody); false = po akceptacji cookies'],
+                        ['clarity_project_id', 'text',     'string?',  'ID projektu Microsoft Clarity (ładuje się po zgodzie na cookies)'],
                         // Wygląd i kolory
                         ['brand_color',        'text',     'string',   'Główny kolor marki (#hex, kontrast WCAG AA gwarantowany)'],
                         ['brand_color_2',      'text',     'string?',  'Drugi kolor marki (opcjonalny)'],

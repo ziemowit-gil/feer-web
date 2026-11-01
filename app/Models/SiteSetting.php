@@ -454,7 +454,7 @@ class SiteSetting extends Model implements HasMedia
 
     protected $fillable = [
         'slug', 'domain', 'parent_site_id', 'site_kind',
-        'site_name', 'site_name_genitive', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'matomo_url', 'matomo_site_id', 'matomo_cookieless', 'disabled_modules', 'homepage_section_order', 'homepage_sections_hidden', 'events_home_color', 'quick_actions_panel_negative',
+        'site_name', 'site_name_genitive', 'tagline', 'brand_color', 'brand_color_2', 'brand_color_3', 'brand_color_4', 'brand_skip_contrast', 'nav_dark_text', 'ngo_skip_contrast', 'meta_description', 'allow_indexing', 'ga_measurement_id', 'matomo_url', 'matomo_site_id', 'matomo_cookieless', 'clarity_project_id', 'disabled_modules', 'homepage_section_order', 'homepage_sections_hidden', 'events_home_color', 'quick_actions_panel_negative',
         'bip_url', 'bip_intro', 'bip_editor_name', 'bip_editor_email', 'bip_gov_url', 'bip_mode', 'bip_show_reports', 'home_search_enabled', 'join_us_texts', 'facebook_url', 'facebook_group_url', 'twitter_url', 'instagram_url', 'linkedin_url', 'youtube_url', 'substack_url',
         'contact_address', 'contact_city', 'contact_email', 'contact_phone', 'contact_office_hours', 'contact_intro', 'contact_bank_accounts', 'contact_bank_accounts_note', 'contact_bank_accounts_layout',
         'contact_correspondence_title', 'contact_correspondence_note',

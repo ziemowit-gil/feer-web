@@ -958,6 +958,19 @@
                     Odznaczone: kod ładuje się dopiero po akceptacji cookies, tak jak Google Analytics.
                 </p>
             </fieldset>
+
+            <div class="mt-5 border-t border-gray-100 pt-5">
+                <label for="clarity_project_id" class="mb-1 block text-sm font-bold">Microsoft Clarity — identyfikator projektu</label>
+                <input type="text" id="clarity_project_id" name="clarity_project_id" autocomplete="off" spellcheck="false"
+                    value="{{ old('clarity_project_id', $settings->clarity_project_id) }}"
+                    placeholder="abcd1234ef" pattern="[A-Za-z0-9]+" aria-describedby="clarity_project_id_help"
+                    class="w-full max-w-xs rounded border-gray-500 font-mono focus:border-brand-dark focus:ring-brand-dark">
+                <p id="clarity_project_id_help" class="mt-1 text-xs text-muted">
+                    Mapy kliknięć i nagrania sesji. ID znajdziesz w Clarity: Settings → Overview → Project ID. Zostaw puste, aby wyłączyć.
+                    Kod ładuje się dopiero po akceptacji cookies (RODO).
+                </p>
+                @error('clarity_project_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
         </div>
 
         <div x-show="tab === 'registry'" x-cloak>

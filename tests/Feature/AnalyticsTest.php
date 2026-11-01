@@ -53,6 +53,21 @@ class AnalyticsTest extends TestCase
             ->assertSee("'disableCookies'", false);
     }
 
+    public function test_clarity_snippet_rendered_after_consent_signal(): void
+    {
+        SiteSetting::current()->update(['clarity_project_id' => 'abcd1234ef']);
+
+        $this->get('/start')->assertOk()
+            ->assertSee('"abcd1234ef"', false)
+            ->assertSee('https://www.clarity.ms/tag/', false)
+            ->assertSee('feer:cookie-consent', false);
+    }
+
+    public function test_clarity_project_id_is_validated_and_saved(): void
+    {
+        $this->assertSame('abcd1234ef', tap(SiteSetting::current())->update(['clarity_project_id' => 'abcd1234ef'])->fresh()->clarity_project_id);
+    }
+
     public function test_matomo_config_requires_both_fields(): void
     {
         $settings = SiteSetting::current();

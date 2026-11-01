@@ -1,16 +1,18 @@
 @php
     $gaId = $siteSettings->ga_measurement_id ?? null;
     $matomo = isset($siteSettings) ? $siteSettings->matomoConfig() : null;
+    $clarityId = isset($siteSettings) ? trim((string) ($siteSettings->clarity_project_id ?? '')) ?: null : null;
 @endphp
-@if ($gaId || $matomo)
-    {{-- Statystyki: Google Analytics 4 i/lub Matomo.
-         GA (i Matomo w trybie z cookies) ładuje się dopiero po akceptacji cookies (RODO).
+@if ($gaId || $matomo || $clarityId)
+    {{-- Statystyki: Google Analytics 4, Matomo i/lub Microsoft Clarity.
+         GA, Clarity (i Matomo w trybie z cookies) ładuje się dopiero po akceptacji cookies (RODO).
          Zgoda: localStorage['feer_cookie_consent'] === '1', ustawiana przez baner cookies,
          który przy kliknięciu „Akceptuję" wysyła zdarzenie „feer:cookie-consent". --}}
     <script>
         (function () {
             var GA_ID = @json($gaId);
             var MATOMO = @json($matomo);
+            var CLARITY_ID = @json($clarityId);
 
             function loadScript(src) {
                 var s = document.createElement('script');
@@ -41,9 +43,20 @@
                 loadScript(MATOMO.url + 'matomo.js');
             }
 
+            function loadClarity() {
+                if (!CLARITY_ID || window.__clarityLoaded) return;
+                window.__clarityLoaded = true;
+                (function (c, l, a, r, i, t, y) {
+                    c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); };
+                    t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i;
+                    y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y);
+                })(window, document, 'clarity', 'script', CLARITY_ID);
+            }
+
             function loadConsented() {
                 loadGa();
                 loadMatomo();
+                loadClarity();
             }
 
             // Matomo bez cookies nie potrzebuje zgody — startuje od razu.
