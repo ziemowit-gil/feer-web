@@ -65,8 +65,8 @@ class FeerIsThemeTest extends TestCase
             ->getContent();
 
         $this->assertStringContainsString('role="tablist"', $html);
-        $this->assertStringContainsString('aria-orientation="vertical"', $html, 'pionowa lista kategorii jak na stronie Działania');
-        $this->assertStringContainsString('Kategorie', $html);
+        $this->assertStringNotContainsString('aria-orientation="vertical"', $html, 'układ gov.pl: poziome zakładki, bez bocznej listy');
+        $this->assertStringContainsString('aria-label="Odbiorca"', $html);
         $this->assertStringContainsString('/szkolenia/wsparcie-psychologiczne', $html, 'linki usług zostają w witrynie');
     }
 
