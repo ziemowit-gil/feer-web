@@ -40,6 +40,8 @@ class TemplateTest2Test extends TestCase
         $this->get('/')->assertOk()
             ->assertSee('z2-header', false)
             ->assertSee('Parkowanie')
+            ->assertSee('family=Roboto', false)
+            ->assertSee('font-family: Roboto', false)
             ->assertSee('Skrót 1')
             ->assertSee('Skrót 4')
             ->assertSee('Wpis testowy')

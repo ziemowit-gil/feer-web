@@ -21,6 +21,7 @@
 
 @include('templates.test2.partials.inner')
 
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
 <style>
     .z2-header { --z2-blue: #0b4f9e; --z2-blue-dark: #083a75; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.06); position: relative; z-index: 30; }
     .z2-wrap { max-width: 1160px; margin: 0 auto; padding: 0 1rem; }
@@ -39,6 +40,7 @@
     .z2-icons { display: flex; align-items: center; gap: .35rem; }
     .z2-icons a { display: flex; height: 2.75rem; min-width: 2.75rem; align-items: center; justify-content: center; color: var(--z2-blue); font-size: 1.35rem; }
     .z2-icons a:hover { color: var(--z2-blue-dark); }
+    .z2-nav, .z2-nav .z2-link, .z2-nav .z2-panel a { font-family: Roboto, Arial, sans-serif; }
     .z2-nav { border-top: 1px solid #eef0f3; }
     .z2-nav ul { list-style: none; margin: 0; padding: 0; display: flex; }
     .z2-nav > .z2-wrap > ul > li { position: relative; flex: 1 1 0; text-align: center; }
