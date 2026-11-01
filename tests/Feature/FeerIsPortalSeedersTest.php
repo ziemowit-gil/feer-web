@@ -157,4 +157,41 @@ class FeerIsPortalSeedersTest extends TestCase
         $this->site->forceFill(['homepage_sections_hidden' => []])->save();
         $this->get('/test2')->assertOk()->assertSee('feer-is-news-heading', false)->assertSee('Wpis probny');
     }
+
+    public function test_strona_szkolenia_pokazuje_program_trenera_warunki_cennik_i_faq(): void
+    {
+        $this->seed(\Database\Seeders\FeerIsSampleCoursesSeeder::class);
+        $trainer = \App\Models\Facilitator::create(['name' => 'Anna Testowa', 'role' => 'Trenerka dostępności', 'bio' => '<p>Prowadzi szkolenia z dostępności od lat.</p>', 'website' => 'https://example.test']);
+        $course = \App\Models\Course::withoutGlobalScopes()->where('slug', 'dostepne-dokumenty-word-i-pdf')->sole();
+        $course->forceFill(['facilitator_id' => $trainer->id])->save();
+
+        $this->get('/test2/zajecia/dostepne-dokumenty-word-i-pdf')->assertOk()
+            ->assertSee('Dla kogo')->assertSee('Czego się nauczysz')->assertSee('Program')->assertSee('Struktura dokumentu')
+            ->assertSee('Prowadzi')->assertSee('Anna Testowa')->assertSee('Trenerka dostępności')->assertSee('Prowadzi szkolenia z dostępności')
+            ->assertSee('Cennik')->assertSee('Dofinansowanie')->assertSee('Warunki udziału')->assertSee('Rezygnacja')
+            ->assertSee('Najczęstsze pytania')->assertSee('listę rezerwową')->assertSee('8 godzin dydaktycznych');
+    }
+
+    public function test_panel_szkolenia_zapisuje_nowe_pola_oferty(): void
+    {
+        $admin = \App\Models\User::factory()->create(['role' => \App\Models\User::ROLE_ADMIN]);
+        $trainer = \App\Models\Facilitator::create(['name' => 'Jan Trener']);
+
+        $this->actingAs($admin)->withSession(['admin_site_chosen' => true, 'admin_active_site_id' => $this->site->id])
+            ->post(route('admin.kursy.store'), [
+                'title' => 'Nowe szkolenie', 'category' => 'wcag', 'format' => 'online', 'status' => 'active',
+                'facilitator_id' => $trainer->id, 'duration' => '4 godziny', 'level' => 'podstawowy', 'funding' => 'BUR',
+                'audience' => [['text' => 'Urzędnicy'], ['text' => '']], 'program' => [['title' => 'Moduł 1', 'hours' => '2', 'text' => 'Opis'], ['title' => '', 'hours' => '', 'text' => '']],
+                'faq' => [['question' => 'Czy online?', 'answer' => 'Tak.']], 'terms' => '<p>Zasady.</p><script>alert(1)</script>',
+            ])->assertSessionHasNoErrors();
+
+        $course = \App\Models\Course::withoutGlobalScopes()->where('slug', 'nowe-szkolenie')->sole();
+        $this->assertSame($trainer->id, $course->facilitator_id);
+        $this->assertSame(['Urzędnicy'], $course->listOf('audience'));
+        $this->assertCount(1, $course->programModules());
+        $this->assertSame('Czy online?', $course->faqItems()[0]['question']);
+        $this->assertStringNotContainsString('<script', (string) $course->terms);
+
+        $this->get(route('admin.kursy.edit', $course))->assertOk()->assertSee('Trener (z bazy prowadzących)')->assertSee('Warunki udziału');
+    }
 }

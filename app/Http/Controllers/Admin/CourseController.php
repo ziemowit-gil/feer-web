@@ -116,8 +116,32 @@ class CourseController extends Controller
             'price' => ['nullable', 'numeric', 'min:0', 'max:99999'],
             'status' => ['required', Rule::in(array_keys(Course::STATUSES))],
             'order' => ['nullable', 'integer', 'min:0', 'max:9999'],
+            'facilitator_id' => ['nullable', 'integer', 'exists:facilitators,id'],
+            'duration' => ['nullable', 'string', 'max:120'],
+            'level' => ['nullable', 'string', 'max:60'],
+            'certificate' => ['nullable', 'string', 'max:200'],
+            'price_note' => ['nullable', 'string', 'max:300'],
+            'funding' => ['nullable', 'string', 'max:300'],
+            'prerequisites' => ['nullable', 'string', 'max:3000'],
+            'terms' => ['nullable', 'string', 'max:50000'],
+            'audience' => ['nullable', 'array'], 'audience.*.text' => ['nullable', 'string', 'max:200'],
+            'outcomes' => ['nullable', 'array'], 'outcomes.*.text' => ['nullable', 'string', 'max:300'],
+            'program' => ['nullable', 'array'], 'program.*.title' => ['nullable', 'string', 'max:160'], 'program.*.hours' => ['nullable', 'string', 'max:40'], 'program.*.text' => ['nullable', 'string', 'max:1500'],
+            'faq' => ['nullable', 'array'], 'faq.*.question' => ['nullable', 'string', 'max:300'], 'faq.*.answer' => ['nullable', 'string', 'max:2000'],
         ]);
         $data['is_featured'] = $request->boolean('is_featured');
+        $data['terms'] = filled($data['terms'] ?? null) ? \App\Support\SafeHtml::clean($data['terms']) : null;
+        foreach (['audience', 'outcomes'] as $list) {
+            $data[$list] = collect($request->input($list, []))->map(fn ($r) => ['text' => trim((string) ($r['text'] ?? ''))])->filter(fn ($r) => $r['text'] !== '')->values()->all() ?: null;
+        }
+        $data['program'] = collect($request->input('program', []))->map(fn ($r) => ['title' => trim((string) ($r['title'] ?? '')), 'hours' => trim((string) ($r['hours'] ?? '')), 'text' => trim((string) ($r['text'] ?? ''))])->filter(fn ($r) => $r['title'] !== '')->values()->all() ?: null;
+        $data['faq'] = collect($request->input('faq', []))->map(fn ($r) => ['question' => trim((string) ($r['question'] ?? '')), 'answer' => trim((string) ($r['answer'] ?? ''))])->filter(fn ($r) => $r['question'] !== '')->values()->all() ?: null;
+        // Do czasu migracji nowe kolumny są pomijane, żeby zapis nie padał.
+        foreach (['facilitator_id', 'duration', 'level', 'certificate', 'price_note', 'funding', 'prerequisites', 'terms', 'audience', 'outcomes', 'program', 'faq'] as $column) {
+            if (! \Illuminate\Support\Facades\Schema::hasColumn('courses', $column)) {
+                unset($data[$column]);
+            }
+        }
         $data['order'] = (int) ($data['order'] ?? 0);
         $data['description'] = filled($data['description'] ?? null) ? \App\Support\SafeHtml::clean($data['description']) : null;
 

@@ -41,6 +41,110 @@
             <div class="flex items-end"><label class="flex items-center gap-2 text-sm font-bold text-ink"><input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $course->is_featured)) class="h-5 w-5 rounded border-gray-500"> Wyróżnij na liście</label></div>
         </div>
 
+        <fieldset class="space-y-5 border-t border-gray-100 pt-5">
+            <legend class="text-sm font-bold uppercase tracking-wide text-muted">Szczegóły oferty</legend>
+
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div>
+                    <label for="facilitator_id" class="{{ $lbl }}">Trener (z bazy prowadzących)</label>
+                    <select id="facilitator_id" name="facilitator_id" class="{{ $in }}" aria-describedby="facilitator-h">
+                        <option value="">— bez przypisanego trenera —</option>
+                        @foreach (\App\Models\Facilitator::query()->orderBy('name')->get() as $f)
+                            <option value="{{ $f->id }}" @selected((int) old('facilitator_id', $course->facilitator_id) === $f->id)>{{ $f->name }}@if ($f->role) ({{ $f->role }})@endif</option>
+                        @endforeach
+                    </select>
+                    <p id="facilitator-h" class="mt-1 text-xs text-muted">Zdjęcie, rola i biogram pokażą się na stronie szkolenia. Prowadzących dodasz w Wydarzenia → Prowadzący.</p>
+                </div>
+                <div><label for="duration" class="{{ $lbl }}">Czas trwania</label><input id="duration" name="duration" value="{{ old('duration', $course->duration) }}" placeholder="np. 16 godzin dydaktycznych" class="{{ $in }}"></div>
+                <div><label for="level" class="{{ $lbl }}">Poziom</label><input id="level" name="level" value="{{ old('level', $course->level) }}" placeholder="np. podstawowy" class="{{ $in }}"></div>
+                <div><label for="certificate" class="{{ $lbl }}">Certyfikat / zaświadczenie</label><input id="certificate" name="certificate" value="{{ old('certificate', $course->certificate) }}" placeholder="np. zaświadczenie o ukończeniu" class="{{ $in }}"></div>
+                <div><label for="price_note" class="{{ $lbl }}">Uwaga do ceny</label><input id="price_note" name="price_note" value="{{ old('price_note', $course->price_note) }}" placeholder="np. cena zawiera materiały" class="{{ $in }}"></div>
+                <div><label for="funding" class="{{ $lbl }}">Dofinansowanie</label><input id="funding" name="funding" value="{{ old('funding', $course->funding) }}" placeholder="np. możliwe z BUR i KFS" class="{{ $in }}"></div>
+            </div>
+
+            <div class="rounded-md bg-gray-50 p-4 space-y-3" data-td-repeater>
+                <p class="text-xs font-bold uppercase text-muted">Dla kogo</p>
+                <div data-td-rows class="space-y-2">
+                    @foreach (old('audience', $course->audience ?? []) as $i => $row)
+                    <div data-td-row class="grid gap-2 sm:grid-cols-[1fr_auto]">
+                        <input type="text" name="audience[{{ $i }}][text]" value="{{ $row['text'] ?? '' }}" placeholder="np. Pracownicy urzędów i instytucji" aria-label="Odbiorca" class="{{ $in }}">
+                        <button type="button" data-td-remove class="inline-flex h-10 w-10 items-center justify-center rounded text-red-700 hover:bg-red-50" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                    </div>
+                    @endforeach
+                </div>
+                <button type="button" data-td-add class="inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-dark hover:text-white"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj odbiorcę</button>
+                <template data-td-template>
+                    <div data-td-row class="grid gap-2 sm:grid-cols-[1fr_auto]">
+                        <input type="text" name="audience[__INDEX__][text]" value="" placeholder="np. Pracownicy urzędów i instytucji" aria-label="Odbiorca" class="{{ $in }}">
+                        <button type="button" data-td-remove class="inline-flex h-10 w-10 items-center justify-center rounded text-red-700 hover:bg-red-50" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                    </div>
+                </template>
+            </div>
+            <div class="rounded-md bg-gray-50 p-4 space-y-3" data-td-repeater>
+                <p class="text-xs font-bold uppercase text-muted">Czego się nauczysz (efekty)</p>
+                <div data-td-rows class="space-y-2">
+                    @foreach (old('outcomes', $course->outcomes ?? []) as $i => $row)
+                    <div data-td-row class="grid gap-2 sm:grid-cols-[1fr_auto]">
+                        <input type="text" name="outcomes[{{ $i }}][text]" value="{{ $row['text'] ?? '' }}" placeholder="np. Przygotujesz dostępny dokument PDF" aria-label="Efekt" class="{{ $in }}">
+                        <button type="button" data-td-remove class="inline-flex h-10 w-10 items-center justify-center rounded text-red-700 hover:bg-red-50" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                    </div>
+                    @endforeach
+                </div>
+                <button type="button" data-td-add class="inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-dark hover:text-white"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj efekt</button>
+                <template data-td-template>
+                    <div data-td-row class="grid gap-2 sm:grid-cols-[1fr_auto]">
+                        <input type="text" name="outcomes[__INDEX__][text]" value="" placeholder="np. Przygotujesz dostępny dokument PDF" aria-label="Efekt" class="{{ $in }}">
+                        <button type="button" data-td-remove class="inline-flex h-10 w-10 items-center justify-center rounded text-red-700 hover:bg-red-50" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                    </div>
+                </template>
+            </div>
+            <div class="rounded-md bg-gray-50 p-4 space-y-3" data-td-repeater>
+                <p class="text-xs font-bold uppercase text-muted">Program (moduły)</p>
+                <div data-td-rows class="space-y-2">
+                    @foreach (old('program', $course->program ?? []) as $i => $row)
+                    <div data-td-row class="grid gap-2 sm:grid-cols-[1fr_5rem_2fr_auto]">
+                        <input type="text" name="program[{{ $i }}][title]" value="{{ $row['title'] ?? '' }}" placeholder="Tytuł modułu" aria-label="Tytuł modułu" class="{{ $in }}">
+                        <input type="text" name="program[{{ $i }}][hours]" value="{{ $row['hours'] ?? '' }}" placeholder="Godz." aria-label="Liczba godzin" class="{{ $in }}">
+                        <input type="text" name="program[{{ $i }}][text]" value="{{ $row['text'] ?? '' }}" placeholder="Opis modułu" aria-label="Opis modułu" class="{{ $in }}">
+                        <button type="button" data-td-remove class="inline-flex h-10 w-10 items-center justify-center rounded text-red-700 hover:bg-red-50" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                    </div>
+                    @endforeach
+                </div>
+                <button type="button" data-td-add class="inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-dark hover:text-white"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj moduł</button>
+                <template data-td-template>
+                    <div data-td-row class="grid gap-2 sm:grid-cols-[1fr_5rem_2fr_auto]">
+                        <input type="text" name="program[__INDEX__][title]" value="" placeholder="Tytuł modułu" aria-label="Tytuł modułu" class="{{ $in }}">
+                        <input type="text" name="program[__INDEX__][hours]" value="" placeholder="Godz." aria-label="Liczba godzin" class="{{ $in }}">
+                        <input type="text" name="program[__INDEX__][text]" value="" placeholder="Opis modułu" aria-label="Opis modułu" class="{{ $in }}">
+                        <button type="button" data-td-remove class="inline-flex h-10 w-10 items-center justify-center rounded text-red-700 hover:bg-red-50" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                    </div>
+                </template>
+            </div>
+            <div class="rounded-md bg-gray-50 p-4 space-y-3" data-td-repeater>
+                <p class="text-xs font-bold uppercase text-muted">Najczęstsze pytania</p>
+                <div data-td-rows class="space-y-2">
+                    @foreach (old('faq', $course->faq ?? []) as $i => $row)
+                    <div data-td-row class="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
+                        <input type="text" name="faq[{{ $i }}][question]" value="{{ $row['question'] ?? '' }}" placeholder="Pytanie" aria-label="Pytanie" class="{{ $in }}">
+                        <textarea name="faq[{{ $i }}][answer]" rows="2" placeholder="Odpowiedź" aria-label="Odpowiedź" class="{{ $in }}">{{ $row['answer'] ?? '' }}</textarea>
+                        <button type="button" data-td-remove class="inline-flex h-10 w-10 items-center justify-center rounded text-red-700 hover:bg-red-50" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                    </div>
+                    @endforeach
+                </div>
+                <button type="button" data-td-add class="inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-dark hover:text-white"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pytanie</button>
+                <template data-td-template>
+                    <div data-td-row class="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
+                        <input type="text" name="faq[__INDEX__][question]" value="" placeholder="Pytanie" aria-label="Pytanie" class="{{ $in }}">
+                        <textarea name="faq[__INDEX__][answer]" rows="2" placeholder="Odpowiedź" aria-label="Odpowiedź" class="{{ $in }}"></textarea>
+                        <button type="button" data-td-remove class="inline-flex h-10 w-10 items-center justify-center rounded text-red-700 hover:bg-red-50" aria-label="Usuń wiersz"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                    </div>
+                </template>
+            </div>
+
+            <div><label for="prerequisites" class="{{ $lbl }}">Wymagania wstępne</label><textarea id="prerequisites" name="prerequisites" rows="2" class="{{ $in }}">{{ old('prerequisites', $course->prerequisites) }}</textarea></div>
+            <div><label for="terms" class="{{ $lbl }}">Warunki udziału (HTML)</label><textarea id="terms" name="terms" rows="6" class="{{ $in }} font-mono" aria-describedby="terms-h">{{ old('terms', $course->terms) }}</textarea><p id="terms-h" class="mt-1 text-xs text-muted">Zapisy, płatność, rezygnacja, zaświadczenie. Pokazuje się w sekcji „Warunki udziału” na stronie szkolenia.</p></div>
+        </fieldset>
+
         <div class="flex gap-3"><button type="submit" class="{{ $btn }}">Zapisz</button><a href="{{ route('admin.kursy.index') }}" class="rounded border border-gray-500 px-4 py-2 text-sm font-bold text-ink hover:bg-gray-100">Wróć do listy</a></div>
     </form>
 
@@ -79,3 +183,20 @@
         </section>
     @endif
 @endsection
+
+@push('scripts')
+<script>
+    // Listy wierszy (dla kogo, efekty, program, FAQ): dodawanie z szablonu i usuwanie, bez przeładowania.
+    document.querySelectorAll('[data-td-repeater]').forEach(function (box) {
+        var rows = box.querySelector('[data-td-rows]'), tpl = box.querySelector('[data-td-template]');
+        box.querySelector('[data-td-add]').addEventListener('click', function () {
+            var html = tpl.innerHTML.replace(/__INDEX__/g, String(Date.now()));
+            rows.insertAdjacentHTML('beforeend', html);
+            var added = rows.lastElementChild.querySelector('input, textarea'); if (added) added.focus();
+        });
+        box.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-td-remove]'); if (btn) btn.closest('[data-td-row]').remove();
+        });
+    });
+</script>
+@endpush

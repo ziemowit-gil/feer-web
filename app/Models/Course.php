@@ -36,12 +36,43 @@ class Course extends Model
 
     protected $fillable = [
         'title', 'slug', 'lead', 'description', 'category', 'format', 'price', 'status', 'is_featured', 'order',
+        'facilitator_id', 'duration', 'level', 'certificate', 'price_note', 'funding', 'audience', 'outcomes', 'program', 'prerequisites', 'terms', 'faq',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'is_featured' => 'boolean',
+        'audience' => 'array',
+        'outcomes' => 'array',
+        'program' => 'array',
+        'faq' => 'array',
     ];
+
+    /** Trener prowadzący szkolenie (baza prowadzących: zdjęcie, rola, biogram, linki). */
+    public function facilitator(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Facilitator::class);
+    }
+
+    /** Lista tekstów (dla kogo, efekty) bez pustych wierszy. @return list<string> */
+    public function listOf(string $field): array
+    {
+        return collect($this->{$field} ?? [])->map(fn ($r) => is_array($r) ? trim((string) ($r['text'] ?? '')) : trim((string) $r))->filter()->values()->all();
+    }
+
+    /** Moduły programu: tytuł, godziny, opis (bez wierszy bez tytułu). @return list<array{title: string, hours: string, text: string}> */
+    public function programModules(): array
+    {
+        return collect($this->program ?? [])->map(fn ($r) => ['title' => trim((string) ($r['title'] ?? '')), 'hours' => trim((string) ($r['hours'] ?? '')), 'text' => trim((string) ($r['text'] ?? ''))])
+            ->filter(fn ($r) => $r['title'] !== '')->values()->all();
+    }
+
+    /** Pytania i odpowiedzi (bez niepełnych wierszy). @return list<array{question: string, answer: string}> */
+    public function faqItems(): array
+    {
+        return collect($this->faq ?? [])->map(fn ($r) => ['question' => trim((string) ($r['question'] ?? '')), 'answer' => trim((string) ($r['answer'] ?? ''))])
+            ->filter(fn ($r) => $r['question'] !== '' && $r['answer'] !== '')->values()->all();
+    }
 
     public function editions(): HasMany
     {
