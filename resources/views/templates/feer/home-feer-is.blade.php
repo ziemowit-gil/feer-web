@@ -97,7 +97,7 @@
         </section>
     @endif
 
-    @if ($featured)
+    @if ($featured && $siteSettings->isHomepageSectionEnabled('news'))
         <section class="pb-12" aria-labelledby="feer-is-news-heading">
             <div class="mx-auto max-w-6xl px-4">
                 <div class="grid gap-8 lg:grid-cols-3">

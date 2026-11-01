@@ -132,4 +132,29 @@ class FeerIsPortalSeedersTest extends TestCase
         $this->get('/test2/katalog-szkolen')->assertOk()->assertSee('Podstawy obsługi komputera')->assertSee('Dostępne dokumenty cyfrowe');
         $this->get('/test2/regulamin-szkolen')->assertOk()->assertSee('Zapisy')->assertSee('Uwagi i reklamacje');
     }
+
+    public function test_trzy_przykladowe_szkolenia_w_module_zajec_z_terminami_bez_cen(): void
+    {
+        $this->seed(\Database\Seeders\FeerIsSampleCoursesSeeder::class);
+        $this->seed(\Database\Seeders\FeerIsSampleCoursesSeeder::class);
+
+        $courses = \App\Models\Course::withoutGlobalScopes()->where('site_id', $this->site->id)->orderBy('order')->get();
+        $this->assertCount(3, $courses);
+        $this->assertTrue($courses->every(fn ($c) => $c->status === 'active' && $c->price === null));
+        $this->assertTrue($courses->every(fn ($c) => $c->editions()->count() >= 1));
+
+        $this->get('/test2/zajecia')->assertOk()->assertSee('Komputer z czytnikiem ekranu')->assertSee('Dostępne dokumenty Word i PDF')->assertSee('Microsoft 365 w codziennej pracy');
+        $this->get('/test2/zajecia/komputer-z-czytnikiem-ekranu')->assertOk()->assertSee('czytnika ekranu');
+    }
+
+    public function test_strona_glowna_ma_domyslnie_ukryty_blok_aktualnosci_i_mozna_go_wlaczyc(): void
+    {
+        \App\Models\News::withoutGlobalScopes()->create(['site_id' => $this->site->id, 'title' => 'Wpis probny', 'slug' => 'wpis-probny', 'content' => '<p>x</p>', 'is_published' => true, 'published_at' => now()->subHour()]);
+        $this->seed(FeerIsPortalSeeder::class);
+
+        $this->get('/test2')->assertOk()->assertDontSee('feer-is-news-heading', false);
+
+        $this->site->forceFill(['homepage_sections_hidden' => []])->save();
+        $this->get('/test2')->assertOk()->assertSee('feer-is-news-heading', false)->assertSee('Wpis probny');
+    }
 }

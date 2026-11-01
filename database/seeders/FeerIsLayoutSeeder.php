@@ -16,6 +16,12 @@ use Illuminate\Database\Seeder;
  */
 class FeerIsLayoutSeeder extends Seeder
 {
+    /** Gdy sekcje strony głównej były już ustawiane (lista niepusta), decyzję o aktualnościach zostawiamy redakcji. */
+    private function newsAlreadyDecided(SiteSetting $site): bool
+    {
+        return ! empty($site->homepage_sections_hidden);
+    }
+
     public function run(): void
     {
         $slug = trim((string) (getenv('SITE_SLUG') ?: ($_SERVER['SITE_SLUG'] ?? ''))) ?: 'szkolenia';
@@ -54,6 +60,13 @@ class FeerIsLayoutSeeder extends Seeder
                 $site->setAttribute($column, $value);
                 $changed[] = $column;
             }
+        }
+
+        // Strona główna portalu szkoleniowego nie pokazuje bloku aktualności (można go włączyć w Ustawienia → Strona główna).
+        $hidden = (array) ($site->homepage_sections_hidden ?? []);
+        if (! in_array('news', $hidden, true) && ! $this->newsAlreadyDecided($site)) {
+            $site->homepage_sections_hidden = array_values([...$hidden, 'news']);
+            $changed[] = 'homepage_sections_hidden';
         }
 
         if ($changed) {
