@@ -159,6 +159,13 @@
     .site-header nav > div > ul:not(.nav-pills) > li > div > a, .site-header nav > div > ul:not(.nav-pills) > li > div > button { font-size: clamp(1.0625rem, 1.3vw, 1.3125rem); }
 
     /* Menu w dwóch rzędach: aktywna i najechana pozycja z podkreśleniem 3 px w kolorze marki (#1E6DFF na bieli 4,48:1 — element graficzny ≥ 3:1). */
+    /* Menu kompaktowe (wariant FEER IS): mniejsza czcionka i odstępy, żeby cała lista mieściła się w jednym rzędzie. Wyższa specyficzność niż reguły wyżej. */
+    .site-header nav > ul.nav-compact:not(.nav-pills) > li > a, .site-header nav > ul.nav-compact:not(.nav-pills) > li > button,
+    .site-header nav > ul.nav-compact:not(.nav-pills) > li > div > a, .site-header nav > ul.nav-compact:not(.nav-pills) > li > div > button,
+    .site-header nav > div > ul.nav-compact:not(.nav-pills) > li > a, .site-header nav > div > ul.nav-compact:not(.nav-pills) > li > button,
+    .site-header nav > div > ul.nav-compact:not(.nav-pills) > li > div > a, .site-header nav > div > ul.nav-compact:not(.nav-pills) > li > div > button { font-size: .9375rem; }
+    .site-header nav > ul.flex.nav-compact:not(.nav-pills):not(.nav-icons), .site-header nav > div > ul.flex.nav-compact:not(.nav-pills):not(.nav-icons) { gap: 1rem; }
+    .nav-compact .nav-mega-panel a { font-size: 1rem; }
     .feer-nav > div > ul > li > a, .feer-nav > div > ul > li > button, .feer-nav > div > ul > li > div.border-b-2 { border-bottom-width: 3px; }
     .feer-nav > div > ul > li > a:hover, .feer-nav > div > ul > li > button:hover, .feer-nav > div > ul > li > div.border-b-2:hover,
     .feer-nav > div > ul > li > a[aria-current="page"], .feer-nav > div > ul > li > a.border-brand, .feer-nav > div > ul > li > button.border-brand,

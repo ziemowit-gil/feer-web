@@ -47,7 +47,7 @@ class FeerIsPortalSeedersTest extends TestCase
         $this->seed(FeerIsPortalContentSeeder::class);
         $this->seed(FeerIsPortalContentSeeder::class);
 
-        $this->assertTrue($this->pages()->get()->every(fn ($p) => ! $p->is_published), 'wszystko to szkice');
+        $this->assertTrue($this->pages()->get()->every(fn ($p) => $p->is_published), 'domyślnie strony przykładowe są opublikowane (menu nie prowadzi do 404)');
         $this->assertSame(1, $this->pages()->where('title', 'Dla osób')->count(), 'bez duplikatów');
 
         $persons = $this->pages()->where('title', 'Dla osób')->sole();
@@ -63,6 +63,18 @@ class FeerIsPortalSeedersTest extends TestCase
         $offers = $this->pages()->where('parent_id', $catalog->id)->where('type', 'training_offer')->get();
         $this->assertCount(3, $offers);
         $this->assertNotEmpty($offers->first()->typeData()['program']);
+    }
+
+    public function test_z_portal_draft_strony_powstaja_jako_szkice(): void
+    {
+        putenv('PORTAL_DRAFT=1');
+        try {
+            $this->seed(FeerIsPortalContentSeeder::class);
+        } finally {
+            putenv('PORTAL_DRAFT');
+        }
+
+        $this->assertTrue($this->pages()->get()->every(fn ($p) => ! $p->is_published));
     }
 
     public function test_nie_nadpisuje_zmienionej_tresci_ale_uzupelnia_pusta(): void
@@ -111,8 +123,6 @@ class FeerIsPortalSeedersTest extends TestCase
     {
         $this->seed(FeerIsPortalSeeder::class);
         $this->seed(FeerIsMenuSeeder::class);
-        $this->pages()->update(['is_published' => true]);
-
         $html = $this->get('/test2')->assertOk()
             ->assertSee('Dla osób')->assertSee('Dla instytucji')->assertSee('Kursy i szkolenia otwarte')->assertSee('Szkolenia zamknięte')
             ->assertSee('Zapisz się')->assertDontSee('Materiały edukacyjne')->assertDontSee('Nasze działania')

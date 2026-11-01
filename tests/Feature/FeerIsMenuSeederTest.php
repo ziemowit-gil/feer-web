@@ -52,7 +52,7 @@ class FeerIsMenuSeederTest extends TestCase
 
         $this->run_();
 
-        $labels = NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->where('location', 'main')->orderBy('order')->pluck('label')->all();
+        $labels = NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->where('location', 'main')->whereNull('parent_id')->orderBy('order')->pluck('label')->all();
         $this->assertSame(['Nasze szkolenia', 'Dla osób', 'Dla instytucji szkoleniowych', 'Trenerzy', 'O instytucji', 'Aktualności', 'Kontakt'], $labels);
 
         $about = Page::withoutGlobalScopes()->where('site_id', $this->site->id)->where('title', 'O instytucji szkoleniowej')->sole();
@@ -70,12 +70,29 @@ class FeerIsMenuSeederTest extends TestCase
         $this->assertSame(1, Page::withoutGlobalScopes()->where('site_id', $this->site->id)->where('type', 'training_accreditations')->count());
     }
 
+    public function test_pod_nasze_szkolenia_sa_podstrony_z_modulow_zajecia_i_wydarzenia(): void
+    {
+        $this->run_();
+
+        $parent = NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->where('location', 'main')->where('label', 'Nasze szkolenia')->sole();
+        $children = NavItem::withoutGlobalScopes()->where('parent_id', $parent->id)->orderBy('order')->get();
+
+        $this->assertSame(['Zajęcia i zapisy', 'Szkolenia i wydarzenia'], $children->pluck('label')->all());
+        $this->assertSame(['/zajecia', '/wydarzenia'], $children->pluck('url')->all());
+        $this->assertSame(['courses', 'events'], $children->pluck('module')->all());
+
+        $this->site->forceFill(['disabled_modules' => ['courses']])->save();
+        NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->delete();
+        $this->run_();
+        $this->assertSame(['Szkolenia i wydarzenia'], NavItem::withoutGlobalScopes()->where('parent_id', NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->where('label', 'Nasze szkolenia')->value('id'))->pluck('label')->all(), 'wyłączony moduł nie ma pozycji w menu');
+    }
+
     public function test_powtorne_uruchomienie_nie_dubluje_pozycji_ani_stron(): void
     {
         $this->run_();
         $this->run_();
 
-        $this->assertSame(7, NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->where('location', 'main')->count());
+        $this->assertSame(9, NavItem::withoutGlobalScopes()->where('site_id', $this->site->id)->where('location', 'main')->count(), '7 pozycji głównych i 2 podpozycje z modułów, bez dubli');
         $this->assertSame(1, Page::withoutGlobalScopes()->where('site_id', $this->site->id)->where('type', 'training_accreditations')->count());
     }
 

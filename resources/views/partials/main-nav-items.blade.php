@@ -14,7 +14,7 @@
 
 <ul @class([
     'flex items-center gap-5 text-lg font-bold uppercase tracking-wide xl:gap-6' => ! $mobile && ! $navSoft && ! $navCompact,
-    'flex items-center gap-4 text-sm font-bold uppercase tracking-wide xl:gap-5' => ! $mobile && ! $navSoft && $navCompact,
+    'nav-compact flex items-center gap-4 text-sm font-bold uppercase tracking-wide xl:gap-5' => ! $mobile && ! $navSoft && $navCompact,
     'flex items-center gap-6 text-base font-semibold tracking-normal xl:gap-8' => ! $mobile && $navSoft,
     'nav-icons gap-1 xl:gap-2' => ! $mobile && $navStyle === 'icons',
     'nav-pills gap-1 xl:gap-1.5 normal-case tracking-normal' => ! $mobile && $navStyle === 'pills',

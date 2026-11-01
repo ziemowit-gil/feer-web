@@ -73,11 +73,28 @@ class FeerIsMenuSeeder extends Seeder
         array_push($items, ['Trenerzy', '/'.$trainers->slug, null, true, null], ['O instytucji', '/'.$about->slug, null, true, 'Kim jesteśmy, akredytacje, regulamin i cennik szkoleń.'], ['Aktualności', '/aktualnosci', 'news', false, null], ['Kontakt', '/kontakt', null, false, null]);
 
         foreach ($items as $i => [$label, $url, $module, $mega, $description]) {
-            NavItem::withoutGlobalScopes()->create([
+            $created = NavItem::withoutGlobalScopes()->create([
                 'site_id' => $site->id, 'label' => $label, 'url' => $url, 'type' => 'link', 'location' => 'main',
                 'module' => $module, 'is_active' => true, 'order' => $i + 1,
                 'is_mega' => $mega, 'mega_size' => $mega ? 'sm' : 'md', 'description' => $description,
             ]);
+
+            // Podstrony z modułów pod „Nasze szkolenia”: zajęcia z zapisami i wydarzenia (tylko włączone moduły).
+            if ($i === 0) {
+                $order = 1;
+                foreach ([
+                    ['Zajęcia i zapisy', '/zajecia', 'courses', 'mi-event_available', 'Terminy, wolne miejsca i zapisy na zajęcia.'],
+                    ['Szkolenia i wydarzenia', '/wydarzenia', 'events', 'mi-calendar_month', 'Kalendarz szkoleń i wydarzeń.'],
+                ] as [$childLabel, $childUrl, $childModule, $childIcon, $childDescription]) {
+                    if ($site->isModuleEnabled($childModule)) {
+                        NavItem::withoutGlobalScopes()->create([
+                            'site_id' => $site->id, 'parent_id' => $created->id, 'label' => $childLabel, 'url' => $childUrl, 'type' => 'link',
+                            'location' => 'main', 'module' => $childModule, 'icon' => $childIcon, 'description' => $childDescription,
+                            'is_active' => true, 'order' => $order++,
+                        ]);
+                    }
+                }
+            }
         }
 
         $this->command?->info('Zbudowano menu główne witryny „'.($site->site_name ?: $slug).'” ('.count($items).' pozycji): '.collect($items)->pluck(0)->implode(', ').'.');

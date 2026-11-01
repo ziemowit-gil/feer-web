@@ -8,7 +8,8 @@ use App\Support\UniqueSlug;
 use Illuminate\Database\Seeder;
 
 /**
- * Typowe treści portalu instytucji szkoleniowo-zajęciowej (motyw FEER IS) jako SZKICE do przejrzenia: strony „Dla osób”
+ * Typowe treści portalu instytucji szkoleniowo-zajęciowej (motyw FEER IS), domyślnie OPUBLIKOWANE jako strony przykładowe do edycji
+ * (z PORTAL_DRAFT=1 jako szkice): strony „Dla osób”
  * i „Dla instytucji” z usługami (zakładki na stronie głównej), „O instytucji szkoleniowej” z podstronami (akredytacje,
  * regulamin, cennik), trenerzy, katalog szkoleń i trzy przykładowe szkolenia.
  *
@@ -24,6 +25,9 @@ class FeerIsPortalContentSeeder extends Seeder
 
     private int $created = 0;
 
+    /** Z PORTAL_DRAFT=1 nowe strony powstają jako szkice; domyślnie są opublikowane, żeby menu nie prowadziło do 404. */
+    private bool $draft = false;
+
     public function run(): void
     {
         $slug = trim((string) (getenv('SITE_SLUG') ?: ($_SERVER['SITE_SLUG'] ?? ''))) ?: 'szkolenia';
@@ -36,13 +40,14 @@ class FeerIsPortalContentSeeder extends Seeder
         }
 
         $this->site = $site;
+        $this->draft = in_array((string) (getenv('PORTAL_DRAFT') ?: ($_SERVER['PORTAL_DRAFT'] ?? '')), ['1', 'true'], true);
 
         $this->persons();
         $this->institutions();
         $this->about();
         $this->trainersAndCatalog();
 
-        $this->command?->info('Treści portalu szkoleniowego: utworzono lub uzupełniono '.$this->created.' stron (szkice do przejrzenia).');
+        $this->command?->info('Treści portalu szkoleniowego: utworzono lub uzupełniono '.$this->created.' stron ('.($this->draft ? 'szkice' : 'opublikowane, przykładowe do edycji').').');
     }
 
     private function persons(): void
@@ -177,7 +182,7 @@ HTML, ['meta_description' => 'Jak podajemy ceny szkoleń i kiedy przygotowujemy 
 
             return Page::withoutGlobalScopes()->create($extra + [
                 'site_id' => $this->site->id, 'title' => $title, 'slug' => UniqueSlug::page($title), 'type' => $type,
-                'content' => $html, 'type_data' => $typeData, 'is_published' => false, 'show_in_menu' => true, 'meta_title' => $title,
+                'content' => $html, 'type_data' => $typeData, 'is_published' => ! $this->draft, 'show_in_menu' => true, 'meta_title' => $title,
             ]);
         }
 
