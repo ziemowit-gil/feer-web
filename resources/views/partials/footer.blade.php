@@ -9,6 +9,8 @@
     @include('templates.ngo.partials.footer')
 @elseif (($siteSettings->site_template ?? 'default') === 'federation')
     @include('templates.federation.partials.footer')
+@elseif (($siteSettings->site_template ?? 'default') === 'test2')
+    @include('templates.test2.partials.footer')
 @elseif (($siteSettings->site_template ?? 'default') === 'wrzos')
     @include('templates.wrzos.partials.footer')
 @elseif (($siteSettings->site_template ?? 'default') === 'vm')

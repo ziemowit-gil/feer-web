@@ -245,6 +245,7 @@ class SiteSetting extends Model implements HasMedia
         'federation'   => 'Federacja organizacji (wielobarwna, nowoczesna)',
         'wrzos'        => 'Federacja organizacji (czerwono-biała, pasek dostępności, siatka wartości)',
         'ngo_3'        => 'NGO / fundacja (rozbudowany 3 — hero, skróty, statystyki, newsletter)',
+        'test2'        => 'Test 2 (urząd/jednostka miejska — biały nagłówek, menu z kreskami, slider z kaflami skrótów)',
         'vm'           => 'VM — fundacja (slider z kartą, blok powitalny, Wiedza, newsletter; styl Vis Maior)',
     ];
 

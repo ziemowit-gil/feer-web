@@ -334,6 +334,9 @@ class HomeController extends Controller
         if ($template === 'federation') {
             return $this->ngoHome($settings, $slides, $partners, 'templates.federation.home');
         }
+        if ($template === 'test2') {
+            return $this->ngoHome($settings, $slides, $partners, 'templates.test2.home', $quickLinks);
+        }
         if ($template === 'wrzos') {
             return $this->wrzosHome($settings, $partners);
         }

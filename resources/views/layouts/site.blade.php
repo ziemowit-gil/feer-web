@@ -129,6 +129,8 @@
             @include('templates.federation.partials.topbar')
             @include('templates.federation.partials.header')
         </div>
+    @elseif ($siteTemplate === 'test2')
+        @include('templates.test2.partials.header')
     @elseif ($siteTemplate === 'wrzos')
         @include('templates.wrzos.partials.topbar')
         @include('templates.wrzos.partials.header')
