@@ -14,6 +14,9 @@
     .z2-slide-cap h2 { margin: 0; font-size: clamp(1.1rem, 2.4vw, 1.9rem); font-weight: 800; }
     .z2-slide-cap a { color: #fff; text-decoration: none; }
     .z2-slide-cap a:hover { text-decoration: underline; }
+    .z2-mission { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 2rem; text-align: center; background: #0b4f9e; color: #fff; }
+    .z2-mission img { height: 4.5rem; width: auto; object-fit: contain; }
+    .z2-mission p { margin: 0; font-size: clamp(1.1rem, 2.2vw, 1.7rem); font-weight: 700; line-height: 1.4; }
     .z2-dots { display: flex; justify-content: center; gap: .6rem; margin: .75rem 0 0; grid-column: 1; }
     .z2-dots button { height: .9rem; width: .9rem; border-radius: 50%; border: 0; background: #b9c2cf; cursor: pointer; padding: 0; position: relative; }
     .z2-dots button::after { content: ""; position: absolute; inset: -.65rem; }
@@ -35,11 +38,19 @@
             @forelse ($slides as $i => $slide)
                 <div class="z2-slide" :class="cur === {{ $i }} ? 'on' : ''" role="group" aria-roledescription="slajd"
                      aria-label="{{ $i + 1 }} z {{ $slides->count() }}" :aria-hidden="(cur !== {{ $i }}).toString()">
-                    @if ($slide->image_url)<img src="{{ $slide->image_url }}" alt="">@endif
+                    @if (! empty($slide->mission_text))
+                        {{-- Slajd misji (obiekt bez zdjęcia i tytułu). --}}
+                        <div class="z2-mission">
+                            @if (! empty($slide->logo_url))<img src="{{ $slide->logo_url }}" alt="">@endif
+                            <p>{{ $slide->mission_text }}</p>
+                        </div>
+                    @else
+                    @if (! empty($slide->image_url))<img src="{{ $slide->image_url }}" alt="">@endif
                     @if (! empty($slide->title))
                         <div class="z2-slide-cap">
                             <h2>@if (! empty($slide->button_url))<a href="{{ $slide->button_url }}" :tabindex="cur === {{ $i }} ? 0 : -1">{{ $slide->title }}</a>@else{{ $slide->title }}@endif</h2>
                         </div>
+                    @endif
                     @endif
                 </div>
             @empty

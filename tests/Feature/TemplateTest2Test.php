@@ -68,4 +68,16 @@ class TemplateTest2Test extends TestCase
 
         $this->get('/kontakt')->assertOk()->assertDontSee('template-test2', false);
     }
+
+    public function test_home_renders_with_mission_slide_without_image(): void
+    {
+        $this->resetSettingsCache();
+        SiteSetting::current()->forceFill(['site_template' => 'test2'])->save();
+        $this->resetSettingsCache();
+
+        $slides = collect([(object) ['mission_text' => 'Nasza misja', 'logo_url' => null, 'site_name' => 'FEER', 'mission_bg' => 'brand']]);
+
+        $this->view('templates.test2.partials.home.hero', ['slides' => $slides, 'quickLinks' => collect(), 'siteSettings' => SiteSetting::current()])
+            ->assertSee('Nasza misja');
+    }
 }

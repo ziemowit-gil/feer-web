@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-11-01: fix `test2`: 500 na stronie głównej (`Undefined property: stdClass::$image_url`) — slajd misji to obiekt bez zdjęcia; hero renderuje go jako niebieski panel z tekstem misji; test.
 - 2026-11-01: `test2`: podstrony wewnętrzne (`templates/test2/partials/inner.blade.php`, style pod `body.template-test2`): okruszki z kreską, tytuł strony jako niebieski pasek, akordeony jako kolorowe belki, tabele z niebieskim nagłówkiem i szarymi wierszami; testy.
 - 2026-11-01: nowy szablon witryny `test2` (wzór: ZDMK Kraków): biały nagłówek z wyszukiwarką i przyciskiem, menu w jednym rzędzie z kreskami i niebieskim panelem, slider + 3 kafle skrótów z „Szybkich akcji”, karty aktualności, pas skrótów, szara stopka, przyciski boczne (social/telefon); style inline z prefiksem `z2-`, bez migracji; `templates/test2/`, test `TemplateTest2Test`.
 - 2026-11-01: nowy widok szkolenia `/zajecia/{slug}` (biały nagłówek z metryczką i przyciskami, pasek „Na tej stronie”, program jako kroki, terminy jako karty z paskiem zajętości, karta trenera, cennik, przyklejony zapis); przełącznik zapisów online `courses_registration_enabled` (migracja; w IS domyślnie wyłączone, zamiast formularza kontakt); selektor witryny w pasku bocznym panelu jako wiersz pod logo z listą w dół; logo witryny w sieci dziedziczone z głównej (`logoUrl()`, `usesInheritedLogo()`, alt); testy.
