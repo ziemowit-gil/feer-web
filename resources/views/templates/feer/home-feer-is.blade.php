@@ -1,6 +1,5 @@
 {{--
-    Wariant motywu FEER „FEER IS”: portal usług w układzie jak gov.pl (pasek zakładek odbiorców na pełną szerokość i siatka
-    usług w trzech kolumnach, bez bocznej listy), ale z nagłówkiem, stopką, paletą i krojem FEER (te same partiale,
+    Wariant motywu FEER „FEER IS”: portal usług w układzie kafli (po jednym dużym kafelku na odbiorcę, jak na stronie ZDMK; wcześniej zakładki i siatka usług jak gov.pl), ale z nagłówkiem, stopką, paletą i krojem FEER (te same partiale,
     theme-feer). Niżej aktualności (opcjonalnie), szkolenia z zapisami, moduły szkoleniowe i wsparcie.
     Klasy tylko takie, które już są w zbudowanym CSS (wdrożenie nie buduje stylów).
 --}}
@@ -23,59 +22,42 @@
     @endif
 
     @if ($servicesTabs->isNotEmpty())
-        {{-- Układ jak gov.pl: pasek zakładek odbiorców na pełną szerokość (aktywna biała, reszta na kolorze marki), pod nim
-             siatka usług w trzech kolumnach (ikona, tytuł-link, opis). Bez bocznej listy. Nagłówek witryny zostaje z FEER.
-             Biel na kolorze marki i ink na bieli dają kontrast ≥ 4,5:1. --}}
-        <section aria-labelledby="feer-is-services-heading" x-data="{ tab: 0 }">
-            <h2 id="feer-is-services-heading" class="sr-only">Usługi i informacje według odbiorcy</h2>
-            <div class="bg-brand">
-                <div class="mx-auto max-w-6xl px-4">
-                    <div role="tablist" aria-label="Odbiorca" class="flex gap-1 overflow-x-auto pt-3" style="scrollbar-width: none">
-                        @foreach ($servicesTabs as $i => $tab)
-                            <button type="button" role="tab" id="feer-is-tab-{{ $i }}" aria-controls="feer-is-panel-{{ $i }}"
-                                :aria-selected="(tab === {{ $i }}).toString()" :tabindex="tab === {{ $i }} ? 0 : -1"
-                                @click="tab = {{ $i }}"
-                                @keydown.arrow-right.prevent="tab = (tab + 1) % {{ $servicesTabs->count() }}; $nextTick(() => document.getElementById('feer-is-tab-' + tab).focus())"
-                                @keydown.arrow-left.prevent="tab = (tab + {{ $servicesTabs->count() - 1 }}) % {{ $servicesTabs->count() }}; $nextTick(() => document.getElementById('feer-is-tab-' + tab).focus())"
-                                :class="tab === {{ $i }} ? 'bg-white text-ink' : 'text-white hover:bg-brand-dark'"
-                                class="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-t-md px-5 py-3 text-sm font-bold uppercase tracking-wide focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-inset">
-                                @if (filled($tab['icon'] ?? null)){{ icon_html($tab['icon'], 'text-xl') }}@endif
-                                {{ $tab['label'] }}
-                            </button>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
+        {{-- Kafle: po jednym dużym kafelku na odbiorcę (ikona, nazwa, liczba usług), bez zakładek i bez siatki usług. Kafel
+             prowadzi na stronę odbiorcy, gdzie są jego usługi. Kolory marki (brand, brand-dark, ink) z białym tekstem
+             dają kontrast ≥ 4,5:1. Wymiary inline, bo wdrożenie nie buduje CSS. --}}
+        <style>
+            .feer-is-tiles { display: grid; gap: 1rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .feer-is-tile { display: flex; align-items: center; gap: 1.25rem; min-height: 8rem; padding: 1.5rem; color: #fff; text-decoration: none; }
+            .feer-is-tile:hover, .feer-is-tile:focus-visible { filter: brightness(.88); }
+            .feer-is-tile:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
+            .feer-is-tile-icon { flex: none; width: 3.5rem; text-align: center; font-size: 2.75rem; line-height: 1; }
+            .feer-is-tile-title { display: block; font-size: 1.25rem; font-weight: 700; line-height: 1.25; }
+            .feer-is-tile-count { display: block; margin-top: .35rem; font-size: .875rem; }
+            @media (max-width: 900px) { .feer-is-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+            @media (max-width: 560px) { .feer-is-tiles { grid-template-columns: 1fr; } .feer-is-tile { min-height: 6rem; } }
+        </style>
+        <section aria-labelledby="feer-is-services-heading">
             <div class="mx-auto max-w-6xl px-4 py-10">
-                @foreach ($servicesTabs as $i => $tab)
-                    <div role="tabpanel" id="feer-is-panel-{{ $i }}" aria-labelledby="feer-is-tab-{{ $i }}" x-show="tab === {{ $i }}" @if ($i > 0) x-cloak @endif tabindex="0" class="focus-visible:outline-none">
-                        <ul class="grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-3" role="list">
-                            @foreach ($tab['services'] as $service)
-                                <li class="flex gap-4">
-                                    <span class="flex h-10 w-10 shrink-0 items-center justify-center text-brand-dark" aria-hidden="true">
-                                        {{ icon_html($service['icon'] ?: 'mi-description', 'text-3xl') }}
-                                    </span>
-                                    <div class="min-w-0">
-                                        <h3 class="text-base font-bold leading-snug">
-                                            <a href="{{ $service['url'] }}" class="text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $service['title'] }}</a>
-                                        </h3>
-                                        @if (filled($service['description']))
-                                            <p class="mt-1 text-sm leading-relaxed text-ink">{{ \Illuminate\Support\Str::limit($service['description'], 160) }}</p>
-                                        @endif
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
-                        @if (filled($tab['url'] ?? null))
-                            <p class="mt-8 text-center">
-                                <a href="{{ $tab['url'] }}" class="inline-flex min-h-12 items-center rounded-md border-2 border-brand-dark px-6 text-sm font-bold uppercase tracking-wide text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zobacz wszystkie: {{ $tab['label'] }}</a>
-                            </p>
-                        @endif
-                    </div>
-                @endforeach
-
-                <div class="mt-6 text-center">
+                <h2 id="feer-is-services-heading" class="text-2xl font-bold text-ink">W czym możemy pomóc</h2>
+                <ul class="feer-is-tiles mt-6" role="list">
+                    @foreach ($servicesTabs as $i => $tab)
+                        @php
+                            $tileBg = ['bg-brand', 'bg-brand-dark', 'bg-ink'][$i % 3];
+                            $n = $tab['services']->count();
+                            $nLabel = $n === 1 ? '1 usługa' : ($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 10 || $n % 100 >= 20) ? $n.' usługi' : $n.' usług');
+                        @endphp
+                        <li>
+                            <a href="{{ $tab['url'] ?? $allUrl }}" class="feer-is-tile {{ $tileBg }}" style="height: 100%">
+                                <span class="feer-is-tile-icon" aria-hidden="true">{{ icon_html(filled($tab['icon'] ?? null) ? $tab['icon'] : 'mi-description', 'text-4xl') }}</span>
+                                <span>
+                                    <span class="feer-is-tile-title">{{ $tab['label'] }}</span>
+                                    <span class="feer-is-tile-count">{{ $nLabel }}</span>
+                                </span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+                <div class="mt-8 text-center">
                     <a href="{{ $allUrl }}" class="inline-flex min-h-12 items-center rounded-md bg-brand-dark px-6 text-sm font-bold uppercase tracking-wide text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">{{ $allLabel }}</a>
                 </div>
             </div>

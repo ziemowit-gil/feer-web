@@ -50,24 +50,24 @@ class FeerIsThemeTest extends TestCase
         $this->assertSame('default', $this->sub->fresh()->themeVariant());
     }
 
-    public function test_zakladki_to_podstrony_wskazanych_stron_a_puste_sa_pomijane(): void
+    public function test_kafle_odbiorcow_prowadza_do_stron_a_puste_sa_pomijane(): void
     {
         $osoby = $this->page('dla-osob');
         $this->page('wsparcie-psychologiczne', ['parent_id' => $osoby->id, 'title' => 'Wsparcie psychologiczne', 'meta_description' => 'Rozmowa z psychologiem.']);
+        $this->page('wsparcie-prawne', ['parent_id' => $osoby->id, 'title' => 'Wsparcie prawne']);
         $instytucje = $this->page('dla-instytucji');
         $this->page('szkolenie-dostepnosci', ['parent_id' => $instytucje->id, 'title' => 'Szkolenie z dostępności']);
         $this->page('pusta');
 
         $html = $this->get('/szkolenia')->assertOk()
             ->assertSee('Dla osób')->assertSee('Dla instytucji')->assertDontSee('Bez usług')
-            ->assertSee('Wsparcie psychologiczne')->assertSee('Rozmowa z psychologiem.')
-            ->assertSee('Szkolenie z dostępności')->assertSee('Wszystkie szkolenia')
+            ->assertSee('2 usługi')->assertSee('1 usługa')->assertSee('Wszystkie szkolenia')
             ->getContent();
 
-        $this->assertStringContainsString('role="tablist"', $html);
-        $this->assertStringNotContainsString('aria-orientation="vertical"', $html, 'układ gov.pl: poziome zakładki, bez bocznej listy');
-        $this->assertStringContainsString('aria-label="Odbiorca"', $html);
-        $this->assertStringContainsString('/szkolenia/wsparcie-psychologiczne', $html, 'linki usług zostają w witrynie');
+        $this->assertStringContainsString('feer-is-tiles', $html);
+        $this->assertStringNotContainsString('role="tablist"', $html, 'układ kafli: bez zakładek');
+        $this->assertStringContainsString('/szkolenia/dla-osob', $html, 'kafel prowadzi na stronę odbiorcy w witrynie');
+        $this->assertStringNotContainsString('Rozmowa z psychologiem.', $html, 'usługi są na stronie odbiorcy, nie na głównej');
     }
 
     public function test_aktualnosci_w_ukladzie_wyrozniony_wpis_i_lista(): void
@@ -104,15 +104,14 @@ class FeerIsThemeTest extends TestCase
         $this->get('/aktualnosci/wpis-glowny')->assertOk()->assertDontSee('Powrót do aktualności');
     }
 
-    public function test_usluga_pokazuje_swoja_ikone_a_bez_ikony_domyslna(): void
+    public function test_kafel_bez_ikony_ma_domyslna_ikone_dokumentu(): void
     {
+        $this->sub->forceFill(['services_tabs' => 'Dla osób|dla-osob'])->save();
         $osoby = $this->page('dla-osob');
-        $this->page('grupy-wsparcia', ['parent_id' => $osoby->id, 'title' => 'Grupy wsparcia', 'layout_data' => ['icon' => 'mi-groups']]);
         $this->page('porada', ['parent_id' => $osoby->id, 'title' => 'Porada']);
 
         $html = $this->get('/szkolenia')->assertOk()->getContent();
 
-        $this->assertStringContainsString('>groups</span>', $html);
         $this->assertStringContainsString('>description</span>', $html, 'domyślna ikona dokumentu');
     }
 
@@ -180,7 +179,7 @@ class FeerIsThemeTest extends TestCase
         $osoby = $this->page('dla-osob');
         $this->page('porada', ['parent_id' => $osoby->id, 'title' => 'Porada']);
 
-        $this->get('/szkolenia')->assertOk()->assertSee('>accessibility_new</span>', false)->assertSee('role="tab"', false);
+        $this->get('/szkolenia')->assertOk()->assertSee('>accessibility_new</span>', false)->assertSee('feer-is-tile', false);
     }
 
     public function test_naglowek_feer_is_nie_ma_przycisku_materialy_edukacyjne_a_ma_edytowalny(): void
