@@ -50,27 +50,32 @@ class FeerIsThemeTest extends TestCase
         $this->assertSame('default', $this->sub->fresh()->themeVariant());
     }
 
-    public function test_kafle_odbiorcow_prowadza_do_stron_a_puste_sa_pomijane(): void
+    public function test_sciezki_odbiorcow_listuja_uslugi_a_puste_sa_pomijane(): void
     {
         $osoby = $this->page('dla-osob');
-        $this->page('wsparcie-psychologiczne', ['parent_id' => $osoby->id, 'title' => 'Wsparcie psychologiczne', 'meta_description' => 'Rozmowa z psychologiem.']);
-        $this->page('wsparcie-prawne', ['parent_id' => $osoby->id, 'title' => 'Wsparcie prawne']);
+        foreach (range(1, 5) as $i) {
+            $this->page('usluga-'.$i, ['parent_id' => $osoby->id, 'title' => 'Usługa numer '.$i, 'meta_description' => $i === 1 ? 'Rozmowa z psychologiem.' : null]);
+        }
         $instytucje = $this->page('dla-instytucji');
         $this->page('szkolenie-dostepnosci', ['parent_id' => $instytucje->id, 'title' => 'Szkolenie z dostępności']);
         $this->page('pusta');
 
         $html = $this->get('/szkolenia')->assertOk()
-            ->assertSee('Dla osób')->assertSee('Dla instytucji')->assertDontSee('Bez usług')
-            ->assertSee('2 usługi')->assertSee('1 usługa')->assertSee('Wszystkie szkolenia')
+            ->assertSee('Wybierz swoją ścieżkę')->assertSee('Dla osób')->assertSee('Dla instytucji')->assertDontSee('Bez usług')
+            ->assertSee('Usługa numer 1')->assertSee('Usługa numer 4')->assertSee('Rozmowa z psychologiem.')
+            ->assertSee('Szkolenie z dostępności')->assertSee('Wszystkie szkolenia')
             ->getContent();
 
-        $this->assertStringContainsString('feer-is-tiles', $html);
-        $this->assertStringNotContainsString('role="tablist"', $html, 'układ kafli: bez zakładek');
-        $this->assertStringContainsString('/szkolenia/dla-osob', $html, 'kafel prowadzi na stronę odbiorcy w witrynie');
-        $this->assertStringNotContainsString('Rozmowa z psychologiem.', $html, 'usługi są na stronie odbiorcy, nie na głównej');
+        $this->assertStringContainsString('fis-aud-col', $html);
+        $this->assertStringNotContainsString('role="tablist"', $html, 'układ ścieżek: bez zakładek');
+        $this->assertStringNotContainsString('feer-is-tile', $html, 'kafle zastąpione kolumnami');
+        $this->assertStringNotContainsString('Usługa numer 5', $html, 'na głównej tylko cztery pierwsze usługi odbiorcy');
+        $this->assertStringContainsString('Zobacz wszystko: Dla osób', $html);
+        $this->assertStringContainsString('/szkolenia/dla-osob', $html, 'link odbiorcy zostaje w witrynie');
+        $this->assertStringContainsString('/szkolenia/usluga-1', $html, 'linki usług zostają w witrynie');
     }
 
-    public function test_aktualnosci_w_ukladzie_wyrozniony_wpis_i_lista(): void
+    public function test_aktualnosci_na_glownej_to_trzy_najnowsze_wpisy(): void
     {
         foreach (range(1, 6) as $i) {
             News::withoutGlobalScopes()->create([
@@ -79,7 +84,8 @@ class FeerIsThemeTest extends TestCase
             ]);
         }
 
-        $this->get('/szkolenia')->assertOk()->assertSee('Aktualności')->assertSee('Wpis numer 1')->assertSee('Wpis numer 6');
+        $this->get('/szkolenia')->assertOk()->assertSee('Aktualności')->assertSee('Wpis numer 1')->assertSee('Wpis numer 3')
+            ->assertDontSee('Wpis numer 4')->assertSee('Wszystkie aktualności');
     }
 
     public function test_witryna_glowna_ze_standardowym_feer_zostaje_bez_zmian(): void
@@ -179,7 +185,7 @@ class FeerIsThemeTest extends TestCase
         $osoby = $this->page('dla-osob');
         $this->page('porada', ['parent_id' => $osoby->id, 'title' => 'Porada']);
 
-        $this->get('/szkolenia')->assertOk()->assertSee('>accessibility_new</span>', false)->assertSee('feer-is-tile', false);
+        $this->get('/szkolenia')->assertOk()->assertSee('>accessibility_new</span>', false)->assertSee('fis-aud-col', false);
     }
 
     public function test_naglowek_feer_is_nie_ma_przycisku_materialy_edukacyjne_a_ma_edytowalny(): void

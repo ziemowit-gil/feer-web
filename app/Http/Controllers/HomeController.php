@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
 use App\Models\Event;
+use App\Models\Facilitator;
+use App\Models\Faq;
 use App\Models\GalleryImage;
 use App\Models\HeroSlide;
 use App\Models\News;
@@ -84,6 +87,44 @@ class HomeController extends Controller
         $catalog = Page::forCurrentSite()->where('type', 'training_catalog')->where('is_published', true)->orderBy('order')->first();
 
         return ['trainingOffers' => $cards, 'trainingEditions' => $editions, 'trainingCatalogUrl' => $catalog?->publicUrl()];
+    }
+
+    /**
+     * Dodatki strony głównej „FEER IS”: filtry szybkiego wyszukiwania szkoleń (tylko kategorie i formy, które mają widoczne
+     * szkolenia), prowadzący z ich szkoleniami oraz pierwsze pytania FAQ do bloku „Pytania i kontakt”. Brak modułu albo
+     * tabeli daje puste wartości, a bloki się wtedy nie pokazują.
+     *
+     * @return array{courseFilters: array<string, mixed>, trainers: Collection, faqItems: Collection}
+     */
+    private function portalExtras(SiteSetting $settings): array
+    {
+        $courseFilters = ['count' => 0, 'categories' => [], 'formats' => []];
+        $trainers = collect();
+
+        if ($settings->isModuleEnabled('courses') && \Illuminate\Support\Facades\Schema::hasTable('courses')) {
+            $courses = Course::forCurrentSite()->visible()->orderBy('title')->get(['id', 'title', 'slug', 'category', 'format', 'facilitator_id', 'site_id']);
+
+            $courseFilters = [
+                'count' => $courses->count(),
+                'categories' => collect(Course::CATEGORIES)->only($courses->pluck('category')->unique()->all())->all(),
+                'formats' => collect(Course::FORMATS)->only($courses->pluck('format')->unique()->all())->all(),
+            ];
+
+            $trainers = Facilitator::query()
+                ->whereIn('id', $courses->pluck('facilitator_id')->filter()->unique()->all())
+                ->orderBy('name')->limit(4)->get()
+                ->map(fn (Facilitator $f) => [
+                    'name' => $f->name, 'role' => $f->role, 'photo' => $f->photoUrl(),
+                    'courses' => $courses->where('facilitator_id', $f->id)->take(3)
+                        ->map(fn (Course $c) => ['title' => $c->title, 'url' => route('courses.show', $c)])->values(),
+                ]);
+        }
+
+        $faqItems = $settings->isModuleEnabled('faq') && \Illuminate\Support\Facades\Schema::hasTable('faqs')
+            ? Faq::published()->limit(5)->get()
+            : collect();
+
+        return compact('courseFilters', 'trainers', 'faqItems');
     }
 
     /** Widoczne teraz slajdy strony głównej wskazanej witryny (bez względu na bieżącą witrynę). */
@@ -322,10 +363,11 @@ class HomeController extends Controller
                     ->with($this->trainingModules())
                     // Najbliższe terminy z oferty szkoleń (moduł „courses”), po jednym na szkolenie.
                     ->with('courseEditions', $this->upcomingCourseEditions($settings))
-                    // Wyróżniony wpis, dwa kolejne na liście i trzy karty.
+                    // Trzy najnowsze wpisy (blok pokazuje je, gdy sekcja „Aktualności” jest włączona w Ustawieniach).
                     ->with('newsItems', $settings->isModuleEnabled('news')
-                        ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(6)->get()
-                        : collect());
+                        ? News::published()->forCurrentSite()->with('category')->orderByDesc('published_at')->limit(3)->get()
+                        : collect())
+                    ->with($this->portalExtras($settings));
             }
 
             return $this->ngoHome($settings, $slides, $partners, 'templates.feer.home', $quickLinks)
