@@ -108,4 +108,16 @@ class TemplateTest2Test extends TestCase
         $this->assertSame(1, substr_count($html, 'class="z2-mega-panel"'));
         $this->assertSame(2, substr_count($html, 'class="z2-mega-h"'));
     }
+
+    public function test_slider_ma_przycisk_wstrzymania_tylko_przy_wielu_slajdach(): void
+    {
+        $this->resetSettingsCache();
+        SiteSetting::current()->forceFill(['site_template' => 'test2'])->save();
+        $this->resetSettingsCache();
+        $slide = fn (string $title) => (object) ['title' => $title, 'image_url' => null, 'button_url' => '/x'];
+        $render = fn ($slides) => $this->view('templates.test2.partials.home.hero', ['slides' => $slides, 'quickLinks' => collect(), 'siteSettings' => SiteSetting::current()]);
+
+        $render(collect([$slide('Pierwszy'), $slide('Drugi')]))->assertSee('Wstrzymaj automatyczną zmianę slajdów');
+        $render(collect([$slide('Jedyny')]))->assertDontSee('Wstrzymaj automatyczną zmianę slajdów');
+    }
 }

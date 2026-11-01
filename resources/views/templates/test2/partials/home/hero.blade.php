@@ -20,6 +20,7 @@
     .z2-dots { display: flex; justify-content: center; gap: .6rem; margin: .75rem 0 0; grid-column: 1; }
     .z2-dots button { height: .9rem; width: .9rem; border-radius: 50%; border: 0; background: #b9c2cf; cursor: pointer; padding: 0; position: relative; }
     .z2-dots button::after { content: ""; position: absolute; inset: -.65rem; }
+    .z2-dots .z2-pause { width: auto; height: auto; border-radius: 0; background: transparent; color: #0b4f9e; font-size: .9rem; padding: .1rem .35rem; }
     .z2-dots button[aria-selected="true"] { background: #0b4f9e; }
     .z2-tiles { display: grid; gap: 1rem; grid-template-rows: repeat(3, 1fr); }
     .z2-tile { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; color: #fff; text-decoration: none; font-weight: 800; font-size: 1.1rem; min-height: 5.5rem; }
@@ -29,12 +30,12 @@
     @media (max-width: 800px) { .z2-hero.has-tiles { grid-template-columns: 1fr; } .z2-tiles { grid-template-rows: none; } }
 </style>
 <section class="z2-hero {{ $tiles->isNotEmpty() ? 'has-tiles' : '' }}" aria-label="Slider i skróty"
-         x-data="{ cur: 0, n: {{ max($slides->count(), 1) }}, t: null,
-                   go(i) { this.cur = i; clearInterval(this.t); this.start(); },
-                   start() { if (this.n > 1 && ! window.matchMedia('(prefers-reduced-motion: reduce)').matches) this.t = setInterval(() => this.cur = (this.cur + 1) % this.n, 6000); } }"
-         x-init="start()" @mouseenter="clearInterval(t)" @mouseleave="start()" @focusin="clearInterval(t)">
+         x-data="{ cur: 0, n: {{ max($slides->count(), 1) }}, paused: false, hold: false, t: null,
+                   go(i) { this.cur = i; },
+                   start() { if (this.n > 1 && ! window.matchMedia('(prefers-reduced-motion: reduce)').matches) this.t = setInterval(() => { if (! this.paused && ! this.hold) this.cur = (this.cur + 1) % this.n; }, 6000); } }"
+         x-init="start()" @mouseenter="hold = true" @mouseleave="hold = false" @focusin="hold = true" @focusout="hold = false">
     <div>
-        <div class="z2-slider" role="region" aria-roledescription="karuzela" aria-label="Wyróżnione treści">
+        <div class="z2-slider" role="region" aria-roledescription="karuzela" aria-label="Wyróżnione treści" :aria-live="(paused || hold) ? 'polite' : 'off'">
             @forelse ($slides as $i => $slide)
                 <div class="z2-slide" :class="cur === {{ $i }} ? 'on' : ''" role="group" aria-roledescription="slajd"
                      aria-label="{{ $i + 1 }} z {{ $slides->count() }}" :aria-hidden="(cur !== {{ $i }}).toString()">
@@ -59,6 +60,10 @@
         </div>
         @if ($slides->count() > 1)
             <div class="z2-dots" role="tablist" aria-label="Wybór slajdu">
+                {{-- WCAG 2.2.2: automatyczną zmianę slajdów można wstrzymać. --}}
+                <button type="button" class="z2-pause" role="presentation" @click="paused = ! paused" :aria-label="paused ? 'Wznów automatyczną zmianę slajdów' : 'Wstrzymaj automatyczną zmianę slajdów'">
+                    <i class="fa-solid" :class="paused ? 'fa-play' : 'fa-pause'" aria-hidden="true"></i>
+                </button>
                 @foreach ($slides as $i => $slide)
                     <button type="button" role="tab" @click="go({{ $i }})" :aria-selected="(cur === {{ $i }}).toString()" aria-label="Slajd {{ $i + 1 }}"></button>
                 @endforeach
