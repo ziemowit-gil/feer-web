@@ -3,6 +3,7 @@
     formularza, granica kontrolki wg WCAG 1.4.11), kolory z palety witryny (--color-brand*), tekst #1d1d1a.
     Kontrast: ink na bieli 16,9:1, brand-dark na bieli i biały na brand-dark ≥ 6,5:1. Inline, bo wdrożenie nie buduje CSS.
 --}}
+@once
 <style>
     .fis-wrap { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
     .fis-sec { padding: 3rem 0; color: #1d1d1a; }
@@ -20,15 +21,43 @@
     .fis-btn--light:hover { background: #e5e7eb; color: #1d1d1a; }
     .fis-accent::before { content: ""; display: block; width: 4rem; height: .375rem; margin-bottom: 1.25rem; background: var(--color-brand); }
 
-    {{-- Szybkie wyszukiwanie szkoleń. --}}
-    .fis-find { background: var(--color-brand-light); padding: 2rem 0; color: #1d1d1a; }
-    .fis-find h2 { margin: 0 0 1rem; font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 800; line-height: 1.2; }
-    .fis-find-form { display: grid; gap: 1rem; grid-template-columns: 1fr; align-items: end; }
-    @media (min-width: 800px) { .fis-find-form { grid-template-columns: 1fr 1fr auto; } }
-    .fis-find label { display: block; margin-bottom: .35rem; font-weight: 700; font-size: 1rem; }
-    .fis-find select { display: block; width: 100%; min-height: 3.25rem; padding: .5rem .75rem; border: 2px solid #1d1d1a; border-radius: .5rem; background: #fff; color: #1d1d1a; font-size: 1.05rem; }
-    .fis-find .fis-btn { min-height: 3.25rem; }
-    .fis-find p { margin: 1rem 0 0; font-size: 1rem; }
+    {{-- Szybkie wyszukiwanie szkoleń: grupy przycisków wyboru (radio) dla tematu i formy. --}}
+    .fis-find { background: var(--color-brand-light); padding: 2.25rem 0; color: #1d1d1a; }
+    .fis-find h2 { margin: 0 0 1.25rem; font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 800; line-height: 1.2; }
+    .fis-find-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1.25rem 2.5rem; }
+    .fis-chips { margin: 0; padding: 0; border: 0; min-width: 0; }
+    .fis-chips legend { margin: 0 0 .5rem; padding: 0; font-size: 1rem; font-weight: 700; }
+    .fis-chips-list { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .fis-chip { position: relative; display: inline-flex; margin: 0; cursor: pointer; }
+    .fis-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+    .fis-chip span { display: inline-flex; align-items: center; min-height: 2.75rem; padding: .25rem 1.1rem; border-radius: .375rem; background: #fff; color: #1d1d1a; font-size: 1rem; font-weight: 700; box-shadow: inset 0 0 0 2px #6b7280; }
+    .fis-chip:hover span { box-shadow: inset 0 0 0 2px #1d1d1a; }
+    .fis-chip input:checked + span { background: var(--color-brand-dark); color: #fff; box-shadow: inset 0 0 0 2px var(--color-brand-dark); }
+    .fis-chip input:checked + span::before { content: "\2713"; margin-right: .45rem; }
+    .fis-chip input:focus-visible + span { outline: 3px solid #1d1d1a; outline-offset: 3px; }
+    .fis-find .fis-btn { min-height: 2.75rem; }
+    .fis-find .fis-btn:focus-visible { outline: 3px solid #1d1d1a; outline-offset: 3px; }
+
+    {{-- Najbliższe szkolenia: karty z kafelkiem daty. --}}
+    .fis-up-grid { margin: 0; padding: 0; list-style: none; display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); }
+    @media (min-width: 640px) { .fis-up-grid[data-cols="2"], .fis-up-grid[data-cols="3"] { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (min-width: 1000px) { .fis-up-grid[data-cols="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    .fis-up-card { position: relative; display: flex; gap: 1rem; padding: 1.25rem; border-radius: .375rem; background: #f3f4f6; color: #1d1d1a; }
+    .fis-up-card:hover { background: #e5e7eb; }
+    .fis-up-card:has(a:focus-visible) { outline: 3px solid #1d1d1a; outline-offset: 2px; }
+    .fis-date { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 4.5rem; height: 4.5rem; border-radius: .375rem; background: var(--color-brand-dark); color: #fff; line-height: 1; text-align: center; }
+    .fis-date b { font-size: 1.85rem; font-weight: 800; }
+    .fis-date span { margin-top: .2rem; font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+    .fis-date small { margin-top: .15rem; font-size: .7rem; font-weight: 700; }
+    .fis-up-body { min-width: 0; }
+    .fis-up-body p { margin: 0; font-size: 1rem; line-height: 1.5; }
+    .fis-up-body .fis-up-kicker { color: #374151; font-size: .9rem; }
+    .fis-up-body h3 { margin: .1rem 0 .35rem; font-size: 1.2rem; font-weight: 800; line-height: 1.3; }
+    .fis-up-body h3 a { color: var(--color-brand-dark); text-decoration: underline; }
+    .fis-up-body h3 a::after { content: ""; position: absolute; inset: 0; }
+    .fis-up-body h3 a:hover { text-decoration: none; }
+    .fis-up-when { font-weight: 700; }
+    .fis-up-body .fis-up-seats { margin-top: .35rem; font-weight: 700; }
 
     {{-- Ścieżki odbiorców: kolumny z listą usług. --}}
     .fis-aud-grid { display: grid; gap: 2.5rem 3rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
@@ -92,3 +121,4 @@
     .fis-partners { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem 3rem; }
     .fis-partners img { display: block; height: 3rem; width: auto; max-width: 10rem; object-fit: contain; }
 </style>
+@endonce

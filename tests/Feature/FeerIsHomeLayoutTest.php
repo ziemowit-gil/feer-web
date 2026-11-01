@@ -58,11 +58,59 @@ class FeerIsHomeLayoutTest extends TestCase
 
         $this->assertStringContainsString('Znajdź szkolenie dla siebie', $html);
         $this->assertStringContainsString('action="http://localhost:8000/szkolenia/zajecia"', $html);
-        $this->assertStringContainsString('<option value="tyflo">Tyfloinformatyka</option>', $html);
-        $this->assertStringContainsString('<option value="m365">Microsoft 365</option>', $html);
-        $this->assertStringNotContainsString('<option value="programming">', $html, 'szkic nie tworzy filtra');
-        $this->assertStringContainsString('<option value="stationary">Stacjonarnie</option>', $html);
-        $this->assertStringContainsString('Pokaż szkolenia (2)', $html);
+        $this->assertStringContainsString('<legend>Temat</legend>', $html);
+        $this->assertStringContainsString('<legend>Forma</legend>', $html);
+        $this->assertStringContainsString('<input type="radio" name="kategoria" value="tyflo"><span>Tyfloinformatyka</span>', $html);
+        $this->assertStringContainsString('<input type="radio" name="kategoria" value="m365"><span>Microsoft 365</span>', $html);
+        $this->assertStringNotContainsString('value="programming"', $html, 'szkic nie tworzy filtra');
+        $this->assertStringContainsString('<input type="radio" name="format" value="stationary"><span>Stacjonarnie</span>', $html);
+        $this->assertStringContainsString('<input type="radio" name="kategoria" value="" checked><span>Wszystkie</span>', $html, 'domyślnie zaznaczone „Wszystkie”');
+        $this->assertStringContainsString('<input type="radio" name="format" value="" checked><span>Każda</span>', $html);
+        $this->assertStringContainsString('Pokaż szkolenia</button>', $html);
+        $this->assertStringNotContainsString('Pokaż szkolenia (', $html, 'liczba nie może wprowadzać w błąd przy wybranych filtrach');
+        $this->assertStringNotContainsString('<select', $html, 'zamiast list rozwijanych są przyciski wyboru');
+    }
+
+    public function test_pasek_wyszukiwania_znika_gdy_nie_ma_wyboru_ale_lista_terminow_zostaje(): void
+    {
+        $course = $this->course();
+        $course->editions()->create(['starts_on' => now()->addWeek(), 'capacity' => 5, 'enrollment_status' => 'open']);
+
+        $html = $this->home();
+
+        $this->assertStringNotContainsString('Znajdź szkolenie dla siebie', $html, 'jedna kategoria i jedna forma to brak czego filtrować');
+        $this->assertStringContainsString('Najbliższe szkolenia', $html);
+    }
+
+    public function test_karta_najblizszego_szkolenia_ma_kafelek_daty_dane_i_wolne_miejsca(): void
+    {
+        $course = $this->course(['duration' => '20 godzin dydaktycznych', 'price' => 0]);
+        $edition = $course->editions()->create(['starts_on' => now()->addYear()->startOfYear()->addDays(14), 'ends_on' => now()->addYear()->startOfYear()->addDays(40), 'capacity' => 10, 'enrollment_status' => 'open']);
+
+        $html = $this->home();
+
+        $this->assertStringContainsString('class="fis-date"', $html);
+        $this->assertStringContainsString('<b>15</b>', $html, 'dzień startu na kafelku');
+        $this->assertStringContainsString('<small>'.now()->addYear()->year.'</small>', $html, 'rok widać, gdy start jest w przyszłym roku');
+        $this->assertStringContainsString('Tyfloinformatyka', $html);
+        $this->assertStringContainsString('Online · 20 godzin dydaktycznych · Bezpłatnie', $html);
+        $this->assertStringContainsString('Wolne miejsca: 10 z 10', $html);
+        $this->assertStringContainsString('/szkolenia/zajecia/czytnik?termin='.$edition->id.'#zapis', $html);
+    }
+
+    public function test_liczba_kolumn_kart_zalezy_od_liczby_szkolen(): void
+    {
+        $expected = [1 => '1', 2 => '2', 3 => '3', 4 => '2', 5 => '3', 6 => '3'];
+
+        foreach ($expected as $count => $cols) {
+            Course::withoutGlobalScopes()->where('site_id', $this->sub->id)->get()->each(fn ($c) => $c->delete());
+            foreach (range(1, $count) as $i) {
+                $course = $this->course(['title' => 'Szkolenie '.$i, 'slug' => 'szkolenie-'.$i]);
+                $course->editions()->create(['starts_on' => now()->addDays($i), 'capacity' => 5, 'enrollment_status' => 'open']);
+            }
+
+            $this->assertStringContainsString('class="fis-up-grid" data-cols="'.$cols.'"', $this->home(), $count.' kart: '.$cols.' kolumn(y)');
+        }
     }
 
     public function test_bez_szkolen_nie_ma_wyszukiwania_krokow_ani_prowadzacych(): void
@@ -139,6 +187,7 @@ class FeerIsHomeLayoutTest extends TestCase
         Page::withoutGlobalScopes()->create(['site_id' => $this->sub->id, 'title' => 'Porada', 'slug' => 'porada', 'type' => 'standard', 'is_published' => true, 'content' => '<p>x</p>', 'parent_id' => $page->id]);
         $course = $this->course();
         $course->editions()->create(['starts_on' => now()->addWeek(), 'capacity' => 5, 'enrollment_status' => 'open']);
+        $this->course(['title' => 'Excel', 'slug' => 'excel', 'category' => 'm365', 'format' => 'stationary']);
 
         $html = $this->home();
         $pos = fn (string $needle) => strpos($html, $needle);

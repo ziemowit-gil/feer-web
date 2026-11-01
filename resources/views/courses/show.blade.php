@@ -30,17 +30,7 @@
         ['fa-signal', 'Poziom', $course->level],
         ['fa-award', 'Certyfikat', $course->certificate],
     ], fn ($f) => filled($f[2]));
-    $seatsText = function ($e) {
-        if ($e->enrollment_status !== 'open') {
-            return $e->enrollmentLabel();
-        }
-        if ($e->isFull()) {
-            return 'Brak miejsc, lista rezerwowa';
-        }
-        $t = 'Wolne miejsca: '.$e->free_seats.' z '.$e->capacity;
-
-        return ($e->free_seats <= 3 && $e->capacity >= 5) ? $t.' (ostatnie miejsca)' : $t;
-    };
+    $seatsText = fn ($e) => $e->seatsLabel();
     $contactPhone = $siteSettings->contact_phone;
     $contactEmail = $siteSettings->contact_email;
     $sections = array_filter([

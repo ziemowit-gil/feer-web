@@ -78,6 +78,26 @@ class CourseEdition extends Model
         return self::ENROLLMENT[$this->enrollment_status] ?? (string) $this->enrollment_status;
     }
 
+    /**
+     * Opis miejsc do wyświetlenia: „Wolne miejsca: 8 z 10”, przy 1–3 wolnych (i limicie od 5) z dopiskiem „(ostatnie miejsca)”,
+     * przy braku miejsc „Brak miejsc, lista rezerwowa”, a gdy rekrutacja nie jest otwarta jej status.
+     */
+    public function seatsLabel(): string
+    {
+        if ($this->enrollment_status !== 'open') {
+            return $this->enrollmentLabel();
+        }
+
+        $free = $this->free_seats;
+        if ($free <= 0) {
+            return 'Brak miejsc, lista rezerwowa';
+        }
+
+        $text = 'Wolne miejsca: '.$free.' z '.$this->capacity;
+
+        return ($free <= 3 && $this->capacity >= 5) ? $text.' (ostatnie miejsca)' : $text;
+    }
+
     /** Termin jako tekst: „5 listopada 2026” albo „5 – 30 listopada 2026”. */
     public function datesLabel(): string
     {
