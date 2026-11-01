@@ -14,15 +14,17 @@ use App\Models\SiteSetting;
 use App\Models\User;
 use App\Modules\ModuleManager;
 use Closure;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 
 /**
  * Definicja menu bocznego panelu administracyjnego.
  *
- * Układ jak w module menu TYPO3: grupy główne (Pulpit, Witryna, Treści, Działalność, Dokumenty i BIP,
- * Komunikacja, Ustawienia, System), a w grupie bloki z podtytułami → pozycje → podpozycje.
- * Widok `admin.partials.sidebar` tylko to renderuje. Dzięki temu:
- *  - widoczność pozycji (moduły, role) jest rozstrzygana w jednym miejscu,
+ * Układ jak w module menu TYPO3, ale grupy to obszary pracy (Start, Treści, Działalność, Komunikacja,
+ * Dokumenty i BIP, a na końcu administracja: Ustawienia i System), a w grupie bloki z podtytułami → pozycje →
+ * podpozycje. Widok `admin.partials.sidebar` tylko to renderuje. Dzięki temu:
+ *  - widoczność pozycji (moduły, role) jest rozstrzygana w jednym miejscu; rola widzi tylko swoje obszary,
+ *    obszar roboczy roli jest zaraz po „Starcie” ({@see ROLE_FOCUS}), a grupa z samymi plikami nazywa się „Pliki”,
  *  - pozycje wskazujące na nieistniejącą trasę są pomijane zamiast wywalać
  *    cały panel fatalnym błędem,
  *  - stan „aktywna sekcja/pozycja" wynika z tras, nie z ręcznych list.
@@ -42,6 +44,29 @@ final class AdminMenu
     public const PREMIUM_GROUPS = ['activity', 'docs'];
 
     public const PREMIUM_ITEMS = ['reports'];
+
+    /**
+     * Obszar roboczy roli zaraz po grupie „Start” (reszta grup w kolejności domyślnej): koordynator zaczyna od
+     * Działalności, redaktor PR od Treści i Komunikacji, role BIP od BIP, role newslettera od Komunikacji.
+     * Administrator, edytor treści i edytor z grupy mają kolejność domyślną.
+     */
+    public const ROLE_FOCUS = [
+        User::ROLE_COORDINATOR          => ['activity'],
+        User::ROLE_PR_EDITOR            => ['content', 'comms'],
+        User::ROLE_BIP_EDITOR_PLUS      => ['docs'],
+        User::ROLE_BIP_EDITOR           => ['docs'],
+        User::ROLE_NEWSLETTER_EDITOR    => ['comms'],
+        User::ROLE_NEWSLETTER_PUBLISHER => ['comms'],
+    ];
+
+    /**
+     * Pozycje zdefiniowane w sekcjach, których główny układ celowo nie umieszcza: „Ustawienia strony” (zastąpione
+     * zakładkami w grupie Ustawienia, używane tylko w menu witryny bloga) i sekcja `blog` (menu witryny „Wiem FEER”
+     * oraz pozycja „Wiem FEER (blog)” w Treściach). Każda inna pozycja musi mieć miejsce w {@see layout()}.
+     */
+    private const OUTSIDE_MAIN_LAYOUT = ['settings'];
+
+    private const BLOG_ONLY_SECTION = 'blog';
 
     /**
      * Menu skupione na blogu, gdy w panelu aktywna jest witryna „Wiem FEER” (BlogAdmin::isBlogSiteActive()):
@@ -79,11 +104,49 @@ final class AdminMenu
     /** @return array<int, array<string, mixed>> */
     public function build(): array
     {
+        $byKey = $this->sectionsByKey();
+
+        if ($byKey->has('blog') && BlogAdmin::isBlogSiteActive()) {
+            return $this->blogSiteGroups($byKey);
+        }
+
+        return $this->adaptToRole($this->layout($byKey));
+    }
+
+    /**
+     * Klucze pozycji dostępnych dla użytkownika, których główny układ nigdzie nie umieszcza — takie pozycje nie
+     * pokazałyby się w menu wcale (tak zniknęły „Portale”, „Jakość tekstów” i „Serwer MCP”). Pilnuje tego test.
+     *
+     * @return array<int, string>
+     */
+    public static function unplacedItemKeys(User $user): array
+    {
+        $menu = new self($user);
+        $byKey = $menu->sectionsByKey();
+        $placed = collect($menu->layout($byKey))->flatMap(fn (array $g) => $g['blocks'])->flatMap(fn (array $b) => $b['items'])->pluck('key');
+        $defined = $byKey->except(self::BLOG_ONLY_SECTION)->flatMap(fn (array $s) => $s['items'])->pluck('key');
+
+        return $defined->diff($placed)->diff(self::OUTSIDE_MAIN_LAYOUT)->unique()->values()->all();
+    }
+
+    /** @return Collection<string, array<string, mixed>> */
+    private function sectionsByKey(): Collection
+    {
+        return collect(array_filter($this->sections()))->keyBy('key');
+    }
+
+    /**
+     * Sekcje robocze: pozycje z uprawnieniami i licznikami. Do głównych grup łączy je {@see layout()}.
+     *
+     * @return array<int, ?array<string, mixed>>
+     */
+    private function sections(): array
+    {
         $isAdmin = $this->user->isAdmin();
 
-        $sections = [
+        return [
             $this->section('start', null, [
-                $this->item('dashboard', 'Dashboard', 'admin.dashboard', 'fa-gauge'),
+                $this->item('dashboard', 'Pulpit', 'admin.dashboard', 'fa-gauge'),
                 $this->user->canApproveContent()
                     ? $this->item('approvals', 'Do zatwierdzenia', 'admin.zatwierdzanie.index', 'fa-clipboard-check',
                         active: 'admin.zatwierdzanie.*', badge: fn () => ApprovalController::pendingCount())
@@ -209,8 +272,11 @@ final class AdminMenu
 
             $this->section('library', 'Biblioteka', [
                 $this->item('media', 'Multimedia', 'admin.multimedia.index', 'fa-photo-film', active: 'admin.multimedia.*'),
-                $this->item('trash', 'Kosz', 'admin.kosz.index', 'fa-trash-can', active: 'admin.kosz.*',
-                    badge: fn () => TrashController::count(), badgeTone: 'muted'),
+                // Kosz zbiera strony, aktualności, działania i dokumenty BIP — rola bez tych modułów miałaby go zawsze pustego.
+                ($this->can('pages') || $this->can('news') || $this->can('projects') || $this->can('bip'))
+                    ? $this->item('trash', 'Kosz', 'admin.kosz.index', 'fa-trash-can', active: 'admin.kosz.*',
+                        badge: fn () => TrashController::count(), badgeTone: 'muted')
+                    : null,
             ], defaultOpen: true),
 
             $isAdmin ? $this->section('marketing', 'Marketing', [
@@ -246,7 +312,6 @@ final class AdminMenu
                 $this->item('settings', 'Ustawienia strony', 'admin.ustawienia.edit', 'fa-sliders',
                     active: 'admin.ustawienia.*',
                     children: $this->settingsChildren()),
-                $this->item('colors', 'Kolory', 'admin.kolory.edit', 'fa-palette', active: 'admin.kolory.*'),
                 $this->item('templates', 'Szablony', 'admin.szablony.manage', 'fa-clone',
                     active: ['admin.szablony.*', 'admin.mail-templates.*'],
                     children: [
@@ -274,62 +339,109 @@ final class AdminMenu
                 $this->item('sites', 'Witryny sieci', 'admin.witryny.index', 'fa-sitemap', active: 'admin.witryny.*'),
             ]) : null,
         ];
+    }
 
-        // Sekcje robocze (poniżej) łączymy w sześć grup głównych w stylu TYPO3. Pozycje, do których
-        // użytkownik nie ma dostępu, już wypadły — pusta grupa znika w całości.
-        $byKey = collect(array_filter($sections))->keyBy('key');
-
-        if ($byKey->has('blog') && BlogAdmin::isBlogSiteActive()) {
-            return $this->blogSiteGroups($byKey);
-        }
-
-        // Bloki „Ustawień” = kategorie zakładek; do „SEO i dostępność” dochodzą narzędzia SEO i skaner WCAG.
+    /**
+     * Główne grupy menu: grupa → bloki → pozycje. Każda pozycja z sekcji ma tu dokładnie jedno miejsce
+     * ({@see unplacedItemKeys()} musi być puste). Grupy to obszary pracy, a nie moduły:
+     *  - Treści — wszystko, co widać na stronie: struktura i nawigacja, publikacje, strona główna, pliki, kontrola jakości,
+     *  - Działalność — to, co organizacja robi i oferuje: działania, szkolenia i oferta, zaangażowanie,
+     *  - Komunikacja — kontakt z odbiorcami: skrzynka, formularze i ankiety, newsletter, promocja i kampanie,
+     *  - Dokumenty i BIP — osobny obszar urzędowy (tylko przy włączonym module),
+     *  - na końcu administracja: Ustawienia (konfiguracja serwisu) i System (użytkownicy, dane, diagnostyka).
+     * Pozycje, do których użytkownik nie ma dostępu, już wypadły z sekcji — pusta grupa znika w całości.
+     *
+     * @param  Collection<string, array<string, mixed>>  $byKey
+     * @return array<int, array<string, mixed>>
+     */
+    private function layout(Collection $byKey): array
+    {
+        // Bloki „Ustawień” = kategorie zakładek; do „SEO i dostępności” dochodzą narzędzia SEO i skaner WCAG,
+        // do „Funkcji i integracji” szablony treści i maili.
         $settingsBlocks = collect(SiteSetting::SETTINGS_TAB_GROUPS)
             ->map(fn ($tabs, $heading) => [$heading, ['settings', 'system'], array_merge(
                 array_map(fn ($t) => 'settings-'.$t, $tabs),
-                $heading === 'SEO i dostępność' ? ['seo', 'wcag'] : [],
+                match ($heading) {
+                    'SEO i dostępność' => ['seo', 'wcag'],
+                    'Funkcje i integracje' => ['templates'],
+                    default => [],
+                },
             )])
             ->values()->all();
-        $settingsBlocks[] = ['Zaawansowane', ['settings', 'system'], ['settings-other', 'templates', 'modules', 'settings-env']];
+        $settingsBlocks[] = ['Zaawansowane', ['settings', 'system'], ['settings-other', 'settings-env']];
 
         return array_values(array_filter([
-            $this->group($byKey, 'start', 'Pulpit', 'fa-gauge', [
-                [null, 'start'],
-                ['Jakość treści', 'content', ['content-review', 'content-a11y']],
-            ]),
-            // „Witryna” — jak serwis jest zbudowany (strony, menu, strona główna).
-            $this->group($byKey, 'pages', 'Witryna', 'fa-sitemap', [['Strony i nawigacja', 'pages'], ['Strona główna', 'homepage']]),
-            // „Treści” — wpisy publikowane na bieżąco i pliki.
+            $this->group($byKey, 'start', 'Start', 'fa-gauge', [[null, 'start']]),
+            // „Treści” — to, co widać na stronie, i narzędzia do pracy z nim.
             $this->group($byKey, 'content', 'Treści', 'fa-newspaper', [
+                ['Strony i nawigacja', 'pages'],
                 ['Publikacje', 'content', ['news', 'blog', 'podcasts', 'faq', 'timeline']],
-                ['Kampanie', 'content', ['landing']],
-                ['Biblioteka', 'library'],
+                ['Strona główna', 'homepage'],
+                ['Pliki', 'library'],
+                ['Kontrola jakości', ['content', 'system'], ['content-review', 'content-a11y', 'text_quality']],
             ]),
             // „Działalność” — to, co organizacja robi i oferuje.
             $this->group($byKey, 'activity', 'Działalność', 'fa-diagram-project', [
-                ['Działania', 'content', ['projects', 'coordinators', 'help-map', 'organizations']],
-                ['Oferta', 'content', ['events', 'courses', 'materials', 'shop']],
+                ['Działania', 'content', ['projects', 'portals', 'coordinators', 'help-map', 'organizations']],
+                ['Szkolenia i oferta', 'content', ['events', 'courses', 'materials', 'shop']],
                 ['Zaangażowanie', 'content', ['volunteering', 'jobs']],
                 // Bez modułu BIP sprawozdania są tutaj — grupy „Dokumenty i BIP” wtedy nie ma.
                 ...($this->bipEnabled() ? [] : [['Sprawozdawczość', 'content', ['reports']]]),
+            ]),
+            // „Komunikacja” — kontakt z odbiorcami: przychodzące, formularze, wysyłki i promocja.
+            $this->group($byKey, 'comms', 'Komunikacja', 'fa-comments', [
+                ['Skrzynka', ['inbox', 'content'], ['contact', 'meetings', 'barriers', 'cooperation']],
+                ['Formularze i ankiety', 'content', ['forms', 'polls']],
+                ['Newsletter', 'newsletter'],
+                ['Promocja i kampanie', ['content', 'marketing'], ['landing', 'campaigns', 'banners']],
             ]),
             $this->bipEnabled() ? $this->group($byKey, 'docs', 'Dokumenty i BIP', 'fa-landmark', [
                 ['Biuletyn (BIP)', 'bipsite'],
                 ['Sprawozdawczość', 'content', ['reports']],
             ]) : null,
-            $this->group($byKey, 'comms', 'Komunikacja', 'fa-comments', [
-                ['Skrzynka', ['inbox', 'content'], ['contact', 'meetings', 'barriers', 'cooperation']],
-                ['Formularze i ankiety', 'content', ['forms', 'polls']],
-                ['Newsletter i marketing', ['newsletter', 'marketing']],
-            ]),
             $this->group($byKey, 'settings', 'Ustawienia', 'fa-sliders', $settingsBlocks),
             $this->group($byKey, 'system', 'System', 'fa-gear', [
                 ['Użytkownicy i dostęp', 'users'],
                 ['Dane i bezpieczeństwo', 'system', ['activity', 'gdpr', 'backups', 'database']],
                 ['Diagnostyka', 'system', ['health', 'cache', 'cron']],
+                ['Moduły i integracje', 'system', ['modules', 'mcp']],
                 ['Sieć witryn', 'system', ['sites']],
             ]),
         ]));
+    }
+
+    /**
+     * Dopasowanie do roli: obszar roboczy roli zaraz po „Starcie” ({@see ROLE_FOCUS}), a grupa złożona z samych
+     * plików (rola bez modułów treści, np. BIP albo newsletter) nazywa się po prostu „Pliki”.
+     *
+     * @param  array<int, array<string, mixed>>  $groups
+     * @return array<int, array<string, mixed>>
+     */
+    private function adaptToRole(array $groups): array
+    {
+        foreach ($groups as &$group) {
+            if ($group['key'] === 'content' && count($group['blocks']) === 1 && $group['blocks'][0]['heading'] === 'Pliki') {
+                $group['key'] = 'library';
+                $group['label'] = 'Pliki';
+                $group['icon'] = 'fa-photo-film';
+                $group['blocks'][0]['heading'] = null;
+            }
+        }
+        unset($group);
+
+        $focus = self::ROLE_FOCUS[(string) $this->user->role] ?? [];
+        $rank = function (array $group) use ($focus): int {
+            if ($group['key'] === 'start') {
+                return -1;
+            }
+            $position = array_search($group['key'], $focus, true);
+
+            return $position === false ? count($focus) : $position;
+        };
+        // usort jest stabilny (PHP ≥ 8): grupy o tej samej randze zostają w kolejności domyślnej.
+        usort($groups, fn (array $a, array $b) => $rank($a) <=> $rank($b));
+
+        return $groups;
     }
 
     /**
@@ -391,7 +503,8 @@ final class AdminMenu
             'label'  => $label,
             'icon'   => $icon,
             'active' => $all->contains(fn (array $i) => $i['active']),
-            'badge'  => ($sum = (int) $all->sum(fn (array $i) => (int) ($i['badge'] ?? 0))) > 0 ? $sum : null,
+            // Licznik grupy to sprawy „do obsłużenia”; informacyjne liczniki (Kosz, Przegląd treści) go nie podbijają.
+            'badge'  => ($sum = (int) $all->sum(fn (array $i) => ($i['badge_tone'] ?? 'brand') === 'muted' ? 0 : (int) ($i['badge'] ?? 0))) > 0 ? $sum : null,
             'premium' => in_array($key, self::PREMIUM_GROUPS, true),
             'blocks' => $blocks,
         ];

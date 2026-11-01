@@ -59,7 +59,7 @@
                         <option value="{{ $sl->id }}" @selected((int) old('portal_slider_id', $category->portal_slider_id) === $sl->id)>{{ $sl->name }}</option>
                     @endforeach
                 </select>
-                <p class="mt-1 text-xs text-muted">Własne slajdy przygotujesz w Witryna → Slidery.</p>
+                <p class="mt-1 text-xs text-muted">Własne slajdy przygotujesz w Treści → Strona główna → Slidery.</p>
             </div>
 
             <div>

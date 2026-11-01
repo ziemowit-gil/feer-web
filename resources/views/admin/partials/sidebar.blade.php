@@ -1,7 +1,8 @@
 {{--
     Menu boczne panelu administracyjnego.
 
-    Dane menu: App\Support\AdminMenu (maks. 6 grup głównych → bloki → pozycje → podpozycje), układ jak moduły TYPO3.
+    Dane menu: App\Support\AdminMenu (grupy główne = obszary pracy: Start, Treści, Działalność, Komunikacja, BIP, Ustawienia, System →
+    bloki → pozycje → podpozycje; rola widzi tylko swoje obszary, własny zaraz po Starcie — AdminMenu::ROLE_FOCUS).
     Stan (zwinięcie na desktopie, otwarcie szuflady na mobile) trzyma Alpine store
     `adminNav`, zdefiniowany w admin/layout.blade.php. Styl `.admin-sidebar`: resources/css/app.css.
 

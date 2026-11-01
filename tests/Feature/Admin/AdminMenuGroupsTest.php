@@ -24,7 +24,7 @@ class AdminMenuGroupsTest extends TestCase
 
         $groups = AdminMenu::for(auth()->user());
 
-        $this->assertSame(['start', 'pages', 'content', 'activity', 'docs', 'comms', 'settings', 'system'], array_column($groups, 'key'));
+        $this->assertSame(['start', 'content', 'activity', 'comms', 'docs', 'settings', 'system'], array_column($groups, 'key'));
         // Żadna pozycja nie powtarza się w dwóch miejscach menu.
         $keys = collect($groups)->flatMap(fn ($g) => $g['blocks'])->flatMap(fn ($b) => $b['items'])->pluck('key');
         $this->assertSame($keys->count(), $keys->unique()->count());
@@ -59,9 +59,9 @@ class AdminMenuGroupsTest extends TestCase
         $html = $this->actingAs($admin)->get(route('admin.podstrony.index'))->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression('/class="tm-group relative is-active"/', $html);
-        $this->assertStringContainsString('Witryna', $html);
-        // 8 grup jako nagłówki; moduły premium (AdminMenu::PREMIUM_GROUPS) mają dodatkowo klasę obwódki.
-        $this->assertSame(8, substr_count($html, 'class="tm-head nav-link relative'));
+        $this->assertStringContainsString('Strony i nawigacja', $html);
+        // 7 grup jako nagłówki; moduły premium (AdminMenu::PREMIUM_GROUPS) mają dodatkowo klasę obwódki.
+        $this->assertSame(7, substr_count($html, 'class="tm-head nav-link relative'));
         $this->assertSame(count(AdminMenu::PREMIUM_GROUPS), substr_count($html, 'class="tm-head nav-link relative tm-premium"'));
         $this->assertStringContainsString('aria-label="Menu panelu"', $html);
     }
@@ -71,7 +71,7 @@ class AdminMenuGroupsTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
         $groups = collect(AdminMenu::for($admin))->keyBy('key');
 
-        $this->assertSame(['Użytkownicy i dostęp', 'Dane i bezpieczeństwo', 'Diagnostyka', 'Sieć witryn'], array_column($groups['system']['blocks'], 'heading'));
+        $this->assertSame(['Użytkownicy i dostęp', 'Dane i bezpieczeństwo', 'Diagnostyka', 'Moduły i integracje', 'Sieć witryn'], array_column($groups['system']['blocks'], 'heading'));
     }
 
     public function test_ustawienia_strony_sa_podzielone_na_kategorie_i_zawieraja_wszystkie_zakladki(): void
