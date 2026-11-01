@@ -86,4 +86,16 @@ class ProjectPageImprovementsTest extends TestCase
         $this->get('/kontakt?do=ewelina.fraczek%40feer.org.pl')->assertRedirect();
         $this->assertStringContainsString('do=ewelina.fraczek', (string) $this->get('/kontakt?do=ewelina.fraczek%40feer.org.pl')->headers->get('Location'));
     }
+
+    public function test_info_sections_do_not_use_the_flat_row_frame_class(): void
+    {
+        $p = $this->project();
+        SiteSetting::current()->update(['projects_terms_enabled' => true]);
+        $p->update(['terms' => [['label' => 'Wiek', 'text' => 'od 18 lat']]]);
+
+        $html = $this->get(route('projects.show', $p))->assertOk()->getContent();
+
+        $this->assertStringContainsString('<section class="proj-sec" aria-labelledby="proj-terms-h">', $html);
+        $this->assertStringNotContainsString('<section class="proj-frame"', $html, 'Klasa .proj-frame to wiersz flex z <x-proj-frame> — sekcje nie mogą jej dziedziczyć.');
+    }
 }

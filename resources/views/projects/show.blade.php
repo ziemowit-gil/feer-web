@@ -185,7 +185,7 @@
                 margin: 1.5rem 0; padding: 1rem 1.25rem; border-radius: .375rem; background: var(--color-brand-light); color: #1d1d1a; text-align: left !important; font-weight: 600;
             }
             /* Sekcje informacyjne: zwykły nagłówek bez paska i ramki (ikona w nagłówku ukryta). */
-            .proj-frame { margin-top: 2.5rem; padding: 0; }
+            .proj-sec { margin-top: 2.5rem; padding: 0; }
             .proj-frame-side { margin-top: 0; padding: 1.25rem; border-radius: .375rem; background: #f9fafb; }
             .proj-frame-side .proj-frame-h { font-size: 1.125rem; }
             .proj-frame-h { display: block; margin: 0 0 1rem; font-size: 1.5rem; font-weight: 800; line-height: 1.3; color: #1d1d1a; }
@@ -407,7 +407,7 @@
                 @endif
 
                 @if ($extrasOn && filled($project->easy_summary))
-                    <section class="proj-frame proj-easy" aria-labelledby="proj-easy-h">
+                    <section class="proj-sec proj-easy" aria-labelledby="proj-easy-h">
                         <h2 id="proj-easy-h" class="proj-frame-h"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i> Prostym językiem</h2>
                         <p class="proj-easy-text">{!! nl2br(e($project->easy_summary)) !!}</p>
                     </section>
@@ -415,7 +415,7 @@
 
                 @php $qfacts = $extrasOn ? (array) ($project->quick_facts ?? []) : []; @endphp
                 @if (! empty(array_filter($qfacts)))
-                    <section class="proj-frame" aria-labelledby="proj-facts-h">
+                    <section class="proj-sec" aria-labelledby="proj-facts-h">
                         <h2 id="proj-facts-h" class="proj-frame-h"><i class="fa-solid fa-list-check" aria-hidden="true"></i> W skrócie</h2>
                         <dl class="proj-terms">
                             @if (! empty($qfacts['duration']))<div class="proj-terms-row"><dt>Czas trwania</dt><dd>{{ $qfacts['duration'] }}</dd></div>@endif
@@ -429,7 +429,7 @@
                 {{-- Kto może wziąć udział — ramka z warunkami --}}
                 @php $projTerms = $siteSettings->projects_terms_enabled ? collect($project->terms ?? [])->filter(fn ($r) => filled($r['label'] ?? null) && filled($r['text'] ?? null)) : collect(); @endphp
                 @if ($projTerms->isNotEmpty())
-                    <section class="proj-frame" aria-labelledby="proj-terms-h">
+                    <section class="proj-sec" aria-labelledby="proj-terms-h">
                         <h2 id="proj-terms-h" class="proj-frame-h"><i class="fa-solid fa-user-check" aria-hidden="true"></i> Kto może wziąć udział</h2>
                         <dl class="proj-terms">
                             @foreach ($projTerms as $tr)
@@ -441,7 +441,7 @@
 
                 @php $projMetrics = $extrasOn ? collect($project->metrics ?? []) : collect(); @endphp
                 @if ($projMetrics->isNotEmpty())
-                    <section class="proj-frame" aria-labelledby="proj-metrics-h">
+                    <section class="proj-sec" aria-labelledby="proj-metrics-h">
                         <h2 id="proj-metrics-h" class="proj-frame-h"><i class="fa-solid fa-chart-simple" aria-hidden="true"></i> Efekty w liczbach</h2>
                         <ul role="list" class="proj-metrics">
                             @foreach ($projMetrics as $mt)
@@ -453,7 +453,7 @@
 
                 @php $projTests = $extrasOn ? collect($project->testimonials ?? []) : collect(); @endphp
                 @if ($projTests->isNotEmpty())
-                    <section class="proj-frame" aria-labelledby="proj-tests-h">
+                    <section class="proj-sec" aria-labelledby="proj-tests-h">
                         <h2 id="proj-tests-h" class="proj-frame-h"><i class="fa-solid fa-comments" aria-hidden="true"></i> Co mówią uczestnicy</h2>
                         <ul role="list" class="proj-tests">
                             @foreach ($projTests as $ts)
@@ -465,7 +465,7 @@
 
                 @php $projFaq = $extrasOn ? collect($project->faq ?? []) : collect(); @endphp
                 @if ($projFaq->isNotEmpty())
-                    <section class="proj-frame" aria-labelledby="proj-faq-h">
+                    <section class="proj-sec" aria-labelledby="proj-faq-h">
                         <h2 id="proj-faq-h" class="proj-frame-h"><i class="fa-solid fa-circle-question" aria-hidden="true"></i> Pytania i odpowiedzi</h2>
                         <div class="proj-faq">
                             @foreach ($projFaq as $fi => $fq)
@@ -481,7 +481,7 @@
                 {{-- Etapy (harmonogram) — ramka --}}
                 @php $projStages = $siteSettings->projects_stages_enabled ? collect($project->stages ?? []) : collect(); @endphp
                 @if ($projStages->isNotEmpty())
-                    <section class="proj-frame" aria-labelledby="proj-stages-h">
+                    <section class="proj-sec" aria-labelledby="proj-stages-h">
                         <h2 id="proj-stages-h" class="proj-frame-h"><i class="fa-solid fa-timeline" aria-hidden="true"></i> Etapy działania</h2>
                         <ol class="proj-stages" role="list">
                             @foreach ($projStages as $st)
@@ -504,7 +504,7 @@
                 {{-- Zespół — ramka --}}
                 @php $projTeam = $showTeamFunding ? collect($project->team ?? []) : collect(); @endphp
                 @if ($projTeam->isNotEmpty())
-                    <section class="proj-frame" aria-labelledby="proj-team-h">
+                    <section class="proj-sec" aria-labelledby="proj-team-h">
                         <h2 id="proj-team-h" class="proj-frame-h"><i class="fa-solid fa-people-group" aria-hidden="true"></i> Zespół działania</h2>
                         <ul role="list" class="proj-team">
                             @foreach ($projTeam as $tm)
@@ -570,7 +570,7 @@
                 @php $pricing = collect($project->pricing ?? [])->filter(fn ($p) => filled($p['item'] ?? null) || filled($p['price'] ?? null)); @endphp
                 @if ($project->is_paid && $pricing->isNotEmpty())
                     {{-- Cennik jako tabela: pozycja, opis i cena. --}}
-                    <section class="proj-frame proj-price" aria-labelledby="proj-price-h">
+                    <section class="proj-sec proj-price" aria-labelledby="proj-price-h">
                         <h2 id="proj-price-h" class="proj-frame-h"><i class="fa-solid fa-coins" aria-hidden="true"></i> Cennik</h2>
                         <div class="proj-price-wrap">
                             <table class="proj-price-table" aria-labelledby="proj-price-h">
@@ -700,7 +700,7 @@
                     </div>
                 @endif
                 @if ($projPartners->isNotEmpty())
-                    <section class="proj-frame proj-frame-side" aria-labelledby="proj-partners-h">
+                    <section class="proj-sec proj-frame-side" aria-labelledby="proj-partners-h">
                         <h2 id="proj-partners-h" class="proj-frame-h"><i class="fa-solid fa-handshake" aria-hidden="true"></i> Partnerzy</h2>
                         <ul role="list" class="proj-partners">
                             @foreach ($projPartners as $pt)
@@ -715,7 +715,7 @@
                 @endif
 
                 @if ($hasFunding)
-                    <section class="proj-frame proj-frame-side" aria-labelledby="proj-fund-h">
+                    <section class="proj-sec proj-frame-side" aria-labelledby="proj-fund-h">
                         <h2 id="proj-fund-h" class="proj-frame-h"><i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i> Finansowanie</h2>
                         @if (! empty($projFunding['sources']))
                             <ul role="list" class="proj-fund">
