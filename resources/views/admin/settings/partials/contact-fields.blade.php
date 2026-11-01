@@ -239,6 +239,51 @@
                 </div>
             </div>
 
+            {{-- Oddziały (np. oddział bez osobowości prawnej) pokazywane na podstronie /kontakt --}}
+            @php
+                $branches = old('contact_branches', $settings->contact_branches ?: []);
+                if (empty($branches)) {
+                    $branches = [['name' => '', 'status' => '', 'address' => '', 'city' => '', 'email' => '', 'phone' => '', 'hours' => '', 'note' => '']];
+                }
+            @endphp
+            <div class="mt-8 space-y-4 p-5 rounded-md bg-white" x-data="{ branches: {{ \Illuminate\Support\Js::from(array_values($branches)) }} }">
+                <div>
+                    <p class="text-sm font-bold text-ink">Oddziały</p>
+                    <p class="mt-0.5 text-xs text-ink">Oddziały organizacji pokazywane na podstronie <a href="{{ route('contact.show') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/kontakt</a> w osobnej sekcji. Oddział bez osobowości prawnej opisz w polu „Status”, np. „Oddział bez osobowości prawnej, działa w strukturze Fundacji”.</p>
+                </div>
+                <div>
+                    <label for="contact_branches_title" class="mb-1 block text-sm font-bold">Nagłówek sekcji</label>
+                    <input type="text" id="contact_branches_title" name="contact_branches_title" maxlength="120" placeholder="Oddziały"
+                        value="{{ old('contact_branches_title', $settings->contact_branches_title) }}"
+                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                </div>
+                <template x-for="(branch, index) in branches" :key="index">
+                    <div class="p-4 rounded-md bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs font-bold uppercase tracking-wide text-muted" x-text="'Oddział ' + (index + 1)"></p>
+                            <button type="button" @click="branches.splice(index, 1)" class="inline-flex items-center gap-1 text-xs font-bold text-red-700 hover:text-red-800">
+                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Usuń
+                            </button>
+                        </div>
+                        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                            <div><label :for="'branch_name_' + index" class="mb-1 block text-sm font-bold">Nazwa</label><input type="text" :id="'branch_name_' + index" :name="'contact_branches[' + index + '][name]'" x-model="branch.name" placeholder="np. Oddział w Nowym Sączu" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"></div>
+                            <div><label :for="'branch_status_' + index" class="mb-1 block text-sm font-bold">Status</label><input type="text" :id="'branch_status_' + index" :name="'contact_branches[' + index + '][status]'" x-model="branch.status" placeholder="np. oddział bez osobowości prawnej" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"></div>
+                            <div><label :for="'branch_address_' + index" class="mb-1 block text-sm font-bold">Adres</label><input type="text" :id="'branch_address_' + index" :name="'contact_branches[' + index + '][address]'" x-model="branch.address" placeholder="ulica i numer" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"></div>
+                            <div><label :for="'branch_city_' + index" class="mb-1 block text-sm font-bold">Kod i miejscowość</label><input type="text" :id="'branch_city_' + index" :name="'contact_branches[' + index + '][city]'" x-model="branch.city" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"></div>
+                            <div><label :for="'branch_email_' + index" class="mb-1 block text-sm font-bold">E-mail</label><input type="email" :id="'branch_email_' + index" :name="'contact_branches[' + index + '][email]'" x-model="branch.email" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"></div>
+                            <div><label :for="'branch_phone_' + index" class="mb-1 block text-sm font-bold">Telefon</label><input type="text" :id="'branch_phone_' + index" :name="'contact_branches[' + index + '][phone]'" x-model="branch.phone" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"></div>
+                            <div><label :for="'branch_hours_' + index" class="mb-1 block text-sm font-bold">Godziny</label><input type="text" :id="'branch_hours_' + index" :name="'contact_branches[' + index + '][hours]'" x-model="branch.hours" placeholder="np. wtorki 10:00 do 14:00" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"></div>
+                            <div><label :for="'branch_note_' + index" class="mb-1 block text-sm font-bold">Notatka</label><input type="text" :id="'branch_note_' + index" :name="'contact_branches[' + index + '][note]'" x-model="branch.note" placeholder="np. spotkania po wcześniejszym umówieniu" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"></div>
+                        </div>
+                    </div>
+                </template>
+                <button type="button" @click="branches.push({ name: '', status: '', address: '', city: '', email: '', phone: '', hours: '', note: '' })"
+                    class="inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-dark hover:text-white">
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj oddział
+                </button>
+                @error('contact_branches') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
             {{-- Rachunki bankowe pokazywane na podstronie /kontakt --}}
             @php
                 $bankAccounts = old('contact_bank_accounts', $settings->contact_bank_accounts ?: []);

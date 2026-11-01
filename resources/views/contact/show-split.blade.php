@@ -147,6 +147,7 @@
                     @endif
 
                     @if ($hasBankAccounts)
+                        @include('contact.partials.branches', ['sectionStyle' => 'card'])
                         @include('contact.partials.bank-accounts', ['sectionStyle' => 'card'])
                     @endif
                 </div>

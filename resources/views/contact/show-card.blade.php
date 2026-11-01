@@ -139,6 +139,7 @@
                 @endif
 
                 @if (! empty($siteSettings->contact_bank_accounts) || filled($siteSettings->contact_bank_accounts_note))
+                    @include('contact.partials.branches', ['sectionStyle' => 'card'])
                     @include('contact.partials.bank-accounts', ['sectionStyle' => 'card'])
                 @endif
 

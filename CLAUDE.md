@@ -8,6 +8,7 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 
 ## Ostatnie zmiany
 
+- 2026-11-01: sekcja „Oddziały” na stronie kontaktowej (wszystkie układy; `contact_branches` JSON + `contact_branches_title`, migracja; edycja w stronie typu Kontakt → Oddziały, pole „Status” np. „oddział bez osobowości prawnej”); testy `ContactBranchesTest`.
 - 2026-11-01: portal IS: blok aktualności na głównej respektuje przełącznik sekcji „news” (FeerIsLayoutSeeder domyślnie go ukrywa, włączenie w Ustawienia → Strona główna); `FeerIsSampleCoursesSeeder`: 3 przykładowe szkolenia w module „Szkolenia i zajęcia” (/zajecia) z terminami, bez cen; w `FeerIsPortalSeeder`; testy.
 - 2026-11-01: portal IS: strony z `FeerIsPortalContentSeeder` domyślnie opublikowane (menu nie daje 404; `PORTAL_DRAFT=1` = szkice), podstrony z modułów (zajęcia, wydarzenia) pod „Nasze szkolenia” w `FeerIsMenuSeeder`, menu kompaktowe naprawione w `theme-feer` (klasa `nav-compact`); testy.
 - 2026-11-01: seedery portalu szkoleniowo-zajęciowego FEER IS (`FeerIsPortalSeeder` = `FeerIsPortalContentSeeder` (szkice stron: Dla osób, Dla instytucji z usługami i ikonami, O instytucji z akredytacjami/regulaminem/cennikiem, trenerzy, katalog, 3 przykładowe szkolenia; teksty po humanizerze) + `FeerIsLayoutSeeder` (szablon, zakładki, przyciski) + `FeerIsModulesSeeder`); menu osobno: `FeerIsMenuSeeder`; testy.
@@ -22,4 +23,3 @@ Po każdej ukończonej zmianie dopisz ją na górę sekcji „Ostatnie zmiany”
 - 2026-11-01: fix zapisu ustawień przed migracją FEER IS (500 `Unknown column 'theme_variant'`): nowe kolumny dopisane do listy pomijanej przy braku kolumny w `SiteSettingController`; testy.
 - 2026-11-01: FEER IS: ikony usług w siatce (`layout_data.icon` strony, pole „Ikona w siatce usług” w edytorze strony przy wariancie FEER IS, domyślnie `mi-description`); testy.
 - 2026-11-01: „FEER IS”: wariant motywu FEER (`site_settings.theme_variant = feer_is`, tylko przy szablonie `feer`; migracja z `services_tabs`, `services_all_*`): nagłówek, stopka i podstrony FEER, strona główna jak portal usług gov.pl (zakładki odbiorców → podstrony wskazanych stron, aktualności, link „Powrót” we wpisie); wybór w Ustawienia → Szablon; test `FeerIsThemeTest`.
-- 2026-11-01: błędy w obszarze witryn: strony błędów (403/404/429/500/503 i pozostałe 4xx/5xx przez `errors/generic`) w oprawie witryny z domeny/prefiksu; 404 w panelu z aktywną witryną (trasa `Route::fallback` z `admin-site`); „Zobacz stronę” i „Wróć do strony” w panelu prowadzą do aktywnej witryny (`admin_site_home()`); testy `SiteErrorPagesTest`.

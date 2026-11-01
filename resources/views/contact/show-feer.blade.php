@@ -125,6 +125,8 @@
                 </section>
                 @include('contact.partials.registry', ['wideLayout' => false, 'showAccounts' => empty($siteSettings->contact_bank_accounts)])
 
+                @include('contact.partials.branches', ['sectionStyle' => 'bare'])
+
                 @if ($showMeetings)
                     <div id="spotkania" class="scroll-mt-24">@include('contact.partials.meetings', ['sectionStyle' => 'bare'])</div>
                 @endif

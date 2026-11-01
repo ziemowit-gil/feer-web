@@ -51,6 +51,16 @@ class ContactSettings
             'contact_bank_accounts.*.number' => ['nullable', 'string', 'max:80'],
             'contact_bank_accounts.*.purpose' => ['nullable', 'string', 'max:500'],
             'contact_bank_accounts_note' => ['nullable', 'string', 'max:2000'],
+            'contact_branches_title' => ['nullable', 'string', 'max:120'],
+            'contact_branches' => ['nullable', 'array', 'max:20'],
+            'contact_branches.*.name' => ['nullable', 'string', 'max:160'],
+            'contact_branches.*.status' => ['nullable', 'string', 'max:160'],
+            'contact_branches.*.address' => ['nullable', 'string', 'max:255'],
+            'contact_branches.*.city' => ['nullable', 'string', 'max:120'],
+            'contact_branches.*.email' => ['nullable', 'email', 'max:190'],
+            'contact_branches.*.phone' => ['nullable', 'string', 'max:50'],
+            'contact_branches.*.hours' => ['nullable', 'string', 'max:160'],
+            'contact_branches.*.note' => ['nullable', 'string', 'max:500'],
             'contact_bank_accounts_layout' => ['nullable', Rule::in(array_keys(SiteSetting::BANK_ACCOUNTS_LAYOUTS)),
                 Rule::notIn(SiteSetting::current()->blockedOptionsExcept('bank_accounts_layouts', SiteSetting::current()->contact_bank_accounts_layout ?: 'cards'))],
             'contact_meeting_title' => ['nullable', 'string', 'max:255'],
@@ -106,6 +116,14 @@ class ContactSettings
                 'purpose' => trim((string) ($row['purpose'] ?? '')),
             ])
             ->filter(fn ($row) => $row['number'] !== '')
+            ->values()
+            ->all();
+
+        // Oddziały: przycinamy pola i odrzucamy wiersze bez nazwy.
+        $data['contact_branches'] = collect($request->input('contact_branches', []))
+            ->map(fn ($row) => collect(['name', 'status', 'address', 'city', 'email', 'phone', 'hours', 'note'])
+                ->mapWithKeys(fn ($k) => [$k => trim((string) ($row[$k] ?? ''))])->all())
+            ->filter(fn ($row) => $row['name'] !== '')
             ->values()
             ->all();
 

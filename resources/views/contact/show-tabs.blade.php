@@ -157,6 +157,7 @@
             @if (! empty($siteSettings->contact_bank_accounts) || filled($siteSettings->contact_bank_accounts_note))
                 <div id="panel-rachunki" role="tabpanel" aria-labelledby="tab-rachunki" tabindex="0" x-cloak
                      x-show="tab === 'rachunki'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
+                    @include('contact.partials.branches', ['sectionStyle' => 'bare'])
                     @include('contact.partials.bank-accounts', ['sectionStyle' => 'bare'])
                 </div>
             @endif
