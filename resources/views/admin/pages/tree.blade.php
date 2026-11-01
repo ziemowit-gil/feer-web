@@ -431,34 +431,8 @@
                                 @csrf
                                 <button type="submit" class="{{ $btn }}"><i class="fa-solid fa-clone" aria-hidden="true"></i> Klonuj</button>
                             </form>
-                            @php
-                                $copyTargets = auth()->user()->isAdmin()
-                                    ? \App\Models\SiteSetting::query()->notTrashed()->where('id', '!=', $selected->site_id)->orderBy('site_name')->get(['id', 'site_name', 'slug'])
-                                    : collect();
-                            @endphp
-                            @if ($copyTargets->isNotEmpty())
-                                {{-- Kopiuj do witryny: kopia trafia do wybranej witryny sieci jako szkic (bez strony nadrzędnej i powiązania z działaniem). --}}
-                                <div class="relative" x-data="{ open: false }" @keydown.escape="open = false" @click.outside="open = false">
-                                    <button type="button" class="{{ $btn }}" @click="open = ! open" :aria-expanded="open.toString()" aria-controls="copy-to-site-panel">
-                                        <i class="fa-solid fa-copy" aria-hidden="true"></i> Kopiuj do witryny
-                                    </button>
-                                    <form id="copy-to-site-panel" x-show="open" x-cloak method="POST" action="{{ route('admin.podstrony.copy-to-site', $selected) }}"
-                                        class="absolute left-0 top-full z-30 mt-2 w-80 space-y-3 rounded-lg border border-gray-200 bg-white p-4 shadow-xl">
-                                        @csrf
-                                        <div>
-                                            <label for="copy-to-site" class="mb-1 block text-xs font-bold text-ink">Witryna docelowa</label>
-                                            <select id="copy-to-site" name="target_site_id" required class="w-full rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark">
-                                                <option value="" disabled selected>— wybierz witrynę —</option>
-                                                @foreach ($copyTargets as $site)
-                                                    <option value="{{ $site->id }}">{{ $site->site_name ?: ($site->slug ?: 'Witryna '.$site->id) }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <p class="text-xs text-ink">Kopia będzie szkicem w wybranej witrynie. Załączniki i galeria nie są kopiowane.</p>
-                                        <button type="submit" class="{{ $btn }} w-full justify-center"><i class="fa-solid fa-copy" aria-hidden="true"></i> Kopiuj stronę</button>
-                                    </form>
-                                </div>
-                            @endif
+                            {{-- Kopiuj do witryny: kopia trafia do wybranej witryny sieci jako szkic (bez strony nadrzędnej i powiązania z działaniem). --}}
+                            @include('admin.partials.copy-to-site', ['action' => route('admin.podstrony.copy-to-site', $selected), 'siteId' => $selected->site_id, 'label' => $selected->title, 'note' => 'Kopia będzie szkicem w wybranej witrynie. Załączniki i galeria nie są kopiowane.', 'variant' => 'button', 'buttonClass' => $btn])
                             @if ($projectOptions->isNotEmpty() && ! $selected->is_system)
                                 <div class="relative" x-data="{ open: false }" @keydown.escape="open = false" @click.outside="open = false">
                                     <button type="button" class="{{ $btn }}" @click="open = ! open" :aria-expanded="open.toString()" aria-controls="to-project-panel">

@@ -270,8 +270,10 @@ class NewsController extends Controller
         return redirect()->route('admin.newsy.index')->with('status', 'News został usunięty.');
     }
 
-    /** Klonuje aktualność jako szkic bez zdjęcia. */
-    /** Kopiuje aktualność (ze zdjęciem i tagami) do innej witryny sieci jako szkic. */
+    /**
+     * Kopiuje aktualność do innej witryny sieci jako szkic — domyślnie ze zdjęciem i tagami; okno „Kopiuj do witryny”
+     * pozwala je odznaczyć (pola copy_image i copy_tags: 1/0, brak pola = kopiuj).
+     */
     public function copyToSite(Request $request, News $news)
     {
         $target = $this->copyTargetSite($request, $news);
@@ -290,12 +292,25 @@ class NewsController extends Controller
         $copy->cloned_from_id = null;
         $copy->save();
 
-        $copy->tags()->sync($news->tags->pluck('id')->all());
-        $this->copyMediaTo($news, $copy, 'image');
+        $withTags = $request->boolean('copy_tags', true);
+        $withImage = $request->boolean('copy_image', true);
+        if ($withTags) {
+            $copy->tags()->sync($news->tags->pluck('id')->all());
+        }
+        if ($withImage) {
+            $this->copyMediaTo($news, $copy, 'image');
+        }
+        $extras = match (true) {
+            $withImage && $withTags => 'ze zdjęciem i tagami',
+            $withImage => 'ze zdjęciem, bez tagów',
+            $withTags => 'z tagami, bez zdjęcia',
+            default => 'bez zdjęcia i tagów',
+        };
 
-        return back()->with('status', "Skopiowano aktualność „{$news->title}” do witryny „{$this->siteLabel($target)}” jako szkic. Przełącz się na tę witrynę, żeby ją dopracować i opublikować.");
+        return back()->with('status', "Skopiowano aktualność „{$news->title}” do witryny „{$this->siteLabel($target)}” jako szkic ({$extras}). Przełącz się na tę witrynę, żeby ją dopracować i opublikować.");
     }
 
+    /** Klonuje aktualność jako szkic (ze zdjęciem i tagami). */
     public function clone(News $news)
     {
         $clone = $news->replicate();
@@ -306,11 +321,11 @@ class NewsController extends Controller
         $clone->cloned_from_id = $news->id;
         $clone->save();
 
-        // Kopiujemy tagi; zdjęcie (media) trzeba wgrać ponownie — jak przy klonowaniu stron.
         $clone->tags()->sync($news->tags->pluck('id')->all());
+        $this->copyMediaTo($news, $clone, 'image');
 
         return redirect()->route('admin.newsy.edit', [$clone, 'klasyczny' => 1])
-            ->with('status', "News został sklonowany jako „{$clone->title}”. Jest zapisany jako szkic (bez zdjęcia — dodaj je ponownie).");
+            ->with('status', "News został sklonowany jako „{$clone->title}”. Jest zapisany jako szkic (ze zdjęciem i tagami z oryginału).");
     }
 
     /** Wykonuje zbiorczą operację (kosz / publikuj / cofnij / archiwizuj) na zaznaczonych aktualnościach. */
