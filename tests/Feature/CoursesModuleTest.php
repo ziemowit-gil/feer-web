@@ -111,7 +111,7 @@ class CoursesModuleTest extends TestCase
             ->assertSee('Najbliższy termin')->assertSee('id="cs-sticky"', false)
             ->assertSee('Wolne miejsca: 10 z 10')->assertSee('tel:126167555', false)->assertSee('biuro@example.com')
             ->assertSee('Zobacz także')->assertSee('Excel dla każdego')
-            ->assertSee('Pobierz kartę szkolenia (PDF)')->assertSee('Rozmiar tekstu')->assertSee('Dodaj do kalendarza');
+            ->assertSee('Karta szkolenia (PDF)')->assertSee('Rozmiar tekstu')->assertSee('Dodaj do kalendarza');
     }
 
     public function test_ostatnie_miejsca_sa_opisane_tekstem(): void

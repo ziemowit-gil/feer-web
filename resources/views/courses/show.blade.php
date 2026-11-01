@@ -1,5 +1,6 @@
 {{--
-    Strona szkolenia (moduł „Szkolenia i zajęcia”). Układ nastawiony na czytelność: jedna wąska kolumna tekstu (do 46 rem),
+    Strona szkolenia (moduł „Szkolenia i zajęcia”). Układ nastawiony na czytelność: nagłówek z metryczką, pod nim przyklejony pasek
+    „Na tej stronie” (pigułki, bez przewijania poziomego, z przyciskami rozmiaru tekstu), jedna wąska kolumna tekstu (do 46 rem),
     duża czcionka, interlinia 1,7, sekcje rozdzielone cienką linią, zwykłe listy zamiast
     kart, terminy jako tabela (termin, miejsce, miejsca, akcja), cena jako zwykłe zdanie; po prawej przyklejona karta zapisu.
     Bez ikon dekoracyjnych i bez kolorowych tła. Style inline z prefiksem cs- (wdrożenie nie buduje Tailwinda).
@@ -78,16 +79,14 @@
     .cs .cs-btn:hover { background: #12409a; border-color: #12409a; color: #fff; }
     .cs .cs-btn-o { background: #fff; color: #1d1d1a; border-color: #1d1d1a; }
     .cs .cs-btn-o:hover { background: #f3f4f6; color: #1d1d1a; border-color: #1d1d1a; }
-    .cs-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 1.25rem 2rem; margin: 2.25rem 0 0; max-width: 56rem; }
+    .cs-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 2rem; margin: 2.25rem 0 0; max-width: 56rem; }
+    @media (min-width: 640px) { .cs-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    .cs-facts > div { padding-top: .75rem; border-top: 2px solid #1d1d1a; }
     .cs-facts dt { font-size: .9rem; font-weight: 700; color: #4b5563; line-height: 1.4; }
-    .cs-facts dd { margin: .15rem 0 0; font-size: 1.2rem; font-weight: 700; line-height: 1.4; }
+    .cs-facts dd { margin: .15rem 0 0; font-size: 1.15rem; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
     .cs-layout { display: grid; gap: 3rem; padding: 2rem 0 4rem; }
     @media (min-width: 1024px) { .cs-layout { grid-template-columns: minmax(0, 46rem) 22rem; justify-content: space-between; align-items: start; } .cs-aside { position: sticky; top: 1.5rem; } }
-    .cs-toc { margin: 0 0 1rem; padding: 0 0 1.5rem; border-bottom: 1px solid #d1d5db; }
-    .cs-toc p { margin: 0 0 .5rem; font-size: .9rem; font-weight: 700; color: #4b5563; }
-    .cs-toc ul { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; margin: 0; padding: 0; list-style: none; }
-    .cs-toc a { display: inline-block; padding: .25rem 0; font-weight: 700; }
-    .cs-sec { padding: 2.25rem 0; border-top: 1px solid #d1d5db; scroll-margin-top: 1.5rem; }
+    .cs-sec { padding: 2.25rem 0; border-top: 1px solid #d1d5db; scroll-margin-top: 5rem; }
     .cs-sec:first-of-type { border-top: 0; padding-top: 1rem; }
     .cs-sec h2 { margin: 0 0 1rem; font-size: 1.75rem; font-weight: 800; line-height: 1.25; }
     .cs-sec h3 { margin: 0; font-size: 1.2rem; font-weight: 700; line-height: 1.4; }
@@ -125,28 +124,33 @@
     .cs-faq summary::after { content: "+"; font-size: 1.5rem; line-height: 1; flex: none; }
     .cs-faq details[open] summary::after { content: "–"; }
     .cs-faq details > div { padding: 0 0 1.25rem; }
-    .cs-aside { padding: 1.5rem; background: #f3f4f6; border-radius: .375rem; scroll-margin-top: 1.5rem; }
+    .cs-aside { padding: 1.5rem; background: #f3f4f6; border-radius: .375rem; scroll-margin-top: 5rem; }
     .cs-aside h2 { margin: 0 0 .75rem; font-size: 1.5rem; font-weight: 800; line-height: 1.25; }
     .cs-aside p { margin: 0 0 1rem; font-size: 1rem; }
     .cs-aside .cs-btn { width: 100%; justify-content: center; }
     .cs-back { margin: 0 0 1rem; font-size: 1rem; }
     .cs-back a { font-weight: 700; }
-    .cs-next { margin-top: 1.75rem; padding: 1rem 1.25rem; max-width: 36rem; border-left: 6px solid #1752bf; background: #f3f4f6; }
+    .cs-next { margin-top: 1.75rem; padding: .75rem 1.25rem; max-width: 36rem; border-left: 6px solid #1752bf; }
     .cs-next p { margin: 0; line-height: 1.5; }
     .cs-next-label { font-size: .9rem; font-weight: 700; color: #4b5563; }
     .cs-next-date { font-size: 1.4rem; font-weight: 800; }
     .cs-next-meta { font-size: 1rem; }
-    .cs-card-link { display: inline-block; margin-top: 1.25rem; font-weight: 700; font-size: 1rem; }
-    .cs-toc { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.5rem; }
-    .cs-toc p { margin: 0; }
-    .cs-toc ul { flex: 1 1 24rem; }
-    .cs-toc a[aria-current="location"] { text-decoration-thickness: 3px; color: #1d1d1a; }
-    .cs-size { display: flex; align-items: center; gap: .35rem; }
+    /* Spis sekcji: osobny pasek pod nagłówkiem na całą szerokość. Linki jako pigułki, zawijają się bez paska przewijania;
+       po prawej przyciski rozmiaru tekstu. Na dużym ekranie pasek przykleja się do góry. */
+    .cs-tocbar { border-bottom: 1px solid #d1d5db; background: #fff; }
+    .cs-toc { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1.5rem; padding: .75rem 0; }
+    .cs-toc p { margin: 0; font-size: .9rem; font-weight: 700; color: #4b5563; }
+    .cs-toc ul { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0; padding: 0; list-style: none; flex: 1 1 30rem; }
+    .cs-toc li { display: flex; }
+    .cs .cs-toc a { display: inline-flex; align-items: center; min-height: 2.5rem; padding: 0 .9rem; border-radius: 9999px; background: #f3f4f6; color: #1d1d1a; font-size: .95rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .cs .cs-toc a:hover { background: #e5e7eb; color: #1d1d1a; }
+    .cs .cs-toc a[aria-current="location"] { background: #1d1d1a; color: #fff; }
+    .cs-size { display: flex; align-items: center; gap: .35rem; margin-left: auto; }
     .cs-size button { min-width: 2.75rem; min-height: 2.75rem; border: 2px solid #1d1d1a; border-radius: .375rem; background: #fff; color: #1d1d1a; font-weight: 700; cursor: pointer; }
     .cs-size button[aria-pressed="true"] { background: #1d1d1a; color: #fff; }
     .cs-main[data-size="2"] .cs-sec, .cs-main[data-size="2"] .cs-prose, .cs-main[data-size="2"] .cs-table { font-size: 1.35rem; }
     .cs-main[data-size="3"] .cs-sec, .cs-main[data-size="3"] .cs-prose, .cs-main[data-size="3"] .cs-table { font-size: 1.6rem; }
-    @media (min-width: 1024px) { .cs-toc { position: sticky; top: 0; z-index: 6; background: #fff; padding-top: .75rem; } .cs-toc ul { flex-wrap: nowrap; overflow-x: auto; } }
+    @media (min-width: 1024px) { .cs-tocbar { position: sticky; top: 0; z-index: 6; } }
     .cs-rel { margin: 0; padding: 0; list-style: none; }
     .cs-rel li { padding: .9rem 0; border-bottom: 1px solid #d1d5db; }
     .cs-rel strong { font-size: 1.15rem; }
@@ -182,6 +186,7 @@
                     <a class="cs-btn" href="#zapis">Zapisz się</a>
                 @endif
                 <a class="cs-btn cs-btn-o" href="#terminy">Zobacz terminy</a>
+                <a class="cs-btn cs-btn-o" href="{{ route('courses.card', $course) }}">Karta szkolenia (PDF)</a>
             </div>
 
             @if ($nextEdition)
@@ -199,9 +204,22 @@
                     @endforeach
                 </dl>
             @endif
-            <a class="cs-card-link" href="{{ route('courses.card', $course) }}">Pobierz kartę szkolenia (PDF)</a>
         </div>
     </header>
+
+    <div class="cs-tocbar">
+        <div class="cs-wrap">
+            <nav class="cs-toc" aria-label="Na tej stronie">
+                <p>Na tej stronie</p>
+                <ul>@foreach ($sections as $id => $label)<li><a href="#{{ $id }}" data-spy="{{ $id }}">{{ $label }}</a></li>@endforeach</ul>
+                <div class="cs-size" role="group" aria-label="Rozmiar tekstu">
+                    <button type="button" data-size="1" aria-pressed="true" aria-label="Tekst normalny">A</button>
+                    <button type="button" data-size="2" aria-pressed="false" aria-label="Większy tekst" style="font-size:1.2rem">A</button>
+                    <button type="button" data-size="3" aria-pressed="false" aria-label="Największy tekst" style="font-size:1.45rem">A</button>
+                </div>
+            </nav>
+        </div>
+    </div>
 
     <div class="cs-wrap">
         @if (session('status'))
@@ -210,16 +228,6 @@
 
         <div class="cs-layout">
             <div class="cs-main" id="cs-main" data-size="1">
-                <nav class="cs-toc" aria-label="Na tej stronie">
-                    <p>Na tej stronie</p>
-                    <ul>@foreach ($sections as $id => $label)<li><a href="#{{ $id }}" data-spy="{{ $id }}">{{ $label }}</a></li>@endforeach</ul>
-                    <div class="cs-size" role="group" aria-label="Rozmiar tekstu">
-                        <button type="button" data-size="1" aria-pressed="true" aria-label="Tekst normalny">A</button>
-                        <button type="button" data-size="2" aria-pressed="false" aria-label="Większy tekst" style="font-size:1.2rem">A</button>
-                        <button type="button" data-size="3" aria-pressed="false" aria-label="Największy tekst" style="font-size:1.45rem">A</button>
-                    </div>
-                </nav>
-
                 @if (filled($course->description))
                     <section id="opis" class="cs-sec" aria-labelledby="c-desc">
                         <h2 id="c-desc">O szkoleniu</h2>
