@@ -241,6 +241,60 @@ class CoursesModuleTest extends TestCase
         $this->get(route('admin.kursy.registrations.index', $e))->assertOk()->assertSee('Ewa Kowal');
     }
 
+    public function test_panel_pokazuje_liste_powiadomien_wysyla_jednorazowo_i_usuwa(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $c = $this->course();
+        $e = $this->edition($c);
+        $this->withoutMiddleware(\App\Http\Middleware\EnsureTwoFactorVerified::class);
+        $this->actingAs($admin);
+
+        $a = \App\Models\CourseNotification::create(['course_id' => $c->id, 'email' => 'ala@example.com']);
+        \App\Models\CourseNotification::create(['course_id' => $c->id, 'email' => 'bartek@example.com']);
+
+        $this->get(route('admin.kursy.edit', $c))->assertOk()
+            ->assertSee('Powiadomienia o terminie')->assertSee('ala@example.com')->assertSee('Czeka na powiadomienie: 2');
+
+        $this->post(route('admin.kursy.notifications.send', $c), ['edition_id' => $e->id])->assertRedirect()->assertSessionHas('status');
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\CourseNewEditionMail::class, 2);
+        $this->assertSame(0, \App\Models\CourseNotification::whereNull('notified_at')->count());
+
+        // Drugi raz nikt nie dostaje wiadomości.
+        $this->post(route('admin.kursy.notifications.send', $c), ['edition_id' => $e->id])->assertRedirect();
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\CourseNewEditionMail::class, 2);
+
+        $this->delete(route('admin.kursy.notifications.destroy', $a))->assertRedirect();
+        $this->assertDatabaseMissing('course_notifications', ['email' => 'ala@example.com']);
+    }
+
+    public function test_powiadomienie_nie_wychodzi_dla_terminu_bez_rekrutacji(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $c = $this->course();
+        $closed = $this->edition($c, ['enrollment_status' => 'closed']);
+        \App\Models\CourseNotification::create(['course_id' => $c->id, 'email' => 'ala@example.com']);
+        $this->withoutMiddleware(\App\Http\Middleware\EnsureTwoFactorVerified::class);
+        $this->actingAs($admin);
+
+        $this->post(route('admin.kursy.notifications.send', $c), ['edition_id' => $closed->id])->assertSessionHasErrors('edition_id');
+        \Illuminate\Support\Facades\Mail::assertNothingSent();
+    }
+
+    public function test_mail_o_nowym_terminie_ma_date_miejsce_i_link_do_zapisu(): void
+    {
+        $c = $this->course();
+        $e = $this->edition($c, ['location' => 'Kraków']);
+
+        $html = (new \App\Mail\CourseNewEditionMail($c, $e, 'FEER'))->render();
+
+        $this->assertStringContainsString('Czytnik ekranu od podstaw', $html);
+        $this->assertStringContainsString('Kraków', $html);
+        $this->assertStringContainsString('termin='.$e->id.'#zapis', $html);
+        $this->assertStringContainsString('jednorazowa', $html);
+    }
+
     public function test_feer_is_pokazuje_najblizsze_szkolenia_na_stronie_glownej_i_naglowek_portalu(): void
     {
         $this->site->forceFill(['site_template' => 'feer', 'theme_variant' => 'feer_is'])->save();

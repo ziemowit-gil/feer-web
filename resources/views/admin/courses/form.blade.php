@@ -181,6 +181,56 @@
                 <button type="submit" class="mt-3 {{ $btn }}">Dodaj termin</button>
             </form>
         </section>
+
+        @isset($notifications)
+            @php
+                $pending = $notifications->whereNull('notified_at');
+                $sendable = $course->editions->filter(fn ($e) => $e->acceptsRegistrations());
+            @endphp
+            <section class="mt-10 max-w-3xl" aria-labelledby="notif-h">
+                <h2 id="notif-h" class="text-xl font-bold text-ink">Powiadomienia o terminie</h2>
+                <p class="mt-1 text-sm text-ink">Osoby, które na stronie szkolenia zostawiły adres e-mail przy „Powiadom mnie o terminie”. Każda dostaje jedną wiadomość o wybranym terminie z otwartą rekrutacją.</p>
+
+                @if ($notifications->isEmpty())
+                    <p class="mt-4 rounded-md bg-gray-50 p-4 text-sm text-ink">Nikt jeszcze nie zapisał się na powiadomienie.</p>
+                @else
+                    <form method="POST" action="{{ route('admin.kursy.notifications.send', $course) }}" class="mt-4 rounded-md bg-white p-5"
+                          onsubmit="return confirm('Wysłać powiadomienie do {{ $pending->count() }} os.?');">
+                        @csrf
+                        <p class="text-sm font-bold text-ink">Czeka na powiadomienie: {{ $pending->count() }} · już powiadomionych: {{ $notifications->count() - $pending->count() }}</p>
+                        @if ($sendable->isEmpty())
+                            <p class="mt-2 text-sm text-ink">Najpierw dodaj termin z otwartą rekrutacją (sekcja „Terminy” wyżej).</p>
+                        @elseif ($pending->isNotEmpty())
+                            <label for="notif-edition" class="mt-3 {{ $lbl }}">Termin do ogłoszenia</label>
+                            <select id="notif-edition" name="edition_id" class="{{ $in }}">
+                                @foreach ($sendable as $e)<option value="{{ $e->id }}">{{ $e->datesLabel() }}@if ($e->location), {{ $e->location }}@endif</option>@endforeach
+                            </select>
+                            <button type="submit" class="mt-3 {{ $btn }}">Wyślij powiadomienie ({{ $pending->count() }})</button>
+                        @endif
+                    </form>
+
+                    <table class="mt-4 w-full max-w-3xl rounded-md bg-white text-left text-sm text-ink">
+                        <caption class="sr-only">Adresy zapisane na powiadomienie</caption>
+                        <thead><tr><th scope="col" class="p-3">Adres e-mail</th><th scope="col" class="p-3">Zapisano</th><th scope="col" class="p-3">Powiadomiono</th><th scope="col" class="p-3"><span class="sr-only">Akcje</span></th></tr></thead>
+                        <tbody>
+                            @foreach ($notifications as $n)
+                                <tr class="border-t border-gray-200">
+                                    <td class="p-3">{{ $n->email }}</td>
+                                    <td class="p-3">{{ $n->created_at->format('d.m.Y') }}</td>
+                                    <td class="p-3">{{ $n->notified_at ? $n->notified_at->format('d.m.Y H:i') : 'jeszcze nie' }}</td>
+                                    <td class="p-3">
+                                        <form method="POST" action="{{ route('admin.kursy.notifications.destroy', $n) }}" onsubmit="return confirm('Usunąć adres z listy?');">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="font-bold text-red-700 underline">Usuń<span class="sr-only"> {{ $n->email }}</span></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+            </section>
+        @endisset
     @endif
 @endsection
 

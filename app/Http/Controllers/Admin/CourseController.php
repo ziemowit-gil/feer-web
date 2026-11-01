@@ -52,7 +52,11 @@ class CourseController extends Controller
             'registrations as waitlist_count' => fn ($r) => $r->where('status', 'waitlist'),
         ])]);
 
-        return view('admin.courses.form', compact('course'));
+        $notifications = \Illuminate\Support\Facades\Schema::hasTable('course_notifications')
+            ? \App\Models\CourseNotification::where('course_id', $course->id)->orderBy('created_at')->get()
+            : collect();
+
+        return view('admin.courses.form', compact('course', 'notifications'));
     }
 
     public function update(Request $request, Course $course)
@@ -77,9 +81,13 @@ class CourseController extends Controller
     public function storeEdition(Request $request, Course $course)
     {
         $this->authorizeSite($course);
-        $course->editions()->create($this->validatedEdition($request));
+        $edition = $course->editions()->create($this->validatedEdition($request));
 
-        return back()->with('status', 'Termin dodany.');
+        $waiting = $edition->acceptsRegistrations() && \Illuminate\Support\Facades\Schema::hasTable('course_notifications')
+            ? \App\Models\CourseNotification::where('course_id', $course->id)->whereNull('notified_at')->count()
+            : 0;
+
+        return back()->with('status', 'Termin dodany.'.($waiting ? " {$waiting} os. czeka na powiadomienie o terminie (sekcja „Powiadomienia o terminie” niżej)." : ''));
     }
 
     public function updateEdition(Request $request, CourseEdition $edition)

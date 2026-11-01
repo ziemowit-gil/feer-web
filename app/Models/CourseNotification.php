@@ -10,7 +10,9 @@ class CourseNotification extends Model
 {
     use \App\Models\Concerns\BelongsToSite;
 
-    protected $fillable = ['site_id', 'course_id', 'email'];
+    protected $fillable = ['site_id', 'course_id', 'email', 'notified_at'];
+
+    protected $casts = ['notified_at' => 'datetime'];
 
     public function course(): BelongsTo
     {

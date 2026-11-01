@@ -102,6 +102,7 @@ use App\Http\Controllers\Admin\CampaignController as AdminCampaignController;
 use App\Http\Controllers\JobOfferController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\Admin\CourseController as AdminCourseController;
+use App\Http\Controllers\Admin\CourseNotificationController as AdminCourseNotificationController;
 use App\Http\Controllers\Admin\CourseRegistrationController as AdminCourseRegistrationController;
 use App\Http\Controllers\Admin\JobOfferController as AdminJobOfferController;
 use App\Http\Controllers\SklepController;
@@ -555,6 +556,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::delete('terminy/{edition}', [AdminCourseController::class, 'destroyEdition'])->name('editions.destroy');
         Route::get('terminy/{edition}/uczestnicy', [AdminCourseRegistrationController::class, 'index'])->name('registrations.index');
         Route::post('terminy/{edition}/uczestnicy', [AdminCourseRegistrationController::class, 'store'])->name('registrations.store');
+        Route::post('{course}/powiadomienia/wyslij', [AdminCourseNotificationController::class, 'send'])->name('notifications.send');
+        Route::delete('powiadomienia/{notification}', [AdminCourseNotificationController::class, 'destroy'])->name('notifications.destroy');
         Route::put('uczestnicy/{registration}/status', [AdminCourseRegistrationController::class, 'status'])->name('registrations.status');
         Route::delete('uczestnicy/{registration}', [AdminCourseRegistrationController::class, 'destroy'])->name('registrations.destroy');
     });
