@@ -79,7 +79,7 @@ class CoursesModuleTest extends TestCase
         $this->edition($c, ['starts_on' => now()->subMonth()]);
 
         $this->get('/zajecia/czytnik')->assertOk()
-            ->assertSee('poniedziałki 17:00-19:00')->assertSee('wolne 2 z 2')->assertSee('Potrzeby i dostosowania');
+            ->assertSee('poniedziałki 17:00-19:00')->assertSee('Wolne miejsca: 2 z 2')->assertSee('Potrzeby i dostosowania');
     }
 
     public function test_zapis_do_limitu_potem_lista_rezerwowa(): void

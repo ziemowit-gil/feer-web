@@ -306,6 +306,14 @@ class SiteSetting extends Model implements HasMedia
             ->values()->all();
     }
 
+    /** Czy formularz zapisu na szkolenia (moduł „Szkolenia i zajęcia”) jest włączony; brak ustawienia = włączony. */
+    public function coursesRegistrationEnabled(): bool
+    {
+        $value = $this->getAttribute('courses_registration_enabled');
+
+        return $value === null || (bool) $value;
+    }
+
     /** Wariant motywu: `feer_is` tylko przy szablonie FEER, w pozostałych przypadkach `default`. */
     public function themeVariant(): string
     {
@@ -474,7 +482,7 @@ class SiteSetting extends Model implements HasMedia
         'show_coordinators', 'ngo_color', 'sub_brands',
         'logo_alt', 'logo_only',
         'news_layout', 'projects_layout', 'project_sections_nav', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button', 'projects_stages_enabled', 'projects_team_funding_enabled', 'volunteer_layout',
-        'site_template', 'is_cta_label', 'is_cta_url', 'parent_link_label', 'parent_link_url', 'contact_branches', 'contact_branches_title', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'municipality_shortcuts_slug', 'municipality_carousel_title',
+        'site_template', 'is_cta_label', 'is_cta_url', 'parent_link_label', 'parent_link_url', 'contact_branches', 'contact_branches_title', 'courses_registration_enabled', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'municipality_shortcuts_slug', 'municipality_carousel_title',
         'municipality_weather_lat', 'municipality_weather_lon', 'municipality_show_google_translate',
         'wide_mission_social_1', 'wide_mission_social_2', 'wide_mission_social_3', 'wide_mission_layout', 'wide_mission_cta_label', 'wide_mission_cta_url', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_show_mission', 'wide_mission_highlight_account', 'wide_mission_nav_align', 'wide_mission_search_in_nav', 'wide_mission_sidebar', 'wide_mission_sidebar_style', 'wide_mission_nav_style', 'wide_mission_nav_hover_white', 'wide_mission_nav_active_white', 'wide_mission_nav_icons_white', 'hero_mission_slide', 'hero_mission_bg', 'hero_mission_order', 'hero_single',
         'krs_number', 'nip_number', 'regon_number', 'projects_intro', 'materials_intro', 'materials_notice',
@@ -1746,7 +1754,19 @@ class SiteSetting extends Model implements HasMedia
      */
     public function logoAltText(): string
     {
-        return trim((string) $this->logo_alt) !== '' ? $this->logo_alt : $this->site_name;
+        if (trim((string) $this->logo_alt) !== '') {
+            return $this->logo_alt;
+        }
+
+        // Logo dziedziczone z witryny głównej: jej opis alternatywny, a gdy go nie ma, nazwa tej witryny.
+        if ($this->usesInheritedLogo()) {
+            $parentAlt = trim((string) static::query()->find($this->parent_site_id)?->logo_alt);
+            if ($parentAlt !== '') {
+                return $parentAlt;
+            }
+        }
+
+        return $this->site_name;
     }
 
     /**
@@ -2261,10 +2281,29 @@ class SiteSetting extends Model implements HasMedia
         return ! in_array($key, $this->homepage_sections_hidden ?? [], true);
     }
 
+    /**
+     * Logo witryny. Witryna w sieci bez własnego logo dziedziczy logo witryny głównej (i jej opis alternatywny,
+     * gdy sama go nie ma), dopóki administrator nie wgra własnego.
+     */
     public function logoUrl(): ?string
     {
-        return $this->getFirstMediaUrl('logo') ?: null;
+        $own = $this->getFirstMediaUrl('logo') ?: null;
+
+        if ($own !== null || ! $this->parent_site_id) {
+            return $own;
+        }
+
+        $parent = $this->relationLoaded('parentSite') ? $this->parentSite : static::query()->find($this->parent_site_id);
+
+        return $parent?->getFirstMediaUrl('logo') ?: null;
     }
+
+    /** Czy logo pochodzi z witryny głównej (witryna w sieci bez własnego pliku). */
+    public function usesInheritedLogo(): bool
+    {
+        return (bool) $this->parent_site_id && ! $this->getFirstMedia('logo') && $this->logoUrl() !== null;
+    }
+
 
     public function ogImageUrl(): ?string
     {

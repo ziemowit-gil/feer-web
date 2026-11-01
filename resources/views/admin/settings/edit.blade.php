@@ -2851,6 +2851,12 @@
                     @error('services_tabs') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
+                <label class="flex items-start gap-3 text-sm text-ink">
+                    <input type="hidden" name="courses_registration_enabled" value="0">
+                    <input type="checkbox" name="courses_registration_enabled" value="1" class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked($settings->coursesRegistrationEnabled())>
+                    <span><span class="font-bold">Zapisy online na szkolenia</span> <span class="block text-ink">Po wyłączeniu strona szkolenia pokazuje zamiast formularza zachętę do kontaktu, a wysłanie zgłoszenia jest zablokowane.</span></span>
+                </label>
+
                 <div class="space-y-3">
                     <p class="text-sm font-bold">Przycisk w nagłówku <span class="font-normal text-ink">(tylko FEER IS; zastępuje „Materiały edukacyjne”)</span></p>
                     <div class="grid gap-4 sm:grid-cols-2">

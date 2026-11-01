@@ -60,44 +60,6 @@
             </span>
         </a>
 
-        {{-- Przełącznik witryny (multisite, tylko admin) — ikonka; nazwa bieżącej witryny jest pod logo. --}}
-        @if ($adminSites->count() > 1)
-            <div class="nav-site relative flex-none" x-data="{ open: false }">
-                <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-haspopup="true"
-                        class="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
-                        :class="open && 'bg-gray-100 text-ink'"
-                        aria-label="Zmień witrynę (bieżąca: {{ $siteSettings->site_name }})" title="Witryna: {{ $siteSettings->site_name }}">
-                    <i class="fa-solid fa-sitemap text-xs" aria-hidden="true"></i>
-                </button>
-                <div x-show="open" x-cloak @click.outside="open = false" @keydown.escape.stop="open = false"
-                 class="absolute right-0 top-full z-50 mt-1 w-64 in-[.is-collapsed]:left-0 in-[.is-collapsed]:right-auto overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-xl"
-                 role="menu" aria-label="Wybierz witrynę">
-                @foreach ($adminSites as $adminSite)
-                    <form method="POST" action="{{ route('admin.witryny.przelacz', $adminSite) }}">
-                        @csrf
-                        <button type="submit" role="menuitem"
-                                class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none {{ $adminSite->is($siteSettings) ? 'font-bold text-brand-dark' : 'text-ink' }}">
-                            @if ($adminSite->parent_site_id)
-                                <i class="fa-solid fa-arrow-turn-up fa-rotate-90 ml-2 text-[0.65rem] text-gray-300" aria-hidden="true"></i>
-                            @else
-                                <i class="fa-solid fa-sitemap text-[0.7rem] text-gray-300" aria-hidden="true"></i>
-                            @endif
-                            <span class="truncate">{{ $adminSite->site_name }}</span>
-                            @if ($adminSite->is($siteSettings))
-                                <i class="fa-solid fa-check ml-auto text-xs" aria-hidden="true"></i>
-                                <span class="sr-only">(bieżąca)</span>
-                            @endif
-                        </button>
-                    </form>
-                @endforeach
-                <a href="{{ route('admin.witryny.index') }}" role="menuitem"
-                   class="mt-1 flex items-center gap-2 border-t border-gray-100 px-3 py-2 text-sm text-muted hover:bg-gray-50 hover:text-brand-dark">
-                    <i class="fa-solid fa-gear text-[0.7rem]" aria-hidden="true"></i> Zarządzaj witrynami
-                </a>
-            </div>
-            </div>
-        @endif
-
         {{-- Zwiń/rozwiń (desktop) --}}
         <button type="button" @click="$store.adminNav.toggleCollapsed()"
                 class="nav-collapse-btn hidden h-8 w-8 flex-none items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark lg:flex"
@@ -114,6 +76,55 @@
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
     </div>
+
+    {{-- ── Selektor witryny (sieć witryn, tylko admin): osobny wiersz pod logo, nazwa i rodzaj bieżącej witryny, lista
+         rozwijana w dół pod przyciskiem (nie wyjeżdża poza pasek). W zwężonej szynie zostaje sama ikona z podpowiedzią. --}}
+    @if ($adminSites->count() > 1)
+        @php $siteIsSub = (bool) $siteSettings->parent_site_id; @endphp
+        <div class="nav-site flex-none border-b border-gray-200 px-2 py-2" x-data="{ open: false }" @keydown.escape.stop="open = false" @click.outside="open = false">
+            <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-controls="nav-site-list"
+                    class="nav-site-btn flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+                    :class="open && 'bg-gray-100'"
+                    title="Witryna: {{ $siteSettings->site_name }}">
+                <span class="flex h-8 w-8 flex-none items-center justify-center rounded-lg {{ $siteIsSub ? 'bg-ink text-white' : 'bg-brand-light text-brand-dark' }}" aria-hidden="true">
+                    <i class="fa-solid {{ $siteIsSub ? 'fa-sitemap' : 'fa-house' }} text-xs"></i>
+                </span>
+                <span class="nav-label min-w-0 flex-1 leading-tight">
+                    <span class="block text-[10px] font-bold uppercase tracking-wide text-muted">Edytujesz</span>
+                    <span class="block truncate text-sm font-bold text-ink">{{ $siteSettings->site_name }}</span>
+                </span>
+                <i class="nav-label fa-solid fa-chevron-down text-xs text-gray-500 transition-transform" :class="open && 'rotate-180'" aria-hidden="true"></i>
+                <span class="sr-only">Zmień witrynę (bieżąca: {{ $siteSettings->site_name }}, {{ $siteIsSub ? 'witryna w sieci' : 'witryna główna' }})</span>
+            </button>
+            <div id="nav-site-list" x-show="open" x-cloak class="nav-site-list" role="group" aria-label="Wybierz witrynę">
+                <ul class="mt-1 space-y-0.5" role="list">
+                    @foreach ($adminSites as $adminSite)
+                        @php $isCurrent = $adminSite->is($siteSettings); @endphp
+                        <li>
+                            <form method="POST" action="{{ route('admin.witryny.przelacz', $adminSite) }}">
+                                @csrf
+                                <button type="submit" @if ($isCurrent) aria-current="true" @endif
+                                        class="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none {{ $isCurrent ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink' }} {{ $adminSite->parent_site_id ? 'pl-6' : '' }}">
+                                    <i class="fa-solid {{ $adminSite->parent_site_id ? 'fa-sitemap' : 'fa-house' }} w-4 text-center text-[0.7rem] {{ $isCurrent ? 'text-brand-dark' : 'text-gray-500' }}" aria-hidden="true"></i>
+                                    <span class="min-w-0 flex-1 truncate">{{ $adminSite->site_name }}</span>
+                                    @if ($isCurrent)<i class="fa-solid fa-check text-xs" aria-hidden="true"></i><span class="sr-only">(bieżąca)</span>@endif
+                                </button>
+                            </form>
+                        </li>
+                    @endforeach
+                </ul>
+                <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 border-t border-gray-100 px-2 pt-2 text-xs">
+                    <a href="{{ route('admin.wybor-witryny') }}" class="font-bold text-brand-dark hover:underline">Ekran wyboru</a>
+                    <a href="{{ route('admin.witryny.index') }}" class="font-bold text-brand-dark hover:underline">Zarządzaj witrynami</a>
+                    <a href="{{ route('admin.witryny.ustawienia') }}" class="font-bold text-brand-dark hover:underline">Przenieś ustawienia</a>
+                </div>
+            </div>
+        </div>
+        <style>
+            .admin-sidebar.is-collapsed .nav-site-list { display: none !important; }
+            .admin-sidebar.is-collapsed .nav-site-btn { justify-content: center; padding-left: .25rem; padding-right: .25rem; }
+        </style>
+    @endif
 
     {{-- ── Nawigacja: moduły jak w TYPO3 — najwyżej sześć grup głównych ──────────────
          Grupy rozwijają się pojedynczo (akordeon); aktywna grupa jest otwarta od razu. W zwężonej szynie

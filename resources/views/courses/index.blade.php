@@ -78,7 +78,7 @@
                                     · terminy wkrótce
                                 @endif
                             </p>
-                            <p class="mt-3 text-sm font-bold text-brand-dark" aria-hidden="true">Zobacz terminy i zapisz się →</p>
+                            <p class="mt-3 text-sm font-bold text-brand-dark" aria-hidden="true">{{ $siteSettings->coursesRegistrationEnabled() ? 'Zobacz terminy i zapisz się' : 'Zobacz program i terminy' }}</p>
                         </article>
                     </li>
                 @endforeach

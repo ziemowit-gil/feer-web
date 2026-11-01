@@ -48,9 +48,14 @@ class FeerIsLayoutSeeder extends Seeder
             'services_tabs' => $tabs ? implode("\n", $tabs) : null,
             'services_all_label' => 'Zobacz wszystkie szkolenia',
             'services_all_url' => $catalog ? '/'.$catalog->slug : null,
-            'is_cta_label' => 'Zapisz się',
+            'is_cta_label' => 'Zobacz szkolenia',
             'is_cta_url' => $catalog ? '/'.$catalog->slug : null,
         ], fn ($v) => $v !== null);
+
+        // Zapisy online na szkolenia na start wyłączone (włączenie: Ustawienia → Szablon → FEER IS); tylko gdy nikt tego nie ustawił.
+        if ($site->getAttribute('courses_registration_enabled') === null && \Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'courses_registration_enabled')) {
+            $values['courses_registration_enabled'] = false;
+        }
 
         $changed = [];
         foreach ($values as $column => $value) {

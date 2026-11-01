@@ -104,4 +104,23 @@ class SiteChooserTest extends TestCase
         $this->withSession(['admin_site_chosen' => true, 'admin_active_site_id' => $this->main->id])
             ->get(route('admin.podstrony.index'))->assertOk()->assertDontSee('href="https://szkolenia.example.test"', false);
     }
+
+    public function test_witryna_w_sieci_bez_logo_dziedziczy_logo_glownej(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $file = \Illuminate\Http\UploadedFile::fake()->image('logo.png', 120, 60);
+        $this->main->addMedia($file)->toMediaCollection('logo');
+        $this->main->forceFill(['logo_alt' => 'Logo Fundacji'])->save();
+
+        $sub = $this->sub->fresh();
+        $this->assertNotNull($sub->logoUrl());
+        $this->assertSame($this->main->fresh()->logoUrl(), $sub->logoUrl());
+        $this->assertTrue($sub->usesInheritedLogo());
+        $this->assertSame('Logo Fundacji', $sub->logoAltText());
+
+        $sub->forceFill(['logo_alt' => 'Własny opis'])->save();
+        $this->assertSame('Własny opis', $sub->fresh()->logoAltText());
+
+        $this->get('http://szkolenia.example.test/')->assertOk()->assertSee($this->main->fresh()->logoUrl(), false);
+    }
 }

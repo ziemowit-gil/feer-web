@@ -125,7 +125,7 @@ class FeerIsPortalSeedersTest extends TestCase
         $this->seed(FeerIsMenuSeeder::class);
         $html = $this->get('/test2')->assertOk()
             ->assertSee('Dla osób')->assertSee('Dla instytucji')->assertSee('Kursy i szkolenia otwarte')->assertSee('Szkolenia zamknięte')
-            ->assertSee('Zapisz się')->assertDontSee('Materiały edukacyjne')->assertDontSee('Nasze działania')
+            ->assertSee('Zobacz szkolenia')->assertDontSee('Materiały edukacyjne')->assertDontSee('Nasze działania')
             ->getContent();
         $this->assertStringContainsString('href="/test2/katalog-szkolen"', $html);
 
@@ -193,5 +193,20 @@ class FeerIsPortalSeedersTest extends TestCase
         $this->assertStringNotContainsString('<script', (string) $course->terms);
 
         $this->get(route('admin.kursy.edit', $course))->assertOk()->assertSee('Trener (z bazy prowadzących)')->assertSee('Warunki udziału');
+    }
+
+    public function test_zapisy_online_sa_domyslnie_wylaczone_w_is_i_mozna_je_wlaczyc(): void
+    {
+        $this->seed(FeerIsPortalSeeder::class);
+        $course = \App\Models\Course::withoutGlobalScopes()->where('slug', 'komputer-z-czytnikiem-ekranu')->sole();
+        $edition = $course->editions()->first();
+
+        $this->assertFalse($this->site->fresh()->coursesRegistrationEnabled());
+        $this->get('/test2/zajecia/komputer-z-czytnikiem-ekranu')->assertOk()
+            ->assertSee('Zapisy online są na razie wyłączone')->assertDontSee('Wybierz ten termin')->assertDontSee('name="first_name"', false);
+        $this->post('/test2/zajecia/komputer-z-czytnikiem-ekranu/zapis', ['edition_id' => $edition->id, 'first_name' => 'A', 'last_name' => 'B', 'email' => 'a@b.pl', 'consent' => 1])->assertNotFound();
+
+        $this->site->forceFill(['courses_registration_enabled' => true])->save();
+        $this->get('/test2/zajecia/komputer-z-czytnikiem-ekranu')->assertOk()->assertSee('Wybierz ten termin')->assertSee('name="first_name"', false);
     }
 }

@@ -53,6 +53,7 @@ class CourseController extends Controller
     public function register(Request $request, Course $course)
     {
         abort_unless($course && $course->status === 'active', 404);
+        abort_unless(\App\Models\SiteSetting::current()->coursesRegistrationEnabled(), 404);
 
         $data = $request->validate([
             'edition_id' => ['required', 'integer', Rule::exists('course_editions', 'id')->where('course_id', $course->id)],
