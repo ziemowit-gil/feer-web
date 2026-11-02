@@ -106,8 +106,13 @@ function start(config) {
         return block('subpages', { source: page ? 'page' : 'current', page, manual: picked.length > 0, picked, sort: o.sortowanie === 'alfabet' ? 'alfabet' : 'drzewo', depth: Number(o.poziomy) === 2 ? 2 : 1, layout });
     }
 
+    // fetch odrzuca obietnicę z angielskim komunikatem przeglądarki („Failed to fetch”) tylko przy błędzie sieci — pokazujemy go po polsku.
+    async function apiFetch(url, init) {
+        try { return await fetch(url, init); } catch (e) { throw new Error('Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.'); }
+    }
+
     async function postJson(url, data) {
-        const res = await fetch(url, {
+        const res = await apiFetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify(data),
@@ -317,6 +322,7 @@ function start(config) {
         settings: config.settings ? JSON.parse(JSON.stringify(config.settings.values)) : null,
         settingsDirty: false,
         dirty: dashConverted > 0,
+        rev: 0,                 // licznik zmian — zapis sprawdza, czy w jego trakcie ktoś jeszcze pisał
         saving: false,
         savedAt: null,
         error: null,
@@ -363,10 +369,18 @@ function start(config) {
     }
     function restore(json) {
         const data = JSON.parse(json);
+        // Przerysowanie płótna usuwa pole z kursorem — po cofnięciu/ponowieniu wracamy do zaznaczonego bloku (Ctrl+Z z klawiatury),
+        // żeby dało się pisać dalej zamiast zaczynać od początku strony.
+        const hadFocus = canvas.contains(document.activeElement);
+        const inNavigation = !!document.activeElement?.classList?.contains('be-block'); // tryb nawigacji: fokus na samym bloku
         S.title = data.title; S.meta = data.meta; S.blocks = data.blocks;
         if (S.selectedId && !find(S.selectedId)) S.selectedId = null;
         markDirty();
         renderAll();
+        if (hadFocus) {
+            const id = S.selectedId || S.blocks[0]?.id;
+            if (id) { if (inNavigation) selectBlock(id, { focusWrapper: true }); else focusBlock(id, 'end'); }
+        }
     }
     function undo() { if (!S.past.length) return; S.future.push(snapshot()); restore(S.past.pop()); announce('Cofnięto zmianę'); }
     function redo() { if (!S.future.length) return; S.past.push(snapshot()); restore(S.future.pop()); announce('Przywrócono zmianę'); }
@@ -470,6 +484,7 @@ function start(config) {
 
     function markDirty() {
         S.dirty = true;
+        S.rev++;
         S.error = null;
         scheduleDraft();
         scheduleWarnings();
@@ -972,6 +987,8 @@ function start(config) {
     function updateTopbar() {
         const focusedKey = topbar.contains(document.activeElement) ? document.activeElement.dataset.key : null;
         const count = [...S.warnings.values()].reduce((n, w) => n + w.length, 0);
+        // Nazwa przycisku jest też w aria-label: na wąskich ekranach tekst obok ikony jest ukryty, a przycisk nie może zostać bez nazwy.
+        const a11yLabel = count ? `Dostępność: ${count} ${plural(count, 'uwaga', 'uwagi', 'uwag')}` : 'Dostępność: OK';
         const saveLabel = S.saving ? 'Zapisywanie…' : (S.dirty || !S.savedAt ? 'Zapisz' : 'Zapisano');
         const status = S.error ? h('span', { class: 'be-status be-status--error', role: 'alert' }, icon('triangle-exclamation'), ' ', S.error)
             : h('span', { class: 'be-status' }, S.dirty ? 'Niezapisane zmiany' : (S.savedAt ? 'Zapisano o ' + S.savedAt : ''));
@@ -985,8 +1002,8 @@ function start(config) {
                 config.urls.history ? tbButton('Historia wersji', 'clock-rotate-left', openHistoryDialog) : null,
                 config.urls.templates ? tbButton('Dodaj z szablonu / Zarządzaj szablonami', 'layer-group', openTemplatesDialog) : null,
                 tbButton(config.urls.docx ? 'Importuj z pliku (DOCX, TXT)' : 'Importuj z pliku TXT', 'file-import', () => importInput.click()),
-                h('button', { type: 'button', 'data-key': 'a11y', class: 'be-btn be-a11y-btn' + (count ? ' has-issues' : ''), 'aria-pressed': String(S.panel === 'a11y'), onClick: () => togglePanel('a11y') },
-                    icon('universal-access'), h('span', {}, count ? `Dostępność: ${count} ${plural(count, 'uwaga', 'uwagi', 'uwag')}` : 'Dostępność: OK')),
+                h('button', { type: 'button', 'data-key': 'a11y', class: 'be-btn be-a11y-btn' + (count ? ' has-issues' : ''), 'aria-pressed': String(S.panel === 'a11y'), 'aria-label': a11yLabel, title: a11yLabel, onClick: () => togglePanel('a11y') },
+                    icon('universal-access'), h('span', {}, a11yLabel), count ? h('span', { class: 'be-a11y-count', 'aria-hidden': 'true' }, String(count)) : null),
             ),
             h('div', { class: 'be-topbar-center' },
                 h('span', { class: 'be-doc-title' }, S.title || 'Bez tytułu'),
@@ -1017,7 +1034,7 @@ function start(config) {
                 announce('Importowanie pliku…');
                 const fd = new FormData();
                 fd.append('docx', file);
-                const res = await fetch(config.urls.docx, { method: 'POST', body: fd, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' } });
+                const res = await apiFetch(config.urls.docx, { method: 'POST', body: fd, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' } });
                 const json = await res.json().catch(() => ({}));
                 if (!res.ok || json.error) throw new Error(json.error || json.message || 'Błąd serwera (' + res.status + ').');
                 blocks = htmlToBlocks(json.html || '');
@@ -1040,7 +1057,7 @@ function start(config) {
     // Szablony treści — to samo co „Dodaj z szablonu / Zarządzaj szablonami” w formularzu (admin/szablony).
     // Szablon z edytora blokowego ma bloki (i HTML do klasycznego); szablon z formularza — HTML zamieniany na bloki.
     async function templatesRequest(path = '', opts = {}) {
-        const res = await fetch(config.urls.templates.base + path, { ...opts, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) } });
+        const res = await apiFetch(config.urls.templates.base + path, { ...opts, headers: { Accept: 'application/json', 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) } });
         const json = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(Object.values(json.errors || {})[0]?.[0] || json.message || 'Błąd serwera (' + res.status + ').');
         return json;
@@ -1157,7 +1174,7 @@ function start(config) {
         dlg.showModal();
         let versions = [];
         try {
-            const res = await fetch(config.urls.history, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+            const res = await apiFetch(config.urls.history, { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
             if (!res.ok) throw new Error('HTTP ' + res.status);
             versions = await res.json();
         } catch (e) { error.textContent = 'Nie udało się wczytać historii: ' + e.message; }
@@ -1190,7 +1207,16 @@ function start(config) {
         if (S.panel === 'inserter') leftPanel.querySelector('input')?.focus();
         else if (S.panel) leftPanel.querySelector('button, a')?.focus();
     }
-    function closePanel() { S.panel = null; S.insertTarget = null; renderPanel(); updateTopbar(); }
+    // Przyciski w górnym pasku, które otwierają lewy panel — na nie wraca fokus po zamknięciu panelu (Esc albo „Zamknij panel”).
+    const PANEL_BUTTONS = { inserter: 'Dodaj blok', list: 'Widok listy', a11y: 'a11y' };
+    function closePanel() {
+        const name = S.panel;
+        const hadFocus = leftPanel.contains(document.activeElement);
+        S.panel = null; S.insertTarget = null; renderPanel(); updateTopbar();
+        // Pole z fokusem znika razem z panelem — bez tego fokus ląduje na początku dokumentu.
+        if (hadFocus && name) topbar.querySelector(`[data-key="${PANEL_BUTTONS[name]}"]`)?.focus();
+    }
+    leftPanel.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.panel) { e.preventDefault(); closePanel(); } });
 
     function renderPanel() {
         leftPanel.hidden = !S.panel;
@@ -1296,7 +1322,8 @@ function start(config) {
             return h('li', { class: pick ? 'be-list-row' : null }, pick,
                 h('button', {
                     type: 'button', 'aria-current': b.id === S.selectedId ? 'true' : null, class: 'be-list-item' + (b.id === S.selectedId ? ' is-current' : ''), style: `padding-left:${0.5 + depth * 1}rem`,
-                    onClick: () => { selectBlock(b.id, { focusWrapper: true }); wrapperOf(b.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); },
+                    // Płynne przewijanie tylko dla osób, które nie wyłączyły animacji w systemie (WCAG 2.3.3).
+                    onClick: () => { selectBlock(b.id, { focusWrapper: true }); wrapperOf(b.id)?.scrollIntoView({ block: 'center', behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); },
                 }, icon(d.icon), h('span', {}, d.title), label ? h('span', { class: 'be-list-sub' }, label) : null, S.warnings.has(b.id) ? h('span', { class: 'be-list-warn', 'aria-label': 'ma uwagi dostępności' }, icon('triangle-exclamation')) : null),
                 b.inner?.length ? build(b.inner, depth + 1) : null);
         }));
@@ -1447,12 +1474,17 @@ function start(config) {
         renderSidebar();
         updateTopbar();
     }
+    // Przyciski paska narzędzi bloku (bez pozycji rozwijanego menu); po przebudowie paska mają tę samą kolejność.
+    const toolButtons = () => [...toolbar.querySelectorAll('button')].filter((btn) => !btn.closest('.be-menu'));
     function rerenderBlock(id) {
         const r = find(id);
         const old = wrapperOf(id);
         if (!r || !old) { renderCanvas(); return; }
+        // Pasek narzędzi leży w przerysowywanym bloku: przycisk z fokusem (np. „Wyśrodkuj”) znika, więc wracamy na ten sam.
+        const toolAt = toolbar.contains(document.activeElement) ? toolButtons().indexOf(document.activeElement) : -1;
         old.replaceWith(renderBlock(r.block));
         applySelection();
+        if (toolAt >= 0) toolButtons()[toolAt]?.focus();
         scheduleWarnings();
     }
 
@@ -1888,7 +1920,14 @@ function start(config) {
                 label.addEventListener('focus', () => { S.buttonIndex = i; if (S.sidebarTab === 'block') renderSidebar(); });
                 return h('span', { class: 'cta-button be-cta' + (btn.variant !== 'brand' ? ' cta-' + btn.variant : '') }, label);
             }),
-            a.items.length < 6 ? h('button', { type: 'button', class: 'be-btn be-btn--icon be-btn--dark be-add-inline', 'aria-label': 'Dodaj przycisk', onClick: () => { updateAttrs(b, { items: [...a.items, { label: 'Przycisk', url: '', variant: 'brand', newTab: false }] }); S.buttonIndex = a.items.length - 1; renderSidebar(); } }, icon('plus')) : null);
+            a.items.length < 6 ? h('button', { type: 'button', class: 'be-btn be-btn--icon be-btn--dark be-add-inline', 'aria-label': 'Dodaj przycisk', onClick: () => {
+                updateAttrs(b, { items: [...a.items, { label: 'Przycisk', url: '', variant: 'brand', newTab: false }] });
+                S.buttonIndex = a.items.length - 1;
+                renderSidebar();
+                // Przycisk „Dodaj” znika przy przerysowaniu bloku — fokus przechodzi na napis nowego przycisku, który i tak trzeba zmienić.
+                const labels = wrapperOf(b.id)?.querySelectorAll('.be-button-label');
+                if (labels?.length) placeCaret(labels[labels.length - 1], false);
+            } }, icon('plus')) : null);
     }
 
     function detailsEditor(b) {
@@ -2464,7 +2503,8 @@ function start(config) {
         menu.replaceChildren(...items.map((it) => h('button', {
             type: 'button', role: 'menuitem', class: 'be-menu-item' + (it.danger ? ' is-danger' : ''), tabindex: '-1',
             onMousedown: (e) => e.preventDefault(),
-            onClick: () => { close(); it.onClick(); },
+            // Fokus wraca na przycisk menu (inaczej znika razem z zamykanym menu); działania, które same ustawiają fokus, nadpisują to.
+            onClick: () => { close(true); it.onClick(); },
         }, icon(it.icon), h('span', {}, it.label), it.shortcut ? h('kbd', {}, it.shortcut) : null)));
         menu.addEventListener('keydown', (e) => {
             const all = [...menu.querySelectorAll('[role=menuitem]')];
@@ -2612,13 +2652,17 @@ function start(config) {
         sidebar.hidden = !S.sidebarOpen;
         mount.classList.toggle('has-sidebar', S.sidebarOpen);
         if (!S.sidebarOpen) return;
+        // Przerysowanie panelu usuwa kontrolkę z fokusem (np. pole wyboru zmieniane strzałką z klawiatury) — wracamy na tę samą pozycję.
+        const controls = () => [...sidebar.querySelectorAll('button, input, select, textarea, a[href], summary')];
+        const focusedAt = sidebar.contains(document.activeElement) ? controls().indexOf(document.activeElement) : -1;
         const b = S.selectedId ? find(S.selectedId)?.block : null;
         const tab = (key, label) => h('button', { type: 'button', role: 'tab', class: 'be-tab', 'aria-selected': String(S.sidebarTab === key), onClick: () => { S.sidebarTab = key; renderSidebar(); sidebar.querySelector('[role=tab][aria-selected=true]')?.focus(); } }, label);
         sidebar.replaceChildren(
             h('div', { class: 'be-panel-head' },
                 h('div', { class: 'be-tabs', role: 'tablist', 'aria-label': 'Ustawienia' }, tab('page', L.kind), tab('block', 'Blok')),
-                h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': 'Zamknij ustawienia', onClick: () => { S.sidebarOpen = false; renderSidebar(); updateTopbar(); } }, icon('xmark'))),
+                h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': 'Zamknij ustawienia', onClick: () => { S.sidebarOpen = false; renderSidebar(); updateTopbar(); topbar.querySelector('[data-key="Ustawienia"]')?.focus(); } }, icon('xmark'))),
             h('div', { class: 'be-panel-body', role: 'tabpanel' }, S.sidebarTab === 'page' ? pageSettings() : (b ? blockSettings(b) : h('p', { class: 'be-muted' }, 'Zaznacz blok, aby zobaczyć jego ustawienia.'))));
+        if (focusedAt >= 0) { const all = controls(); all[Math.min(focusedAt, all.length - 1)]?.focus(); }
     }
 
     function pageSettings() {
@@ -3315,7 +3359,7 @@ function start(config) {
             fd.append('file', file);
             announce('Przesyłanie: ' + file.name);
             try {
-                const res = await fetch(config.urls.upload, { method: 'POST', body: fd, headers: { 'X-CSRF-TOKEN': CSRF, Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                const res = await apiFetch(config.urls.upload, { method: 'POST', body: fd, headers: { 'X-CSRF-TOKEN': CSRF, Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
                 const json = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(json.errors?.file?.[0] || json.message || 'Nie udało się przesłać pliku.');
                 out.push({ url: json.url, name: file.name, alt: '', id: json.id });
@@ -3432,8 +3476,9 @@ function start(config) {
         S.saving = true;
         S.error = null;
         updateTopbar();
+        const rev = S.rev;
         try {
-            const res = await fetch(config.urls.save, {
+            const res = await apiFetch(config.urls.save, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' },
                 body: JSON.stringify({
@@ -3446,7 +3491,9 @@ function start(config) {
             if (res.status === 419) throw new Error('Sesja wygasła. Skopiuj zmiany i odśwież stronę.');
             if (!res.ok) throw new Error(Object.values(json.errors || {})[0]?.[0] || json.message || 'Nie udało się zapisać zmian.');
             await saveNewsSettings();
-            S.dirty = false;
+            // Zmiany wprowadzone w trakcie zapisu nie były w wysłanych danych — zostają „niezapisane” i w kopii roboczej.
+            const untouched = S.rev === rev;
+            if (untouched) S.dirty = false;
             if (json.settings) {
                 const wasRequested = S.settings?.is_published && !draft;
                 S.settings = json.settings;
@@ -3459,8 +3506,8 @@ function start(config) {
                 if (S.sidebarTab === 'page') renderSidebar();
             }
             S.savedAt = json.saved_at || new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-            clearDraft();
-            announce('Zapisano zmiany');
+            if (untouched) clearDraft();
+            announce(untouched ? 'Zapisano zmiany' : 'Zapisano. Zmiany wprowadzone w trakcie zapisu nie są jeszcze zapisane — zapisz ponownie.');
         } catch (e) {
             S.error = e.message || 'Nie udało się zapisać zmian.';
         } finally {

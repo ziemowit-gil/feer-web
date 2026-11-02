@@ -72,6 +72,10 @@
 .be-btn[aria-pressed="true"] { background: var(--be-ink); color: #fff; }
 .be-btn--primary { background: var(--be-ui); color: #fff; }
 .be-btn--primary:hover { background: var(--be-ui-dark); color: #fff; }
+/* Stan wyłączony nadpisuje kolor tekstu na --be-muted, co na niebieskim tle daje ~1,1:1. Zapis w toku (aria-disabled)
+   zostaje ciemnoniebieski z białym napisem „Zapisywanie…” (ok. 9,9:1), a przycisk wyłączony (disabled) jest szary na jasnym tle (ok. 6,7:1). */
+.be-btn--primary[aria-disabled="true"], .be-btn--primary[aria-disabled="true"]:hover { background: var(--be-ui-dark); color: #fff; cursor: progress; }
+.be-btn--primary:disabled, .be-btn--primary:disabled:hover { background: var(--be-bg); color: var(--be-muted); }
 .be-btn--primary-soft { background: var(--be-ui); color: #fff; }
 .be-btn--primary-soft:hover { background: var(--be-ui-dark); color: #fff; }
 .be-btn--secondary { border-color: var(--be-ui); color: var(--be-ui); background: #fff; }
@@ -86,6 +90,8 @@
 .be-a11y-btn.has-issues { border-color: var(--be-warn); color: var(--be-warn); background: var(--be-warn-bg); }
 .be-a11y-btn.has-issues:hover { background: #fef3c7; color: var(--be-warn); }
 .be-a11y-btn[aria-pressed="true"] { background: var(--be-ink); color: #fff; border-color: var(--be-ink); }
+/* Liczba uwag obok ikony — widoczna tylko na wąskich ekranach, gdzie tekst przycisku jest ukryty (nazwę niesie aria-label). */
+.be-a11y-count { display: none; }
 .be-w-full { width: 100%; }
 .be-mt { margin-top: 0.75rem; }
 
@@ -126,6 +132,7 @@
     .be-panel--left { left: 0; }
     .be-panel--right { right: 0; }
     .be-btn-text, .be-a11y-btn span, .be-topbar-center, .be-status:not(.be-status--error) { display: none; }
+    .be-a11y-btn .be-a11y-count { display: inline; font-weight: 700; }
 }
 @media (max-width: 560px) {
     .be-topbar { gap: 0.25rem; padding: 0 0.25rem; }

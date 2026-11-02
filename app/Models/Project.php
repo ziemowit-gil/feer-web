@@ -300,7 +300,7 @@ class Project extends Model implements HasMedia
 
         // Bloki edytora blokowego są aktualne tylko razem z `content` — zmiana treści gdzie indziej je unieważnia.
         static::saving(function (Project $project) {
-            if ($project->exists && $project->isDirty('content') && ! $project->isDirty('blocks') && $project->blocks !== null) {
+            if ($project->blocksAreStale()) {
                 $project->blocks = null;
             }
         });

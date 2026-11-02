@@ -122,7 +122,7 @@ class News extends Model implements HasMedia
     protected static function booted(): void
     {
         static::saving(function (News $news) {
-            if ($news->exists && $news->isDirty('content') && ! $news->isDirty('blocks') && $news->blocks !== null) {
+            if ($news->blocksAreStale()) {
                 $news->blocks = null;
             }
         });

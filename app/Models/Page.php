@@ -396,7 +396,7 @@ class Page extends Model
     protected static function booted(): void
     {
         static::saving(function (Page $page) {
-            if ($page->exists && $page->isDirty('content') && ! $page->isDirty('blocks') && $page->blocks !== null) {
+            if ($page->blocksAreStale()) {
                 $page->blocks = null;
             }
 

@@ -408,12 +408,17 @@ class BlockEditorController extends Controller
         $typeColumns = $this->typeColumns($request, $record);
         $settings = $this->settingsColumns($request, $record);
 
-        $record->update($settings + $typeColumns + [
+        $attributes = $settings + $typeColumns + [
             'title' => $data['title'],
             'meta_description' => $data['meta_description'] ?? null,
             'blocks' => $blocks,
             'content' => BlockRenderer::render($blocks),
-        ]);
+        ];
+        // `content` pochodzi tu z `blocks`, więc zapis nie może ich unieważnić (hook modeli) — nawet gdy zmienił się
+        // tylko wyrenderowany HTML (np. po zmianie renderera), a bloki zostały te same.
+        in_array(\App\Models\Concerns\HasBlockContent::class, class_uses_recursive($record), true)
+            ? $record->updateFromBlockEditor($attributes)
+            : $record->update($attributes);
         $this->applyNewsImage($request, $record);
 
         return response()->json([
