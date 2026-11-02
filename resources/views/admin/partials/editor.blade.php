@@ -26,6 +26,7 @@
         'green' => '<p><a href="#" class="cta-button cta-green">Przycisk</a></p><p>&nbsp;</p>',
         // Wstawki wspólne z edytorem blokowym (App\Support\ClassicInserts).
         'bip' => \App\Support\ClassicInserts::SNIPPETS['bip']['html'].'<p>&nbsp;</p>',
+        'partnerEvent' => \App\Support\ClassicInserts::SNIPPETS['partnerEvent']['html'].'<p>&nbsp;</p>',
         'accentLeft' => \App\Support\ClassicInserts::SNIPPETS['accentLeft']['html'].'<p>&nbsp;</p>',
         'accentRight' => \App\Support\ClassicInserts::SNIPPETS['accentRight']['html'].'<p>&nbsp;</p>',
         'table' => '<table><caption>Opis tabeli</caption><thead><tr><th scope="col">Kolumna 1</th><th scope="col">Kolumna 2</th><th scope="col">Kolumna 3</th></tr></thead><tbody><tr><th scope="row">Wiersz 1</th><td>Dane</td><td>Dane</td></tr><tr><th scope="row">Wiersz 2</th><td>Dane</td><td>Dane</td></tr></tbody></table><p>&nbsp;</p>',
@@ -105,6 +106,7 @@
                 <button type="button" id="{{ $editorId }}-block-new-callout" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-circle-info w-4 text-center" aria-hidden="true"></i> Ramka informacyjna…</button>
             @endif
             <button type="button" data-insert-key="bip" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-landmark w-4 text-center text-muted" aria-hidden="true"></i> Więcej informacji w BIP</button>
+            <button type="button" data-insert-key="partnerEvent" @click="open = false" class="{{ $mi }}"><i class="fa-solid fa-handshake w-4 text-center" style="color:#b45309" aria-hidden="true"></i> Wydarzenie partnera</button>
             <hr class="my-1 border-gray-100" role="separator">
             {{-- Układ --}}
             @if ($useCkEditor)
@@ -1985,7 +1987,7 @@
                     },
                     elementpath: false,
                     placeholder: 'Tu wpisz tekst…',
-                    content_style: '.content-links-shortcode{background:#e8f0ff;color:#1752bf;padding:.75rem 1rem;border-radius:.5rem;font-family:ui-monospace,monospace;font-size:.85em}.content-links-shortcode::before{content:attr(data-summary);display:block;margin-bottom:.25rem;font-family:Montserrat,system-ui,sans-serif;font-weight:700;font-size:1.05em;color:#1a1a1a}.sr-only{position:static!important;display:inline!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;white-space:normal!important;background:#ede9fe;outline:2px dashed #7c3aed;padding:1px 4px;border-radius:2px}.sr-only::before{content:"⦿ ";color:#7c3aed;font-weight:700;font-size:.75em;letter-spacing:.02em}',
+                    content_style: '.partner-event-box{background:#fff4e0 url("/img/partner-event-bg.svg") no-repeat right center/auto 100%;border-left:6px solid #ea8f00;border-radius:.75rem;padding:1.25rem 9rem 1.25rem 1.5rem;margin:1.5rem 0;color:#451a03}.content-links-shortcode{background:#e8f0ff;color:#1752bf;padding:.75rem 1rem;border-radius:.5rem;font-family:ui-monospace,monospace;font-size:.85em}.content-links-shortcode::before{content:attr(data-summary);display:block;margin-bottom:.25rem;font-family:Montserrat,system-ui,sans-serif;font-weight:700;font-size:1.05em;color:#1a1a1a}.sr-only{position:static!important;display:inline!important;width:auto!important;height:auto!important;overflow:visible!important;clip:auto!important;white-space:normal!important;background:#ede9fe;outline:2px dashed #7c3aed;padding:1px 4px;border-radius:2px}.sr-only::before{content:"⦿ ";color:#7c3aed;font-weight:700;font-size:.75em;letter-spacing:.02em}',
                     // Autozapis roboczy w przeglądarce — po awarii można przywrócić wersję.
                     autosave_interval: '20s',
                     autosave_restore_when_empty: false,
@@ -2077,6 +2079,7 @@
                                     // „Ramka informacyjna” z kreatora bloków zastępuje stare ramki (tekst z ramką, notatka, ważne info).
                                     ...(@js(in_array('callout', $newBlockTypes, true)) ? [{ type: 'menuitem', text: 'Ramka informacyjna…', icon: 'info', onAction: function () { newBlock('callout'); } }] : []),
                                     { type: 'menuitem', text: 'Więcej informacji w BIP', onAction: function () { editor.insertContent(snippets.bip); } },
+                                    { type: 'menuitem', text: 'Wydarzenie partnera', onAction: function () { editor.insertContent(snippets.partnerEvent); } },
                                     { type: 'separator' },
                                     // Układ
                                     { type: 'menuitem', text: 'Układ 2 kolumn', onAction: function () { editor.insertContent(columnsHtml); } },
