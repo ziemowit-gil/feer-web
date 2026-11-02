@@ -1,5 +1,6 @@
-{{-- Dekoracyjne tło stron „przerwa techniczna” i „w budowie”: plan na niebieskiej siatce, żuraw, koła zębate, klucz.
-     Kolory z palety witryny (--brand*), ruch tylko gdy użytkownik go nie wyłączył. --}}
+{{-- Dekoracyjne tło stron „przerwa techniczna”, „w budowie” i „wgrywamy nową wersję” (503): plan na niebieskiej siatce, żuraw, koła zębate, klucz.
+     Kolory z palety witryny (--brand*), ruch tylko gdy użytkownik go nie wyłączył.
+     Parametr $backdropLabel (opcjonalny) to podpis przy wymiarze na planie; domyślnie „w budowie”. --}}
 <style>
     .cb-backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
     .cb-backdrop svg { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -56,7 +57,7 @@
             <path d="M60 300V520M50 300h20M50 520h20"/>
         </g>
         <g fill="var(--brand-dark)" fill-opacity=".45" font-family="Montserrat, system-ui, sans-serif" font-size="16" font-weight="700">
-            <text x="470" y="728">w budowie</text>
+            <text x="470" y="728">{{ $backdropLabel ?? 'w budowie' }}</text>
         </g>
     </svg>
 </div>
