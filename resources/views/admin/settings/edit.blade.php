@@ -874,6 +874,47 @@
             </div>
 
             <div class="border-t border-gray-100 pt-6">
+                <h2 class="text-base font-bold text-ink">Ramka z komunikatem</h2>
+                <p class="mt-1 text-xs text-muted">Krótka, wyróżniona informacja widoczna dla odwiedzających na stronie głównej i/lub w Kontakcie (np. zmiana godzin pracy, przerwa urlopowa).</p>
+                <label class="mt-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm">
+                    <input type="checkbox" name="notice_enabled" value="1" @checked(old('notice_enabled', $settings->notice_enabled))
+                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    <span class="font-bold text-sky-900">Pokaż ramkę z komunikatem</span>
+                </label>
+                <div class="mt-4 grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label for="notice_title" class="mb-1 block text-sm font-bold">Nagłówek (opcjonalny)</label>
+                        <input type="text" id="notice_title" name="notice_title" maxlength="120" value="{{ old('notice_title', $settings->notice_title) }}"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @error('notice_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="notice_style" class="mb-1 block text-sm font-bold">Wygląd</label>
+                        <select id="notice_style" name="notice_style" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            @foreach (\App\Models\SiteSetting::NOTICE_STYLES as $key => $label)
+                                <option value="{{ $key }}" @selected(old('notice_style', $settings->notice_style ?: 'info') === $key)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label for="notice_text" class="mb-1 block text-sm font-bold">Treść komunikatu</label>
+                    <textarea id="notice_text" name="notice_text" rows="3" maxlength="1000"
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('notice_text', $settings->notice_text) }}</textarea>
+                    @error('notice_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <fieldset class="mt-4">
+                    <legend class="mb-1 text-sm font-bold">Gdzie pokazać</legend>
+                    <label class="mr-6 inline-flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="notice_on_home" value="1" @checked(old('notice_on_home', $settings->notice_on_home ?? true)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Strona główna
+                    </label>
+                    <label class="inline-flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="notice_on_contact" value="1" @checked(old('notice_on_contact', $settings->notice_on_contact ?? true)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark"> Kontakt
+                    </label>
+                </fieldset>
+            </div>
+
+            <div class="border-t border-gray-100 pt-6">
                 <h2 class="text-base font-bold text-ink">Tryb konserwacji (przerwa techniczna)</h2>
                 <p class="mt-1 text-xs text-muted">Po włączeniu zwykli użytkownicy zobaczą komunikat o przerwie technicznej. Zalogowani administratorzy dalej mają dostęp do panelu i strony, aby móc wyłączyć tryb.</p>
 

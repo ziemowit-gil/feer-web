@@ -474,6 +474,7 @@ class SiteSetting extends Model implements HasMedia
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
         'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
         'site_url', 'maintenance_mode', 'maintenance_message', 'under_construction', 'under_construction_message',
+        'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'google_login_enabled', 'google_client_id', 'google_client_secret',
         'member_login_enabled', 'member_allowed_domains', 'metka_mode', 'metka_types', 'metka_entity', 'metka_show_entity', 'metka_shared_accounts', 'sso_enabled', 'sso_only_login', 'passkey_login_enabled', 'sso_name', 'sso_issuer', 'sso_client_id', 'sso_client_secret', 'sso_scopes', 'ai_enabled', 'ai_api_key', 'ai_model', 'menu_highlight_color', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'cleantalk_enabled', 'cleantalk_access_key', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
@@ -759,6 +760,9 @@ class SiteSetting extends Model implements HasMedia
         'logo_only' => 'boolean',
         'maintenance_mode' => 'boolean',
         'under_construction' => 'boolean',
+        'notice_enabled' => 'boolean',
+        'notice_on_home' => 'boolean',
+        'notice_on_contact' => 'boolean',
         'microsoft_login_enabled' => 'boolean',
         'microsoft_only_login' => 'boolean',
         'microsoft_client_secret' => 'encrypted',
@@ -1747,6 +1751,17 @@ class SiteSetting extends Model implements HasMedia
 
     /** Domyślny tekst strony „dopiero tworzymy”, gdy admin nie podał własnego. */
     public const DEFAULT_UNDER_CONSTRUCTION_MESSAGE = 'Dopiero tworzymy tę witrynę. Pracujemy nad treściami i już wkrótce będzie tu można znaleźć więcej informacji. Zapraszamy za jakiś czas.';
+
+    /** Style ramki z komunikatem (kontrast tekstu ≥ 4,5:1 w każdym). */
+    public const NOTICE_STYLES = ['info' => 'Informacja (niebieska)', 'warning' => 'Ważne (pomarańczowa)'];
+
+    /** Czy ramka z komunikatem ma się pokazać w miejscu $place ('home' albo 'contact'). */
+    public function showsNoticeOn(string $place): bool
+    {
+        return (bool) $this->notice_enabled
+            && filled(trim(strip_tags((string) $this->notice_text)))
+            && (bool) ($place === 'home' ? $this->notice_on_home : $this->notice_on_contact);
+    }
 
     public function underConstructionMessage(): string
     {

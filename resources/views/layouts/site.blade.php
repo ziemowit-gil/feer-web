@@ -169,6 +169,8 @@
 
         @include('partials.feer-bands-sitewide', ['where' => 'site_top'])
 
+        @include('partials.site-notice')
+
         @yield('content')
 
         @php $metkaFor = $metkaPage ?? ($page ?? (isset($project) && $project instanceof \App\Models\Project && request()->routeIs('projects.show') ? $project : null)); @endphp
