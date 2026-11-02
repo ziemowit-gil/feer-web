@@ -34,7 +34,7 @@ class BlockRenderer
     ];
 
     public const TYPES = [
-        'paragraph', 'heading', 'list', 'quote', 'image', 'gallery', 'buttons', 'callout',
+        'paragraph', 'heading', 'list', 'quote', 'image', 'gallery', 'buttons', 'callout', 'partnerevent',
         'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist', 'banner', 'imagebanner', 'materials',
     ];
 
@@ -125,6 +125,7 @@ class BlockRenderer
                 ), fn ($item) => trim(strip_tags($item)) !== '')),
             ],
             'quote' => ['text' => $rich('text'), 'cite' => $rich('cite', 500)],
+            'partnerevent' => ['text' => $rich('text')],
             'image' => [
                 'url' => self::url($str('url')),
                 'alt' => $str('alt', 500),
@@ -156,7 +157,7 @@ class BlockRenderer
                     array_slice(is_array($a['items'] ?? null) ? $a['items'] : [], 0, 6)
                 ), fn ($btn) => $btn && $btn['label'] !== '')),
             ],
-            'callout' => ['variant' => $pick('variant', ['box', 'note', 'important', 'partner'], 'box')],
+            'callout' => ['variant' => $pick('variant', ['box', 'note', 'important'], 'box')],
             'columns' => ['ratio' => $pick('ratio', ['50-50', '33-67', '67-33', 'equal'], 'equal')],
             'details' => ['summary' => $str('summary', 300), 'open' => (bool) ($a['open'] ?? false)],
             'table' => [
@@ -285,6 +286,9 @@ class BlockRenderer
 
                 return '<figure class="content-quote"><blockquote><p>'.$a['text'].'</p></blockquote>'.$cite.'</figure>';
 
+            case 'partnerevent':
+                return '<div class="partner-event-box"><p><strong>Wydarzenie partnera</strong></p><p>'.$a['text'].'</p></div>';
+
             case 'image':
                 if ($a['url'] === '') {
                     return '';
@@ -328,7 +332,7 @@ class BlockRenderer
                 if ($body === '') {
                     return '';
                 }
-                $class = ['box' => 'content-box', 'note' => 'content-note', 'important' => 'content-important', 'partner' => 'partner-event-box'][$a['variant']];
+                $class = ['box' => 'content-box', 'note' => 'content-note', 'important' => 'content-important'][$a['variant']];
 
                 return '<div class="'.$class.'">'.$body.'</div>';
 

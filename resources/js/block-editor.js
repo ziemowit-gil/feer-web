@@ -211,6 +211,7 @@ function start(config) {
         imagebanner: { title: 'Baner graficzny', icon: 'rectangle-ad', cat: 'design', desc: 'Gotowa grafika z tekstem na całą szerokość, zwykle jako link (np. „Zarezerwuj termin”). Kilka pod rzędem tworzy listę banerów.', keywords: ['baner', 'banner', 'grafika', 'reklama', 'link', 'kafel', 'promocja'], create: () => ({ url: '', alt: '', href: '', newTab: false, width: 0, height: 0 }) },
         // Stara ramka (content-box/-note/-important): nie do wstawiania — zastąpiła ją „Ramka informacyjna” z kreatora;
         // zostaje, by istniejące ramki dało się dalej edytować i rozgrupować.
+        partnerevent: { title: 'Ramka partnera', icon: 'handshake', cat: 'design', desc: 'Pomarańczowa ramka z grafiką: wydarzenie innego organizatora, kontakt do niego i informacja, że nie jesteśmy organizatorem.', keywords: ['ramka', 'partner', 'organizator', 'wydarzenie', 'uwaga', 'komunikat'], create: () => ({ text: 'Jeżeli masz pytania, skontaktuj się z… (organizator, e-mail lub telefon). Nie jesteśmy organizatorem tego wydarzenia.' }) },
         callout: { title: 'Ramka (stara)', icon: 'rectangle-list', cat: 'design', desc: 'Wyróżniona treść: ramka, notatka/ostrzeżenie albo ważna informacja.', keywords: ['ważne', 'uwaga', 'notatka', 'ostrzeżenie', 'box'], hidden: true, container: true, create: () => ({ variant: 'box' }), inner: () => [block('paragraph')] },
         columns: { title: 'Kolumny', icon: 'table-columns', cat: 'design', desc: 'Treść obok siebie (na telefonie jedna pod drugą).', keywords: ['układ', 'dwie kolumny', 'grid'], container: true, create: () => ({ ratio: 'equal' }), inner: () => [block('column'), block('column')] },
         column: { title: 'Kolumna', icon: 'square', cat: 'design', desc: 'Jedna kolumna układu.', container: true, hidden: true, create: () => ({}), inner: () => [block('paragraph')] },
@@ -304,10 +305,7 @@ function start(config) {
     PATTERNS.push({ title: 'Materiały dla grupy', desc: 'Baner sekcji i karty materiałów edukacyjnych.', build: () => [block('banner', { title: 'Materiały edukacyjne', size: 'small', tone: 'brand' }), block('materials')] });
 
     // Wstawki HTML z klasycznego edytora (BIP, sekcje akcentu) i ramki z wydarzeniem — jako bloki „Własny HTML”.
-    PATTERNS.push({ title: 'Wydarzenie partnera', desc: 'Pomarańczowa ramka z grafiką: nie jesteśmy organizatorem, pytania do organizatora.', build: () => [block('callout', { variant: 'partner' }, [
-        block('paragraph', { text: '<strong>Wydarzenie partnera</strong>' }),
-        block('paragraph', { text: 'Jeżeli masz pytania, skontaktuj się z… (organizator, e-mail lub telefon). Nie jesteśmy organizatorem tego wydarzenia.' }),
-    ])] });
+    PATTERNS.push({ title: 'Ramka partnera', desc: 'Pomarańczowa ramka z grafiką: nie jesteśmy organizatorem, pytania do organizatora.', build: () => [block('partnerevent')] });
     (CI.snippets || []).filter((sn) => sn.key !== 'partnerEvent').forEach((sn) => PATTERNS.push({ title: sn.title, desc: sn.desc + ' (jak w klasycznym edytorze)', build: () => [block('html', { html: sn.html })] }));
     (CI.schedules || []).forEach((sc) => PATTERNS.push({ title: 'Przycisk CTA do harmonogramu: ' + sc.title, desc: 'Przycisk prowadzący do strony harmonogramu.', build: () => [block('buttons', { items: [{ label: sc.title, url: sc.url, variant: 'brand', newTab: false }] })] }));
     (CI.events || []).forEach((ev) => PATTERNS.push({ title: 'Ramka z wydarzeniem: ' + ev.title, desc: 'Termin, miejsce i przycisk do wydarzenia.', build: () => [block('html', { html: ev.html })] }));
@@ -774,8 +772,11 @@ function start(config) {
                 cols.forEach((c) => { if (!c.inner.length) c.inner.push(block('paragraph')); });
                 const ratio = (n.className.match(/content-columns--(33-67|67-33)/) || [])[1] || 'equal';
                 if (cols.length) out.push(block('columns', { ratio }, cols.slice(0, 4)));
-            } else if (tag === 'DIV' && (cls.contains('content-box') || cls.contains('content-note') || cls.contains('content-important') || cls.contains('partner-event-box'))) {
-                const variant = cls.contains('content-note') ? 'note' : (cls.contains('content-important') ? 'important' : (cls.contains('partner-event-box') ? 'partner' : 'box'));
+            } else if (tag === 'DIV' && cls.contains('partner-event-box')) {
+                const ps = n.querySelectorAll('p');
+                out.push(block('partnerevent', { text: cleanInline((ps.length > 1 ? ps[ps.length - 1] : n).innerHTML) }));
+            } else if (tag === 'DIV' && (cls.contains('content-box') || cls.contains('content-note') || cls.contains('content-important'))) {
+                const variant = cls.contains('content-note') ? 'note' : (cls.contains('content-important') ? 'important' : 'box');
                 const inner = nodesToBlocks([...n.childNodes]);
                 out.push(block('callout', { variant }, inner.length ? inner : [block('paragraph')]));
             } else if (tag === 'DIV' && cls.contains('content-imagebanner') && n.querySelector('img')) {
@@ -1422,6 +1423,7 @@ function start(config) {
                 }
                 case 'list': a.items.forEach(linkCheck); break;
                 case 'quote': linkCheck(a.text); break;
+                case 'partnerevent': linkCheck(a.text); break;
                 case 'image':
                     if (a.url && !a.decorative && !a.alt.trim()) w.push('Obraz nie ma tekstu alternatywnego. Opisz go albo oznacz jako dekoracyjny.');
                     if (a.alt && /^(zdjęcie|obraz|grafika|img|image|foto)[\s_-]*\d*(\.\w+)?$/i.test(a.alt.trim())) w.push('Tekst alternatywny nic nie mówi o obrazie. Opisz, co na nim widać.');
@@ -1808,11 +1810,14 @@ function start(config) {
         quote: (b) => h('figure', { class: 'content-quote' },
             h('blockquote', {}, richField(b, 'text', { tag: 'p', placeholder: 'Treść cytatu', lineBreak: true, mergeable: false, label: 'Treść cytatu' })),
             richField(b, 'cite', { tag: 'figcaption', placeholder: 'Autor cytatu (opcjonalnie)', lineBreak: true, label: 'Autor cytatu' })),
+        partnerevent: (b) => h('div', { class: 'partner-event-box' },
+            h('p', {}, h('strong', {}, 'Wydarzenie partnera')),
+            richField(b, 'text', { tag: 'p', placeholder: 'Kontakt do organizatora', lineBreak: true, mergeable: false, label: 'Treść ramki partnera' })),
         list: (b) => listEditor(b),
         image: (b) => imageEditor(b),
         gallery: (b) => galleryEditor(b),
         buttons: (b) => buttonsEditor(b),
-        callout: (b) => h('div', { class: { box: 'content-box', note: 'content-note', important: 'content-important', partner: 'partner-event-box' }[b.attrs.variant] }, innerList(b)),
+        callout: (b) => h('div', { class: { box: 'content-box', note: 'content-note', important: 'content-important' }[b.attrs.variant] }, innerList(b)),
         columns: (b) => h('div', { class: `content-columns content-columns--${b.inner.length}` + (b.attrs.ratio !== 'equal' && b.inner.length === 2 ? ' content-columns--' + b.attrs.ratio : '') }, ...b.inner.map(renderBlock)),
         column: (b) => h('div', { class: 'content-column' }, innerList(b)),
         details: (b) => detailsEditor(b),
@@ -2946,7 +2951,7 @@ function start(config) {
                     } }, icon('trash'), ' Usuń przycisk') : null)));
                 break;
             case 'callout':
-                parts.push(panelSection('Rodzaj ramki', field('Styl', select(a.variant, [['box', 'Ramka (szare tło)'], ['note', 'Notatka / ostrzeżenie (pomarańczowe tło)'], ['important', 'Ważna informacja (niebieskie tło)'], ['partner', 'Wydarzenie partnera (pomarańczowa, z grafiką)']], (v) => set({ variant: v })))));
+                parts.push(panelSection('Rodzaj ramki', field('Styl', select(a.variant, [['box', 'Ramka (szare tło)'], ['note', 'Notatka / ostrzeżenie (pomarańczowe tło)'], ['important', 'Ważna informacja (niebieskie tło)']], (v) => set({ variant: v })))));
                 break;
             case 'columns': {
                 const setCount = (n) => {
