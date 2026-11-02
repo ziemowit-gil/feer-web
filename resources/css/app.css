@@ -965,13 +965,13 @@ html.contrast .content-banner { background: #fff; outline: 2px solid currentColo
 .proj-nav-item[aria-current] > i, .proj-nav-item:hover > i { color: var(--color-brand-dark, #1752bf); }
 
 
-/* „Wydarzenie partnera” wstawiane z edytora: pomarańczowa ramka z grafiką po prawej (tło dekoracyjne, tekst ink-brązowy
+/* „Wydarzenie partnera” wstawiane z edytora: pomarańczowa ramka z grafiką współpracy po prawej (tło dekoracyjne, tekst ink-brązowy
    #451A03 na #FFF4E0 ≈ 14:1; grafika nie zachodzi pod tekst dzięki paddingowi, na wąskich ekranach znika). */
 .prose .partner-event-box,
 .partner-event-box {
     border-left: 6px solid #ea8f00;
     border-radius: 0.75rem;
-    background: #fff4e0 url("/img/partner-event-bg.svg") no-repeat right center / auto 100%;
+    background: #fff4e0 url("/img/partner-event-bg.svg") no-repeat right 1.25rem center / auto 82%;
     color: #451a03;
     padding: 1.25rem 9rem 1.25rem 1.5rem;
     margin: 1.5rem 0;
