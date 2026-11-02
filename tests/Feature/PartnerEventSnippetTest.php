@@ -23,10 +23,10 @@ class PartnerEventSnippetTest extends TestCase
 
     public function test_background_graphic_and_style_exist(): void
     {
-        $this->assertFileExists(public_path('img/partner-event-bg.svg'));
+        $this->assertFileExists(public_path('img/partner-event-wspolpraca.svg'));
         $css = file_get_contents(resource_path('css/app.css'));
         $this->assertStringContainsString('.partner-event-box', $css);
-        $this->assertStringContainsString('/img/partner-event-bg.svg', $css);
+        $this->assertStringContainsString('/img/partner-event-wspolpraca.svg', $css);
     }
 
     public function test_block_renderer_outputs_partner_event_block(): void
