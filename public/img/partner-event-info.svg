@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" aria-hidden="true">
+  <!-- Znak informacji: koło z literą „i” (dekoracja, ciemny półprzezroczysty na pomarańczu) -->
+  <circle cx="60" cy="60" r="54" fill="none" stroke="#1D1D1A" stroke-opacity=".16" stroke-width="8"/>
+  <circle cx="60" cy="34" r="8" fill="#1D1D1A" fill-opacity=".16"/>
+  <rect x="52" y="50" width="16" height="42" rx="6" fill="#1D1D1A" fill-opacity=".16"/>
+</svg>
