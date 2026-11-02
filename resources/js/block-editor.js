@@ -9,6 +9,9 @@
 // lewy panel (bloki i wzorce / widok listy / uwagi dostępności), płótno
 // z blokami i pływającym paskiem narzędzi bloku, prawy panel (Strona / Blok).
 
+// Logika bez DOM (pozycja bloku po cofnięciu, ustawienia po zapisie) jest w osobnym module, testowanym przez `node --test`.
+import { blockPath, mergeSavedSettings, nearestBlockId } from './block-editor-state.js';
+
 const mount = document.getElementById('block-editor');
 if (mount) {
     start(JSON.parse(mount.dataset.config || '{}'));
@@ -370,17 +373,19 @@ function start(config) {
     function restore(json) {
         const data = JSON.parse(json);
         // Przerysowanie płótna usuwa pole z kursorem — po cofnięciu/ponowieniu wracamy do zaznaczonego bloku (Ctrl+Z z klawiatury),
-        // żeby dało się pisać dalej zamiast zaczynać od początku strony.
+        // żeby dało się pisać dalej. Gdy zaznaczony blok zniknął (cofnięte wstawienie, podział akapitu, zmiana typu, wklejenie),
+        // wracamy na jego pozycję w drzewie (blok sprzed wstawienia) — nigdy na początek strony.
         const hadFocus = canvas.contains(document.activeElement);
         const inNavigation = !!document.activeElement?.classList?.contains('be-block'); // tryb nawigacji: fokus na samym bloku
+        const path = S.selectedId ? blockPath(S.blocks, S.selectedId) : null;
+        const previous = S.blocks;
         S.title = data.title; S.meta = data.meta; S.blocks = data.blocks;
-        if (S.selectedId && !find(S.selectedId)) S.selectedId = null;
+        if (S.selectedId && !find(S.selectedId)) S.selectedId = nearestBlockId(previous, S.blocks, path);
         markDirty();
         renderAll();
-        if (hadFocus) {
-            const id = S.selectedId || S.blocks[0]?.id;
-            if (id) { if (inNavigation) selectBlock(id, { focusWrapper: true }); else focusBlock(id, 'end'); }
-        }
+        if (!hadFocus) return;
+        if (!S.selectedId) { canvas.querySelector('.be-root-appender-text')?.focus({ preventScroll: true }); return; }
+        if (inNavigation) selectBlock(S.selectedId, { focusWrapper: true }); else focusBlock(S.selectedId, 'end');
     }
     function undo() { if (!S.past.length) return; S.future.push(snapshot()); restore(S.past.pop()); announce('Cofnięto zmianę'); }
     function redo() { if (!S.future.length) return; S.past.push(snapshot()); restore(S.future.pop()); announce('Przywrócono zmianę'); }
@@ -1199,29 +1204,49 @@ function start(config) {
     }
 
     // ── Lewy panel: wstawianie, widok listy, dostępność ────────────────────
+    // Kontrolka, która otworzyła lewy panel — na nią wraca fokus po zamknięciu (Esc, „Zamknij panel”), jak w oknach dialogowych.
+    // Górny pasek jest przebudowywany (updateTopbar), więc zapamiętujemy też klucz jego przycisku. `fromTopbar`: panel otwarty
+    // z paska (bez celu wstawiania); otwarty z treści (plus pod blokiem, „Dodaj blok” w kontenerze, menu bloku) wraca do bloku.
+    let panelOpener = null;
     function togglePanel(name, target = null) {
+        const opener = document.activeElement;
+        const wasOpen = !!S.panel;
         S.panel = S.panel === name && !target ? null : name;
         S.insertTarget = target;
+        if (!S.panel) panelOpener = null;
+        else if (!wasOpen || !leftPanel.contains(opener)) {
+            const usable = opener && opener !== document.body && opener !== document.documentElement;
+            panelOpener = { el: usable ? opener : null, key: usable && opener.closest?.('.be-topbar') ? opener.dataset.key || null : null, fromTopbar: !target };
+        }
         renderPanel();
         updateTopbar();
         if (S.panel === 'inserter') leftPanel.querySelector('input')?.focus();
         else if (S.panel) leftPanel.querySelector('button, a')?.focus();
     }
-    // Przyciski w górnym pasku, które otwierają lewy panel — na nie wraca fokus po zamknięciu panelu (Esc albo „Zamknij panel”).
+    // Przyciski górnego paska otwierające lewy panel — ostatnia deska ratunku dla fokusu po zamknięciu panelu.
     const PANEL_BUTTONS = { inserter: 'Dodaj blok', list: 'Widok listy', a11y: 'a11y' };
-    function closePanel() {
+    function closePanel({ restoreFocus = true } = {}) {
         const name = S.panel;
+        const opener = panelOpener;
         const hadFocus = leftPanel.contains(document.activeElement);
-        S.panel = null; S.insertTarget = null; renderPanel(); updateTopbar();
-        // Pole z fokusem znika razem z panelem — bez tego fokus ląduje na początku dokumentu.
-        if (hadFocus && name) topbar.querySelector(`[data-key="${PANEL_BUTTONS[name]}"]`)?.focus();
+        S.panel = null; S.insertTarget = null; panelOpener = null;
+        renderPanel(); updateTopbar();
+        if (!restoreFocus || !hadFocus || !name) return;
+        // Pole z fokusem znika razem z panelem — bez tego fokus ląduje na początku dokumentu. Wracamy na kontrolkę, która panel
+        // otworzyła; gdy jej już nie ma — na przycisk paska o tym samym kluczu (panel z paska) albo na zaznaczony blok (panel z treści).
+        const topbarButton = (key) => key && [...topbar.querySelectorAll('[data-key]')].find((btn) => btn.dataset.key === key);
+        const target = (opener?.el?.isConnected && opener.el)
+            || (opener?.fromTopbar !== false && (topbarButton(opener?.key) || topbarButton(PANEL_BUTTONS[name])))
+            || (S.selectedId && wrapperOf(S.selectedId))
+            || topbarButton(PANEL_BUTTONS[name]);
+        target?.focus();
     }
     leftPanel.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.panel) { e.preventDefault(); closePanel(); } });
 
     function renderPanel() {
         leftPanel.hidden = !S.panel;
         if (!S.panel) { leftPanel.replaceChildren(); return; }
-        const close = h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': 'Zamknij panel', onClick: closePanel }, icon('xmark'));
+        const close = h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': 'Zamknij panel', onClick: () => closePanel() }, icon('xmark'));
         if (S.panel === 'inserter') renderInserter(close);
         if (S.panel === 'list') renderListView(close);
         if (S.panel === 'a11y') renderA11yPanel(close);
@@ -1242,7 +1267,7 @@ function start(config) {
         const sel = S.selectedId && !S.insertTarget ? find(S.selectedId) : null;
         if (sel && sel.block.type === 'paragraph' && !textOf(sel.block.attrs.text)) replaceBlock(sel.block.id, blocks);
         else insertBlocks(blocks, target);
-        closePanel();
+        closePanel({ restoreFocus: false }); // fokus ustawiamy zaraz na wstawionym bloku
         const first = blocks[0];
         if (first) {
             const def = BLOCKS[first.type];
@@ -2643,18 +2668,24 @@ function start(config) {
         el.addEventListener('change', () => onChange(el.value));
         return el;
     }
+    // Nagłówek sekcji przyjmuje fokus programowo (tabindex -1) — bezpieczny cel po usunięciu elementu z sekcji (zob. renderSidebar).
     function panelSection(title, ...content) {
-        return h('section', { class: 'be-side-section' }, title ? h('h3', {}, title) : null, ...content);
+        return h('section', { class: 'be-side-section' }, title ? h('h3', { tabindex: '-1', 'data-focus-key': 'section:' + title }, title) : null, ...content);
     }
 
-    function renderSidebar() {
+    function renderSidebar({ focusKey = null } = {}) {
         sidebar.id = 'be-sidebar';
         sidebar.hidden = !S.sidebarOpen;
         mount.classList.toggle('has-sidebar', S.sidebarOpen);
         if (!S.sidebarOpen) return;
-        // Przerysowanie panelu usuwa kontrolkę z fokusem (np. pole wyboru zmieniane strzałką z klawiatury) — wracamy na tę samą pozycję.
+        // Przerysowanie panelu usuwa kontrolkę z fokusem (np. pole wyboru zmieniane strzałką z klawiatury) — wracamy na tę samą
+        // pozycję, a w polu tekstowym z kursorem i zaznaczeniem. Po usunięciu albo przesunięciu elementu (zdjęcia, przycisku)
+        // pozycja nie wskazywałaby już tego samego elementu, więc wołający podaje `focusKey` (data-focus-key) docelowej kontrolki.
         const controls = () => [...sidebar.querySelectorAll('button, input, select, textarea, a[href], summary')];
-        const focusedAt = sidebar.contains(document.activeElement) ? controls().indexOf(document.activeElement) : -1;
+        const active = sidebar.contains(document.activeElement) ? document.activeElement : null;
+        const focusedAt = active ? controls().indexOf(active) : -1;
+        const caret = active && typeof active.selectionStart === 'number'
+            ? { start: active.selectionStart, end: active.selectionEnd, direction: active.selectionDirection, top: active.scrollTop } : null;
         const b = S.selectedId ? find(S.selectedId)?.block : null;
         const tab = (key, label) => h('button', { type: 'button', role: 'tab', class: 'be-tab', 'aria-selected': String(S.sidebarTab === key), onClick: () => { S.sidebarTab = key; renderSidebar(); sidebar.querySelector('[role=tab][aria-selected=true]')?.focus(); } }, label);
         sidebar.replaceChildren(
@@ -2662,7 +2693,22 @@ function start(config) {
                 h('div', { class: 'be-tabs', role: 'tablist', 'aria-label': 'Ustawienia' }, tab('page', L.kind), tab('block', 'Blok')),
                 h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': 'Zamknij ustawienia', onClick: () => { S.sidebarOpen = false; renderSidebar(); updateTopbar(); topbar.querySelector('[data-key="Ustawienia"]')?.focus(); } }, icon('xmark'))),
             h('div', { class: 'be-panel-body', role: 'tabpanel' }, S.sidebarTab === 'page' ? pageSettings() : (b ? blockSettings(b) : h('p', { class: 'be-muted' }, 'Zaznacz blok, aby zobaczyć jego ustawienia.'))));
-        if (focusedAt >= 0) { const all = controls(); all[Math.min(focusedAt, all.length - 1)]?.focus(); }
+        if (focusKey) {
+            sidebar.querySelector(`[data-focus-key="${focusKey}"]`)?.focus();
+            if (sidebar.contains(document.activeElement)) return;
+        }
+        if (focusedAt < 0) return;
+        // Najbliższa kontrolka, która przyjmie fokus (wyłączona — np. „− Wiersz” przy jednym wierszu — go nie przyjmie).
+        const all = controls();
+        const nearest = all.map((_, i) => i).sort((x, y) => Math.abs(x - focusedAt) - Math.abs(y - focusedAt) || x - y);
+        for (const i of nearest) {
+            all[i].focus();
+            if (document.activeElement !== all[i]) continue;
+            if (i === focusedAt && caret) {
+                try { all[i].setSelectionRange(caret.start, caret.end, caret.direction || 'none'); all[i].scrollTop = caret.top; } catch (e) { /* pole bez zaznaczenia */ }
+            }
+            break;
+        }
     }
 
     function pageSettings() {
@@ -2875,9 +2921,11 @@ function start(config) {
                     field('Tekst alternatywny', textInput(img.alt, (v) => { typingHistory(); img.alt = v; markDirty(); })),
                     field('Podpis', textInput(img.caption, (v) => { typingHistory(); img.caption = v; markDirty(); rerenderBlock(b.id); })),
                     h('div', { class: 'be-row' },
-                        h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': `Przesuń zdjęcie ${i + 1} wcześniej`, disabled: i === 0 ? true : null, onClick: () => { const imgs = [...a.images]; [imgs[i - 1], imgs[i]] = [imgs[i], imgs[i - 1]]; set({ images: imgs }); renderSidebar(); } }, icon('arrow-up')),
-                        h('button', { type: 'button', class: 'be-btn be-btn--icon', 'aria-label': `Przesuń zdjęcie ${i + 1} dalej`, disabled: i === a.images.length - 1 ? true : null, onClick: () => { const imgs = [...a.images]; [imgs[i + 1], imgs[i]] = [imgs[i], imgs[i + 1]]; set({ images: imgs }); renderSidebar(); } }, icon('arrow-down')),
-                        h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => { set({ images: a.images.filter((_, j) => j !== i) }); renderSidebar(); } }, icon('trash'), ' Usuń'))))));
+                        // Po przesunięciu fokus idzie za zdjęciem (jego przycisk w tym samym kierunku albo przeciwny, gdy dotarło na skraj);
+                        // po usunięciu — na nagłówek sekcji, nie na „Usuń” sąsiedniego zdjęcia.
+                        h('button', { type: 'button', class: 'be-btn be-btn--icon', 'data-focus-key': `gal-up-${i}`, 'aria-label': `Przesuń zdjęcie ${i + 1} wcześniej`, disabled: i === 0 ? true : null, onClick: () => { const imgs = [...a.images]; [imgs[i - 1], imgs[i]] = [imgs[i], imgs[i - 1]]; set({ images: imgs }); renderSidebar({ focusKey: i - 1 > 0 ? `gal-up-${i - 1}` : `gal-down-${i - 1}` }); announce(`Zdjęcie przesunięte na pozycję ${i}`); } }, icon('arrow-up')),
+                        h('button', { type: 'button', class: 'be-btn be-btn--icon', 'data-focus-key': `gal-down-${i}`, 'aria-label': `Przesuń zdjęcie ${i + 1} dalej`, disabled: i === a.images.length - 1 ? true : null, onClick: () => { const imgs = [...a.images]; [imgs[i + 1], imgs[i]] = [imgs[i], imgs[i + 1]]; set({ images: imgs }); renderSidebar({ focusKey: i + 1 < imgs.length - 1 ? `gal-down-${i + 1}` : `gal-up-${i + 1}` }); announce(`Zdjęcie przesunięte na pozycję ${i + 2}`); } }, icon('arrow-down')),
+                        h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => { set({ images: a.images.filter((_, j) => j !== i) }); renderSidebar({ focusKey: 'section:Zdjęcia' }); announce(`Usunięto zdjęcie ${i + 1}`); } }, icon('trash'), ' Usuń'))))));
                 break;
             case 'buttons':
                 parts.push(...a.items.map((btn, i) => panelSection('Przycisk ' + (i + 1),
@@ -2886,7 +2934,12 @@ function start(config) {
                     pickLinkButton(`btn-${b.id}-${i}`, ' dla przycisku ' + (i + 1), () => btn.url, (v) => { pushHistory(); btn.url = v; markDirty(); scheduleWarnings(); }),
                     field('Kolor', select(btn.variant, [['brand', 'Niebieski (główny)'], ['red', 'Czerwony'], ['green', 'Zielony']], (v) => { pushHistory(); btn.variant = v; markDirty(); rerenderBlock(b.id); })),
                     checkbox('Otwieraj w nowej karcie', btn.newTab, (v) => { pushHistory(); btn.newTab = v; markDirty(); }, 'Używaj oszczędnie. Czytnik ekranu usłyszy informację o nowej karcie.'),
-                    a.items.length > 1 ? h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => { set({ items: a.items.filter((_, j) => j !== i) }); renderSidebar(); } }, icon('trash'), ' Usuń przycisk') : null)));
+                    a.items.length > 1 ? h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => {
+                        set({ items: a.items.filter((_, j) => j !== i) });
+                        // Fokus na nagłówek przycisku, który zajął to miejsce (nie na „Usuń przycisk” następnego); komunikat dla czytnika.
+                        renderSidebar({ focusKey: `section:Przycisk ${Math.min(i, a.items.length - 1) + 1}` });
+                        announce(`Usunięto przycisk ${i + 1}`);
+                    } }, icon('trash'), ' Usuń przycisk') : null)));
                 break;
             case 'callout':
                 parts.push(panelSection('Rodzaj ramki', field('Styl', select(a.variant, [['box', 'Ramka (szare tło)'], ['note', 'Notatka / ostrzeżenie (pomarańczowe tło)'], ['important', 'Ważna informacja (niebieskie tło)']], (v) => set({ variant: v })))));
@@ -3429,7 +3482,8 @@ function start(config) {
             [mod + '+S', 'Zapisz'], [mod + '+Z', 'Cofnij'], [mod + '+Shift+Z', 'Ponów'],
             ['/', 'W pustym akapicie: wybór bloku'], ['## , - , 1. , >', 'W pustym akapicie: nagłówek, lista, lista numerowana, cytat'],
             [mod + '+B / I / K', 'Pogrubienie, kursywa, odnośnik'], ['Shift+Enter', 'Nowa linia w tym samym bloku'],
-            ['Esc', 'Tryb nawigacji (strzałki — wybór bloku, Enter — edycja, Delete — usuń)'],
+            ['Esc', 'W tekście bloku: tryb nawigacji (strzałki — wybór bloku, Enter — edycja, Delete — usuń)'],
+            ['Esc', 'W lewym panelu (Dodaj blok, Widok listy, Dostępność): zamknij panel i wróć tam, skąd go otwarto'],
             ['Alt+F10', 'Przejdź do paska narzędzi bloku'], ['Alt+Shift+↑ / ↓', 'Przenieś blok w górę / w dół'],
             [mod + '+Shift+D', 'Duplikuj blok'], ['Shift+Alt+Z', 'Usuń blok'],
             [mod + '+C / X / V', 'W trybie nawigacji (Esc): kopiuj, wytnij, wklej cały blok'],
@@ -3477,6 +3531,9 @@ function start(config) {
         S.error = null;
         updateTopbar();
         const rev = S.rev;
+        // Ustawienia panelu bocznego w chwili wysłania — po odpowiedzi odróżniamy to, co zmieniono w trakcie zapisu.
+        const sentSettings = S.settings ? JSON.parse(JSON.stringify(S.settings)) : null;
+        const sentSkipRedirect = !!S.skipSlugRedirect;
         try {
             const res = await apiFetch(config.urls.save, {
                 method: 'PUT',
@@ -3496,11 +3553,16 @@ function start(config) {
             if (untouched) S.dirty = false;
             if (json.settings) {
                 const wasRequested = S.settings?.is_published && !draft;
-                S.settings = json.settings;
+                // Pola ustawień zmienione w trakcie zapisu zostają lokalne i „niezapisane”; resztę (adres po normalizacji,
+                // zatwierdzanie, zdjęcie) bierzemy z odpowiedzi.
+                const merged = mergeSavedSettings(json.settings, sentSettings, S.settings);
+                S.settings = merged.settings;
                 config.settings.values = JSON.parse(JSON.stringify(json.settings));
                 config.settings.wasPublished = json.settings.is_published;
-                S.settingsDirty = false;
-                S.skipSlugRedirect = false;
+                if (!merged.edited) {
+                    S.settingsDirty = false;
+                    if (!!S.skipSlugRedirect === sentSkipRedirect) S.skipSlugRedirect = false;
+                }
                 config.page.is_published = json.settings.is_published;
                 if (wasRequested && json.settings.pending_approval) announce('Zapisano. Publikacja czeka na zatwierdzenie.');
                 if (S.sidebarTab === 'page') renderSidebar();

@@ -73,7 +73,7 @@
 .be-btn--primary { background: var(--be-ui); color: #fff; }
 .be-btn--primary:hover { background: var(--be-ui-dark); color: #fff; }
 /* Stan wyłączony nadpisuje kolor tekstu na --be-muted, co na niebieskim tle daje ~1,1:1. Zapis w toku (aria-disabled)
-   zostaje ciemnoniebieski z białym napisem „Zapisywanie…” (ok. 9,9:1), a przycisk wyłączony (disabled) jest szary na jasnym tle (ok. 6,7:1). */
+   zostaje ciemnoniebieski z białym napisem „Zapisywanie…” (9,8:1), a przycisk wyłączony (disabled) jest szary na jasnym tle (6,9:1). */
 .be-btn--primary[aria-disabled="true"], .be-btn--primary[aria-disabled="true"]:hover { background: var(--be-ui-dark); color: #fff; cursor: progress; }
 .be-btn--primary:disabled, .be-btn--primary:disabled:hover { background: var(--be-bg); color: var(--be-muted); }
 .be-btn--primary-soft { background: var(--be-ui); color: #fff; }
