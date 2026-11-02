@@ -28,4 +28,15 @@ class PartnerEventSnippetTest extends TestCase
         $this->assertStringContainsString('.partner-event-box', $css);
         $this->assertStringContainsString('/img/partner-event-bg.svg', $css);
     }
+
+    public function test_block_renderer_outputs_partner_callout(): void
+    {
+        $html = (new \App\Support\BlockRenderer)->render([[
+            'id' => 'a', 'type' => 'callout', 'attrs' => ['variant' => 'partner'],
+            'inner' => [['id' => 'b', 'type' => 'paragraph', 'attrs' => ['text' => 'Nie jesteśmy organizatorem.']]],
+        ]]);
+
+        $this->assertStringContainsString('<div class="partner-event-box">', $html);
+        $this->assertStringContainsString('Nie jesteśmy organizatorem.', $html);
+    }
 }

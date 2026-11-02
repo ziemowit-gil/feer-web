@@ -156,7 +156,7 @@ class BlockRenderer
                     array_slice(is_array($a['items'] ?? null) ? $a['items'] : [], 0, 6)
                 ), fn ($btn) => $btn && $btn['label'] !== '')),
             ],
-            'callout' => ['variant' => $pick('variant', ['box', 'note', 'important'], 'box')],
+            'callout' => ['variant' => $pick('variant', ['box', 'note', 'important', 'partner'], 'box')],
             'columns' => ['ratio' => $pick('ratio', ['50-50', '33-67', '67-33', 'equal'], 'equal')],
             'details' => ['summary' => $str('summary', 300), 'open' => (bool) ($a['open'] ?? false)],
             'table' => [
@@ -328,7 +328,7 @@ class BlockRenderer
                 if ($body === '') {
                     return '';
                 }
-                $class = ['box' => 'content-box', 'note' => 'content-note', 'important' => 'content-important'][$a['variant']];
+                $class = ['box' => 'content-box', 'note' => 'content-note', 'important' => 'content-important', 'partner' => 'partner-event-box'][$a['variant']];
 
                 return '<div class="'.$class.'">'.$body.'</div>';
 
