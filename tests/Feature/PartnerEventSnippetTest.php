@@ -23,10 +23,10 @@ class PartnerEventSnippetTest extends TestCase
 
     public function test_background_graphic_and_style_exist(): void
     {
-        $this->assertFileExists(public_path('img/partner-event-wspolpraca.svg'));
+        $this->assertFileExists(public_path('img/partner-event-uscisk.svg'));
         $css = file_get_contents(resource_path('css/app.css'));
         $this->assertStringContainsString('.partner-event-box', $css);
-        $this->assertStringContainsString('/img/partner-event-wspolpraca.svg', $css);
+        $this->assertStringContainsString('/img/partner-event-uscisk.svg', $css);
     }
 
     public function test_block_renderer_outputs_partner_event_block(): void
@@ -35,7 +35,7 @@ class PartnerEventSnippetTest extends TestCase
             'id' => 'a', 'type' => 'partnerevent', 'attrs' => ['text' => 'Nie jesteśmy organizatorem.'], 'inner' => [],
         ]]);
 
-        $this->assertStringContainsString('<div class="partner-event-box"><p><strong>Wydarzenie partnera</strong></p>', $html);
+        $this->assertStringContainsString('<div class="partner-event-box"><p class="partner-event-tag">Materiał partnera – innej organizacji</p>', $html);
         $this->assertStringContainsString('Nie jesteśmy organizatorem.', $html);
     }
 }

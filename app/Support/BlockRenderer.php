@@ -287,7 +287,7 @@ class BlockRenderer
                 return '<figure class="content-quote"><blockquote><p>'.$a['text'].'</p></blockquote>'.$cite.'</figure>';
 
             case 'partnerevent':
-                return '<div class="partner-event-box"><p><strong>Wydarzenie partnera</strong></p><p>'.$a['text'].'</p></div>';
+                return '<div class="partner-event-box"><p class="partner-event-tag">Materiał partnera – innej organizacji</p><p>'.$a['text'].'</p></div>';
 
             case 'image':
                 if ($a['url'] === '') {

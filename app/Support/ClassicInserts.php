@@ -29,9 +29,9 @@ class ClassicInserts
             'html' => '<div class="bip-link-box"><p><img src="/img/bip-logo.svg" alt="Logo Biuletynu Informacji Publicznej (BIP)"></p><p>Więcej informacji o naszej fundacji oraz dokumenty formalne publikujemy w Biuletynie Informacji Publicznej.</p><p><a href="/bip" class="cta-button">Więcej informacji w BIP</a></p></div>',
         ],
         'partnerEvent' => [
-            'title' => 'Wydarzenie partnera',
+            'title' => 'Ramka partnera',
             'desc' => 'Pomarańczowa ramka z grafiką: nie jesteśmy organizatorem, pytania do organizatora.',
-            'html' => '<div class="partner-event-box"><p><strong>Wydarzenie partnera</strong></p><p>Jeżeli masz pytania, skontaktuj się z&hellip; (organizator, e-mail lub telefon). Nie jesteśmy organizatorem tego wydarzenia.</p></div>',
+            'html' => '<div class="partner-event-box"><p class="partner-event-tag">Materiał partnera – innej organizacji</p><p>Jeżeli masz pytania, skontaktuj się z&hellip; (organizator, e-mail lub telefon). Nie jesteśmy organizatorem tego wydarzenia.</p></div>',
         ],
         'accentLeft' => [
             'title' => 'Sekcja akcentu (lewo)',

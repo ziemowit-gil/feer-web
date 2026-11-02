@@ -1811,7 +1811,7 @@ function start(config) {
             h('blockquote', {}, richField(b, 'text', { tag: 'p', placeholder: 'Treść cytatu', lineBreak: true, mergeable: false, label: 'Treść cytatu' })),
             richField(b, 'cite', { tag: 'figcaption', placeholder: 'Autor cytatu (opcjonalnie)', lineBreak: true, label: 'Autor cytatu' })),
         partnerevent: (b) => h('div', { class: 'partner-event-box' },
-            h('p', {}, h('strong', {}, 'Wydarzenie partnera')),
+            h('p', { class: 'partner-event-tag' }, 'Materiał partnera – innej organizacji'),
             richField(b, 'text', { tag: 'p', placeholder: 'Kontakt do organizatora', lineBreak: true, mergeable: false, label: 'Treść ramki partnera' })),
         list: (b) => listEditor(b),
         image: (b) => imageEditor(b),

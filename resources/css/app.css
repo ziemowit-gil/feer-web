@@ -965,22 +965,37 @@ html.contrast .content-banner { background: #fff; outline: 2px solid currentColo
 .proj-nav-item[aria-current] > i, .proj-nav-item:hover > i { color: var(--color-brand-dark, #1752bf); }
 
 
-/* „Wydarzenie partnera” wstawiane z edytora: pomarańczowa ramka z grafiką współpracy po prawej (tło dekoracyjne, tekst ink-brązowy
-   #451A03 na #FFF4E0 ≈ 14:1; grafika nie zachodzi pod tekst dzięki paddingowi, na wąskich ekranach znika). */
+/* „Ramka partnera” (wstawka i klocek edytora): materiał innej organizacji. Pomarańczowa ramka z uściskiem dłoni po prawej
+   (tło dekoracyjne, znika na telefonie) i wyraźnym paskiem „Materiał partnera” u góry (biały na #B45309 ≈ 5:1, tekst
+   #451A03 na #FFF4E0 ≈ 14:1). Starsze wstawki bez paska wyglądają jak dotąd (pogrubiony pierwszy akapit). */
 .prose .partner-event-box,
 .partner-event-box {
+    --pe-pr: 11rem;
+    overflow: hidden;
     border-left: 6px solid #ea8f00;
     border-radius: 0.75rem;
-    background: #fff4e0 url("/img/partner-event-wspolpraca.svg") no-repeat right 1.25rem center / auto 82%;
+    background: #fff4e0 url("/img/partner-event-uscisk.svg") no-repeat right 1.25rem bottom 1rem / auto 45%;
     color: #451a03;
-    padding: 1.25rem 9rem 1.25rem 1.5rem;
+    padding: 0 var(--pe-pr) 1.25rem 1.5rem;
     margin: 1.5rem 0;
+    min-height: 9rem;
 }
-.prose .partner-event-box > :first-child,
-.partner-event-box > :first-child { margin-top: 0; font-size: 1.125rem; }
+.prose .partner-event-box > :first-child:not(.partner-event-tag),
+.partner-event-box > :first-child:not(.partner-event-tag) { margin-top: 1.25rem; font-size: 1.125rem; }
+.prose .partner-event-box > .partner-event-tag,
+.partner-event-box > .partner-event-tag {
+    margin: 0 calc(var(--pe-pr) * -1) 1rem -1.5rem;
+    padding: 0.5rem var(--pe-pr) 0.5rem 1.5rem;
+    background: #b45309;
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
 .prose .partner-event-box > :last-child,
 .partner-event-box > :last-child { margin-bottom: 0; }
 @media (max-width: 40rem) {
     .prose .partner-event-box,
-    .partner-event-box { background-image: none; padding-right: 1.5rem; }
+    .partner-event-box { --pe-pr: 1.5rem; background-image: none; min-height: 0; }
 }
