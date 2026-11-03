@@ -148,6 +148,16 @@
             </div>
 
             <div class="mt-4">
+                <label for="contact_phone_hours" class="mb-1 block text-sm font-bold">Godziny dostępności telefonu <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <input type="text" id="contact_phone_hours" name="contact_phone_hours" maxlength="160"
+                    value="{{ old('contact_phone_hours', $settings->contact_phone_hours) }}"
+                    placeholder="np. czw-pt 10:00 - 16"
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                <p class="mt-1 text-xs text-muted">Kiedy można dodzwonić się pod numer telefonu. Pokaże się pod numerem na stronie kontaktu jako „Kiedy dzwonić”. Wpisz po swojemu, np. „czw-pt 10:00 - 16”; myślniki zostaną ujednolicone. Puste = bez godzin.</p>
+                @error('contact_phone_hours') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="mt-4">
                 <label for="contact_office_hours" class="mb-1 block text-sm font-bold">Godziny pracy <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <input type="text" id="contact_office_hours" name="contact_office_hours"
                     value="{{ old('contact_office_hours', $settings->contact_office_hours) }}"

@@ -36,6 +36,7 @@ class ContactSettings
             'contact_city' => ['nullable', 'string', 'max:255'],
             'contact_email' => ['nullable', 'email', 'max:255'],
             'contact_phone' => ['nullable', 'string', 'max:50'],
+            'contact_phone_hours' => ['nullable', 'string', 'max:160'],
             'contact_office_hours' => ['nullable', 'string', 'max:255'],
             'contact_edelivery_address' => ['nullable', 'string', 'max:120'],
             'contact_correspondence_title' => ['nullable', 'string', 'max:120'],

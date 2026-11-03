@@ -17,6 +17,8 @@
     }
     // Szablon FEER pokazuje dane kontaktowe jako zwykły tekst (bez linków tel:), więc numer telefonu też.
     $plainPhone = $siteSettings->contactLayoutValue() === 'feer';
+    // Godziny wpisane po swojemu („czw-pt 10:00 - 16”): myślniki bez spacji i jednolity półpauz, np. „czw–pt 10:00–16”.
+    $phoneHours = preg_replace('/\s*[-–—]\s*/u', '–', trim((string) $siteSettings->contact_phone_hours));
     $pbLink = 'inline-flex min-h-11 items-center gap-2 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
 @endphp
 @if ($switchboard !== '' || $phoneBookUrl)
@@ -28,6 +30,9 @@
             @else
                 <p class="mt-1"><a href="tel:{{ preg_replace('/[^0-9+]/', '', $switchboard) }}" class="{{ $pbLink }} text-2xl"><i class="fa-solid fa-phone" aria-hidden="true"></i><span class="sr-only">Zadzwoń do nas: </span>{{ $switchboard }}</a></p>
             @endif
+        @endif
+        @if ($switchboard !== '' && $phoneHours !== '')
+            <p class="mt-1"><span class="font-bold">Kiedy dzwonić:</span> {{ $phoneHours }}</p>
         @endif
         <p class="{{ $switchboard !== '' ? 'mt-3 ' : '' }}leading-relaxed">Oddzwaniamy najczęściej z komórek, więc na ekranie może pojawić się numer, którego nie znasz. Możliwe, że to my.</p>
         @if ($phoneBookUrl)

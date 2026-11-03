@@ -63,4 +63,46 @@ class ContactPhoneBookNoteTest extends TestCase
 
         $this->get('/kontakt')->assertOk()->assertDontSee('phone-book-note', false);
     }
+
+    public function test_phone_hours_are_shown_under_the_number_in_every_layout_with_normalized_dashes(): void
+    {
+        foreach (['classic', 'card', 'split', 'tabs', 'feer'] as $layout) {
+            SiteSetting::current()->update([
+                'contact_phone' => '12 345 67 89', 'contact_phone_hours' => 'czw-pt 10:00 - 16', 'contact_layout' => $layout,
+                'site_template' => $layout === 'feer' ? 'feer' : 'default',
+            ]);
+            $html = $this->get('/kontakt')->assertOk()->getContent();
+            $note = substr($html, strpos($html, 'phone-book-note'));
+
+            $this->assertStringContainsString('Kiedy dzwonić:</span> czw–pt 10:00–16', $note, $layout);
+            $this->assertLessThan(strpos($note, 'Kiedy dzwonić'), strpos($note, '12 345 67 89'), $layout);
+        }
+
+        SiteSetting::current()->update(['contact_phone_hours' => '']);
+        $this->get('/kontakt')->assertOk()->assertDontSee('Kiedy dzwonić:', false);
+    }
+
+    public function test_hours_are_not_shown_without_a_phone_number(): void
+    {
+        SiteSetting::current()->update(['contact_phone' => '', 'contact_phone_hours' => 'czw-pt 10-16']);
+
+        $this->get('/kontakt')->assertOk()->assertDontSee('Kiedy dzwonić:', false);
+    }
+
+    public function test_admin_edits_phone_hours_in_the_contact_settings(): void
+    {
+        $admin = \App\Models\User::factory()->create(['role' => \App\Models\User::ROLE_ADMIN]);
+        $page = \App\Models\Page::firstOrCreate(['type' => 'contact'], ['title' => 'Kontakt', 'slug' => 'kontakt-2', 'is_published' => true]);
+
+        $this->actingAs($admin)->get(route('admin.podstrony.edit', $page))->assertOk()
+            ->assertSee('name="contact_phone_hours"', false)->assertSee('placeholder="np. czw-pt 10:00 - 16"', false);
+
+        $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
+            'title' => 'Kontakt', 'slug' => 'kontakt-2', 'type' => 'contact', 'parent_id' => '',
+            'contact_address' => 'ul. Testowa 1', 'contact_city' => '00-001 Warszawa', 'contact_email' => 'kontakt@example.pl',
+            'contact_phone' => '601 350 487', 'contact_phone_hours' => 'czw-pt 10:00 - 16',
+        ])->assertRedirect();
+
+        $this->assertSame('czw-pt 10:00 - 16', SiteSetting::current()->refresh()->contact_phone_hours);
+    }
 }
