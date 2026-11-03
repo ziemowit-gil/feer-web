@@ -89,4 +89,87 @@ class PhoneBookPageTest extends TestCase
         $this->assertSame('Jan Nowak', $contacts[0]['name']);
         $this->assertSame('Finanse', $contacts[0]['group']);
     }
+
+    private function bookWith(array $typeData): Page
+    {
+        return Page::create([
+            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'is_published' => true,
+            'type_data' => $typeData,
+        ]);
+    }
+
+    public function test_hours_group_filter_copy_and_vcard_are_rendered(): void
+    {
+        $this->bookWith(['contacts' => [
+            ['group' => 'Biuro', 'name' => 'Anna Kowalska', 'role' => 'Koordynatorka', 'phone' => '601 350 487', 'email' => 'anna@example.org', 'topic' => 'Zapisy', 'hours' => 'pon.–śr. 10–12'],
+            ['group' => 'Finanse', 'name' => 'Jan Nowak', 'phone' => '500 100 200', 'topic' => 'Faktury'],
+        ]]);
+
+        $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
+
+        $this->assertStringContainsString('Kiedy dzwonić:', $html);
+        $this->assertStringContainsString('pon.–śr. 10–12', $html);
+        $this->assertStringContainsString('role="group" aria-label="Filtr działów"', $html);
+        $this->assertStringContainsString('Kopiuj numer', $html);
+        $this->assertStringContainsString('Zapisz w telefonie', $html);
+        $this->assertStringContainsString('BEGIN:VCARD', str_replace('\\r\\n', "\n", $html));
+        $this->assertStringContainsString('TEL;TYPE=CELL:601350487', $html);
+        $this->assertStringContainsString('anna-kowalska.vcf', $html);
+        // Numery widoczne od razu, gdy nie włączono ukrywania.
+        $this->assertStringNotContainsString('data-phone-reveal', $html);
+    }
+
+    public function test_single_group_has_no_filter_chips(): void
+    {
+        $this->bookWith(['contacts' => [['group' => 'Biuro', 'name' => 'Anna', 'phone' => '601 350 487']]]);
+
+        $this->get('/ksiazka-telefoniczna')->assertOk()->assertDontSee('Filtr działów');
+    }
+
+    public function test_alphabetical_sort_orders_groups_and_people(): void
+    {
+        $this->bookWith(['sort' => 'alpha', 'contacts' => [
+            ['group' => 'Zarząd', 'name' => 'Zofia Zet', 'phone' => '600 000 003'],
+            ['group' => 'Biuro', 'name' => 'Piotr Pe', 'phone' => '600 000 002'],
+            ['group' => 'Biuro', 'name' => 'Adam Ae', 'phone' => '600 000 001'],
+        ]]);
+
+        $this->get('/ksiazka-telefoniczna')->assertOk()->assertSeeInOrder(['Biuro', 'Adam Ae', 'Piotr Pe', 'Zarząd', 'Zofia Zet']);
+    }
+
+    public function test_hide_numbers_wraps_number_in_reveal_with_button(): void
+    {
+        $this->bookWith(['hide_numbers' => '1', 'contacts' => [['name' => 'Anna Kowalska', 'phone' => '601 350 487']]]);
+
+        $this->get('/ksiazka-telefoniczna')->assertOk()
+            ->assertSee('phone-reveal phone-reveal--inline', false)
+            ->assertSee('data-phone-reveal', false)
+            ->assertSee('Pokaż numer: Anna Kowalska')
+            ->assertSee('href="tel:601350487" class="phone-reveal-number"', false);
+    }
+
+    public function test_admin_saves_new_settings_and_hours(): void
+    {
+        $admin = \App\Models\User::factory()->create(['role' => \App\Models\User::ROLE_ADMIN]);
+        $page = $this->bookWith(['contacts' => []]);
+
+        $this->actingAs($admin)->get(route('admin.podstrony.edit', $page))->assertOk()
+            ->assertSee('name="type_data[sort]"', false)
+            ->assertSee('name="type_data[hide_numbers]"', false);
+
+        $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
+            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
+            'type_data' => ['sort' => 'alpha', 'hide_numbers' => '1', 'contacts' => [['name' => 'Anna', 'phone' => '601 350 487', 'hours' => 'pon.–śr. 10–12']]],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $td = $page->refresh()->typeData();
+        $this->assertSame('alpha', $td['sort']);
+        $this->assertTrue((bool) $td['hide_numbers']);
+        $this->assertSame('pon.–śr. 10–12', $td['contacts'][0]['hours']);
+
+        $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
+            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
+            'type_data' => ['sort' => 'losowo', 'contacts' => []],
+        ])->assertSessionHasErrors('type_data.sort');
+    }
 }

@@ -44,6 +44,8 @@ class PhoneBook extends PageType
     public function rules(): array
     {
         return self::sharedRules('lead') + [
+            'type_data.sort' => ['nullable', 'in:manual,alpha'],
+            'type_data.hide_numbers' => ['nullable', 'boolean'],
             'type_data.contacts' => ['nullable', 'array', 'max:200'],
             'type_data.contacts.*.group' => ['nullable', 'string', 'max:120'],
             'type_data.contacts.*.name' => ['nullable', 'string', 'max:120'],
@@ -51,6 +53,7 @@ class PhoneBook extends PageType
             'type_data.contacts.*.phone' => ['nullable', 'string', 'max:40', 'regex:/^[0-9 +()\-.]*$/'],
             'type_data.contacts.*.email' => ['nullable', 'email', 'max:190'],
             'type_data.contacts.*.topic' => ['nullable', 'string', 'max:500'],
+            'type_data.contacts.*.hours' => ['nullable', 'string', 'max:160'],
         ];
     }
 

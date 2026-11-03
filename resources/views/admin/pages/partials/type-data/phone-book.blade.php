@@ -9,6 +9,7 @@
             .'<input type="tel" name="type_data[contacts]['.$i.'][phone]" value="'.$v('phone').'" placeholder="Numer komórkowy, np. 601 350 487" aria-label="Numer komórkowy" inputmode="tel" class="'.$inp.'">'
             .'<input type="email" name="type_data[contacts]['.$i.'][email]" value="'.$v('email').'" placeholder="E-mail (opcjonalnie)" aria-label="E-mail" class="'.$inp.'">'
             .'</div>'
+            .'<input type="text" name="type_data[contacts]['.$i.'][hours]" value="'.$v('hours').'" placeholder="Kiedy dzwonić (opcjonalnie), np. pon.–śr. 10:00–12:00" aria-label="Kiedy dzwonić" class="'.$inp.' mt-2">'
             .'<textarea name="type_data[contacts]['.$i.'][topic]" rows="2" placeholder="W jakiej sprawie się kontaktować, np. zapisy na szkolenia, faktury, media" aria-label="W jakiej sprawie się kontaktować" class="'.$inp.' mt-2">'.$v('topic').'</textarea>'
             .'<input type="text" name="type_data[contacts]['.$i.'][group]" value="'.$v('group').'" placeholder="Dział lub grupa (opcjonalnie), np. Biuro" aria-label="Dział lub grupa" class="'.$inp.' mt-2">';
     };
@@ -19,6 +20,22 @@
     <div>
         <label for="td-phonebook-lead" class="{{ $lbl }}">Lead (np. kiedy dzwonić, a kiedy pisać)</label>
         <textarea id="td-phonebook-lead" name="type_data[lead]" rows="2" class="{{ $inp }}">{{ $td['lead'] ?? '' }}</textarea>
+    </div>
+
+    <div class="{{ $box }}">
+        <p class="text-xs font-bold uppercase text-muted">Ustawienia książki</p>
+        <div>
+            <label for="td-phonebook-sort" class="{{ $lbl }}">Kolejność osób</label>
+            <select id="td-phonebook-sort" name="type_data[sort]" class="{{ $inp }}">
+                <option value="manual" @selected(($td['sort'] ?? 'manual') !== 'alpha')>Jak w panelu (ręcznie)</option>
+                <option value="alpha" @selected(($td['sort'] ?? '') === 'alpha')>Alfabetycznie (działy i osoby)</option>
+            </select>
+        </div>
+        <label class="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="type_data[hide_numbers]" value="1" @checked(! empty($td['hide_numbers'])) class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+            <span><span class="font-bold">Ukryj numery za przyciskiem</span>
+                <span class="block text-xs text-muted">Odwiedzający odsłania numer najechaniem, klawiaturą albo kliknięciem. To tylko ukrycie wizualne (utrudnia przypadkowe kopiowanie): numer nadal jest w kodzie strony, więc nie chroni przed botami.</span></span>
+        </label>
     </div>
 
     <div class="{{ $box }}" data-td-repeater>

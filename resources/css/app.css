@@ -1064,3 +1064,10 @@ p.phone-reveal-number { text-decoration: none; }
     .phone-reveal { flex-direction: column; align-items: flex-start; }
     .phone-reveal-number { font-size: 1.5rem; }
 }
+
+
+/* Wariant „w wierszu” klocka numeru (książka telefoniczna z ukrytymi numerami): bez karty i ikony, numer pod przyciskiem. */
+.phone-reveal.phone-reveal--inline { display: block; margin: 0.75rem 0 0; padding: 0; background: transparent; }
+.phone-reveal--inline .phone-reveal-number { margin-top: 0; font-size: 1.25rem; }
+.phone-reveal--inline .phone-reveal-number i { margin-right: 0.5rem; }
+.phone-reveal.is-js:not(.is-open) .phone-reveal-actions { display: none; }
