@@ -34,9 +34,10 @@
             const addBtn = rep.querySelector('[data-repeater-add]');
             if (!rows || !template) return;
             let next = rows.querySelectorAll('[data-repeater-row]').length;
+            // Pierwszy indeks liczbowy w nazwie — także przy zagnieżdżeniu, np. cooperation_data[sectors][0][icon].
             const reindex = function () {
                 rows.querySelectorAll('[data-repeater-row]').forEach(function (row, n) {
-                    row.querySelectorAll('[name]').forEach(function (el) { el.name = el.name.replace(/^([^\[]+)\[[^\]]*\]/, '$1[' + n + ']'); });
+                    row.querySelectorAll('[name]').forEach(function (el) { el.name = el.name.replace(/\[\d+\]/, '[' + n + ']'); });
                 });
             };
             if (addBtn) {

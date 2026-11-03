@@ -163,12 +163,56 @@ class BlockEditorTypeFieldsTest extends TestCase
 
     public function test_heavy_layout_types_keep_the_form(): void
     {
-        foreach (['about', 'wspolpraca', 'contact'] as $type) {
+        foreach (['about', 'contact'] as $type) {
             $page = $this->page(['type' => $type, 'slug' => 'ukl-'.$type]);
 
             $this->assertFalse(\App\Support\PageTypeFields::supports($page), $type);
             $this->assertFalse(\App\Support\PageTypeFields::hasFreeContent($page), $type);
         }
+    }
+
+    public function test_cooperation_fields_are_edited_in_the_block_editor_and_saved_like_the_form(): void
+    {
+        $page = $this->page(['type' => 'wspolpraca', 'slug' => 'wspolpraca-edytor', 'cooperation_data' => ['hero_badge' => 'Stara etykieta']]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'default_editor' => null]);
+
+        $this->assertTrue(\App\Support\PageTypeFields::hasFreeContent($page));
+        $this->actingAs($admin)->get(route('admin.podstrony.edit', $page))->assertRedirect(route('admin.podstrony.bloki.edit', $page));
+        $this->actingAs($admin)->get(route('admin.podstrony.bloki.edit', $page))->assertOk()
+            ->assertSee('id="be-type-fields"', false)
+            ->assertSee('name="cooperation_data[hero_badge]"', false)
+            ->assertSee('name="cooperation_data[sectors][0][title]"', false)
+            ->assertSee('name="cooperation_data[form_enabled]"', false)
+            ->assertSee('Stara etykieta');
+
+        $cd = [
+            'hero_badge' => ' Partnerstwo ',
+            'hero_cta1_url' => '/kontakt',
+            'stats' => [['value' => '15 lat', 'label' => 'doświadczenia'], ['value' => '', 'label' => 'bez wartości']],
+            'sectors' => [['icon' => 'fa-solid fa-building', 'color' => 'blue', 'title' => ' Biznes ', 'text' => 'Tekst', 'tag1' => 'CSR']],
+            'forms' => [['icon' => 'fa-solid fa-star', 'title' => 'Sponsoring', 'text' => '']],
+            'under_construction' => '0',
+            'form_enabled' => '1',
+            'form_recipient' => 'biuro@example.org',
+        ];
+
+        $this->save($page, ['cooperation_data' => $cd])->assertOk();
+        $fromEditor = $page->refresh()->cooperation_data;
+        $this->assertSame('Partnerstwo', $fromEditor['hero_badge']);
+        $this->assertSame([['value' => '15 lat', 'label' => 'doświadczenia']], $fromEditor['stats']);
+        $this->assertSame('Biznes', $fromEditor['sectors'][0]['title']);
+        $this->assertTrue($fromEditor['form_enabled']);
+        $this->assertFalse($fromEditor['under_construction']);
+
+        // Ten sam zapis przez formularz klasyczny daje identyczne dane.
+        $classic = $this->page(['type' => 'wspolpraca', 'slug' => 'wspolpraca-2', 'title' => 'Współpraca']);
+        $this->actingAs($this->admin())->withSession(['admin_site_chosen' => true])->put(route('admin.podstrony.update', $classic), [
+            'title' => 'Współpraca', 'slug' => 'wspolpraca-2', 'parent_id' => '', 'type' => 'wspolpraca', 'cooperation_data' => $cd,
+        ])->assertSessionHasNoErrors();
+        $this->assertSame($fromEditor, $classic->refresh()->cooperation_data);
+
+        $this->save($page, ['cooperation_data' => ['form_recipient' => 'to nie e-mail']])->assertStatus(422);
+        $this->assertSame('Partnerstwo', $page->refresh()->cooperation_data['hero_badge']);
     }
 
     public function test_bip_move_fields_are_edited_in_the_block_editor(): void

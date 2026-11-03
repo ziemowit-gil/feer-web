@@ -20,7 +20,7 @@ use App\PageTypes\PageTypeRegistry;
 final class PageTypeFields
 {
     /** Typy z rozbudowanym własnym układem (sekcje, ustawienia witryny) — jak dotąd tylko formularz klasyczny; osoba (about_person) ma osobny formularz. */
-    public const CLASSIC_ONLY = ['about', 'wspolpraca', 'contact'];
+    public const CLASSIC_ONLY = ['about', 'contact'];
 
     /** Typy z własnymi kolumnami: typ => sekcja pól (ta sama co w formularzu strony). */
     private const COLUMN_TYPES = [
@@ -31,6 +31,7 @@ final class PageTypeFields
         'legacy' => 'admin.pages.partials.types.legacy',
         'brand_assets' => 'admin.pages.partials.types.brand',
         'bip_move' => 'admin.pages.partials.types.bipmove',
+        'wspolpraca' => 'admin.pages.partials.types.cooperation',
     ];
 
     /** Kolumny zapisywane przez dany typ (edytor blokowy nie dotyka pozostałych). */
@@ -42,6 +43,7 @@ final class PageTypeFields
         'legacy' => ['legacy_name', 'legacy_intro'],
         'brand_assets' => ['brand_brandbook_url', 'brand_sections'],
         'bip_move' => ['bip_move_url', 'bip_move_note'],
+        'wspolpraca' => ['cooperation_data'],
     ];
 
     /** Czy pola typu tej strony da się edytować w edytorze blokowym. */
@@ -123,6 +125,10 @@ final class PageTypeFields
     {
         if (in_array($type, Page::typeDataTypes(), true)) {
             return ['type_data' => $data['type_data'] ?? []];
+        }
+
+        if ($type === 'wspolpraca') {
+            return ['cooperation_data' => self::cooperationData((array) ($input['cooperation_data'] ?? []))];
         }
 
         $keys = self::COLUMNS[$type] ?? [];
@@ -220,6 +226,69 @@ final class PageTypeFields
     }
 
     /**
+     * Treść sekcji strony „Współpraca” (cooperation_data) z danych formularza — pola przycięte,
+     * puste statystyki pominięte. Wspólne dla formularza strony i edytora blokowego.
+     *
+     * @param  array<string, mixed>  $cd
+     * @return array<string, mixed>
+     */
+    public static function cooperationData(array $cd): array
+    {
+        $sectors = [];
+        foreach ((array) ($cd['sectors'] ?? []) as $row) {
+            $sectors[] = [
+                'icon'  => trim((string) ($row['icon'] ?? '')),
+                'color' => trim((string) ($row['color'] ?? 'brand')),
+                'title' => trim((string) ($row['title'] ?? '')),
+                'text'  => trim((string) ($row['text'] ?? '')),
+                'tag1'  => trim((string) ($row['tag1'] ?? '')),
+                'tag2'  => trim((string) ($row['tag2'] ?? '')),
+                'tag3'  => trim((string) ($row['tag3'] ?? '')),
+            ];
+        }
+        $forms = [];
+        foreach ((array) ($cd['forms'] ?? []) as $row) {
+            $forms[] = [
+                'icon'  => trim((string) ($row['icon'] ?? '')),
+                'title' => trim((string) ($row['title'] ?? '')),
+                'text'  => trim((string) ($row['text'] ?? '')),
+            ];
+        }
+        $stats = [];
+        foreach ((array) ($cd['stats'] ?? []) as $row) {
+            $val = trim((string) ($row['value'] ?? ''));
+            $lbl = trim((string) ($row['label'] ?? ''));
+            if ($val !== '' && $lbl !== '') {
+                $stats[] = ['value' => $val, 'label' => $lbl];
+            }
+        }
+        return [
+            'hero_badge'         => trim((string) ($cd['hero_badge'] ?? '')),
+            'hero_subtitle'      => trim((string) ($cd['hero_subtitle'] ?? '')),
+            'hero_cta1_label'    => trim((string) ($cd['hero_cta1_label'] ?? '')),
+            'hero_cta1_url'      => trim((string) ($cd['hero_cta1_url'] ?? '')),
+            'hero_cta2_label'    => trim((string) ($cd['hero_cta2_label'] ?? '')),
+            'stats'              => $stats ?: null,
+            'sectors_heading'    => trim((string) ($cd['sectors_heading'] ?? '')),
+            'sectors_subtitle'   => trim((string) ($cd['sectors_subtitle'] ?? '')),
+            'sectors'            => $sectors,
+            'forms_heading'      => trim((string) ($cd['forms_heading'] ?? '')),
+            'forms_subtitle'     => trim((string) ($cd['forms_subtitle'] ?? '')),
+            'forms'              => $forms,
+            'cta_heading'        => trim((string) ($cd['cta_heading'] ?? '')),
+            'cta_text'           => trim((string) ($cd['cta_text'] ?? '')),
+            'cta_button_label'   => trim((string) ($cd['cta_button_label'] ?? '')),
+            'cta_button_url'     => trim((string) ($cd['cta_button_url'] ?? '')),
+            'under_construction' => ! empty($cd['under_construction']),
+            'form_enabled'       => ! empty($cd['form_enabled']),
+            'form_recipient'     => trim((string) ($cd['form_recipient'] ?? '')),
+            'form_title'         => trim((string) ($cd['form_title'] ?? '')),
+            'form_subtitle'      => trim((string) ($cd['form_subtitle'] ?? '')),
+            'form_confirmation'  => trim((string) ($cd['form_confirmation'] ?? '')),
+        ];
+    }
+
+    /**
      * Wiersze repeatera przycięte do podanych kluczy, bez całkiem pustych wierszy;
      * null, gdy nic nie zostało (kolumna JSON zostaje czysta).
      */
@@ -257,6 +326,43 @@ final class PageTypeFields
                 'schedule_items.*.time' => ['nullable', 'string', 'max:255'],
                 'schedule_items.*.location' => ['nullable', 'string', 'max:255'],
                 'schedule_items.*.note' => ['nullable', 'string', 'max:500'],
+            ],
+            'wspolpraca' => [
+                'cooperation_data' => ['nullable', 'array'],
+                'cooperation_data.hero_badge' => ['nullable', 'string', 'max:100'],
+                'cooperation_data.hero_subtitle' => ['nullable', 'string', 'max:600'],
+                'cooperation_data.hero_cta1_label' => ['nullable', 'string', 'max:80'],
+                'cooperation_data.hero_cta1_url' => ['nullable', 'string', 'max:500'],
+                'cooperation_data.hero_cta2_label' => ['nullable', 'string', 'max:80'],
+                'cooperation_data.sectors_heading' => ['nullable', 'string', 'max:200'],
+                'cooperation_data.sectors_subtitle' => ['nullable', 'string', 'max:400'],
+                'cooperation_data.sectors' => ['nullable', 'array'],
+                'cooperation_data.sectors.*.icon' => ['nullable', 'string', 'max:100'],
+                'cooperation_data.sectors.*.color' => ['nullable', 'string', 'max:30'],
+                'cooperation_data.sectors.*.title' => ['nullable', 'string', 'max:120'],
+                'cooperation_data.sectors.*.text' => ['nullable', 'string', 'max:600'],
+                'cooperation_data.sectors.*.tag1' => ['nullable', 'string', 'max:80'],
+                'cooperation_data.sectors.*.tag2' => ['nullable', 'string', 'max:80'],
+                'cooperation_data.sectors.*.tag3' => ['nullable', 'string', 'max:80'],
+                'cooperation_data.forms_heading' => ['nullable', 'string', 'max:200'],
+                'cooperation_data.forms_subtitle' => ['nullable', 'string', 'max:400'],
+                'cooperation_data.forms' => ['nullable', 'array'],
+                'cooperation_data.forms.*.icon' => ['nullable', 'string', 'max:100'],
+                'cooperation_data.forms.*.title' => ['nullable', 'string', 'max:120'],
+                'cooperation_data.forms.*.text' => ['nullable', 'string', 'max:600'],
+                'cooperation_data.stats' => ['nullable', 'array'],
+                'cooperation_data.stats.*.value' => ['nullable', 'string', 'max:30'],
+                'cooperation_data.stats.*.label' => ['nullable', 'string', 'max:80'],
+                'cooperation_data.cta_heading' => ['nullable', 'string', 'max:200'],
+                'cooperation_data.cta_text' => ['nullable', 'string', 'max:600'],
+                'cooperation_data.cta_button_label' => ['nullable', 'string', 'max:80'],
+                'cooperation_data.cta_button_url' => ['nullable', 'string', 'max:500'],
+                'cooperation_data.under_construction' => ['nullable', 'boolean'],
+                'cooperation_data.form_enabled' => ['nullable', 'boolean'],
+                'cooperation_data.form_recipient' => ['nullable', 'email', 'max:200'],
+                'cooperation_data.form_title' => ['nullable', 'string', 'max:150'],
+                'cooperation_data.form_subtitle' => ['nullable', 'string', 'max:400'],
+                'cooperation_data.form_confirmation' => ['nullable', 'string', 'max:400'],
             ],
             'bip_move' => [
                 'bip_move_url' => ['nullable', 'url', 'max:255'],
