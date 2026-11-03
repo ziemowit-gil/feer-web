@@ -205,6 +205,7 @@ function start(config) {
         image: { title: 'Obraz', icon: 'image', cat: 'media', desc: 'Zdjęcie lub grafika z opisem alternatywnym.', keywords: ['zdjęcie', 'grafika', 'foto', 'img'], create: () => ({ url: '', alt: '', decorative: false, caption: '', width: 'full', href: '' }) },
         gallery: { title: 'Galeria', icon: 'images', cat: 'media', desc: 'Kilka zdjęć w siatce.', keywords: ['zdjęcia', 'fotorelacja'], create: () => ({ columns: 3, images: [] }) },
         embed: { title: 'Film (YouTube, Vimeo)', icon: 'circle-play', cat: 'media', desc: 'Osadzony film. YouTube w trybie bez ciasteczek.', keywords: ['wideo', 'youtube', 'vimeo', 'osadzenie', 'film'], create: () => ({ url: '', title: '', caption: '' }) },
+        phone: { title: 'Numer telefonu', icon: 'phone', cat: 'design', desc: 'Numer do kontaktu ukryty za przyciskiem: odwiedzający odsłania go najechaniem, klawiaturą albo kliknięciem.', keywords: ['telefon', 'numer', 'komórka', 'kontakt', 'zadzwoń', 'centrala'], create: () => ({ label: 'Zadzwoń do nas', number: '', note: '' }) },
         file: { title: 'Plik do pobrania', icon: 'file-arrow-down', cat: 'media', desc: 'Odnośnik do dokumentu (PDF, DOCX…).', keywords: ['pdf', 'dokument', 'załącznik', 'pobierz'], create: () => ({ url: '', label: '', description: '' }) },
         buttons: { title: 'Przyciski', icon: 'hand-pointer', cat: 'design', desc: 'Wezwanie do działania — jeden lub kilka przycisków.', keywords: ['cta', 'przycisk', 'link', 'zapisz się'], align: true, create: () => ({ align: 'left', items: [{ label: 'Dowiedz się więcej', url: '', variant: 'brand', newTab: false }] }) },
         banner: { title: 'Baner sekcji', icon: 'panorama', cat: 'design', desc: 'Szeroki pasek z grafiką po lewej i tytułem sekcji, np. „Nasze media społecznościowe”. Może prowadzić do strony.', keywords: ['baner', 'banner', 'pasek', 'sekcja', 'tytuł', 'nagłówek', 'grafika'], create: () => ({ title: '', level: 2, url: '', alt: '', decorative: true, size: 'large', tone: 'gray', href: '' }) },
@@ -719,6 +720,10 @@ function start(config) {
                 if (imgs.length === 1 && !t) { out.push(imageFrom(imgs[0], n.querySelector('a')?.getAttribute('href'))); continue; }
                 if (ctas.length && ctas.length === n.querySelectorAll('a').length && t === [...ctas].map((a) => a.textContent.trim()).join(' ').trim()) {
                     out.push(block('buttons', { align: alignOf(n), items: [...ctas].map((a) => ({ label: a.textContent.trim(), url: a.getAttribute('href') || '', variant: a.classList.contains('cta-red') ? 'red' : (a.classList.contains('cta-green') ? 'green' : 'brand'), newTab: a.target === '_blank' })) }));
+                    continue;
+                }
+                if (n.tagName === 'DIV' && n.hasAttribute('data-phone-reveal')) {
+                    out.push(block('phone', { label: n.querySelector('.phone-reveal-label')?.textContent.trim() || '', number: n.querySelector('.phone-reveal-number')?.textContent.trim() || '', note: n.querySelector('.phone-reveal-note')?.textContent.trim() || '' }));
                     continue;
                 }
                 if (cls.contains('content-file') && n.querySelector('a')) {
@@ -1448,6 +1453,9 @@ function start(config) {
                     if (!a.caption.trim()) w.push('Dodaj podpis tabeli (krótki opis jej zawartości).');
                     break;
                 case 'details': if (!a.summary.trim()) w.push('Rozwijana sekcja nie ma tytułu.'); break;
+                case 'phone':
+                    if (!a.number.replace(/\D/g, '')) w.push('Wpisz numer telefonu — bez niego klocek nie pokaże się na stronie.');
+                    break;
                 case 'file':
                     if (a.url && !a.label.trim()) w.push('Podaj czytelną nazwę pliku zamiast nazwy technicznej.');
                     break;
@@ -1824,6 +1832,7 @@ function start(config) {
         table: (b) => tableEditor(b),
         separator: () => h('hr', {}),
         embed: (b) => embedEditor(b),
+        phone: (b) => phoneEditor(b),
         file: (b) => fileEditor(b),
         banner: (b) => bannerEditor(b),
         imagebanner: (b) => imageBannerEditor(b),
@@ -2013,6 +2022,18 @@ function start(config) {
             src ? h('div', { class: 'content-embed-frame' }, h('iframe', { src, title: a.title || 'Osadzony film', loading: 'lazy', tabindex: '-1' }), h('div', { class: 'be-embed-overlay', 'aria-hidden': 'true' }))
                 : h('p', { class: 'be-muted' }, 'Nieobsługiwany adres: ', a.url),
             richField(b, 'caption', { tag: 'figcaption', placeholder: 'Dodaj podpis (opcjonalnie)', lineBreak: true, label: 'Podpis filmu' }));
+    }
+
+    // Podgląd w edytorze: numer widoczny od razu (na stronie jest ukryty za przyciskiem); treść ustawia się w panelu bocznym.
+    function phoneEditor(b) {
+        const a = b.attrs;
+        return h('div', { class: 'phone-reveal is-open' },
+            h('span', { class: 'phone-reveal-icon', 'aria-hidden': 'true' }, icon('phone')),
+            h('div', { class: 'phone-reveal-body' },
+                a.label ? h('p', { class: 'phone-reveal-label' }, a.label) : null,
+                h('p', { class: 'phone-reveal-number' }, a.number || 'Wpisz numer w panelu po prawej'),
+                a.note ? h('p', { class: 'phone-reveal-note' }, a.note) : null,
+                h('p', { class: 'be-help' }, 'Na stronie numer pojawi się po najechaniu, ustawieniu fokusu albo kliknięciu przycisku „Pokaż numer telefonu”.')));
     }
 
     function fileEditor(b) {
@@ -2996,6 +3017,12 @@ function start(config) {
                     field('Adres filmu', textInput(a.url, (v) => updateAttrs(b, { url: v.trim() }, { typing: true }), { type: 'url' })),
                     field('Tytuł filmu', textInput(a.title, (v) => updateAttrs(b, { title: v }, { typing: true, rerender: false })), 'Wymagany dla dostępności — czytnik ekranu ogłosi go przy ramce filmu.'),
                     h('p', { class: 'be-help' }, 'Upewnij się, że film ma napisy, a jeśli przekazuje ważne treści tylko obrazem — dodaj ich opis pod filmem.')));
+                break;
+            case 'phone':
+                parts.push(panelSection('Numer telefonu',
+                    field('Podpis nad numerem', textInput(a.label, (v) => updateAttrs(b, { label: v }, { typing: true })), 'Np. „Zadzwoń do biura” albo „Koordynatorka szkoleń”.'),
+                    field('Numer', textInput(a.number, (v) => updateAttrs(b, { number: v.replace(/[^0-9 +()\-.]/g, '') }, { typing: true }), { type: 'tel' }), 'Np. 601 350 487. Na telefonie dotknięcie numeru uruchamia połączenie.'),
+                    field('Dopisek (opcjonalnie)', textInput(a.note, (v) => updateAttrs(b, { note: v }, { typing: true })), 'Np. „pon.–śr. 10:00–12:00”.')));
                 break;
             case 'file':
                 parts.push(panelSection('Plik',

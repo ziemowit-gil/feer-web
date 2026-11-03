@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/** Domyślny edytor (Mój profil): wybór w profilu, pytanie po zalogowaniu i otwieranie „Edytuj” w wybranym edytorze. */
+/** Domyślny edytor (Mój profil): wybór w profilu, domyślnie blokowy (bez pytania po zalogowaniu) i otwieranie „Edytuj” w wybranym edytorze. */
 class DefaultEditorTest extends TestCase
 {
     use RefreshDatabase;
@@ -61,37 +61,28 @@ class DefaultEditorTest extends TestCase
         $this->assertNull($user->refresh()->default_editor);
     }
 
-    public function test_admin_panel_asks_for_editor_until_chosen(): void
+    public function test_block_editor_is_the_default_and_no_prompt_is_shown(): void
     {
         $user = $this->admin();
 
-        $this->actingAs($user)->get(route('admin.dashboard'))->assertOk()->assertSee('id="default-editor-prompt"', false);
-
-        $this->actingAs($user)->from(route('admin.dashboard'))
-            ->patch(route('profile.editor'), ['default_editor' => User::EDITOR_CLASSIC, 'from_prompt' => 1])
-            ->assertRedirect(route('admin.dashboard'));
-
-        $this->actingAs($user->refresh())->get(route('admin.dashboard'))->assertOk()->assertDontSee('id="default-editor-prompt"', false);
+        $this->assertSame(User::EDITOR_BLOCKS, $user->effectiveEditor());
+        $this->assertTrue($user->prefersBlockEditor());
+        $this->actingAs($user)->get(route('admin.dashboard'))->assertOk()->assertDontSee('id="default-editor-prompt"', false);
+        $this->actingAs($user)->get(route('profile.edit'))->assertOk()
+            ->assertSee('value="blocks" checked', false);
     }
 
-    public function test_later_hides_prompt_for_the_session_only(): void
+    public function test_default_opens_block_editor_without_a_saved_choice(): void
     {
-        $user = $this->admin();
+        $page = $this->page();
 
-        $this->actingAs($user)->from(route('admin.dashboard'))->post(route('profile.editor.dismiss'))
-            ->assertRedirect(route('admin.dashboard'))
-            ->assertSessionHas('default_editor_prompt_dismissed', true);
-
-        $this->get(route('admin.dashboard'))->assertDontSee('id="default-editor-prompt"', false);
-        $this->assertNull($user->refresh()->default_editor);
+        $this->actingAs($this->admin())->get(route('admin.podstrony.edit', $page))->assertRedirect(route('admin.podstrony.bloki.edit', $page));
     }
 
-    public function test_no_prompt_when_block_editor_is_disabled(): void
+    public function test_classic_choice_is_respected_and_unknown_value_falls_back_to_blocks(): void
     {
-        SiteSetting::current()->update(['disabled_modules' => ['block_editor']]);
-        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
-
-        $this->actingAs($this->admin())->get(route('admin.dashboard'))->assertOk()->assertDontSee('id="default-editor-prompt"', false);
+        $this->assertFalse($this->admin(User::EDITOR_CLASSIC)->prefersBlockEditor());
+        $this->assertTrue($this->admin('inny')->prefersBlockEditor());
     }
 
     public function test_block_preference_opens_block_editor(): void

@@ -1,6 +1,6 @@
 {{-- Domyślny edytor treści: co otwiera „Edytuj” przy stronie, aktualności i działaniu. --}}
 @php
-    $current = old('default_editor', auth()->user()->default_editor);
+    $current = old('default_editor', auth()->user()->effectiveEditor());
     $editorHints = [
         \App\Models\User::EDITOR_CLASSIC => 'Formularz z polem treści i wszystkimi ustawieniami w jednym miejscu.',
         \App\Models\User::EDITOR_BLOCKS => 'Treść składana z bloków (nagłówki, tekst, zdjęcia, przyciski) z podglądem jak na stronie.',

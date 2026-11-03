@@ -298,26 +298,22 @@ class User extends Authenticatable implements Subscribable
         });
     }
 
-    /** Czy „Edytuj” ma otwierać edytor blokowy (wybrany w profilu i włączony w Ustawienia → Moduły). */
+    /** Edytor, który „Edytuj” otwiera domyślnie: wybrany w profilu, a bez wyboru — blokowy. */
+    public function effectiveEditor(): string
+    {
+        return array_key_exists((string) $this->default_editor, self::EDITORS) ? $this->default_editor : self::EDITOR_BLOCKS;
+    }
+
+    /** Czy „Edytuj” ma otwierać edytor blokowy (domyślnie tak; klasyczny trzeba wybrać w profilu; wymaga modułu w Ustawienia → Moduły). */
     public function prefersBlockEditor(): bool
     {
-        return $this->default_editor === self::EDITOR_BLOCKS
+        return $this->effectiveEditor() === self::EDITOR_BLOCKS
             && SiteSetting::current()->isModuleEnabled('block_editor');
     }
 
-    /** Czy zapytać o domyślny edytor: jeszcze go nie wybrał, a ma do czego (edytor blokowy + strony/aktualności/działania). */
+    /** Pytanie o domyślny edytor wyłączone: domyślny jest blokowy, a zmianę robi się w Mój profil → Domyślny edytor. */
     public function needsDefaultEditorChoice(): bool
     {
-        if (filled($this->default_editor) || ! SiteSetting::current()->isModuleEnabled('block_editor')) {
-            return false;
-        }
-
-        foreach (['pages', 'news', 'projects'] as $module) {
-            if ($this->canAccessModule($module)) {
-                return true;
-            }
-        }
-
         return false;
     }
 }

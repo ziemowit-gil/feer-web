@@ -1124,3 +1124,20 @@ document.querySelectorAll('a[target="_blank"]').forEach((link) => {
 });
 
 import './push';
+
+// Klocek „Numer telefonu” (BlockRenderer, typ phone): numer ukryty za przyciskiem; odsłania go najechanie myszą (tylko urządzenia
+// z kursorem), fokus klawiatury albo kliknięcie/dotyk. Bez JS numer jest widoczny od razu. Po kliknięciu fokus trafia na numer.
+document.querySelectorAll('[data-phone-reveal]').forEach((box) => {
+    const btn = box.querySelector('.phone-reveal-btn');
+    const num = box.querySelector('.phone-reveal-number');
+    if (!btn || !num) return;
+    box.classList.add('is-js');
+    const open = () => {
+        box.classList.add('is-open');
+        btn.setAttribute('aria-expanded', 'true');
+    };
+    // Przycisk po odsłonięciu znika, więc po kliknięciu (też gdy fokus już go odsłonił) fokus przechodzi na numer.
+    btn.addEventListener('click', () => { open(); num.focus(); });
+    btn.addEventListener('focus', open);
+    if (window.matchMedia('(hover: hover)').matches) box.addEventListener('mouseenter', open);
+});

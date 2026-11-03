@@ -35,7 +35,7 @@ class BlockRenderer
 
     public const TYPES = [
         'paragraph', 'heading', 'list', 'quote', 'image', 'gallery', 'buttons', 'callout', 'partnerevent',
-        'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist', 'banner', 'imagebanner', 'materials',
+        'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist', 'banner', 'imagebanner', 'materials', 'phone',
     ];
 
     private const INLINE_TAGS = ['strong', 'b', 'em', 'i', 'a', 'br', 'code', 's', 'sub', 'sup', 'mark'];
@@ -168,6 +168,7 @@ class BlockRenderer
             ],
             'embed' => ['url' => self::url($str('url')), 'title' => $str('title', 300), 'caption' => $rich('caption', 1000)],
             'file' => ['url' => self::url($str('url')), 'label' => $str('label', 300), 'description' => $str('description', 500)],
+            'phone' => ['label' => $str('label', 120), 'number' => preg_replace('/[^0-9 +()\-.]/', '', $str('number', 40)), 'note' => $str('note', 160)],
             'banner' => [
                 'title' => preg_replace('/\s+/u', ' ', $str('title', 200)),
                 'level' => max(2, min(4, (int) ($a['level'] ?? 2))),
@@ -372,6 +373,21 @@ class BlockRenderer
                 return '<figure class="content-embed"><div class="content-embed-frame"><iframe src="'.e($src).'" title="'.e($a['title'] ?: 'Osadzony film').'"'
                     .' loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>'
                     .$caption.'</figure>';
+
+            case 'phone':
+                $digits = preg_replace('/[^0-9+]/', '', $a['number']);
+                if ($digits === '') {
+                    return '';
+                }
+                $label = $a['label'] !== '' ? '<p class="phone-reveal-label">'.e($a['label']).'</p>' : '';
+                $note = $a['note'] !== '' ? '<p class="phone-reveal-note">'.e($a['note']).'</p>' : '';
+
+                // Bez JS numer jest widoczny od razu; skrypt (resources/js/app.js) ukrywa go za przyciskiem do czasu najechania, fokusu albo kliknięcia.
+                return '<div class="phone-reveal" data-phone-reveal><span class="phone-reveal-icon" aria-hidden="true"><i class="fa-solid fa-phone"></i></span>'
+                    .'<div class="phone-reveal-body">'.$label
+                    .'<button type="button" class="phone-reveal-btn" aria-expanded="false"><span>Pokaż numer telefonu</span></button>'
+                    .'<a class="phone-reveal-number" href="tel:'.e($digits).'">'.e($a['number']).'</a>'
+                    .$note.'</div></div>';
 
             case 'file':
                 if ($a['url'] === '') {

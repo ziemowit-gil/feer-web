@@ -226,7 +226,7 @@ class ContentLinkListTest extends TestCase
         $this->assertStringContainsString('id="tb-root"', $html);
         $this->assertStringContainsString('id="bb-root"', $html);
         $this->assertSame('Kafle działu', $classic['tileSets'][0]['label']);
-        $this->assertSame(['bip', 'accentLeft', 'accentRight'], array_column($classic['snippets'], 'key'));
+        $this->assertSame(['bip', 'partnerEvent', 'accentLeft', 'accentRight'], array_column($classic['snippets'], 'key'));
         $this->assertStringContainsString('bip-link-box', $classic['snippets'][0]['html']);
     }
 
