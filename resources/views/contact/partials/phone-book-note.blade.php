@@ -22,19 +22,19 @@
     $pbLink = 'inline-flex min-h-11 items-center gap-2 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
 @endphp
 @if ($switchboard !== '' || $phoneBookUrl)
-    <div class="phone-book-note {{ $class ?? 'mb-6' }} rounded-md bg-gray-50 p-5 text-ink" role="note" aria-label="Telefon i oddzwanianie">
+    <div class="phone-book-note {{ $class ?? 'mb-6' }} rounded-md bg-gray-50 p-5 text-ink" role="note" aria-label="Numer ogólny i telefony pracowników">
         @if ($switchboard !== '')
-            <p class="text-sm font-bold uppercase tracking-widest">Telefon</p>
+            <p class="text-sm font-bold uppercase tracking-widest">Numer ogólny</p>
             @if ($plainPhone)
-                <p class="mt-1 text-2xl font-bold"><span class="sr-only">Telefon: </span>{{ $switchboard }}</p>
+                <p class="mt-1 text-2xl font-bold"><span class="sr-only">Numer ogólny: </span>{{ $switchboard }}</p>
             @else
-                <p class="mt-1"><a href="tel:{{ preg_replace('/[^0-9+]/', '', $switchboard) }}" class="{{ $pbLink }} text-2xl"><i class="fa-solid fa-phone" aria-hidden="true"></i><span class="sr-only">Zadzwoń do nas: </span>{{ $switchboard }}</a></p>
+                <p class="mt-1"><a href="tel:{{ preg_replace('/[^0-9+]/', '', $switchboard) }}" class="{{ $pbLink }} text-2xl"><i class="fa-solid fa-phone" aria-hidden="true"></i><span class="sr-only">Zadzwoń na numer ogólny: </span>{{ $switchboard }}</a></p>
             @endif
         @endif
         @if ($switchboard !== '' && $phoneHours !== '')
             <p class="mt-1"><span class="font-bold">Kiedy dzwonić:</span> {{ $phoneHours }}</p>
         @endif
-        <p class="{{ $switchboard !== '' ? 'mt-3 ' : '' }}leading-relaxed">Oddzwaniamy najczęściej z komórek, więc na ekranie może pojawić się numer, którego nie znasz. Możliwe, że to my.</p>
+        <p class="{{ $switchboard !== '' ? 'mt-3 ' : '' }}leading-relaxed">Koordynatorzy i inni pracownicy często dzwonią z komórek, bo pracujemy zdalnie.</p>
         @if ($phoneBookUrl)
             <p class="mt-1"><a href="{{ $phoneBookUrl }}" class="{{ $pbLink }}"><i class="fa-solid fa-address-book" aria-hidden="true"></i>{{ $phoneBookTitle }}: sprawdź, kto i w jakiej sprawie dzwoni</a></p>
         @endif

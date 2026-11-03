@@ -20,7 +20,7 @@ class ContactPhoneBookNoteTest extends TestCase
 
     public function test_every_contact_layout_shows_switchboard_callback_hint_and_phone_book_link(): void
     {
-        // Numer nie jest nazywany „centralą”: etykieta to „Telefon”.
+        // Numer nie jest nazywany „centralą”: etykieta to „Numer ogólny”.
         Page::create(['title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'is_published' => true]);
 
         foreach (['classic', 'card', 'split', 'tabs', 'feer'] as $layout) {
@@ -35,12 +35,12 @@ class ContactPhoneBookNoteTest extends TestCase
             } else {
                 $this->assertStringContainsString('href="tel:123456789"', $html, $layout);
             }
-            $this->assertStringContainsString('Oddzwaniamy najczęściej z komórek', $html, $layout);
+            $this->assertStringContainsString('dzwonią z komórek, bo pracujemy zdalnie', $html, $layout);
             $this->assertStringContainsString('/ksiazka-telefoniczna"', $html, $layout);
             // Numer telefonu stoi nad informacją o oddzwanianiu i linkiem do książki.
             $note = substr($html, strpos($html, 'phone-book-note'));
-            $this->assertLessThan(strpos($note, 'Oddzwaniamy najczęściej'), strpos($note, '12 345 67 89'), $layout);
-            $this->assertLessThan(strpos($note, '/ksiazka-telefoniczna"'), strpos($note, 'Oddzwaniamy najczęściej'), $layout);
+            $this->assertLessThan(strpos($note, 'dzwonią z komórek'), strpos($note, '12 345 67 89'), $layout);
+            $this->assertLessThan(strpos($note, '/ksiazka-telefoniczna"'), strpos($note, 'dzwonią z komórek'), $layout);
         }
     }
 
@@ -50,7 +50,7 @@ class ContactPhoneBookNoteTest extends TestCase
         $html = $this->get('/kontakt')->assertOk()->getContent();
 
         $this->assertStringContainsString('phone-book-note', $html);
-        $this->assertStringContainsString('Oddzwaniamy najczęściej z komórek', $html);
+        $this->assertStringContainsString('dzwonią z komórek, bo pracujemy zdalnie', $html);
         $this->assertStringNotContainsString('sprawdź, kto i w jakiej sprawie dzwoni', $html);
 
         Page::create(['title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'is_published' => true]);
