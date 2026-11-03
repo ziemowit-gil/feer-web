@@ -4,6 +4,9 @@
 
 @section('content')
     <div class="mb-4 flex flex-wrap justify-end gap-2">
+        <a href="{{ route('admin.uzytkownicy.podglad-menu') }}" class="rounded-md px-4 py-2 text-sm font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-white hover:bg-brand-light">
+            <i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd menu ról
+        </a>
         <a href="{{ route('admin.uzytkownicy.uprawnienia') }}" class="rounded-md px-4 py-2 text-sm font-bold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 bg-white hover:bg-brand-light">
             <i class="fa-solid fa-table-cells" aria-hidden="true"></i> Macierz uprawnień
         </a>
@@ -46,6 +49,7 @@
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3">
+                                <a href="{{ route('admin.uzytkownicy.podglad-menu', ['jako' => 'uzytkownik:'.$user->id]) }}" class="text-muted hover:text-brand-dark" title="Podgląd menu"><i class="fa-solid fa-eye" aria-hidden="true"></i><span class="sr-only">Podgląd menu: {{ $user->name }}</span></a>
                                 <a href="{{ route('admin.uzytkownicy.edit', $user) }}" class="text-muted hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
                                 @if ($user->microsoft_id)
                                     <form method="POST" action="{{ route('admin.uzytkownicy.microsoft.unlink', $user) }}" onsubmit="return confirm('Odłączyć konto Microsoft 365 od użytkownika &quot;{{ $user->name }}&quot;?');">

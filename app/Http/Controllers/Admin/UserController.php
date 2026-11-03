@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\SiteSetting;
 use App\Models\User;
 use App\Models\UserGroup;
+use App\Support\RoleMenuPreview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -29,6 +31,27 @@ class UserController extends Controller
             'users' => $users,
             'modules' => \App\Models\SiteSetting::MODULES,
             'categories' => $categories,
+        ]);
+    }
+
+    /**
+     * Podgląd menu panelu dla roli, grupy edytora albo użytkownika (patrz RoleMenuPreview): co widzi i czego nie widzi.
+     * Tylko odczyt, bez logowania się na cudze konto.
+     */
+    public function menuPreview(Request $request)
+    {
+        $choice = (string) $request->query('jako', '');
+        $subject = RoleMenuPreview::subject($choice);
+        abort_if($choice !== '' && $subject === null, 404);
+
+        return view('admin.users.menu-preview', [
+            'options' => RoleMenuPreview::options(),
+            'choice' => $choice,
+            'subject' => $subject,
+            'title' => $subject ? RoleMenuPreview::title($subject) : null,
+            'preview' => $subject ? RoleMenuPreview::build($subject) : null,
+            'members' => $subject ? RoleMenuPreview::members($subject) : collect(),
+            'siteName' => SiteSetting::current()->site_name,
         ]);
     }
 

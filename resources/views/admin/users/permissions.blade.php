@@ -3,7 +3,8 @@
 @section('title', 'Macierz uprawnień')
 
 @section('content')
-    <p class="mb-4 text-sm text-muted">Kto ma dostęp do których modułów panelu. Administratorzy mają dostęp do wszystkiego; edytorzy z grup — do modułów zaznaczonych w ich grupie (z ewentualnym zakresem treści).</p>
+    <p class="mb-4 text-sm text-muted">Kto ma dostęp do których modułów panelu. Administratorzy mają dostęp do wszystkiego; edytorzy z grup — do modułów zaznaczonych w ich grupie (z ewentualnym zakresem treści).
+        Menu, które z tego wynika, zobaczysz w <a href="{{ route('admin.uzytkownicy.podglad-menu') }}" class="font-bold text-brand-dark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">podglądzie menu ról</a>.</p>
 
     <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full min-w-max text-left text-sm">
