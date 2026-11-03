@@ -965,13 +965,13 @@ html.contrast .content-banner { background: #fff; outline: 2px solid currentColo
 .proj-nav-item[aria-current] > i, .proj-nav-item:hover > i { color: var(--color-brand-dark, #1752bf); }
 
 
-/* „Ramka partnera” (wstawka i klocek edytora): materiał innej organizacji. Prosta, jednobarwna pomarańczowa ramka (#EA8F00)
-   ze znakiem informacji „i” w tle po prawej (dekoracja, znika na telefonie). Tekst #1D1D1A na #EA8F00 ≈ 7:1 w całej ramce,
+/* „Ramka partnera” (wstawka i klocek edytora): materiał innej organizacji. Prosta, jednobarwna pomarańczowa ramka (#F5A524)
+   ze znakiem informacji „i” w tle po prawej (dekoracja, znika na telefonie). Tekst #1D1D1A na #F5A524 = 8,3:1 w całej ramce,
    także w linkach (podkreślone). Oznaczenie „Materiał partnera” to pierwszy akapit; starsze wstawki bez niego wyglądają jak dotąd. */
 .prose .partner-event-box,
 .partner-event-box {
     border-radius: 0.75rem;
-    background: #ea8f00 url("/img/partner-event-info.svg") no-repeat right 1.5rem center / auto 70%;
+    background: #f5a524 url("/img/partner-event-info.svg") no-repeat right 1.5rem center / auto 70%;
     color: #1d1d1a;
     padding: 1.25rem 9rem 1.25rem 1.5rem;
     margin: 1.5rem 0;

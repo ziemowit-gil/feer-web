@@ -27,6 +27,9 @@ class PartnerEventSnippetTest extends TestCase
         $css = file_get_contents(resource_path('css/app.css'));
         $this->assertStringContainsString('.partner-event-box', $css);
         $this->assertStringContainsString('/img/partner-event-info.svg', $css);
+        // Tekst #1D1D1A na tle ramki #F5A524 ma kontrast 8,3:1 (na #EA8F00 było 6,8:1 — za mało na 7:1).
+        $this->assertStringContainsString('background: #f5a524 url("/img/partner-event-info.svg")', $css);
+        $this->assertStringContainsString('color: #1d1d1a;', $css);
     }
 
     public function test_block_renderer_outputs_partner_event_block(): void
