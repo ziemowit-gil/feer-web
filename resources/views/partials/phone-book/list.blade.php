@@ -1,7 +1,7 @@
 {{--
     Lista książki telefonicznej (wspólna dla typu strony „Książka telefoniczna” i modułu): kto, numer komórkowy,
     w jakiej sprawie i kiedy dzwonić. Układ tabelaryczny (każdy dział to tabela) albo karty, filtr działów, wyszukiwarka,
-    kopiowanie numeru, zapis kontaktu .vcf i opcjonalne ukrywanie numerów za przyciskiem.
+    zapis kontaktu .vcf i opcjonalne ukrywanie numerów za przyciskiem (numery bez linków „zadzwoń”).
     Zmienne: $contacts (tablice: group, name, role, phone, email, topic, hours), $layout (table|cards),
     $sort (manual|alpha), $hide (bool). Płasko, kolory firmowe; tekst ink na szarym tle ≥ 14:1, cele dotyku ≥ 44 px.
 --}}
@@ -53,14 +53,9 @@
 
 <div data-phone-book
     x-data="{
-        q: '', g: '', copied: '',
+        q: '', g: '',
         match(el) { const t = this.q.trim().toLowerCase(); return (this.g === '' || el.dataset.group === this.g) && (t === '' || el.dataset.person.includes(t)); },
         count() { return [...this.$el.querySelectorAll('[data-person]')].filter((el) => this.match(el)).length; },
-        async copy(number, name) {
-            try { await navigator.clipboard.writeText(number); this.copied = 'Skopiowano numer' + (name ? ': ' + name : ''); }
-            catch (e) { this.copied = 'Nie udało się skopiować. Zaznacz numer ręcznie.'; }
-            setTimeout(() => { this.copied = ''; }, 4000);
-        },
         save(card, file) {
             const url = URL.createObjectURL(new Blob([card], { type: 'text/vcard;charset=utf-8' }));
             const a = document.createElement('a'); a.href = url; a.download = file; document.body.appendChild(a); a.click(); a.remove();
@@ -90,7 +85,6 @@
         @endif
 
         <p class="sr-only" aria-live="polite" x-text="(q.trim() || g) ? ('Znaleziono osób: ' + count()) : ''"></p>
-        <p class="mb-4 text-ink" role="status" x-show="copied" x-text="copied" x-cloak></p>
 
         @foreach ($groups as $groupName => $list)
             <section class="{{ $loop->first ? '' : 'mt-10' }}" @if ($groupName !== '') aria-labelledby="phonebook-group-{{ $loop->index }}" @endif

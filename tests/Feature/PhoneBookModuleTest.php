@@ -101,7 +101,7 @@ class PhoneBookModuleTest extends TestCase
         $html = $this->get('/ksiazka-telefoniczna')->assertOk()
             ->assertSee('Telefony do zespołu')->assertSee('Dzwoń w dni robocze.')
             ->assertSee('Anna Kowalska')->assertSee('Jan Nowak')->assertSee('Zapisy na szkolenia')
-            ->assertSee('href="tel:601350487"', false)
+            ->assertSee('601 350 487')->assertDontSee('href="tel:', false)
             ->assertDontSee('Ukryty Wpis')
             ->getContent();
 

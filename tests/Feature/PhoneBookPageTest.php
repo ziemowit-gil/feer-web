@@ -37,7 +37,7 @@ class PhoneBookPageTest extends TestCase
         $this->assertArrayHasKey('type_data.contacts.*.phone', $type->rules());
     }
 
-    public function test_page_shows_people_grouped_with_tel_links_and_topics(): void
+    public function test_page_shows_people_grouped_with_plain_text_numbers_and_topics(): void
     {
         $this->book([
             ['group' => 'Biuro', 'name' => 'Anna Kowalska', 'role' => 'Koordynatorka', 'phone' => '601 350 487', 'email' => 'anna@example.org', 'topic' => 'Zapisy na szkolenia'],
@@ -50,8 +50,8 @@ class PhoneBookPageTest extends TestCase
             ->assertSee('Dzwoń w dni robocze.')
             ->assertSee('Biuro')->assertSee('Finanse')
             ->assertSee('Anna Kowalska')->assertSee('Zapisy na szkolenia')
-            ->assertSee('href="tel:601350487"', false)
-            ->assertSee('href="tel:+48500100200"', false)
+            ->assertSee('601 350 487')->assertSee('+48 500 100 200')
+            ->assertDontSee('href="tel:', false)
             ->assertSee('href="mailto:anna@example.org"', false)
             ->assertDontSee('wiersz bez osoby i numeru');
     }
@@ -98,7 +98,7 @@ class PhoneBookPageTest extends TestCase
         ]);
     }
 
-    public function test_hours_group_filter_copy_and_vcard_are_rendered(): void
+    public function test_hours_group_filter_and_vcard_are_rendered_without_call_links(): void
     {
         $this->bookWith(['contacts' => [
             ['group' => 'Biuro', 'name' => 'Anna Kowalska', 'role' => 'Koordynatorka', 'phone' => '601 350 487', 'email' => 'anna@example.org', 'topic' => 'Zapisy', 'hours' => 'pon.–śr. 10–12'],
@@ -110,7 +110,9 @@ class PhoneBookPageTest extends TestCase
         $this->assertStringContainsString('<th scope="col">Kiedy dzwonić</th>', $html);
         $this->assertStringContainsString('pon.–śr. 10–12', $html);
         $this->assertStringContainsString('role="group" aria-label="Filtr działów"', $html);
-        $this->assertStringContainsString('Kopiuj numer', $html);
+        // Książka służy do rozpoznania, kto dzwoni: bez linków „zadzwoń” i bez kopiowania numeru.
+        $this->assertStringNotContainsString('Kopiuj numer', $html);
+        $this->assertStringNotContainsString('href="tel:', $html);
         $this->assertStringContainsString('Zapisz w telefonie', $html);
         $this->assertStringContainsString('BEGIN:VCARD', str_replace('\\r\\n', "\n", $html));
         $this->assertStringContainsString('TEL;TYPE=CELL:601350487', $html);
@@ -145,7 +147,8 @@ class PhoneBookPageTest extends TestCase
             ->assertSee('phone-reveal phone-reveal--inline', false)
             ->assertSee('data-phone-reveal', false)
             ->assertSee('Pokaż numer: Anna Kowalska')
-            ->assertSee('href="tel:601350487" class="phone-reveal-number"', false);
+            ->assertSee('<span class="phone-reveal-number">', false)
+            ->assertDontSee('href="tel:', false);
     }
 
     public function test_admin_saves_new_settings_and_hours(): void
