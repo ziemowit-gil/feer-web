@@ -401,7 +401,7 @@ function start(config) {
         typeForm.addEventListener('change', () => markDirty());
         // Dodanie, usunięcie i przeniesienie wiersza repeatera też zmienia dane.
         typeForm.addEventListener('click', (e) => {
-            if (e.target.closest('[data-repeater-add],[data-repeater-add-section],[data-repeater-remove],[data-repeater-move],[data-td-add],[data-td-remove],[data-schedule-add],[data-schedule-remove]')) setTimeout(markDirty);
+            if (e.target.closest('[data-repeater-add],[data-repeater-add-section],[data-repeater-remove],[data-repeater-move],[data-td-add],[data-td-remove],[data-schedule-add],[data-schedule-remove],[data-move],[data-about-bulk]')) setTimeout(markDirty);
         });
         typeDlg.addEventListener('close', () => sidebar.querySelector('[data-type-fields-open]')?.focus());
     }

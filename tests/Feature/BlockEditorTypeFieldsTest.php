@@ -163,7 +163,7 @@ class BlockEditorTypeFieldsTest extends TestCase
 
     public function test_heavy_layout_types_keep_the_form(): void
     {
-        foreach (['about', 'contact'] as $type) {
+        foreach (['contact'] as $type) {
             $page = $this->page(['type' => $type, 'slug' => 'ukl-'.$type]);
 
             $this->assertFalse(\App\Support\PageTypeFields::supports($page), $type);
@@ -213,6 +213,60 @@ class BlockEditorTypeFieldsTest extends TestCase
 
         $this->save($page, ['cooperation_data' => ['form_recipient' => 'to nie e-mail']])->assertStatus(422);
         $this->assertSame('Partnerstwo', $page->refresh()->cooperation_data['hero_badge']);
+    }
+
+    public function test_about_fields_are_edited_in_the_block_editor_and_saved_like_the_form(): void
+    {
+        $partner = \App\Models\Partner::create(['name' => 'Partner', 'is_published' => true]);
+        $page = $this->page(['type' => 'about', 'slug' => 'o-nas-edytor', 'about_motto' => 'Stare motto', 'layout_data' => ['news_count' => 3, 'about_registry' => '1']]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'default_editor' => null]);
+
+        $this->assertTrue(\App\Support\PageTypeFields::hasFreeContent($page));
+        $this->actingAs($admin)->get(route('admin.podstrony.edit', $page))->assertRedirect(route('admin.podstrony.bloki.edit', $page));
+        $this->actingAs($admin)->get(route('admin.podstrony.bloki.edit', $page))->assertOk()
+            ->assertSee('id="be-type-fields"', false)
+            ->assertSee('id="about-section-order-list"', false)
+            ->assertSee('name="about_sections_enabled[]"', false)
+            ->assertSee('name="layout_data[about_mission]"', false)
+            ->assertSee('name="about_partner_ids[]"', false)
+            ->assertSee('Stare motto');
+
+        $sections = array_keys(\App\Models\Page::ABOUT_SECTIONS);
+        $fields = [
+            'about_motto' => ' Nowe motto ',
+            'about_intro' => 'Wstęp',
+            'about_stats' => [['value' => '15', 'label' => 'lat', 'icon' => ''], ['value' => '', 'label' => '', 'icon' => '']],
+            'about_timeline' => [['year' => '2010', 'text' => 'Start', 'url2' => '/a', 'label2' => 'A']],
+            'about_values' => [['icon' => 'x', 'title' => 'Rzetelność', 'text' => '']],
+            'about_section_order' => array_flip(array_reverse($sections)),
+            'about_sections_enabled' => array_slice($sections, 0, 2),
+            'about_partner_ids' => [(string) $partner->id],
+            'about_faq_visible' => '1',
+            'about_labels' => ['nieznany_klucz' => 'x'],
+            'layout_data' => ['about_mission' => 'Misja', 'about_registry' => '0'],
+        ];
+
+        $this->save($page, $fields)->assertOk();
+        $page->refresh();
+        $this->assertSame('Nowe motto', trim($page->about_motto));
+        $this->assertSame(array_reverse($sections), $page->about_section_order);
+        $this->assertSame(array_values(array_diff($sections, array_slice($sections, 0, 2))), $page->about_sections_hidden);
+        // `layout_data` jest scalane: ustawienia spoza „O organizacji” zostają.
+        $this->assertSame(3, $page->layout_data['news_count']);
+        $this->assertSame('Misja', $page->layout_data['about_mission']);
+
+        // Formularz klasyczny zapisuje te same kolumny identycznie.
+        $classic = $this->page(['type' => 'about', 'slug' => 'o-nas-klasyczny', 'title' => 'O nas']);
+        $this->actingAs($this->admin())->withSession(['admin_site_chosen' => true])->put(route('admin.podstrony.update', $classic), [
+            'title' => 'O nas', 'slug' => 'o-nas-klasyczny', 'parent_id' => '', 'type' => 'about',
+        ] + $fields)->assertSessionHasNoErrors();
+        $classic->refresh();
+        foreach (\App\Support\PageTypeFields::ABOUT_COLUMNS as $column) {
+            $this->assertEquals($classic->{$column}, $page->{$column}, $column);
+        }
+        $this->assertSame('Misja', $classic->layout_data['about_mission']);
+
+        $this->save($page, ['layout_data' => ['documents_more_url' => 'javascript:x']])->assertStatus(422);
     }
 
     public function test_bip_move_fields_are_edited_in_the_block_editor(): void

@@ -62,6 +62,30 @@
             });
         });
 
+        // „O organizacji”: kolejność sekcji (przyciski w górę/w dół); numery pozycji liczone od razu, jak w formularzu strony.
+        const orderList = root.querySelector('#about-section-order-list');
+        if (orderList) {
+            const renumber = function () {
+                [...orderList.children].forEach(function (li, index) {
+                    const input = li.querySelector('input[type="hidden"]');
+                    if (input) input.value = index;
+                });
+            };
+            orderList.addEventListener('click', function (event) {
+                const button = event.target.closest('[data-move]');
+                const li = button?.closest('li');
+                if (!li) return;
+                const sibling = button.dataset.move === 'up' ? li.previousElementSibling : li.nextElementSibling;
+                if (!sibling) return;
+                if (button.dataset.move === 'up') orderList.insertBefore(li, sibling); else orderList.insertBefore(sibling, li);
+                renumber();
+                button.focus();
+            });
+            // Masowe zaznaczanie sekcji zmienia pozycje, więc numerujemy też po ich kliknięciu.
+            root.addEventListener('click', function (event) { if (event.target.closest('[data-about-bulk]')) setTimeout(renumber); });
+            renumber();
+        }
+
         // Terminy harmonogramu.
         const schedule = root.querySelector('[data-schedule-fields]');
         if (schedule) {

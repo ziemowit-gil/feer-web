@@ -1075,27 +1075,10 @@ class PageController extends Controller
             'tiles.*.cols' => ['nullable', 'integer', 'in:1,2,3'],
             'tiles.*.is_negative' => ['nullable', 'boolean'],
             'tiles.*.strip' => ['nullable', 'boolean'],
-            'about_motto' => ['nullable', 'string', 'max:1000'],
-            'about_motto_author' => ['nullable', 'string', 'max:255'],
-            'about_intro' => ['nullable', 'string', 'max:5000'],
-            'about_stats' => ['nullable', 'array'],
-            'about_stats.*.value' => ['nullable', 'string', 'max:50'],
-            'about_stats.*.label' => ['nullable', 'string', 'max:120'],
-            'about_stats.*.icon' => ['nullable', 'string', 'max:80'],
-            'about_timeline' => ['nullable', 'array'],
-            'about_timeline.*.year' => ['nullable', 'string', 'max:20'],
-            'about_timeline.*.text' => ['nullable', 'string', 'max:500'],
-            'about_timeline.*.url' => ['nullable', 'string', 'max:255'],
-            'about_timeline.*.label' => ['nullable', 'string', 'max:120'],
             'about_timeline.*.url2' => ['nullable', 'string', 'max:255'],
             'about_timeline.*.label2' => ['nullable', 'string', 'max:120'],
             'about_timeline.*.url3' => ['nullable', 'string', 'max:255'],
             'about_timeline.*.label3' => ['nullable', 'string', 'max:120'],
-            'about_timeline.*.color' => ['nullable', 'string', 'max:7'],
-            'about_values' => ['nullable', 'array'],
-            'about_values.*.icon' => ['nullable', 'string', 'max:100'],
-            'about_values.*.title' => ['nullable', 'string', 'max:120'],
-            'about_values.*.text' => ['nullable', 'string', 'max:500'],
             'team' => ['nullable', 'array'],
             'team.*.id' => ['nullable', 'integer', 'exists:pages,id'],
             'team.*.name' => ['nullable', 'string', 'max:120'],
@@ -1111,29 +1094,7 @@ class PageController extends Controller
             'team.*.linkedin' => ['nullable', 'string', 'max:500'],
             'team.*.website' => ['nullable', 'string', 'max:500'],
             'team.*.is_published' => ['sometimes', 'boolean'],
-            'about_section_order' => ['sometimes', 'array'],
-            'about_section_order.*' => ['integer'],
-            'about_sections_enabled' => ['sometimes', 'array'],
-            'about_sections_enabled.*' => ['string'],
-            'about_partner_ids' => ['nullable', 'array'],
-            'about_partner_ids.*' => ['integer', 'exists:partners,id'],
-            'about_faq_visible' => ['sometimes', 'boolean'],
-            'about_documents_intro' => ['nullable', 'string', 'max:5000'],
-            'about_documents_bip_url' => ['nullable', 'string', 'max:255'],
-            'about_press_intro' => ['nullable', 'string', 'max:5000'],
-            'about_labels' => ['nullable', 'array'],
-            'about_labels.*' => ['nullable', 'string', 'max:200'],
-            'about_press' => ['nullable', 'array'],
-            'about_press.*.url' => ['nullable', 'string', 'max:500'],
-            'about_press.*.title' => ['nullable', 'string', 'max:255'],
-            'about_press.*.source' => ['nullable', 'string', 'max:120'],
-            'about_press.*.image' => ['nullable', 'string', 'max:1000'],
-            'about_press.*.date' => ['nullable', 'date'],
             // „O organizacji”: misja, data statystyk, dane rejestrowe przy dokumentach.
-            'layout_data.about_mission' => ['nullable', 'string', 'max:300'],
-            'layout_data.about_stats_asof' => ['nullable', 'string', 'max:60'],
-            'layout_data.about_registry' => ['nullable', 'boolean'],
-            'layout_data.about_help_tax' => ['nullable', 'boolean'],
             'bip_move_url' => ['nullable', 'url', 'max:255'],
             'bip_move_note' => ['nullable', 'string', 'max:2000'],
             'is_featured' => ['nullable', 'boolean'],
@@ -1216,62 +1177,11 @@ class PageController extends Controller
         // porządkuje bieżący typ, czyści pozostałe — wspólne z edytorem blokowym.
         $data = PageTypeFields::apply($data['type'], $data, $request->all());
 
-        // "O organizacji" details only apply to about pages. Build the repeater
-        // sections (dropping fully-empty rows) and clear everything otherwise.
-        if ($data['type'] === 'about') {
-            $data['about_stats'] = $this->compactRows($request->input('about_stats', []), ['value', 'label', 'icon']);
-            $data['about_timeline'] = $this->compactRows($request->input('about_timeline', []), ['year', 'text', 'url', 'label', 'url2', 'label2', 'url3', 'label3', 'color']);
-            $data['about_values'] = $this->compactRows($request->input('about_values', []), ['icon', 'title', 'text']);
-
-            $data['about_team'] = null;
-
-            $positions = $request->input('about_section_order', []);
-            $data['about_section_order'] = collect(array_keys(Page::ABOUT_SECTIONS))
-                ->sortBy(fn ($key) => $positions[$key] ?? 999)
-                ->values()
-                ->all();
-
-            $enabled = (array) $request->input('about_sections_enabled', []);
-            $data['about_sections_hidden'] = array_values(array_diff(array_keys(Page::ABOUT_SECTIONS), $enabled)) ?: null;
-
-            $data['about_partner_ids'] = array_values(array_map('intval', (array) $request->input('about_partner_ids', []))) ?: null;
-            $data['about_faq_visible'] = $request->boolean('about_faq_visible');
-
-            // „Piszą o nas": wzmianki prasowe. Dla wpisów z linkiem, ale bez
-            // obrazka/tytułu, pobieramy je ze strony (og:image / og:title).
-            $press = $this->compactRows($request->input('about_press', []), ['url', 'title', 'source', 'image', 'date']);
-            foreach (($press ?? []) as $i => $item) {
-                if (! empty($item['url']) && (empty($item['image']) || empty($item['title']))) {
-                    $og = $this->scrapeOgData($item['url']);
-                    if (empty($item['image']) && ! empty($og['image'])) {
-                        $press[$i]['image'] = $og['image'];
-                    }
-                    if (empty($item['title']) && ! empty($og['title'])) {
-                        $press[$i]['title'] = $og['title'];
-                    }
-                }
-            }
-            $data['about_press'] = $press;
-            // Własne nagłówki i napisy sekcji: tylko znane klucze, puste pominięte.
-            $labels = array_filter(array_intersect_key((array) ($data['about_labels'] ?? []), Page::ABOUT_LABELS), fn ($v) => is_string($v) && trim($v) !== '');
-            $data['about_labels'] = $labels ?: null;
-        } else {
-            $data['about_motto'] = null;
-            $data['about_motto_author'] = null;
-            $data['about_intro'] = null;
-            $data['about_section_order'] = null;
-            $data['about_sections_hidden'] = null;
-            $data['about_stats'] = null;
-            $data['about_timeline'] = null;
-            $data['about_values'] = null;
-            $data['about_team'] = null;
-            $data['about_partner_ids'] = null;
-            $data['about_documents_intro'] = null;
-            $data['about_documents_bip_url'] = null;
-            $data['about_press_intro'] = null;
-            $data['about_labels'] = null;
-            $data['about_press'] = null;
-        }
+        // „O organizacji”: kolumny sekcji porządkuje PageTypeFields (wspólnie z edytorem blokowym); poza typem są czyszczone.
+        // (about_faq_visible poza typem zostaje: kolumna ma wartość domyślną i nie przyjmuje null)
+        $data = $data['type'] === 'about'
+            ? array_merge($data, PageTypeFields::aboutColumns($data, $request->all()), ['about_team' => null])
+            : array_merge($data, array_fill_keys([...array_diff(PageTypeFields::ABOUT_COLUMNS, ['about_faq_visible']), 'about_team'], null));
 
         // Bip-Move: komunikat o przeniesieniu do BIP; poza typem czyścimy pola.
         if ($data['type'] !== 'bip_move') {
@@ -1449,57 +1359,6 @@ class PageController extends Controller
     private function compactRows($rows, array $keys): ?array
     {
         return PageTypeFields::compactRows($rows, $keys);
-    }
-
-    /**
-     * Pobierz og:image i og:title ze wskazanego adresu (sekcja „Piszą o nas”).
-     * Odporne na błędy — przy niepowodzeniu zwraca puste wartości.
-     */
-    private function scrapeOgData(string $url): array
-    {
-        $empty = ['image' => null, 'title' => null];
-
-        if (! preg_match('#^https?://#i', $url)) {
-            return $empty;
-        }
-
-        try {
-            $response = \Illuminate\Support\Facades\Http::timeout(6)
-                ->withHeaders(['User-Agent' => 'Mozilla/5.0 (compatible; FEERbot/1.0; +og-scraper)'])
-                ->get($url);
-
-            if (! $response->ok()) {
-                return $empty;
-            }
-
-            $html = $response->body();
-
-            return [
-                'image' => $this->metaContent($html, ['og:image', 'twitter:image', 'twitter:image:src']),
-                'title' => $this->metaContent($html, ['og:title', 'twitter:title']),
-            ];
-        } catch (\Throwable $e) {
-            return $empty;
-        }
-    }
-
-    /**
-     * Wyłuskaj zawartość pierwszego pasującego <meta> (property lub name) z HTML.
-     */
-    private function metaContent(string $html, array $keys): ?string
-    {
-        foreach ($keys as $key) {
-            $k = preg_quote($key, '#');
-            if (preg_match('#<meta[^>]+(?:property|name)=["\']'.$k.'["\'][^>]+content=["\']([^"\']+)["\']#i', $html, $m)
-                || preg_match('#<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\']'.$k.'["\']#i', $html, $m)) {
-                $value = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5));
-                if ($value !== '') {
-                    return $value;
-                }
-            }
-        }
-
-        return null;
     }
 
     private function syncTeamPersons(Page $aboutPage, array $rows): void

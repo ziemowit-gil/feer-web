@@ -682,7 +682,7 @@ class BlockEditorController extends Controller
             ], 422));
         }
 
-        return PageTypeFields::columns($record->type, $validator->validated(), $input);
+        return PageTypeFields::columns($record->type, $validator->validated(), $input, $record);
     }
 
     /**
