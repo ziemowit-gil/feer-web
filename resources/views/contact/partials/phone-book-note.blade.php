@@ -20,7 +20,7 @@
                 <p class="mt-1"><a href="tel:{{ preg_replace('/[^0-9+]/', '', $switchboard) }}" class="{{ $pbLink }} text-2xl"><i class="fa-solid fa-phone" aria-hidden="true"></i><span class="sr-only">Zadzwoń na centralę: </span>{{ $switchboard }}</a></p>
             @endif
         @endif
-        <p class="{{ $switchboard !== '' ? 'mt-3 ' : '' }}leading-relaxed">Często oddzwaniamy z numerów komórkowych. Jeśli zobaczysz nieznany numer, to możemy być my.</p>
+        <p class="{{ $switchboard !== '' ? 'mt-3 ' : '' }}leading-relaxed">Oddzwaniamy najczęściej z komórek, więc na ekranie może pojawić się numer, którego nie znasz. Możliwe, że to my.</p>
         @if ($phoneBookPage)
             <p class="mt-1"><a href="{{ $phoneBookPage->publicUrl() }}" class="{{ $pbLink }}"><i class="fa-solid fa-address-book" aria-hidden="true"></i>{{ $phoneBookPage->title }}: sprawdź, kto i w jakiej sprawie dzwoni</a></p>
         @endif

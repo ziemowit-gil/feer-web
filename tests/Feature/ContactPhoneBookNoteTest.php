@@ -33,12 +33,12 @@ class ContactPhoneBookNoteTest extends TestCase
             } else {
                 $this->assertStringContainsString('href="tel:123456789"', $html, $layout);
             }
-            $this->assertStringContainsString('Często oddzwaniamy z numerów komórkowych', $html, $layout);
+            $this->assertStringContainsString('Oddzwaniamy najczęściej z komórek', $html, $layout);
             $this->assertStringContainsString('/ksiazka-telefoniczna"', $html, $layout);
             // Numer centrali stoi nad informacją o oddzwanianiu i linkiem do książki.
             $note = substr($html, strpos($html, 'phone-book-note'));
-            $this->assertLessThan(strpos($note, 'Często oddzwaniamy'), strpos($note, '12 345 67 89'), $layout);
-            $this->assertLessThan(strpos($note, '/ksiazka-telefoniczna"'), strpos($note, 'Często oddzwaniamy'), $layout);
+            $this->assertLessThan(strpos($note, 'Oddzwaniamy najczęściej'), strpos($note, '12 345 67 89'), $layout);
+            $this->assertLessThan(strpos($note, '/ksiazka-telefoniczna"'), strpos($note, 'Oddzwaniamy najczęściej'), $layout);
         }
     }
 
@@ -48,7 +48,7 @@ class ContactPhoneBookNoteTest extends TestCase
         $html = $this->get('/kontakt')->assertOk()->getContent();
 
         $this->assertStringContainsString('phone-book-note', $html);
-        $this->assertStringContainsString('Często oddzwaniamy z numerów komórkowych', $html);
+        $this->assertStringContainsString('Oddzwaniamy najczęściej z komórek', $html);
         $this->assertStringNotContainsString('sprawdź, kto i w jakiej sprawie dzwoni', $html);
 
         Page::create(['title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'is_published' => true]);
