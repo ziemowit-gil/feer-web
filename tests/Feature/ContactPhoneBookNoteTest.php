@@ -7,7 +7,7 @@ use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/** Strona kontaktu: numer centrali, informacja o oddzwanianiu z komórek i link do książki telefonicznej. */
+/** Strona kontaktu: numer telefonu, informacja o oddzwanianiu z komórek i link do książki telefonicznej. */
 class ContactPhoneBookNoteTest extends TestCase
 {
     use RefreshDatabase;
@@ -20,6 +20,7 @@ class ContactPhoneBookNoteTest extends TestCase
 
     public function test_every_contact_layout_shows_switchboard_callback_hint_and_phone_book_link(): void
     {
+        // Numer nie jest nazywany „centralą”: etykieta to „Telefon”.
         Page::create(['title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'is_published' => true]);
 
         foreach (['classic', 'card', 'split', 'tabs', 'feer'] as $layout) {
@@ -27,6 +28,7 @@ class ContactPhoneBookNoteTest extends TestCase
             $html = $this->get('/kontakt')->assertOk()->getContent();
 
             $this->assertStringContainsString('phone-book-note', $html, $layout);
+            $this->assertStringNotContainsString('entral', substr($html, strpos($html, 'phone-book-note'), 1800), $layout);
             if ($layout === 'feer') {
                 // Szablon FEER: dane kontaktowe to zwykły tekst, bez linków tel:.
                 $this->assertStringNotContainsString('tel:123456789', $html, $layout);
@@ -35,7 +37,7 @@ class ContactPhoneBookNoteTest extends TestCase
             }
             $this->assertStringContainsString('Oddzwaniamy najczęściej z komórek', $html, $layout);
             $this->assertStringContainsString('/ksiazka-telefoniczna"', $html, $layout);
-            // Numer centrali stoi nad informacją o oddzwanianiu i linkiem do książki.
+            // Numer telefonu stoi nad informacją o oddzwanianiu i linkiem do książki.
             $note = substr($html, strpos($html, 'phone-book-note'));
             $this->assertLessThan(strpos($note, 'Oddzwaniamy najczęściej'), strpos($note, '12 345 67 89'), $layout);
             $this->assertLessThan(strpos($note, '/ksiazka-telefoniczna"'), strpos($note, 'Oddzwaniamy najczęściej'), $layout);
