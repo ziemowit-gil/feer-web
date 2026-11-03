@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Page;
+use App\Models\SiteAddressRedirect;
 use App\Models\SiteSetting;
 use App\Support\Backup\BackupManager;
 use App\Support\BipSite;
+use App\Support\SiteAddresses;
 use App\Support\SiteRemoval;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -47,12 +49,17 @@ class SiteController extends Controller
         return view('admin.sites.index', ['mains' => $mains, 'rows' => $rows, 'trashed' => SiteRemoval::trashed()]);
     }
 
-    /** Zmień nazwę i adres: nazwa witryny oraz (dla subwitryn) adres skrócony i własna domena. */
+    /** Zmień nazwę i adres: nazwa witryny oraz (dla subwitryn) adres skrócony, własna domena i przekierowania ze starych adresów. */
     public function identity(SiteSetting $site)
     {
         abort_if($site->isTrashed(), 404);
+        $isMain = $site->parent_site_id === null;
 
-        return view('admin.sites.identity', ['site' => $site, 'isMain' => $site->parent_site_id === null]);
+        return view('admin.sites.identity', [
+            'site' => $site,
+            'isMain' => $isMain,
+            'redirects' => $isMain ? new Collection : SiteAddressRedirect::forSite($site),
+        ]);
     }
 
     public function updateIdentity(Request $request, SiteSetting $site)
@@ -70,6 +77,7 @@ class SiteController extends Controller
         $data = $request->validate($rules, $this->addressMessages());
 
         $before = $site->only(['site_name', 'slug', 'domain']);
+        $released = SiteAddressRedirect::heldByOthers($site->getKey(), $data['slug'] ?? null, $data['domain'] ?? null);
         $site->update($data);
         $changed = array_keys(array_filter($data, fn ($value, $key) => ($before[$key] ?? null) !== $value, ARRAY_FILTER_USE_BOTH));
 
@@ -80,11 +88,26 @@ class SiteController extends Controller
         }
 
         $status = 'Zapisano nazwę i adres witryny „'.$site->site_name.'”.';
-        if (! $isMain) {
+        // Witryna bez adresu skróconego i domeny nie ma publicznego adresu (current_site_url zwróciłby adres witryny głównej).
+        if (! $isMain && ($site->domain || $site->slug)) {
             $status .= ' Publiczny adres: '.current_site_url($site).'.';
         }
 
-        return redirect()->route('admin.witryny.index')->with('status', $status);
+        return redirect()->route('admin.witryny.index')->with('status', $status.$this->redirectNote($site, $before, $released));
+    }
+
+    /** Usuwa przekierowanie ze starego adresu witryny: ten adres przestaje działać. */
+    public function destroyRedirect(Request $request, SiteSetting $site, SiteAddressRedirect $redirect)
+    {
+        abort_if($site->isTrashed(), 404);
+        abort_unless((int) $redirect->target_site_id === (int) $site->getKey(), 404);
+
+        $address = $redirect->displayAddress();
+        $redirect->delete();
+        $this->log($request, 'Usunięto przekierowanie ze starego adresu witryny „'.$site->site_name.'”', ['site' => $site->site_name, 'address' => $address]);
+
+        return redirect()->route('admin.witryny.nazwa', $site)
+            ->with('status', 'Usunięto przekierowanie: adres '.$address.' nie prowadzi już do witryny „'.$site->site_name.'”.');
     }
 
     public function create()
@@ -114,6 +137,7 @@ class SiteController extends Controller
             $data['under_construction'] = true;
         }
 
+        $released = SiteAddressRedirect::heldByOthers(null, $data['slug'] ?? null, $data['domain'] ?? null);
         $site = SiteSetting::create($data);
 
         if ($request->hasFile('logo')) {
@@ -125,7 +149,7 @@ class SiteController extends Controller
             $this->moveBipContent($request, $site);
         }
 
-        return redirect()->route('admin.witryny.index')->with('status', 'Witryna „'.$site->site_name.'" została założona.');
+        return redirect()->route('admin.witryny.index')->with('status', 'Witryna „'.$site->site_name.'" została założona.'.$this->redirectNote($site, [], $released));
     }
 
     public function edit(SiteSetting $site)
@@ -147,6 +171,8 @@ class SiteController extends Controller
         if ($site->parent_site_id === null) {
             unset($data['site_kind']);
         }
+        $before = $site->only(['slug', 'domain']);
+        $released = SiteAddressRedirect::heldByOthers($site->getKey(), $data['slug'] ?? null, $data['domain'] ?? null);
         $site->update($data);
 
         if ($request->hasFile('logo')) {
@@ -157,7 +183,8 @@ class SiteController extends Controller
             $this->moveBipContent($request, $site);
         }
 
-        return redirect()->route('admin.witryny.index')->with('status', 'Zapisano zmiany witryny „'.$site->site_name.'".');
+        return redirect()->route('admin.witryny.index')
+            ->with('status', 'Zapisano zmiany witryny „'.$site->site_name.'".'.$this->redirectNote($site, $before, $released));
     }
 
     /**
@@ -308,21 +335,38 @@ class SiteController extends Controller
         ];
     }
 
-    /** Slugi, które nie mogą być prefiksem witryny (zlałyby się z trasą albo panelem). */
-    private function reservedSlugs(?string $kind): array
+    /**
+     * Dopisek do komunikatu po zapisie: co dzieje się z dotychczasowym adresem (przekierowuje na nowy) i które cudze
+     * przekierowania skończyły się, bo witryna zajęła ich adres (żywy adres wygrywa z przekierowaniem).
+     *
+     * @param  array<string, mixed>  $before  slug i domena sprzed zapisu (pusta tablica dla nowej witryny)
+     * @param  Collection<int, SiteAddressRedirect>  $released
+     */
+    private function redirectNote(SiteSetting $site, array $before, Collection $released): string
     {
-        // Prefiks witryny to pierwszy segment adresu, więc nie może się zlać z żadną trasą ani panelem.
-        $routeSegments = collect(\Illuminate\Support\Facades\Route::getRoutes()->getRoutes())
-            ->map(fn ($route) => strtolower(explode('/', trim($route->uri(), '/'))[0] ?? ''))
-            ->filter(fn ($segment) => $segment !== '' && ! str_contains($segment, '{'))
-            ->unique()->values()->all();
-        $reserved = array_values(array_unique(array_merge(Page::RESERVED_SLUGS, ['site', (string) config('app.admin_prefix', 'admin')], $routeSegments)));
-        // Witryna BIP może mieć adres /bip — pod nim i tak jest pokazywany BIP witryny nadrzędnej.
-        if ($kind === 'bip') {
-            $reserved = array_values(array_diff($reserved, ['bip']));
+        $note = '';
+
+        if ($site->parent_site_id !== null) {
+            $old = array_filter([
+                SiteAddressRedirect::TYPE_SLUG => SiteAddresses::normalize($before['slug'] ?? null),
+                SiteAddressRedirect::TYPE_DOMAIN => SiteAddresses::normalize($before['domain'] ?? null),
+            ], fn ($value, $type) => $value !== null && $value !== SiteAddresses::normalize($site->getAttribute($type)), ARRAY_FILTER_USE_BOTH);
+
+            $moved = $old === [] ? new Collection : SiteAddressRedirect::forSite($site)->filter(fn ($redirect) => ($old[$redirect->type] ?? null) === $redirect->value);
+
+            if ($moved->isNotEmpty()) {
+                $addresses = $moved->map(fn ($redirect) => $redirect->displayAddress())->implode(', ');
+                $note .= ($site->domain || $site->slug)
+                    ? ' Dotychczasowy adres ('.$addresses.') przekierowuje teraz na nowy.'
+                    : ' Witryna nie ma teraz adresu, więc dotychczasowy adres ('.$addresses.') zacznie przekierowywać, gdy ustawisz nowy.';
+            }
         }
 
-        return $reserved;
+        foreach ($released as $redirect) {
+            $note .= ' Adres '.$redirect->displayAddress().' przestał przekierowywać na witrynę „'.($redirect->site?->site_name ?? 'usuniętą').'”.';
+        }
+
+        return $note;
     }
 
     /** @return array<int, mixed> */
@@ -330,7 +374,7 @@ class SiteController extends Controller
     {
         return [
             'nullable', 'string', 'max:255', 'alpha_dash',
-            Rule::notIn($this->reservedSlugs($kind)),
+            Rule::notIn(SiteAddresses::reservedSlugs($kind)),
             Rule::unique('site_settings', 'slug')->ignore($site?->id),
             Rule::unique('pages', 'slug'),
         ];

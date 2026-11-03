@@ -1924,7 +1924,21 @@ class SiteSetting extends Model implements HasMedia
 
     protected static function booted(): void
     {
-        static::deleted(fn () => \Illuminate\Support\Facades\Cache::forget(\App\Http\Middleware\ResolveCurrentSite::SLUG_MAP_CACHE_KEY));
+        static::deleted(function (self $site) {
+            \Illuminate\Support\Facades\Cache::forget(\App\Http\Middleware\ResolveCurrentSite::SLUG_MAP_CACHE_KEY);
+            SiteAddressRedirect::forgetSite($site);
+        });
+
+        // Adres, który witryna właśnie zajęła, przestaje być czyimś dawnym adresem: żywy adres wygrywa z przekierowaniem.
+        static::created(fn (self $site) => SiteAddressRedirect::releaseAddressesOf($site));
+
+        // Dotychczasowy adres subwitryny zostaje przekierowaniem 301 na nowy (ResolveCurrentSite).
+        static::updated(function (self $site) {
+            SiteAddressRedirect::rememberChanges($site);
+            if ($site->wasChanged(['slug', 'domain'])) {
+                SiteAddressRedirect::releaseAddressesOf($site);
+            }
+        });
 
         static::saved(function (self $site) {
             static::$cached = null;

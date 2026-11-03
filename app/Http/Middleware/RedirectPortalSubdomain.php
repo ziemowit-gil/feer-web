@@ -37,6 +37,14 @@ class RedirectPortalSubdomain
         return $next($request);
     }
 
+    /** Czy host to krótki adres portalu kategorii — żywy adres, który wygrywa z dawnym adresem witryny (SiteAddressRedirect). */
+    public function isPortalHost(string $host): bool
+    {
+        $sub = $this->portalSubdomain($host);
+
+        return $sub !== null && $this->hasPortal($sub);
+    }
+
     /** „szkolenia” dla szkolenia.feer.org.pl; null dla domeny głównej, www i subdomen wielopoziomowych. */
     private function portalSubdomain(string $host): ?string
     {

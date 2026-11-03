@@ -2,10 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Redirect;
+use App\Models\SiteAddressRedirect;
 use App\Models\SiteSetting;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -23,6 +26,11 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Stary adres /site/{slug}/… przekierowuje na /{slug}/…. Slug bloga (config blog.site_slug) i slugi zarezerwowane
  * na trasy witryny głównej nigdy nie są prefiksem witryny.
+ *
+ * Dawny adres subwitryny po zmianie nazwy i adresu (adres skrócony albo domena, patrz SiteAddressRedirect)
+ * przekierowuje na jej obecny adres: 301 ze ścieżką i zapytaniem (308 dla metod innych niż GET i HEAD, żeby zachować
+ * treść żądania). Żywy adres zawsze wygrywa — przekierowanie sprawdzamy dopiero, gdy żadna witryna nie ma takiej domeny
+ * ani takiego prefiksu, a adres zajęty przez istniejącą stronę, panel albo blog nigdy nie jest przekierowaniem.
  *
  * Panel (/edycja) nie przechodzi tędy: tam witrynę wybiera sesja (ResolveAdminActiveSite).
  */
@@ -51,6 +59,15 @@ class ResolveCurrentSite
             return $next($request);
         }
 
+        // Dawna domena subwitryny: na jej obecny adres, z tą samą ścieżką i zapytaniem.
+        if (! $alreadyBound) {
+            $moved = $this->redirectFromOldAddress($request, SiteAddressRedirect::TYPE_DOMAIN, $request->getHost(), $request->getPathInfo());
+
+            if ($moved) {
+                return $moved;
+            }
+        }
+
         $segments = explode('/', trim($request->getPathInfo(), '/'), 3);
         $first = strtolower($segments[0] ?? '');
 
@@ -58,18 +75,27 @@ class ResolveCurrentSite
             return $next($request);
         }
 
-        // Stary, długi adres: /site/{slug}/… → /{slug}/…
-        if ($first === 'site' && isset($segments[1]) && $segments[1] !== '' && $this->siteIdForSlug(strtolower($segments[1])) !== null) {
-            $target = '/'.$segments[1].(isset($segments[2]) ? '/'.$segments[2] : '');
-            $query = $request->getQueryString();
+        // Stary, długi adres: /site/{slug}/… → /{slug}/… (dawny slug od razu na obecny adres, bez pośredniego przeskoku).
+        if ($first === 'site' && isset($segments[1]) && $segments[1] !== '') {
+            if ($this->siteIdForSlug(strtolower($segments[1])) !== null) {
+                $target = '/'.$segments[1].(isset($segments[2]) ? '/'.$segments[2] : '');
+                $query = $request->getQueryString();
 
-            return redirect($target.($query ? '?'.$query : ''), 301);
+                return redirect($target.($query ? '?'.$query : ''), 301);
+            }
+
+            $moved = $this->redirectFromOldAddress($request, SiteAddressRedirect::TYPE_SLUG, $segments[1], $this->pathAfter($request, 2));
+
+            if ($moved) {
+                return $moved;
+            }
         }
 
         $siteId = $this->siteIdForSlug($first);
 
         if ($siteId === null) {
-            return $next($request);
+            return $this->redirectFromOldAddress($request, SiteAddressRedirect::TYPE_SLUG, $first, $this->pathAfter($request, 1))
+                ?? $next($request);
         }
 
         $site = SiteSetting::query()->notTrashed()->find($siteId);
@@ -79,6 +105,69 @@ class ResolveCurrentSite
         }
 
         return $next($this->mountAtPrefix($request, $site, $segments[0]));
+    }
+
+    /**
+     * Przekierowanie ze starego adresu subwitryny (SiteAddressRedirect) na jej obecny adres. Wołane dopiero wtedy, gdy
+     * żadna witryna nie ma takiej domeny ani takiego prefiksu, więc żywy adres zawsze ma pierwszeństwo.
+     */
+    private function redirectFromOldAddress(Request $request, string $type, string $value, string $rest): ?Response
+    {
+        $siteId = SiteAddressRedirect::siteIdFor($type, $value);
+
+        if ($siteId === null) {
+            return null;
+        }
+
+        // Adres, pod którym działa już coś innego (panel, API, blog, strona, portal kategorii, adres serwera), nie jest przekierowaniem.
+        if (SiteAddressRedirect::shadowReason($type, $value) !== null) {
+            return null;
+        }
+
+        // Ręczne przekierowanie (Przekierowania w panelu) dla tej ścieżki jest bardziej szczegółowe niż to z dawnego adresu
+        // skróconego — obsłuży je HandleRedirects. (Dawna domena: ręczne przekierowania dotyczą ścieżek witryny głównej.)
+        if ($type === SiteAddressRedirect::TYPE_SLUG && $request->isMethod('GET') && $this->hasManualRedirect($request)) {
+            return null;
+        }
+
+        $site = SiteSetting::query()->notTrashed()->find($siteId);
+
+        // Witryna w koszu, usunięta albo bez żadnego adresu nie ma dokąd przekierować — dawny adres zostaje martwy.
+        if (! $site || $site->parent_site_id === null || (! $site->domain && ! $site->slug)) {
+            return null;
+        }
+
+        $target = rtrim(current_site_url($site), '/').$rest;
+        $query = (string) $request->getQueryString();
+
+        if ($query !== '') {
+            $target .= '?'.$query;
+        }
+
+        if ($target === $request->fullUrl()) {
+            return null;
+        }
+
+        // 308 zamiast 301 zachowuje metodę i treść żądania (np. formularza wysłanego ze starego adresu). Jawny Cache-Control,
+        // bo bez niego przeglądarki pamiętają 301 bez końca: przekierowanie da się cofnąć (powrót do dawnego adresu, usunięcie
+        // w panelu, zajęcie adresu przez inną witrynę), a zapamiętane w przeglądarce zapętliłoby się albo prowadziło donikąd.
+        return redirect()->away($target, in_array($request->getMethod(), ['GET', 'HEAD'], true) ? 301 : 308, ['Cache-Control' => 'no-cache, private']);
+    }
+
+    private function hasManualRedirect(Request $request): bool
+    {
+        try {
+            return Schema::hasTable('redirects')
+                && Redirect::query()->where('is_active', true)->where('from_path', Redirect::normalizePath($request->path()))->exists();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /** Ścieżka żądania bez pierwszych $segments segmentów, z zachowaniem ukośnika na końcu (/szkolenia/a/ → /a/). */
+    private function pathAfter(Request $request, int $segments): string
+    {
+        return (string) preg_replace('#^(?:/+[^/]*){'.$segments.'}#', '', $request->getPathInfo());
     }
 
     /** Żądanie widziane przez router bez prefiksu witryny, z adresami generowanymi z prefiksem. */
@@ -114,15 +203,19 @@ class ResolveCurrentSite
 
     private function siteIdForSlug(string $slug): ?int
     {
-        if (in_array($slug, $this->neverPrefix(), true)) {
+        if (in_array($slug, self::neverPrefix(), true)) {
             return null;
         }
 
         return $this->slugMap()[$slug] ?? null;
     }
 
-    /** @return list<string> */
-    private function neverPrefix(): array
+    /**
+     * Pierwsze segmenty adresu, które nigdy nie są prefiksem witryny (panel, API, blog…) — ani dawnym adresem witryny.
+     *
+     * @return list<string>
+     */
+    public static function neverPrefix(): array
     {
         return array_values(array_unique(array_filter([
             strtolower((string) config('blog.site_slug', 'wiem')),

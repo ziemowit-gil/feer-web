@@ -72,9 +72,11 @@
             </div>
 
             <p class="rounded bg-gray-50 px-4 py-3 text-sm text-ink">
-                <i class="fa-solid fa-triangle-exclamation mr-1" aria-hidden="true"></i>
-                Zmiana adresu zmienia linki do tej witryny: dotychczasowy adres przestanie działać. Zaktualizuj odnośniki,
-                które prowadzą do niej z innych miejsc (menu, newslettery, zewnętrzne strony).
+                <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+                Zmiana adresu zmienia linki do tej witryny, ale dotychczasowy adres będzie przekierowywał na nowy (razem
+                ze ścieżką i parametrami), więc stare linki nadal zadziałają. Mimo to zaktualizuj odnośniki w menu,
+                newsletterach i na zewnętrznych stronach. Przekierowanie ze starej domeny działa tylko wtedy, gdy ta domena
+                nadal wskazuje (DNS) na ten serwer.
             </p>
         @endif
 
@@ -86,4 +88,53 @@
             @endunless
         </div>
     </form>
+
+    {{-- Dawne adresy subwitryny (SiteAddressRedirect): przekierowują na obecny adres; osobny formularz przy każdym, więc poza głównym. --}}
+    @unless ($isMain)
+        <section aria-labelledby="h-old-addresses" class="mt-6 max-w-xl rounded-md bg-white p-6">
+            <h2 id="h-old-addresses" class="text-base font-bold text-ink">Przekierowania ze starych adresów</h2>
+
+            @if ($redirects->isEmpty())
+                <p class="mt-2 text-sm text-ink">
+                    Nie ma jeszcze żadnych. Gdy zmienisz adres skrócony albo domenę, dotychczasowy adres pojawi się tutaj
+                    i będzie przekierowywał na nowy.
+                </p>
+            @else
+                <p class="mt-2 text-sm text-ink">
+                    Te adresy przekierowują na obecny adres witryny razem ze ścieżką i parametrami. Usuń przekierowanie,
+                    gdy stary adres ma przestać działać.
+                </p>
+                <ul class="mt-3 divide-y divide-gray-100" role="list">
+                    @foreach ($redirects as $redirect)
+                        @php $blocked = $redirect->blockedReason(); @endphp
+                        {{-- min-w-48 (nie min-w-0): bez realnej szerokości bazowej wiersz nie zawija przycisku pod adres i na 320 px adres ma ~28 px. --}}
+                        <li class="flex flex-wrap items-center gap-3 py-3">
+                            <div class="min-w-48 flex-1">
+                                <p class="break-all font-bold text-ink">{{ $redirect->displayAddress() }}</p>
+                                <p class="text-xs text-muted">{{ $redirect->typeLabel() }} · od {{ $redirect->created_at?->format('d.m.Y') }}</p>
+                                @if ($blocked)
+                                    <p class="mt-1 text-xs font-bold text-ink">
+                                        <i class="fa-solid fa-circle-exclamation mr-1" aria-hidden="true"></i>Nie działa teraz: {{ $blocked }}. Przekierowanie wróci, gdy ten adres się zwolni.
+                                    </p>
+                                @endif
+                            </div>
+                            <form method="POST" action="{{ route('admin.witryny.przekierowania.destroy', [$site, $redirect]) }}"
+                                  data-confirm="Usunąć przekierowanie z adresu {{ $redirect->displayAddress() }}? Stary link przestanie działać.">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded px-4 text-sm font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700">
+                                    <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń przekierowanie<span class="sr-only"> z adresu {{ $redirect->displayAddress() }}</span>
+                                </button>
+                            </form>
+                        </li>
+                    @endforeach
+                </ul>
+                @unless ($site->domain || $site->slug)
+                    <p class="mt-3 rounded bg-gray-50 px-4 py-3 text-sm text-ink">
+                        Witryna nie ma teraz adresu, więc te przekierowania nie działają. Ustaw adres skrócony albo domenę.
+                    </p>
+                @endunless
+            @endif
+        </section>
+    @endunless
 @endsection

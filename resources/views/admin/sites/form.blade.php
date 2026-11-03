@@ -116,7 +116,7 @@
                     <input type="text" id="slug" name="slug" value="{{ old('slug', $site->slug) }}" placeholder="osrodek"
                         class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                 </div>
-                <p class="mt-1 text-xs text-muted">Witryna będzie też osiągalna pod dłuższym adresem {{ request()->getHttpHost() }}/site/{ten-adres} — obie postacie działają, ta krótsza jest używana w generowanych linkach.</p>
+                <p class="mt-1 text-xs text-muted">Witryna będzie też osiągalna pod dłuższym adresem {{ request()->getHttpHost() }}/site/{ten-adres} — obie postacie działają, ta krótsza jest używana w generowanych linkach.@if ($site->exists) Po zmianie dotychczasowy adres będzie przekierowywał na nowy.@endif</p>
                 @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
@@ -124,7 +124,7 @@
                 <label for="domain" class="mb-1 block text-sm font-bold">Własna domena (opcjonalnie)</label>
                 <input type="text" id="domain" name="domain" value="{{ old('domain', $site->domain) }}" placeholder="np. przyklad.pl"
                     class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                <p class="mt-1 text-xs text-muted">Domena musi wskazywać (DNS) na ten serwer.</p>
+                <p class="mt-1 text-xs text-muted">Domena musi wskazywać (DNS) na ten serwer.@if ($site->exists) Po zmianie stara domena przekieruje na nowy adres, dopóki nadal wskazuje na ten serwer.@endif</p>
                 @error('domain') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
         </div>

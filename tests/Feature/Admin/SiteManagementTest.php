@@ -122,7 +122,8 @@ class SiteManagementTest extends TestCase
         $this->assertStringContainsString('value="szkolenia.example.test"', $html);
         $this->assertStringContainsString('Adres po zapisaniu', $html);
         $this->assertStringContainsString('Obecnie: https://szkolenia.example.test', $html);
-        $this->assertStringContainsString('dotychczasowy adres przestanie działać', $html);
+        $this->assertStringContainsString('dotychczasowy adres będzie przekierowywał na nowy', $html);
+        $this->assertStringContainsString('Przekierowania ze starych adresów', $html);
         // Etykiety powiązane z polami (WCAG): for/id.
         foreach (['site_name', 'slug', 'domain'] as $id) {
             $this->assertStringContainsString('<label for="'.$id.'"', $html);
@@ -157,11 +158,12 @@ class SiteManagementTest extends TestCase
         $this->assertSame(['Centrum Szkoleń', 'centrum', null], [$site->site_name, $site->slug, $site->domain]);
         $this->assertSame(rtrim(config('app.url'), '/').'/centrum', current_site_url($site));
 
-        // Nowy adres rozpoznaje middleware (mapa slugów jest czyszczona przy zapisie), stary już nie.
+        // Nowy adres rozpoznaje middleware (mapa slugów jest czyszczona przy zapisie), a stary przekierowuje na nowy
+        // (szczegóły: SiteAddressRedirectTest).
         $this->resetCurrentSite();
         $this->get('/centrum')->assertOk();
         $this->resetCurrentSite();
-        $this->get('/szkolenia')->assertNotFound();
+        $this->get('/szkolenia')->assertStatus(301)->assertRedirect(rtrim(config('app.url'), '/').'/centrum');
     }
 
     public function test_adres_wpisany_po_ludzku_jest_normalizowany(): void
