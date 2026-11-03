@@ -107,7 +107,7 @@ class PhoneBookPageTest extends TestCase
 
         $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
 
-        $this->assertStringContainsString('Kiedy dzwonić:', $html);
+        $this->assertStringContainsString('<th scope="col">Kiedy dzwonić</th>', $html);
         $this->assertStringContainsString('pon.–śr. 10–12', $html);
         $this->assertStringContainsString('role="group" aria-label="Filtr działów"', $html);
         $this->assertStringContainsString('Kopiuj numer', $html);
@@ -171,5 +171,52 @@ class PhoneBookPageTest extends TestCase
             'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
             'type_data' => ['sort' => 'losowo', 'contacts' => []],
         ])->assertSessionHasErrors('type_data.sort');
+    }
+
+    public function test_default_layout_is_a_table_per_department(): void
+    {
+        $this->bookWith(['contacts' => [
+            ['group' => 'Biuro', 'name' => 'Anna Kowalska', 'role' => 'Koordynatorka', 'phone' => '601 350 487', 'topic' => 'Zapisy', 'hours' => 'pon.–śr.'],
+            ['group' => 'Finanse', 'name' => 'Jan Nowak', 'phone' => '500 100 200', 'topic' => 'Faktury'],
+        ]]);
+
+        $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
+
+        $this->assertSame(2, substr_count($html, '<table class="phone-book-table'));
+        $this->assertStringContainsString('<caption class="sr-only">Biuro: kto, numer telefonu, w jakiej sprawie', $html);
+        $this->assertStringContainsString('<th scope="col">Numer komórkowy</th>', $html);
+        $this->assertStringContainsString('<th scope="row" data-label="Osoba">', $html);
+        $this->assertStringContainsString('data-label="W jakiej sprawie">Zapisy', $html);
+        $this->assertStringNotContainsString('rounded-md bg-gray-50 p-5', $html);
+    }
+
+    public function test_cards_layout_and_missing_hours_column(): void
+    {
+        $this->bookWith(['layout' => 'cards', 'contacts' => [['name' => 'Anna', 'phone' => '601 350 487', 'topic' => 'Zapisy', 'hours' => 'pon.–śr.']]]);
+        $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
+        $this->assertStringNotContainsString('<table class="phone-book-table', $html);
+        $this->assertStringContainsString('Kiedy dzwonić:', $html);
+
+        Page::where('slug', 'ksiazka-telefoniczna')->first()->update(['type_data' => ['contacts' => [['name' => 'Anna', 'phone' => '601 350 487', 'topic' => 'Zapisy']]]]);
+        $this->get('/ksiazka-telefoniczna')->assertOk()->assertDontSee('<th scope="col">Kiedy dzwonić</th>', false);
+    }
+
+    public function test_admin_offers_layout_and_rejects_unknown_value(): void
+    {
+        $admin = \App\Models\User::factory()->create(['role' => \App\Models\User::ROLE_ADMIN]);
+        $page = $this->bookWith(['contacts' => []]);
+
+        $this->actingAs($admin)->get(route('admin.podstrony.edit', $page))->assertOk()->assertSee('name="type_data[layout]"', false);
+
+        $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
+            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
+            'type_data' => ['layout' => 'cards', 'contacts' => []],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('cards', $page->refresh()->typeData()['layout']);
+
+        $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
+            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
+            'type_data' => ['layout' => 'siatka', 'contacts' => []],
+        ])->assertSessionHasErrors('type_data.layout');
     }
 }

@@ -25,6 +25,13 @@
     <div class="{{ $box }}">
         <p class="text-xs font-bold uppercase text-muted">Ustawienia książki</p>
         <div>
+            <label for="td-phonebook-layout" class="{{ $lbl }}">Układ</label>
+            <select id="td-phonebook-layout" name="type_data[layout]" class="{{ $inp }}">
+                <option value="table" @selected(($td['layout'] ?? 'table') !== 'cards')>Tabele (każdy dział to tabela: osoba, numer, sprawa, kiedy dzwonić)</option>
+                <option value="cards" @selected(($td['layout'] ?? '') === 'cards')>Karty (osoby jako kafelki)</option>
+            </select>
+        </div>
+        <div>
             <label for="td-phonebook-sort" class="{{ $lbl }}">Kolejność osób</label>
             <select id="td-phonebook-sort" name="type_data[sort]" class="{{ $inp }}">
                 <option value="manual" @selected(($td['sort'] ?? 'manual') !== 'alpha')>Jak w panelu (ręcznie)</option>

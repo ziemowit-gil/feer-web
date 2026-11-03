@@ -44,6 +44,7 @@ class PhoneBook extends PageType
     public function rules(): array
     {
         return self::sharedRules('lead') + [
+            'type_data.layout' => ['nullable', 'in:table,cards'],
             'type_data.sort' => ['nullable', 'in:manual,alpha'],
             'type_data.hide_numbers' => ['nullable', 'boolean'],
             'type_data.contacts' => ['nullable', 'array', 'max:200'],

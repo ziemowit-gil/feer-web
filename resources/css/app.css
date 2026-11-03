@@ -1071,3 +1071,25 @@ p.phone-reveal-number { text-decoration: none; }
 .phone-reveal--inline .phone-reveal-number { margin-top: 0; font-size: 1.25rem; }
 .phone-reveal--inline .phone-reveal-number i { margin-right: 0.5rem; }
 .phone-reveal.is-js:not(.is-open) .phone-reveal-actions { display: none; }
+
+
+/* Książka telefoniczna w układzie tabelarycznym: każdy dział to tabela (nagłówki kolumn, osoba jako nagłówek wiersza).
+   Wiersze na szarym tle bez linii, odstępy między nimi. Poniżej 48 rem tabela zamienia się w karty z etykietami pól
+   (data-label), a nagłówki kolumn zostają tylko dla czytników ekranu. */
+.phone-book-table { border-collapse: separate; border-spacing: 0 0.5rem; }
+.phone-book-table caption { padding: 0; }
+.phone-book-table thead th { padding: 0 1rem 0.25rem; font-size: 0.8125rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.phone-book-table tbody th,
+.phone-book-table tbody td { padding: 1rem; background: #f3f4f6; vertical-align: top; font-weight: 400; }
+.phone-book-table tbody th { border-radius: 0.5rem 0 0 0.5rem; }
+.phone-book-table tbody td:last-child { border-radius: 0 0.5rem 0.5rem 0; }
+@media (max-width: 47.99rem) {
+    .phone-book-table, .phone-book-table tbody, .phone-book-table tr, .phone-book-table th, .phone-book-table td { display: block; }
+    .phone-book-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .phone-book-table tbody tr { margin-bottom: 0.75rem; background: #f3f4f6; border-radius: 0.5rem; }
+    .phone-book-table tbody th, .phone-book-table tbody td { padding: 0.5rem 1rem; background: transparent; border-radius: 0; }
+    .phone-book-table tbody th { padding-top: 1rem; }
+    .phone-book-table tbody td:last-child { padding-bottom: 1rem; }
+    .phone-book-table td::before { content: attr(data-label) ": "; display: block; font-size: 0.8125rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+    .phone-book-table td:empty { display: none; }
+}

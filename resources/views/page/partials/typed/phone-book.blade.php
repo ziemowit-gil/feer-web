@@ -9,6 +9,7 @@
     $td = $page->typeData();
     $alpha = ($td['sort'] ?? 'manual') === 'alpha';
     $hideNumbers = ! empty($td['hide_numbers']);
+    $asTable = ($td['layout'] ?? 'table') !== 'cards';
     $people = collect($td['contacts'] ?? [])
         ->filter(fn ($c) => filled($c['name'] ?? null) || filled($c['phone'] ?? null))
         ->map(fn ($c) => [
@@ -22,6 +23,7 @@
             'hours' => trim((string) ($c['hours'] ?? '')),
         ])
         ->values();
+    $anyHours = $people->contains(fn ($p) => $p['hours'] !== '');
     if ($alpha) {
         $people = $people->sortBy(fn ($p) => mb_strtolower($p['name'] ?: $p['phone']), SORT_NATURAL | SORT_FLAG_CASE)->values();
     }
@@ -102,6 +104,35 @@
                 @if ($groupName !== '')
                     <h2 id="phonebook-group-{{ $loop->index }}" class="mb-4 text-2xl font-bold text-ink">{{ $groupName }}</h2>
                 @endif
+                @if ($asTable)
+                    <table class="phone-book-table w-full text-left text-ink">
+                        <caption class="sr-only">{{ $groupName !== '' ? $groupName : 'Osoby' }}: kto, numer telefonu, w jakiej sprawie{{ $anyHours ? ' i kiedy dzwonić' : '' }}</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Osoba</th>
+                                <th scope="col">Numer komórkowy</th>
+                                <th scope="col">W jakiej sprawie</th>
+                                @if ($anyHours)<th scope="col">Kiedy dzwonić</th>@endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($list as $p)
+                                <tr data-group="{{ $p['group'] }}" data-person="{{ mb_strtolower($p['name'].' '.$p['role'].' '.$p['topic'].' '.$p['phone'].' '.$p['group'].' '.$p['hours']) }}" x-show="match($el)">
+                                    <th scope="row" data-label="Osoba">
+                                        <span class="block text-lg font-bold">{{ $p['name'] !== '' ? $p['name'] : $p['phone'] }}</span>
+                                        @if ($p['role'] !== '')<span class="block font-normal">{{ $p['role'] }}</span>@endif
+                                        @if ($p['email'] !== '')<a href="mailto:{{ $p['email'] }}" class="{{ $link }} font-normal"><i class="fa-solid fa-envelope" aria-hidden="true"></i>{{ $p['email'] }}</a>@endif
+                                    </th>
+                                    <td data-label="Numer komórkowy">
+                                        @include('page.partials.typed._phone-book-number', ['p' => $p, 'hideNumbers' => $hideNumbers, 'link' => $link, 'act' => $act, 'vcard' => $vcard, 'wrap' => ''])
+                                    </td>
+                                    <td data-label="W jakiej sprawie">{{ $p['topic'] }}</td>
+                                    @if ($anyHours)<td data-label="Kiedy dzwonić">{{ $p['hours'] }}</td>@endif
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
                 <ul class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     @foreach ($list as $p)
                         <li class="rounded-md bg-gray-50 p-5" data-group="{{ $p['group'] }}" data-person="{{ mb_strtolower($p['name'].' '.$p['role'].' '.$p['topic'].' '.$p['phone'].' '.$p['group'].' '.$p['hours']) }}"
@@ -119,25 +150,14 @@
                                 <p class="mt-1 text-ink"><span class="font-bold">Kiedy dzwonić:</span> {{ $p['hours'] }}</p>
                             @endif
 
-                            @php $who = $p['name'] ?: 'tej osoby'; @endphp
-                            @if ($p['phone'] !== '')
-                                <div class="mt-3 {{ $hideNumbers ? 'phone-reveal phone-reveal--inline' : '' }}" @if ($hideNumbers) data-phone-reveal @endif>
-                                    @if ($hideNumbers)
-                                        <button type="button" class="phone-reveal-btn" aria-expanded="false"><span>Pokaż numer: {{ $who }}</span></button>
-                                    @endif
-                                    <a href="tel:{{ $p['tel'] }}" class="{{ $hideNumbers ? 'phone-reveal-number' : $link.' text-xl' }}"><i class="fa-solid fa-phone mr-2" aria-hidden="true"></i><span class="sr-only">Zadzwoń do {{ $who }}: </span>{{ $p['phone'] }}</a>
-                                    <div class="phone-reveal-actions mt-2 flex flex-wrap gap-2 no-print">
-                                        <button type="button" class="{{ $act }}" @click="copy(@js($p['phone']), @js($p['name']))"><i class="fa-regular fa-copy" aria-hidden="true"></i> Kopiuj numer<span class="sr-only"> ({{ $who }})</span></button>
-                                        <button type="button" class="{{ $act }}" @click="save(@js($vcard($p)), @js(\Illuminate\Support\Str::slug($p['name'] ?: $p['phone']).'.vcf'))"><i class="fa-solid fa-address-card" aria-hidden="true"></i> Zapisz w telefonie<span class="sr-only"> ({{ $who }})</span></button>
-                                    </div>
-                                </div>
-                            @endif
+                            @include('page.partials.typed._phone-book-number', ['p' => $p, 'hideNumbers' => $hideNumbers, 'link' => $link, 'act' => $act, 'vcard' => $vcard, 'wrap' => 'mt-3'])
                             @if ($p['email'] !== '')
                                 <p><a href="mailto:{{ $p['email'] }}" class="{{ $link }}"><i class="fa-solid fa-envelope" aria-hidden="true"></i>{{ $p['email'] }}</a></p>
                             @endif
                         </li>
                     @endforeach
                 </ul>
+                @endif
             </section>
         @endforeach
 
