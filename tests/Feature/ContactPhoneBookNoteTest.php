@@ -27,7 +27,12 @@ class ContactPhoneBookNoteTest extends TestCase
             $html = $this->get('/kontakt')->assertOk()->getContent();
 
             $this->assertStringContainsString('phone-book-note', $html, $layout);
-            $this->assertStringContainsString('href="tel:123456789"', $html, $layout);
+            if ($layout === 'feer') {
+                // Szablon FEER: dane kontaktowe to zwykły tekst, bez linków tel:.
+                $this->assertStringNotContainsString('tel:123456789', $html, $layout);
+            } else {
+                $this->assertStringContainsString('href="tel:123456789"', $html, $layout);
+            }
             $this->assertStringContainsString('Często oddzwaniamy z numerów komórkowych', $html, $layout);
             $this->assertStringContainsString('/ksiazka-telefoniczna"', $html, $layout);
             // Numer centrali stoi nad informacją o oddzwanianiu i linkiem do książki.
