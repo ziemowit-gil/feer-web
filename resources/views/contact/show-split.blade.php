@@ -115,6 +115,7 @@
 
         @include('partials.correspondence-note')
 
+        @include('contact.partials.phone-book-note')
         {{-- Formularz w karcie + przyklejony panel z danymi --}}
         <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
             <div id="formularz" class="scroll-mt-24 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">

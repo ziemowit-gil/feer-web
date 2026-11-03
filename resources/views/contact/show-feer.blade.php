@@ -37,6 +37,7 @@
             <div class="min-w-0 space-y-12">
                 @include('partials.correspondence-note')
 
+                @include('contact.partials.phone-book-note', ['class' => ''])
                 {{-- Dane kontaktowe: wyraźne, płaskie kafelki z dużym tekstem (kontrast ink na #F3F4F6 ≥ 14:1, linki brand-dark) --}}
                 @php
                     $hasOffice = $siteSettings->officeDiffersFromRegistered();

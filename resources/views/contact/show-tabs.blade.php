@@ -107,6 +107,7 @@
 
                     <div class="mt-6 max-w-3xl">
                         @include('partials.correspondence-note')
+                        @include('contact.partials.phone-book-note')
                     </div>
 
                     {{-- Zdjęcia biura tu nie powtarzamy — jest już w tle nagłówka. --}}

@@ -27,6 +27,7 @@
     <section class="mx-auto max-w-5xl px-4 py-10">
         @include('partials.correspondence-note')
 
+        @include('contact.partials.phone-book-note')
         @php
             $contactSections = collect([
                 ['id' => 'formularz', 'label' => 'Napisz do nas'],
