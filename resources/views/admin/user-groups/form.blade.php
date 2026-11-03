@@ -10,7 +10,7 @@
             'Treści i strony' => ['pages', 'news', 'faq', 'timeline', 'landing', 'forms', 'polls'],
             'Wygląd strony głównej' => ['hero', 'gallery', 'quick_actions', 'feer_bands', 'partners'],
             'Szkolenia i ludzie' => ['events', 'materials', 'volunteering', 'jobs', 'cooperation', 'help_map'],
-            'Organizacja i dokumenty' => ['strategy', 'authorizations', 'bip', 'reports', 'support'],
+            'Organizacja i dokumenty' => ['strategy', 'authorizations', 'bip', 'reports', 'support', 'phone_book'],
         ];
         $placed = collect($moduleSections)->flatten()->all();
         $rest = array_values(array_diff(array_keys($allModules), $placed));

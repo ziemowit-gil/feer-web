@@ -50,6 +50,7 @@ class SiteSetting extends Model implements HasMedia
         'cooperation' => 'Zgłoszenia współpracy (formularz + skrzynka)',
         'help_map' => 'Mapa pomocy (punkty wsparcia na mapie)',
         'block_editor' => 'Edytor blokowy',
+        'phone_book' => 'Książka telefoniczna (kto, numer i w jakiej sprawie dzwonić)',
     ];
 
     /**
@@ -87,6 +88,7 @@ class SiteSetting extends Model implements HasMedia
         'partners' => ['group' => 'community', 'icon' => 'fa-people-group', 'desc' => 'Logotypy i opisy partnerów oraz sponsorów.'],
         'strategy' => ['group' => 'organization', 'icon' => 'fa-chess', 'desc' => 'Planowanie działań, zasobów i źródeł finansowania.'],
         'authorizations' => ['group' => 'organization', 'icon' => 'fa-file-signature', 'desc' => 'Rejestr pełnomocnictw i upoważnień z terminami ważności.'],
+        'phone_book' => ['group' => 'organization', 'icon' => 'fa-address-book', 'desc' => 'Książka telefoniczna zespołu: kto, numer komórkowy i w jakiej sprawie dzwonić, z działami w tabelach.'],
         'reports' => ['group' => 'organization', 'icon' => 'fa-file-contract', 'desc' => 'Sprawozdania merytoryczne i finansowe do pobrania.'],
         'bip' => ['group' => 'organization', 'icon' => 'fa-landmark', 'desc' => 'Biuletyn Informacji Publicznej z dokumentami.'],
         'jobs' => ['group' => 'organization', 'icon' => 'fa-briefcase', 'desc' => 'Oferty pracy i rekrutacje.'],
@@ -475,6 +477,7 @@ class SiteSetting extends Model implements HasMedia
         'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
         'site_url', 'maintenance_mode', 'maintenance_message', 'under_construction', 'under_construction_message',
         'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact',
+        'phonebook_title', 'phonebook_lead', 'phonebook_layout', 'phonebook_sort', 'phonebook_hide_numbers',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
         'google_login_enabled', 'google_client_id', 'google_client_secret',
         'member_login_enabled', 'member_allowed_domains', 'metka_mode', 'metka_types', 'metka_entity', 'metka_show_entity', 'metka_shared_accounts', 'sso_enabled', 'sso_only_login', 'passkey_login_enabled', 'sso_name', 'sso_issuer', 'sso_client_id', 'sso_client_secret', 'sso_scopes', 'ai_enabled', 'ai_api_key', 'ai_model', 'menu_highlight_color', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'cleantalk_enabled', 'cleantalk_access_key', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
@@ -763,6 +766,7 @@ class SiteSetting extends Model implements HasMedia
         'notice_enabled' => 'boolean',
         'notice_on_home' => 'boolean',
         'notice_on_contact' => 'boolean',
+        'phonebook_hide_numbers' => 'boolean',
         'microsoft_login_enabled' => 'boolean',
         'microsoft_only_login' => 'boolean',
         'microsoft_client_secret' => 'encrypted',

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\View;
  *   [formularz:slug] — osadza formularz o podanym identyfikatorze
  *   [kafelki:slug]   — osadza siatkę kafelków ze strony typu tiles_grid
  *   [pasek:ID]       — wstawia pasek z modułu „FEER Paski” (tytuł, tekst, przyciski)
+ *   [ksiazka-telefoniczna] — wstawia listę osób z modułu „Książka telefoniczna”
  *   [banery:slug]    — strefa z modułu Banery (aktywne banery strefy, kolejność wg priorytetu, statystyki)
  *   [materialy]      — karty materiałów edukacyjnych (grupa, typ, liczba); opcje w App\Support\MaterialList
  *   [baner:ID]       — pojedynczy baner z modułu Banery (z harmonogramem i statystykami)
@@ -65,6 +66,12 @@ class ShortcodeParser
         $content = preg_replace_callback(
             '/(?:<p>\s*)?\[pasek:(\d+)\](?:\s*<\/p>)?/i',
             fn ($matches) => static::renderBand((int) $matches[1]),
+            $content,
+        );
+
+        $content = preg_replace_callback(
+            '/(?:<p>\s*)?\[ksiazka-telefoniczna\](?:\s*<\/p>)?/i',
+            fn () => static::renderPhoneBook(),
             $content,
         );
 
@@ -130,7 +137,7 @@ class ShortcodeParser
     }
 
     /** Wzorzec wszystkich shortcodów — do wykrywania (np. wyłączenie edycji inline). */
-    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|banery:[a-z0-9_\-]+|baner:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]{0,200})?)\]/i';
+    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|ksiazka-telefoniczna|banery:[a-z0-9_\-]+|baner:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]{0,200})?)\]/i';
 
     public static function has(?string $content): bool
     {
@@ -207,6 +214,22 @@ class ShortcodeParser
             'counts' => $counts,
             'currentPage' => $current,
             'lastPage' => $lastPage,
+        ])->render();
+    }
+
+    /** [ksiazka-telefoniczna] — lista osób z modułu „Książka telefoniczna” (puste, gdy moduł wyłączony). */
+    private static function renderPhoneBook(): string
+    {
+        $site = \App\Models\SiteSetting::current();
+        if (! $site->isModuleEnabled('phone_book')) {
+            return '';
+        }
+
+        return View::make('partials.phone-book.list', [
+            'contacts' => \App\Models\PhoneBookEntry::listForCurrentSite(),
+            'layout' => $site->phonebook_layout ?: 'table',
+            'sort' => $site->phonebook_sort ?: 'manual',
+            'hide' => (bool) $site->phonebook_hide_numbers,
         ])->render();
     }
 

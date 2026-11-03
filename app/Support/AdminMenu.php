@@ -254,6 +254,7 @@ final class AdminMenu
                 $this->can('projects') && \Illuminate\Support\Facades\Schema::hasTable('coordinators')
                     ? $this->item('coordinators', 'Koordynatorzy', 'admin.koordynatorzy.index', 'fa-user-tie', active: 'admin.koordynatorzy.*')
                     : null,
+                $this->can('phone_book') ? $this->item('phone-book', 'Książka telefoniczna', 'admin.ksiazka-telefoniczna.index', 'fa-address-book', active: 'admin.ksiazka-telefoniczna.*') : null,
                 $this->can('faq')      ? $this->item('faq', 'FAQ', 'admin.faq.index', 'fa-circle-question', active: 'admin.faq.*') : null,
                 $this->can('reports')  ? $this->item('reports', 'Sprawozdania', 'admin.sprawozdania.index', 'fa-file-invoice', active: 'admin.sprawozdania.*') : null,
                 $this->can('landing')  ? $this->item('landing', 'Landing pages', 'admin.lp.index', 'fa-bullhorn', active: 'admin.lp.*') : null,
@@ -400,6 +401,7 @@ final class AdminMenu
             // „Komunikacja” — kontakt z odbiorcami: przychodzące, formularze, wysyłki i promocja.
             $this->group($byKey, 'comms', 'Komunikacja', 'fa-comments', [
                 ['Skrzynka', ['inbox', 'content'], ['contact', 'meetings', 'barriers', 'cooperation']],
+                ['Książka telefoniczna', 'content', ['phone-book']],
                 ['Formularze i ankiety', 'content', ['forms', 'polls']],
                 ['Newsletter', 'newsletter'],
                 ['Promocja i kampanie', ['content', 'marketing'], ['landing', 'campaigns', 'banners']],

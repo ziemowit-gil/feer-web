@@ -5,12 +5,21 @@
 --}}
 @php
     $switchboard = trim((string) $siteSettings->contact_phone);
-    $phoneBookPage = \App\Models\Page::forCurrentSite()->where('type', 'phone_book')->where('is_published', true)->orderBy('id')->first();
+    // Link do książki: moduł „Książka telefoniczna” (gdy ma wpisy), a w drugiej kolejności opublikowana strona tego typu.
+    $phoneBookUrl = null;
+    $phoneBookTitle = 'Książka telefoniczna';
+    if ($siteSettings->isModuleEnabled('phone_book') && \App\Models\PhoneBookEntry::forCurrentSite()->active()->exists()) {
+        $phoneBookUrl = url('/'.\App\Http\Controllers\PhoneBookController::SLUG);
+        $phoneBookTitle = filled($siteSettings->phonebook_title) ? $siteSettings->phonebook_title : $phoneBookTitle;
+    } elseif ($phoneBookPage = \App\Models\Page::forCurrentSite()->where('type', 'phone_book')->where('is_published', true)->orderBy('id')->first()) {
+        $phoneBookUrl = $phoneBookPage->publicUrl();
+        $phoneBookTitle = $phoneBookPage->title;
+    }
     // Szablon FEER pokazuje dane kontaktowe jako zwykły tekst (bez linków tel:), więc numer centrali też.
     $plainPhone = $siteSettings->contactLayoutValue() === 'feer';
     $pbLink = 'inline-flex min-h-11 items-center gap-2 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
 @endphp
-@if ($switchboard !== '' || $phoneBookPage)
+@if ($switchboard !== '' || $phoneBookUrl)
     <div class="phone-book-note {{ $class ?? 'mb-6' }} rounded-md bg-gray-50 p-5 text-ink" role="note" aria-label="Telefon i oddzwanianie">
         @if ($switchboard !== '')
             <p class="text-sm font-bold uppercase tracking-widest">Centrala</p>
@@ -21,8 +30,8 @@
             @endif
         @endif
         <p class="{{ $switchboard !== '' ? 'mt-3 ' : '' }}leading-relaxed">Oddzwaniamy najczęściej z komórek, więc na ekranie może pojawić się numer, którego nie znasz. Możliwe, że to my.</p>
-        @if ($phoneBookPage)
-            <p class="mt-1"><a href="{{ $phoneBookPage->publicUrl() }}" class="{{ $pbLink }}"><i class="fa-solid fa-address-book" aria-hidden="true"></i>{{ $phoneBookPage->title }}: sprawdź, kto i w jakiej sprawie dzwoni</a></p>
+        @if ($phoneBookUrl)
+            <p class="mt-1"><a href="{{ $phoneBookUrl }}" class="{{ $pbLink }}"><i class="fa-solid fa-address-book" aria-hidden="true"></i>{{ $phoneBookTitle }}: sprawdź, kto i w jakiej sprawie dzwoni</a></p>
         @endif
     </div>
 @endif

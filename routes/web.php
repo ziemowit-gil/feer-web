@@ -300,6 +300,7 @@ Route::post('/b/imp/{banner}', [BannerTrackingController::class, 'impression'])
 Route::get('/b/click/{banner}', [BannerTrackingController::class, 'click'])
     ->name('banner.click');
 
+Route::get('/ksiazka-telefoniczna', [\App\Http\Controllers\PhoneBookController::class, 'show'])->name('phonebook.show')->middleware('module:phone_book');
 Route::get('/kontakt', [ContactController::class, 'index'])->name('contact.show');
 Route::post('/kontakt', [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,1');
 Route::post('/kontakt/przyjde', [MeetingSignupController::class, 'store'])->name('meeting.signup')->middleware('throttle:5,1');
@@ -504,6 +505,11 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::middleware(['module:polls', 'module-access:polls'])->group(function () {
         Route::resource('ankiety', AdminPollController::class)->parameters(['ankiety' => 'poll'])->except('show');
         Route::post('ankiety/{poll}/reset-glosow', [AdminPollController::class, 'resetVotes'])->name('ankiety.reset-votes');
+    });
+
+    Route::middleware(['module:phone_book', 'module-access:phone_book'])->group(function () {
+        Route::put('ksiazka-telefoniczna/ustawienia', [\App\Http\Controllers\Admin\PhoneBookController::class, 'settings'])->name('ksiazka-telefoniczna.ustawienia');
+        Route::resource('ksiazka-telefoniczna', \App\Http\Controllers\Admin\PhoneBookController::class)->parameters(['ksiazka-telefoniczna' => 'entry'])->except('show');
     });
 
     Route::middleware(['module:feer_bands', 'module-access:feer_bands'])->group(function () {
