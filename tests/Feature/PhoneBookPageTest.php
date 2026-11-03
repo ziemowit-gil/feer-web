@@ -219,4 +219,22 @@ class PhoneBookPageTest extends TestCase
             'type_data' => ['layout' => 'siatka', 'contacts' => []],
         ])->assertSessionHasErrors('type_data.layout');
     }
+
+    public function test_table_has_separate_email_column_only_when_someone_has_email(): void
+    {
+        $this->bookWith(['contacts' => [
+            ['name' => 'Anna Kowalska', 'phone' => '601 350 487', 'email' => 'anna@example.org'],
+            ['name' => 'Jan Nowak', 'phone' => '500 100 200'],
+        ]]);
+
+        $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
+        $this->assertStringContainsString('<th scope="col">E-mail</th>', $html);
+        $this->assertStringContainsString('<td data-label="E-mail"><a href="mailto:anna@example.org"', $html);
+        $this->assertStringContainsString('<td data-label="E-mail"></td>', $html);
+        // E-mail nie jest już w kolumnie „Osoba”.
+        $this->assertStringNotContainsString('font-normal"><i class="fa-solid fa-envelope"', $html);
+
+        Page::where('slug', 'ksiazka-telefoniczna')->first()->update(['type_data' => ['contacts' => [['name' => 'Jan', 'phone' => '500 100 200']]]]);
+        $this->get('/ksiazka-telefoniczna')->assertOk()->assertDontSee('<th scope="col">E-mail</th>', false);
+    }
 }

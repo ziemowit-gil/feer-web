@@ -23,6 +23,7 @@
         ])
         ->values();
     $anyHours = $people->contains(fn ($p) => $p['hours'] !== '');
+    $anyEmail = $people->contains(fn ($p) => $p['email'] !== '');
     if ($alpha) {
         $people = $people->sortBy(fn ($p) => mb_strtolower($p['name'] ?: $p['phone']), SORT_NATURAL | SORT_FLAG_CASE)->values();
     }
@@ -104,6 +105,7 @@
                             <tr>
                                 <th scope="col">Osoba</th>
                                 <th scope="col">Numer komórkowy</th>
+                                @if ($anyEmail)<th scope="col">E-mail</th>@endif
                                 <th scope="col">W jakiej sprawie</th>
                                 @if ($anyHours)<th scope="col">Kiedy dzwonić</th>@endif
                             </tr>
@@ -114,11 +116,13 @@
                                     <th scope="row" data-label="Osoba">
                                         <span class="block text-lg font-bold">{{ $p['name'] !== '' ? $p['name'] : $p['phone'] }}</span>
                                         @if ($p['role'] !== '')<span class="block font-normal">{{ $p['role'] }}</span>@endif
-                                        @if ($p['email'] !== '')<a href="mailto:{{ $p['email'] }}" class="{{ $link }} font-normal"><i class="fa-solid fa-envelope" aria-hidden="true"></i>{{ $p['email'] }}</a>@endif
                                     </th>
                                     <td data-label="Numer komórkowy">
                                         @include('page.partials.typed._phone-book-number', ['p' => $p, 'hideNumbers' => $hideNumbers, 'link' => $link, 'act' => $act, 'vcard' => $vcard, 'wrap' => ''])
                                     </td>
+                                    @if ($anyEmail)
+                                        <td data-label="E-mail">@if ($p['email'] !== '')<a href="mailto:{{ $p['email'] }}" class="{{ $link }} break-all"><i class="fa-solid fa-envelope" aria-hidden="true"></i>{{ $p['email'] }}</a>@endif</td>
+                                    @endif
                                     <td data-label="W jakiej sprawie">{{ $p['topic'] }}</td>
                                     @if ($anyHours)<td data-label="Kiedy dzwonić">{{ $p['hours'] }}</td>@endif
                                 </tr>
