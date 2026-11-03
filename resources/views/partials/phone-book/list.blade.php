@@ -54,7 +54,11 @@
 <div data-phone-book
     x-data="{
         q: '', g: '',
-        match(el) { const t = this.q.trim().toLowerCase(); return (this.g === '' || el.dataset.group === this.g) && (t === '' || el.dataset.person.includes(t)); },
+        match(el) {
+            const t = this.q.trim().toLowerCase(); const d = t.replace(/\D/g, '');
+            // Szukanie po numerze działa bez spacji i myślników („601350487” znajdzie „601 350 487”).
+            return (this.g === '' || el.dataset.group === this.g) && (t === '' || el.dataset.person.includes(t) || (d.length >= 3 && el.dataset.digits.includes(d)));
+        },
         count() { return [...this.$el.querySelectorAll('[data-person]')].filter((el) => this.match(el)).length; },
         save(card, file) {
             const url = URL.createObjectURL(new Blob([card], { type: 'text/vcard;charset=utf-8' }));
@@ -62,14 +66,22 @@
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
     }">
+    @php $mainPhone = trim((string) ($siteSettings->contact_phone ?? '')); @endphp
+    @if ($mainPhone !== '')
+        <p class="mb-6 max-w-3xl rounded-md bg-gray-50 p-5 leading-relaxed text-ink" role="note">
+            Numer kontaktowy z ogólnymi informacjami o naszej działalności: <span class="font-bold">{{ $mainPhone }}</span>.
+            Numery poniżej służą do rozpoznania, kto dzwoni, a nie do kontaktu z nami. Prosimy dzwonić na numer kontaktowy.
+        </p>
+    @endif
+
     @if ($people->isEmpty())
         <p class="text-ink">Książka telefoniczna nie ma jeszcze wpisów. Dodaj osoby w panelu (edycja strony → Książka telefoniczna).</p>
     @else
         <div class="mb-8 max-w-xl rounded-md bg-brand-light p-5">
-            <label for="phonebook-q" class="mb-2 block font-bold text-ink">Znajdź osobę albo sprawę</label>
+            <label for="phonebook-q" class="mb-2 block font-bold text-ink">Znajdź osobę, sprawę albo numer</label>
             <div class="relative">
                 <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink" aria-hidden="true"></i>
-                <input id="phonebook-q" type="search" x-model.debounce.150ms="q" placeholder="np. faktury, zapisy, imię" autocomplete="off"
+                <input id="phonebook-q" type="search" x-model.debounce.150ms="q" placeholder="np. faktury, zapisy, imię albo numer" autocomplete="off"
                        class="min-h-11 w-full rounded-md bg-white pl-9 text-base text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-dark">
             </div>
         </div>
@@ -106,7 +118,7 @@
                         </thead>
                         <tbody>
                             @foreach ($list as $p)
-                                <tr data-group="{{ $p['group'] }}" data-person="{{ mb_strtolower($p['name'].' '.$p['role'].' '.$p['topic'].' '.$p['phone'].' '.$p['group'].' '.$p['hours']) }}" x-show="match($el)">
+                                <tr data-group="{{ $p['group'] }}" data-digits="{{ preg_replace('/\D/', '', $p['phone']) }}" data-person="{{ mb_strtolower($p['name'].' '.$p['role'].' '.$p['topic'].' '.$p['phone'].' '.$p['group'].' '.$p['hours']) }}" x-show="match($el)">
                                     <th scope="row" data-label="Osoba">
                                         <span class="block text-lg font-bold">{{ $p['name'] !== '' ? $p['name'] : $p['phone'] }}</span>
                                         @if ($p['role'] !== '')<span class="block font-normal">{{ $p['role'] }}</span>@endif
@@ -126,7 +138,7 @@
                 @else
                 <ul class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     @foreach ($list as $p)
-                        <li class="rounded-md bg-gray-50 p-5" data-group="{{ $p['group'] }}" data-person="{{ mb_strtolower($p['name'].' '.$p['role'].' '.$p['topic'].' '.$p['phone'].' '.$p['group'].' '.$p['hours']) }}"
+                        <li class="rounded-md bg-gray-50 p-5" data-group="{{ $p['group'] }}" data-digits="{{ preg_replace('/\D/', '', $p['phone']) }}" data-person="{{ mb_strtolower($p['name'].' '.$p['role'].' '.$p['topic'].' '.$p['phone'].' '.$p['group'].' '.$p['hours']) }}"
                             x-show="match($el)">
                             @if ($p['name'] !== '')
                                 <p class="text-lg font-bold text-ink">{{ $p['name'] }}</p>

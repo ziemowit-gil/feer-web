@@ -147,4 +147,25 @@ class PhoneBookModuleTest extends TestCase
         $this->entry();
         $this->get('/kontakt')->assertOk()->assertSee('Telefony do zespołu: sprawdź, kto i w jakiej sprawie dzwoni')->assertSee('/ksiazka-telefoniczna"', false);
     }
+
+    public function test_list_explains_main_number_and_searches_by_digits(): void
+    {
+        SiteSetting::current()->update(['contact_phone' => '12 210 06 98']);
+        $this->flush();
+        $this->entry();
+
+        $html = $this->get('/ksiazka-telefoniczna')->assertOk()
+            ->assertSee('Numer kontaktowy z ogólnymi informacjami o naszej działalności:')
+            ->assertSee('12 210 06 98')
+            ->assertSee('służą do rozpoznania, kto dzwoni')
+            ->assertSee('Znajdź osobę, sprawę albo numer')
+            ->getContent();
+
+        $this->assertStringContainsString('data-digits="601350487"', $html);
+        $this->assertStringNotContainsString('href="tel:', $html);
+
+        SiteSetting::current()->update(['contact_phone' => '']);
+        $this->flush();
+        $this->get('/ksiazka-telefoniczna')->assertOk()->assertDontSee('Numer kontaktowy z ogólnymi informacjami');
+    }
 }

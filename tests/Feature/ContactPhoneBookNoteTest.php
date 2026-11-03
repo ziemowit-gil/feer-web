@@ -20,7 +20,7 @@ class ContactPhoneBookNoteTest extends TestCase
 
     public function test_every_contact_layout_shows_switchboard_callback_hint_and_phone_book_link(): void
     {
-        // Numer nie jest nazywany „centralą”: etykieta to „Numer ogólny”.
+        // Numer nie jest nazywany „centralą”: etykieta to „Numer kontaktowy”.
         Page::create(['title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'is_published' => true]);
 
         foreach (['classic', 'card', 'split', 'tabs', 'feer'] as $layout) {
@@ -104,5 +104,18 @@ class ContactPhoneBookNoteTest extends TestCase
         ])->assertRedirect();
 
         $this->assertSame('czw-pt 10:00 - 16', SiteSetting::current()->refresh()->contact_phone_hours);
+    }
+
+    public function test_contact_number_is_described_as_general_information_line(): void
+    {
+        SiteSetting::current()->update(['contact_phone' => '12 210 06 98']);
+
+        $this->get('/kontakt')->assertOk()
+            ->assertSee('Numer kontaktowy')
+            ->assertSee('Ogólne informacje o naszej działalności.')
+            ->assertDontSee('Numer ogólny');
+
+        SiteSetting::current()->update(['contact_phone' => '']);
+        $this->get('/kontakt')->assertOk()->assertDontSee('Ogólne informacje o naszej działalności.');
     }
 }
