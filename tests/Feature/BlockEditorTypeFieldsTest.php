@@ -161,13 +161,45 @@ class BlockEditorTypeFieldsTest extends TestCase
         $this->assertArrayNotHasKey('nieznane', $data);
     }
 
-    public function test_classic_only_types_keep_the_form(): void
+    public function test_heavy_layout_types_keep_the_form(): void
     {
-        $page = $this->page(['type' => 'bip_move']);
+        foreach (['about', 'wspolpraca', 'contact'] as $type) {
+            $page = $this->page(['type' => $type, 'slug' => 'ukl-'.$type]);
 
-        $this->assertFalse(\App\Support\PageTypeFields::supports($page));
-        $this->save($page, ['bip_move_url' => 'https://bip.example.org'])->assertOk();
-        $this->assertNull($page->fresh()->bip_move_url);
+            $this->assertFalse(\App\Support\PageTypeFields::supports($page), $type);
+            $this->assertFalse(\App\Support\PageTypeFields::hasFreeContent($page), $type);
+        }
+    }
+
+    public function test_bip_move_fields_are_edited_in_the_block_editor(): void
+    {
+        $page = $this->page(['type' => 'bip_move', 'bip_move_note' => 'Stara uwaga']);
+
+        $this->assertTrue(\App\Support\PageTypeFields::hasFreeContent($page));
+        $this->actingAs($this->admin())->get(route('admin.podstrony.bloki.edit', $page))->assertOk()
+            ->assertSee('id="be-type-fields"', false)
+            ->assertSee('name="bip_move_url"', false)
+            ->assertSee('Stara uwaga');
+
+        $this->save($page, ['bip_move_url' => ' https://bip.example.org/dokumenty ', 'bip_move_note' => '  Statut jest w BIP  '])->assertOk();
+        $page->refresh();
+        $this->assertSame('https://bip.example.org/dokumenty', $page->bip_move_url);
+        $this->assertSame('Statut jest w BIP', $page->bip_move_note);
+
+        $this->save($page, ['bip_move_url' => 'to nie adres'])->assertStatus(422);
+    }
+
+    public function test_redirect_and_menu_types_open_in_the_block_editor(): void
+    {
+        foreach (['redirect' => 'przekierowanie', 'menu_link' => 'link', 'menu_heading' => 'naglowek'] as $type => $slug) {
+            $page = $this->page(['type' => $type, 'slug' => $slug]);
+
+            $this->assertTrue(\App\Support\PageTypeFields::hasFreeContent($page), $type);
+            $this->actingAs($this->admin())->get(route('admin.podstrony.bloki.edit', $page))->assertOk();
+        }
+
+        $redirect = Page::where('slug', 'przekierowanie')->first();
+        $this->assertTrue(\App\Support\PageTypeFields::supports($redirect));
     }
 
     public function test_classic_form_still_saves_event_fields(): void

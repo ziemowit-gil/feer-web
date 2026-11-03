@@ -19,8 +19,8 @@ use App\PageTypes\PageTypeRegistry;
  */
 final class PageTypeFields
 {
-    /** Typy bez swobodnej treści (własny układ albo pozycja menu) — tylko formularz klasyczny. */
-    public const CLASSIC_ONLY = ['about', 'bip_move', 'wspolpraca', 'contact', 'redirect', 'menu_link', 'menu_heading'];
+    /** Typy z rozbudowanym własnym układem (sekcje, ustawienia witryny) — jak dotąd tylko formularz klasyczny; osoba (about_person) ma osobny formularz. */
+    public const CLASSIC_ONLY = ['about', 'wspolpraca', 'contact'];
 
     /** Typy z własnymi kolumnami: typ => sekcja pól (ta sama co w formularzu strony). */
     private const COLUMN_TYPES = [
@@ -30,6 +30,7 @@ final class PageTypeFields
         'training_institution' => 'admin.pages.partials.types.training',
         'legacy' => 'admin.pages.partials.types.legacy',
         'brand_assets' => 'admin.pages.partials.types.brand',
+        'bip_move' => 'admin.pages.partials.types.bipmove',
     ];
 
     /** Kolumny zapisywane przez dany typ (edytor blokowy nie dotyka pozostałych). */
@@ -40,6 +41,7 @@ final class PageTypeFields
         'training_institution' => ['training_manager_name', 'training_manager_title', 'training_ris_number', 'training_bur_number', 'training_extra_info', 'training_bur_note'],
         'legacy' => ['legacy_name', 'legacy_intro'],
         'brand_assets' => ['brand_brandbook_url', 'brand_sections'],
+        'bip_move' => ['bip_move_url', 'bip_move_note'],
     ];
 
     /** Czy pola typu tej strony da się edytować w edytorze blokowym. */
@@ -208,6 +210,12 @@ final class PageTypeFields
             $data['brand_sections'] = null;
         }
 
+        // „Przeniesiono do BIP”: link i dodatkowa informacja (puste = null; formularz strony czyści je dla innych typów sam).
+        if ($type === 'bip_move') {
+            $data['bip_move_url'] = trim((string) ($data['bip_move_url'] ?? '')) ?: null;
+            $data['bip_move_note'] = trim((string) ($data['bip_move_note'] ?? '')) ?: null;
+        }
+
         return $data;
     }
 
@@ -249,6 +257,10 @@ final class PageTypeFields
                 'schedule_items.*.time' => ['nullable', 'string', 'max:255'],
                 'schedule_items.*.location' => ['nullable', 'string', 'max:255'],
                 'schedule_items.*.note' => ['nullable', 'string', 'max:500'],
+            ],
+            'bip_move' => [
+                'bip_move_url' => ['nullable', 'url', 'max:255'],
+                'bip_move_note' => ['nullable', 'string', 'max:2000'],
             ],
             'faq' => [
                 'faq_intro' => ['nullable', 'string', 'max:2000'],

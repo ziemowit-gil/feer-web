@@ -107,6 +107,17 @@ class DefaultEditorTest extends TestCase
         $this->actingAs($this->admin(User::EDITOR_BLOCKS))->get(route('admin.podstrony.edit', $contact))->assertOk();
     }
 
+    public function test_bip_redirect_and_menu_pages_open_in_the_block_editor_by_default(): void
+    {
+        $admin = $this->admin();
+
+        foreach (['bip_move', 'redirect', 'menu_link', 'menu_heading'] as $type) {
+            $page = $this->page(['slug' => 'typ-'.$type, 'type' => $type]);
+
+            $this->actingAs($admin)->get(route('admin.podstrony.edit', $page))->assertRedirect(route('admin.podstrony.bloki.edit', $page));
+        }
+    }
+
     public function test_classic_preference_opens_form(): void
     {
         $page = $this->page();
