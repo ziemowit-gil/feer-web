@@ -5,7 +5,7 @@
 </a>
 <h1 class="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-4xl" @if ($canInlineEdit) data-inline-field="title" data-inline-kind="text" @endif>{{ $project->title }}</h1>
 @if (($siteSettings->site_template ?? 'default') === 'feer')<span class="mt-4 block h-1 w-14 bg-brand" aria-hidden="true"></span>@endif
-@if ($siteSettings->projects_stages_enabled && $project->status)
+@if ($siteSettings->projects_stages_enabled && $project->status && ! $project->isFoundationActivity())
     {{-- Status zwykłym tekstem (termin jest w pasku najważniejszych informacji). --}}
     <dl class="proj-meta">
         <div><dt>Status:</dt> <dd>{{ \App\Models\Project::STATUSES[$project->status] ?? '' }}</dd></div>
@@ -26,7 +26,7 @@
     $hdrPlace = collect([$hdrFacts['place'] ?? null, isset($hdrFacts['mode']) ? (\App\Models\Project::MODES[$hdrFacts['mode']] ?? null) : null])->filter()->implode(' · ');
     $keyFacts = array_values(array_filter([
         $project->isFoundationActivity() ? null : ['icon' => $hdrPaid ? 'fa-coins' : 'fa-gift', 'label' => 'Udział', 'value' => $hdrPaid ? 'Odpłatny' : 'Bezpłatny'],
-        $hdrTerm ? ['icon' => 'fa-calendar-days', 'label' => 'Termin', 'value' => $hdrTerm] : null,
+        ($hdrTerm && ! $project->isFoundationActivity()) ? ['icon' => 'fa-calendar-days', 'label' => 'Termin', 'value' => $hdrTerm] : null,
         $hdrPlace !== '' ? ['icon' => 'fa-location-dot', 'label' => 'Gdzie', 'value' => $hdrPlace] : null,
         ($showForWhom && ! $project->isFoundationActivity()) ? ['icon' => 'fa-users', 'label' => 'Dla kogo', 'value' => $project->for_whom, 'inline' => 'for_whom'] : null,
         $project->since ? ['icon' => 'fa-clock-rotate-left', 'label' => 'Od kiedy', 'value' => $project->since] : null,

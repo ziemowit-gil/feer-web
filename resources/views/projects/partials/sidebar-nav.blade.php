@@ -48,7 +48,7 @@
 </nav>
 
     {{-- Kontakt z koordynatorem — osobny blok pod menu (poza jego szarym polem): zdjęcie (jeśli jest), imię, e-mail i telefon. --}}
-    @if (! $project->is_completed && ($project->showsCoordinator() || \Illuminate\Support\Facades\Route::has('projects.ask')))
+    @if (! $project->is_completed && ! $project->isFoundationActivity() && ($project->showsCoordinator() || \Illuminate\Support\Facades\Route::has('projects.ask')))
         <section class="rounded-md bg-gray-50 p-5" aria-labelledby="proj-contact-h">
             <h2 id="proj-contact-h" class="text-base font-bold text-ink">Masz pytania? Chętnie odpowiemy</h2>
             @php $coordPhoto = $project->coordinatorPhoto(); @endphp

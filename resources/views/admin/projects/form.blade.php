@@ -694,7 +694,7 @@
 
             {{-- ==================== ETAPY I HARMONOGRAM ==================== --}}
             @if ($siteSettings->projects_stages_enabled)
-            <details class="pe-section rounded-md bg-white" data-pe-section="etapy">
+            <details class="pe-section rounded-md bg-white" data-pe-section="etapy" data-participant-only>
                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Etapy i harmonogram</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
                 <div class="space-y-6 border-t border-gray-100 p-4"
                 x-data="{ rows: @js(array_values((array) old('stages', $project->stages ?? []))), move(list, i, d) { const j = i + d; if (j < 0 || j >= list.length) return; const [x] = list.splice(i, 1); list.splice(j, 0, x); } }">

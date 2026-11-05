@@ -155,7 +155,7 @@
             $projFunding = $showTeamFunding ? (array) ($project->funding ?? []) : [];
             $hasFunding = $showTeamFunding && (! empty($projFunding['sources']) || (! empty($projFunding['budget']) && ! empty($projFunding['budget_public'])) || filled($project->funding_notice));
             $hasMainCta = ! empty($mainCta['label']) && ! empty($mainCta['url']);
-            $hasAside = $hasMainCta || $schedulePage || (! $navSidebar && ! $project->is_completed && ($project->showsCoordinator() || \Illuminate\Support\Facades\Route::has('projects.ask'))) || $linkPages->isNotEmpty() || $showNews || $projPartners->isNotEmpty() || $hasFunding;
+            $hasAside = $hasMainCta || $schedulePage || (! $navSidebar && ! $project->is_completed && ! $project->isFoundationActivity() && ($project->showsCoordinator() || \Illuminate\Support\Facades\Route::has('projects.ask'))) || $linkPages->isNotEmpty() || $showNews || $projPartners->isNotEmpty() || $hasFunding;
         @endphp
         {{-- Układ kolumn w zwykłym CSS (nie zależy od zbudowanych klas Tailwinda): menu boczne zawsze po lewej od lg. --}}
         <style>
@@ -477,7 +477,7 @@
                     </section>
                 @endif
 
-                @php $projFaq = $extrasOn ? collect($project->faq ?? []) : collect(); @endphp
+                @php $projFaq = ($extrasOn && ! $project->isFoundationActivity()) ? collect($project->faq ?? []) : collect(); @endphp
                 @if ($projFaq->isNotEmpty())
                     <section class="proj-sec" aria-labelledby="proj-faq-h">
                         <h2 id="proj-faq-h" class="proj-frame-h"><i class="fa-solid fa-circle-question" aria-hidden="true"></i> Pytania i odpowiedzi</h2>
@@ -493,7 +493,7 @@
                 @endif
 
                 {{-- Etapy (harmonogram) — ramka --}}
-                @php $projStages = $siteSettings->projects_stages_enabled ? collect($project->stages ?? []) : collect(); @endphp
+                @php $projStages = ($siteSettings->projects_stages_enabled && ! $project->isFoundationActivity()) ? collect($project->stages ?? []) : collect(); @endphp
                 @if ($projStages->isNotEmpty())
                     <section class="proj-sec" aria-labelledby="proj-stages-h">
                         <h2 id="proj-stages-h" class="proj-frame-h"><i class="fa-solid fa-timeline" aria-hidden="true"></i> Etapy działania</h2>
@@ -655,7 +655,7 @@
         @endif
 
                 {{-- Kontakt w sprawie działania — szare pole w kolumnie bocznej (gdy jest menu boczne, kontakt jest w nim). --}}
-                @if (! $navSidebar && ! $project->is_completed && ($project->showsCoordinator() || \Illuminate\Support\Facades\Route::has('projects.ask')))
+                @if (! $navSidebar && ! $project->is_completed && ! $project->isFoundationActivity() && ($project->showsCoordinator() || \Illuminate\Support\Facades\Route::has('projects.ask')))
                     <div class="proj-box">
                         <h2 class="proj-box-h">
                             <i class="fa-solid fa-envelope" aria-hidden="true"></i> Masz pytania? Chętnie odpowiemy

@@ -30,7 +30,8 @@ class FoundationActivityProjectTest extends TestCase
 
         $this->assertStringContainsString('Relacja z wyjazdu', $html);
         $this->assertStringContainsString('>Relacja</h2>', $html);
-        $this->assertStringContainsString('20 października 2026', $html);
+        $this->assertStringNotContainsString('20 października 2026', $html, 'Bez terminu — to relacja po fakcie.');
+        $this->assertStringNotContainsString('Masz pytania? Chętnie odpowiemy', $html);
         $this->assertStringNotContainsString('Dla kogo', $html);
         $this->assertStringNotContainsString('Bezpłatny', $html);
         $this->assertStringNotContainsString('Zapisz się', $html);
@@ -53,9 +54,9 @@ class FoundationActivityProjectTest extends TestCase
         $form = $this->actingAs($admin)->get(route('admin.projekty.edit', $project))->assertOk()->getContent();
         $this->assertStringContainsString('Działanie Fundacji (bez uczestników, z relacją)', $form);
         // Pola zbędne przy relacji są oznaczone do ukrycia po wybraniu tego rodzaju.
-        $this->assertStringContainsString('Brak banerów', $form);
+        $this->assertStringContainsString('>Banery</p>', $form);
         $this->assertGreaterThanOrEqual(10, substr_count($form, 'data-participant-only'));
-        foreach (['name="starts_on"', 'name="excerpt"'] as $kept) {
+        foreach (['name="excerpt"', 'name="content"'] as $kept) {
             $this->assertStringContainsString($kept, $form);
         }
 
