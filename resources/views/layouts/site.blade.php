@@ -163,8 +163,13 @@
         @endif
     @else
     <main id="main-content" class="flex-1">
+        {{-- Strefa banerów „Nagłówek (pod nawigacją)” (moduł Banery) — pusta strefa nic nie renderuje. --}}
+        <x-banner-zone name="header" class="mx-auto max-w-6xl px-4 py-4" />
+
         @hasSection('breadcrumbs')
             @yield('breadcrumbs')
+            {{-- Strefa „Pod okruszkami” (moduł Banery) — tylko na stronach z okruszkami. --}}
+            <x-banner-zone name="breadcrumbs" class="mx-auto max-w-6xl px-4 py-4" />
         @endif
 
         @include('partials.feer-bands-sitewide', ['where' => 'site_top'])
