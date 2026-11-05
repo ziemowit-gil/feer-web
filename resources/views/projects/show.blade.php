@@ -396,7 +396,7 @@
                 @endif
 
                 @if ($project->content)
-                    <h2 class="proj-h2">{{ $project->isFoundationActivity() ? 'Relacja' : 'Opis działania' }}</h2>
+                    <h2 class="proj-h2">{{ $project->isFoundationActivity() ? 'Informacja' : 'Opis działania' }}</h2>
                     <div class="prose proj-prose max-w-none" @if ($canInlineEdit) data-inline-field="content" data-inline-kind="rich" @endif>{!! $projectContentHtml !!}</div>
                 @elseif (! $project->why && ! $project->outcomes && ! $project->excerpt)
                     {{-- Brak opisu: krótka wskazówka zamiast pustego miejsca (widoczna dla redakcji i odwiedzających). --}}
@@ -753,7 +753,7 @@
                 @if ($showNews)
                     {{-- Aktualności działania: szare pole, tytuł i lista wpisów (bez kresek i linii). --}}
                     <nav class="proj-menu-box" aria-labelledby="proj-news-h">
-                        <p id="proj-news-h" class="proj-menu-title">Aktualności działania</p>
+                        <p id="proj-news-h" class="proj-menu-title">{{ $project->isFoundationActivity() ? 'Aktualności i relacje' : 'Aktualności działania' }}</p>
                         <ul role="list" class="proj-menu-list">
                             @foreach ($project->publishedNews as $item)
                                 <li>

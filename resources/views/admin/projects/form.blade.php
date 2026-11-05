@@ -108,7 +108,7 @@
                                 <option value="{{ $kk }}" {{ old('kind', $project->kind ?? 'project') === $kk ? 'selected' : '' }}>{{ $kl }}</option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-muted">„Działanie Fundacji” to uproszczona forma bez uczestników: tylko opis i relacja (np. wyjazd na wydarzenie). Pola o udziale, odpłatności i warunkach są wtedy ukryte, a strona nie pokazuje „Dla kogo” ani „Udział”.</p>
+                        <p class="mt-1 text-xs text-muted">„Działanie Fundacji” to uproszczona forma bez uczestników: krótka informacja (np. „Fundacja jedzie na wydarzenie”). Relacje i nowości dodawaj jako Aktualności z wybranym tym działaniem (pole „Działanie” w aktualności): pokażą się na stronie w ramce „Aktualności i relacje”. Pola o udziale, odpłatności i warunkach są wtedy ukryte, a strona nie pokazuje „Dla kogo” ani „Udział”.</p>
                         <p class="mt-1 text-xs text-muted">„Usługa wyłącznie odpłatna” zawsze jest odpłatna: pokazuje cennik, objaśnienie odpłatności i przycisk kontaktu zamiast opisu darmowego udziału.</p>
                     </div>
                     <div class="grid gap-5 sm:grid-cols-2">
@@ -594,7 +594,7 @@
             @endif
 
             {{-- ============================ SEKCJE ============================ --}}
-            <details class="pe-section rounded-md bg-white" data-pe-section="sekcje">
+            <details class="pe-section rounded-md bg-white" data-pe-section="sekcje" data-participant-only>
                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Sekcje</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
                 <div class="space-y-6 border-t border-gray-100 p-4">
                 {{-- Struktura podstron działania: drzewo jak w Stronach, dowolna głębokość. Każda podstrona to pełnoprawna strona (typ, treść, SEO). --}}

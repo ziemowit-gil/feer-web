@@ -29,7 +29,7 @@ class FoundationActivityProjectTest extends TestCase
         $html = $this->get(route('projects.show', $this->project('foundation_activity')))->assertOk()->getContent();
 
         $this->assertStringContainsString('Relacja z wyjazdu', $html);
-        $this->assertStringContainsString('>Relacja</h2>', $html);
+        $this->assertStringContainsString('>Informacja</h2>', $html);
         $this->assertStringNotContainsString('20 października 2026', $html, 'Bez terminu — to relacja po fakcie.');
         $this->assertStringNotContainsString('Masz pytania? Chętnie odpowiemy', $html);
         $this->assertStringNotContainsString('Dla kogo', $html);
@@ -68,5 +68,33 @@ class FoundationActivityProjectTest extends TestCase
         $fresh = $project->fresh();
         $this->assertSame('foundation_activity', $fresh->kind);
         $this->assertFalse((bool) $fresh->is_paid);
+    }
+
+    public function test_stages_are_hidden_everywhere_even_when_enabled_and_filled(): void
+    {
+        SiteSetting::query()->update(['projects_stages_enabled' => true]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $p = $this->project('foundation_activity');
+        $p->update(['status' => 'ongoing', 'stages' => [['title' => 'Etap testowy ABC', 'state' => 'done']]]);
+
+        $html = $this->get(route('projects.show', $p))->assertOk()->getContent();
+        $this->assertStringNotContainsString('Etap testowy ABC', $html);
+        $this->assertStringNotContainsString('proj-stages-h', $html);
+
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $form = $this->actingAs($admin)->get(route('admin.projekty.edit', $p))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/data-pe-section="etapy"[^>]*data-participant-only/', $form);
+    }
+
+    public function test_linked_news_shows_as_news_and_reports(): void
+    {
+        $p = $this->project('foundation_activity');
+        $cat = \App\Models\NewsCategory::create(['name' => 'Wiadomości', 'slug' => 'wiadomosci']);
+        \App\Models\News::create(['news_category_id' => $cat->id, 'project_id' => $p->id, 'title' => 'Byliśmy na Forum', 'slug' => 'bylismy-na-forum',
+            'content' => '<p>Relacja</p>', 'is_published' => true, 'published_at' => now()->subDay()]);
+
+        $html = $this->get(route('projects.show', $p))->assertOk()->getContent();
+        $this->assertStringContainsString('Aktualności i relacje', $html);
+        $this->assertStringContainsString('Byliśmy na Forum', $html);
     }
 }
