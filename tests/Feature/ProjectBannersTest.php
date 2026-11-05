@@ -45,4 +45,15 @@ class ProjectBannersTest extends TestCase
         $html = $this->get(route('projects.show', $p))->assertOk()->getContent();
         $this->assertStringNotContainsString('proj-banners', $html);
     }
+
+    public function test_banners_render_in_feer_template(): void
+    {
+        $a = Banner::create(['name' => 'Feer', 'type' => 'image', 'image_path' => 'banery/f.webp', 'image_alt' => 'Baner w szablonie feer', 'link_url' => 'https://example.pl', 'link_target' => '_self', 'is_active' => true]);
+        $p = $this->project(['banners' => [$a->id], 'zones' => []]);
+        SiteSetting::query()->update(['site_template' => 'feer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get(route('projects.show', $p))->assertOk()->getContent();
+        $this->assertStringContainsString('Baner w szablonie feer', $html);
+    }
 }
