@@ -61,7 +61,7 @@
                             @error('for_whom') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
-                        <div>
+                        <div data-participant-only>
                             <label for="since" class="mb-1 block text-sm font-bold">Od kiedy</label>
                             <input type="text" id="since" name="since" value="{{ old('since', $project->since) }}" placeholder="np. Od 2023 roku"
                                 class="w-full rounded-lg border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
@@ -69,7 +69,7 @@
                         </div>
                     </div>
 
-                    <div class="grid gap-5 sm:grid-cols-2">
+                    <div class="grid gap-5 sm:grid-cols-2" data-participant-only>
                         <div>
                             <label for="audience" class="mb-1 block text-sm font-bold">Grupa docelowa (kolorystyka)</label>
                             <select id="audience" name="audience" class="w-full rounded-lg border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
@@ -133,7 +133,7 @@
                     </div>
 
                     {{-- Poddziałanie: np. „Szkolenia z obsługi komputera — płatne" i „— bezpłatne" pod jednym działaniem nadrzędnym. --}}
-                    <div class="space-y-3 p-4 rounded-md bg-gray-50" @unless ($siteSettings->projects_subprojects_enabled || $project->parent_id) hidden @endunless>
+                    <div class="space-y-3 p-4 rounded-md bg-gray-50" data-participant-only @unless ($siteSettings->projects_subprojects_enabled || $project->parent_id) hidden @endunless>
                         <div>
                             <label for="parent_id" class="mb-1 block text-sm font-bold">Działanie nadrzędne <span class="font-normal text-muted">(opcjonalnie — tworzy poddziałanie)</span></label>
                             <select id="parent_id" name="parent_id" x-model="parent" class="w-full rounded-lg border-gray-500 focus:border-brand-dark focus:ring-brand-dark sm:w-2/3">
@@ -533,7 +533,7 @@
                     </div>
                 </div>
 
-                <div class="space-y-4 p-6 rounded-md bg-white">
+                <div class="space-y-4 p-6 rounded-md bg-white" data-participant-only>
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Wskaźniki rezultatów</p>
                     <ul class="space-y-3" role="list">
                         <template x-for="(r, i) in metrics" :key="i">
@@ -551,7 +551,7 @@
                     <button type="button" @click="metrics.push({ value: '', label: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand-dark px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj wskaźnik</button>
                 </div>
 
-                <div class="space-y-4 p-6 rounded-md bg-white">
+                <div class="space-y-4 p-6 rounded-md bg-white" data-participant-only>
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Opinie uczestników</p>
                     <p class="text-xs text-muted">Dodawaj tylko opinie, na których publikację masz zgodę. Podpis może być samym imieniem lub inicjałami.</p>
                     <ul class="space-y-3" role="list">
@@ -570,7 +570,7 @@
                     <button type="button" @click="tests.push({ text: '', author: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand-dark px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj opinię</button>
                 </div>
 
-                <div class="space-y-4 p-6 rounded-md bg-white">
+                <div class="space-y-4 p-6 rounded-md bg-white" data-participant-only>
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Pytania i odpowiedzi (FAQ)</p>
                     <ul class="space-y-3" role="list">
                         <template x-for="(r, i) in faq" :key="i">
@@ -722,7 +722,7 @@
                     </div>
                     <p class="text-xs text-muted">Status „Zakończony” oznacza też działanie jako zrealizowany (trafia do archiwum).</p>
                 </div>
-                <div class="space-y-4 p-6 rounded-md bg-white">
+                <div class="space-y-4 p-6 rounded-md bg-white" data-participant-only>
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Etapy (harmonogram)</p>
                     <ol class="space-y-3" role="list">
                         <template x-for="(r, i) in rows" :key="i">
@@ -754,7 +754,7 @@
             {{-- ==================== ZESPÓŁ, PARTNERZY, FINANSOWANIE ==================== --}}
             @if ($siteSettings->projects_team_funding_enabled)
             @php $allPartners = \App\Models\Partner::orderBy('order')->orderBy('name')->get(); $selPartners = array_map('intval', (array) old('partner_ids', $project->exists ? $project->partners->pluck('id')->all() : [])); $fund = (array) ($project->funding ?? []); @endphp
-            <details class="pe-section rounded-md bg-white" data-pe-section="zespol">
+            <details class="pe-section rounded-md bg-white" data-pe-section="zespol" data-participant-only>
                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Zespół i finansowanie</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
                 <div class="space-y-6 border-t border-gray-100 p-4"
                 x-data="{ rows: @js(array_values((array) old('team', $project->team ?? []))), srcs: @js(array_values((array) old('funding.sources', $fund['sources'] ?? []))), move(list, i, d) { const j = i + d; if (j < 0 || j >= list.length) return; const [x] = list.splice(i, 1); list.splice(j, 0, x); } }">
@@ -829,7 +829,7 @@
             <details class="pe-section rounded-md bg-white" data-pe-section="dodatkowe">
                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Koordynator i archiwum</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
                 <div class="space-y-6 border-t border-gray-100 p-4">
-                <div class="space-y-5 p-6 rounded-md bg-white">
+                <div class="space-y-5 p-6 rounded-md bg-white" data-participant-only>
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Koordynator działania</p>
                     <p class="-mt-3 text-xs text-muted">Widoczny jako kontakt do działania na jego stronie. Jeśli nie podasz e-maila koordynatora, wyświetli się ogólny e-mail kontaktowy fundacji.</p>
                     @if ($project->parent_id)
@@ -926,7 +926,7 @@
                     @endif
                 </div>
 
-                <div class="space-y-4 p-6 rounded-md bg-white">
+                <div class="space-y-4 p-6 rounded-md bg-white" data-participant-only>
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Archiwum</p>
                     <label class="flex items-start gap-2">
                         <input type="checkbox" name="show_legacy_box" value="1" {{ old('show_legacy_box', $project->show_legacy_box ?? false) ? 'checked' : '' }}
