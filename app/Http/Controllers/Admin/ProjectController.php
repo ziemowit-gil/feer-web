@@ -506,6 +506,11 @@ class ProjectController extends Controller
         $data['is_featured_contact'] = $request->boolean('is_featured_contact');
         $data['show_coordinator'] = $request->boolean('show_coordinator');
         $data['show_legacy_box'] = $request->boolean('show_legacy_box');
+        if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'banners')) {
+            $bannerIds = \App\Models\Banner::whereIn('id', array_map('intval', (array) $request->input('banner_ids', [])))->pluck('id')->all();
+            $bannerZones = \App\Models\BannerZone::whereIn('slug', array_map('strval', (array) $request->input('banner_zones', [])))->pluck('slug')->all();
+            $data['banners'] = ($bannerIds || $bannerZones) ? ['banners' => $bannerIds, 'zones' => $bannerZones] : null;
+        }
         $data['image_hero'] = $request->boolean('image_hero');
         if (\Illuminate\Support\Facades\Schema::hasColumn('projects', 'hero_style')) {
             $data['hero_style'] = $request->input('hero_style') === 'band' ? 'band' : 'overlay';

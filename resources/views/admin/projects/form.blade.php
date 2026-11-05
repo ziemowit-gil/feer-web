@@ -887,6 +887,45 @@
                 </div>
 
                 <div class="space-y-4 p-6 rounded-md bg-white">
+                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Banery</p>
+                    <p class="-mt-3 text-xs text-muted">Dowolne banery z modułu Banery pokażą się na stronie działania pod opisem. Dodasz je w menu Promocja → Banery.</p>
+                    @php
+                        $allBanners = \App\Models\Banner::orderBy('name')->get();
+                        $allBannerZones = \App\Models\BannerZone::orderBy('label')->get();
+                        $selBanners = array_map('intval', (array) old('banner_ids', (array) (($project->banners ?? [])['banners'] ?? [])));
+                        $selZones = array_map('strval', (array) old('banner_zones', (array) (($project->banners ?? [])['zones'] ?? [])));
+                    @endphp
+                    @if ($allBanners->isEmpty() && $allBannerZones->isEmpty())
+                        <p class="text-sm text-muted">Brak banerów — dodaj je w module Banery.</p>
+                    @else
+                        <fieldset>
+                            <legend class="mb-1 text-sm font-bold">Pojedyncze banery</legend>
+                            <div class="space-y-1">
+                                @foreach ($allBanners as $bn)
+                                    <label class="flex items-start gap-2 text-sm">
+                                        <input type="checkbox" name="banner_ids[]" value="{{ $bn->id }}" {{ in_array($bn->id, $selBanners, true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                        <span>{{ $bn->name }} <span class="text-muted">({{ $bn->statusLabel() }})</span></span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </fieldset>
+                        @if ($allBannerZones->isNotEmpty())
+                            <fieldset>
+                                <legend class="mb-1 text-sm font-bold">Strefy banerów <span class="font-normal text-muted">(pokazują aktywne banery przypisane do strefy)</span></legend>
+                                <div class="space-y-1">
+                                    @foreach ($allBannerZones as $bz)
+                                        <label class="flex items-start gap-2 text-sm">
+                                            <input type="checkbox" name="banner_zones[]" value="{{ $bz->slug }}" {{ in_array($bz->slug, $selZones, true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                            <span>{{ $bz->label }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </fieldset>
+                        @endif
+                    @endif
+                </div>
+
+                <div class="space-y-4 p-6 rounded-md bg-white">
                     <p class="text-sm font-bold uppercase tracking-wide text-muted">Archiwum</p>
                     <label class="flex items-start gap-2">
                         <input type="checkbox" name="show_legacy_box" value="1" {{ old('show_legacy_box', $project->show_legacy_box ?? false) ? 'checked' : '' }}

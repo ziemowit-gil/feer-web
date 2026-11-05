@@ -403,6 +403,18 @@
                     <x-proj-frame>Opis tego działania jest w przygotowaniu.@if (\Illuminate\Support\Facades\Route::has('projects.ask')) Masz pytanie? <a href="{{ route('projects.ask', ['project' => $project->slug]) }}">Zadaj pytanie</a>.@endif</x-proj-frame>
                 @endif
 
+                @php $projBanners = $project->bannerSelection(); @endphp
+                @if ($projBanners['banners']->isNotEmpty())
+                    <div class="proj-banners not-prose mt-6 flex flex-col items-center gap-4" role="region" aria-label="Materiał sponsorowany">
+                        @foreach ($projBanners['banners'] as $projBanner)
+                            @include('components.banner-item', ['banner' => $projBanner])
+                        @endforeach
+                    </div>
+                @endif
+                @foreach ($projBanners['zones'] as $projZone)
+                    <x-banner-zone :name="$projZone" class="mt-6" />
+                @endforeach
+
                 @if ($project->why)
                     <h2 class="proj-h2">Dlaczego to robimy</h2>
                     <div class="prose proj-prose max-w-none">{{ $project->why }}</div>

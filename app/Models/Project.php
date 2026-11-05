@@ -49,7 +49,7 @@ class Project extends Model implements HasMedia
         'site_id', 'created_by', 'category_id', 'title', 'nav_title', 'slug', 'excerpt', 'for_whom', 'audience', 'accent_color', 'since', 'image_alt', 'image_hero', 'content', 'blocks', 'why', 'outcomes', 'is_published', 'show_on_home', 'hero_style', 'layout_template', 'coordinator_id', 'is_completed', 'completed_at', 'is_paid', 'pricing', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'coordinator_name', 'coordinator_email', 'coordinator_phone', 'coordinator_phone_hours', 'is_featured_contact', 'show_coordinator',
-        'custom_sections', 'sections_as_tabs', 'sections_nav', 'sidebar_buttons', 'sidebar_note', 'parent_id', 'inherit', 'is_offered', 'paid_info_show', 'paid_info_text', 'terms', 'kind', 'quick_facts', 'easy_summary', 'main_cta', 'metrics', 'testimonials', 'faq', 'status', 'starts_on', 'ends_on', 'stages', 'team', 'funding', 'funding_notice', 'show_legacy_box', 'legacy_url',
+        'custom_sections', 'sections_as_tabs', 'sections_nav', 'sidebar_buttons', 'sidebar_note', 'parent_id', 'inherit', 'is_offered', 'paid_info_show', 'paid_info_text', 'terms', 'kind', 'quick_facts', 'easy_summary', 'main_cta', 'metrics', 'testimonials', 'faq', 'status', 'starts_on', 'ends_on', 'stages', 'team', 'funding', 'funding_notice', 'show_legacy_box', 'legacy_url', 'banners',
     ];
 
     /**
@@ -91,6 +91,27 @@ class Project extends Model implements HasMedia
      * Zdjęcie koordynatora z jego strony w zespole (osoba „O organizacji”): dopasowanie po e-mailu,
      * a gdy go brak — po imieniu i nazwisku. Null, gdy nie ma osoby ze zdjęciem (wtedy avatar z inicjałami).
      */
+    /**
+     * Banery wybrane dla tego działania: aktywne pojedyncze banery (w oknie czasowym) i slugi stref z modułu Banery.
+     *
+     * @return array{banners: \Illuminate\Support\Collection, zones: array<int, string>}
+     */
+    public function bannerSelection(): array
+    {
+        $sel = (array) ($this->banners ?? []);
+        $ids = array_values(array_filter(array_map('intval', (array) ($sel['banners'] ?? []))));
+        $zones = array_values(array_filter(array_map('strval', (array) ($sel['zones'] ?? []))));
+
+        $banners = $ids
+            ? \App\Models\Banner::whereIn('id', $ids)->get()
+                ->filter(fn ($b) => $b->is_active && ! $b->isScheduled() && ! $b->isExpired())
+                ->sortBy(fn ($b) => array_search($b->id, $ids, true))
+                ->values()
+            : collect();
+
+        return ['banners' => $banners, 'zones' => $zones];
+    }
+
     public function coordinator(): BelongsTo
     {
         return $this->belongsTo(Coordinator::class);
@@ -143,6 +164,7 @@ class Project extends Model implements HasMedia
         'is_featured_contact' => 'boolean',
         'show_coordinator' => 'boolean',
         'show_legacy_box' => 'boolean',
+        'banners' => 'array',
         'image_hero' => 'boolean',
         'sections_as_tabs' => 'boolean',
         'custom_sections' => 'array',
