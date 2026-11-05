@@ -462,7 +462,7 @@ class ProjectController extends Controller
             ->map(fn ($r) => ['text' => trim($r['text']), 'author' => trim((string) ($r['author'] ?? ''))])->values()->all() ?: null;
         $data['faq'] = collect($request->input('faq', []))->filter(fn ($r) => filled($r['q'] ?? null) && filled($r['a'] ?? null))
             ->map(fn ($r) => ['q' => trim($r['q']), 'a' => trim($r['a'])])->values()->all() ?: null;
-        $data['kind'] = ($data['kind'] ?? 'project') === 'paid_offer' ? 'paid_offer' : 'project';
+        $data['kind'] = in_array($data['kind'] ?? 'project', ['paid_offer', 'foundation_activity'], true) ? $data['kind'] : 'project';
         $data['paid_info_show'] = $request->boolean('paid_info_show');
         $data['paid_info_text'] = trim((string) ($data['paid_info_text'] ?? '')) ?: null;
         $data['is_offered'] = ! $request->has('is_offered_present') || $request->boolean('is_offered');
@@ -488,7 +488,7 @@ class ProjectController extends Controller
         $data['completed_at'] = $data['is_completed'] ? ($data['completed_at'] ?? null) : null;
 
         // Odpłatny + cennik: pomijamy puste wiersze; gdy nieodpłatny — czyścimy.
-        $data['is_paid'] = $request->boolean('is_paid') || $data['kind'] === 'paid_offer';
+        $data['is_paid'] = $data['kind'] !== 'foundation_activity' && ($request->boolean('is_paid') || $data['kind'] === 'paid_offer');
         if ($data['is_paid']) {
             $pricing = [];
             foreach ((array) $request->input('pricing', []) as $row) {

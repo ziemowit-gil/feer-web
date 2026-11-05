@@ -114,7 +114,7 @@
         $heroOverlay = $imageHero && ($project->hero_style ?? 'overlay') !== 'band';
         $heroInGrid = $heroOverlay && ! ($hasTabs && ! $navSidebar);
         $extrasOn = $siteSettings->projects_extras_enabled;
-        $mainCta = $extrasOn ? (array) ($project->main_cta ?? []) : [];
+        $mainCta = ($extrasOn && ! $project->isFoundationActivity()) ? (array) ($project->main_cta ?? []) : [];
     @endphp
     @if ($imageHero)
         {{-- Zdjęcie jako niski pasek na całą szerokość; tytuł pod nim na białym tle (nigdy na zdjęciu — kontrast nie zależy od zdjęcia). --}}
@@ -311,7 +311,7 @@
                         @endif
                     </x-proj-frame>
                 @endif
-                @php $subProjects = $siteSettings->projects_subprojects_enabled ? $project->publishedChildren : collect(); @endphp
+                @php $subProjects = ($siteSettings->projects_subprojects_enabled && ! $project->isFoundationActivity()) ? $project->publishedChildren : collect(); @endphp
                 @if ($subProjects->isNotEmpty())
                     <section aria-labelledby="proj-children-h">
                         @php
@@ -396,7 +396,7 @@
                 @endif
 
                 @if ($project->content)
-                    <h2 class="proj-h2">Opis działania</h2>
+                    <h2 class="proj-h2">{{ $project->isFoundationActivity() ? 'Relacja' : 'Opis działania' }}</h2>
                     <div class="prose proj-prose max-w-none" @if ($canInlineEdit) data-inline-field="content" data-inline-kind="rich" @endif>{!! $projectContentHtml !!}</div>
                 @elseif (! $project->why && ! $project->outcomes && ! $project->excerpt)
                     {{-- Brak opisu: krótka wskazówka zamiast pustego miejsca (widoczna dla redakcji i odwiedzających). --}}
@@ -441,7 +441,7 @@
                 @endif
 
                 {{-- Kto może wziąć udział — ramka z warunkami --}}
-                @php $projTerms = $siteSettings->projects_terms_enabled ? collect($project->terms ?? [])->filter(fn ($r) => filled($r['label'] ?? null) && filled($r['text'] ?? null)) : collect(); @endphp
+                @php $projTerms = ($siteSettings->projects_terms_enabled && ! $project->isFoundationActivity()) ? collect($project->terms ?? [])->filter(fn ($r) => filled($r['label'] ?? null) && filled($r['text'] ?? null)) : collect(); @endphp
                 @if ($projTerms->isNotEmpty())
                     <section class="proj-sec" aria-labelledby="proj-terms-h">
                         <h2 id="proj-terms-h" class="proj-frame-h"><i class="fa-solid fa-user-check" aria-hidden="true"></i> Kto może wziąć udział</h2>

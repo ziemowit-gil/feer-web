@@ -54,7 +54,7 @@
                     </div>
 
                     <div class="grid gap-5 sm:grid-cols-2">
-                        <div>
+                        <div data-participant-only>
                             <label for="for_whom" class="mb-1 block text-sm font-bold">Dla kogo</label>
                             <input type="text" id="for_whom" name="for_whom" value="{{ old('for_whom', $project->for_whom) }}" placeholder="np. Szkoły podstawowe i urzędy gminne"
                                 class="w-full rounded-lg border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
@@ -108,6 +108,7 @@
                                 <option value="{{ $kk }}" {{ old('kind', $project->kind ?? 'project') === $kk ? 'selected' : '' }}>{{ $kl }}</option>
                             @endforeach
                         </select>
+                        <p class="mt-1 text-xs text-muted">„Działanie Fundacji” to uproszczona forma bez uczestników: tylko opis i relacja (np. wyjazd na wydarzenie). Pola o udziale, odpłatności i warunkach są wtedy ukryte, a strona nie pokazuje „Dla kogo” ani „Udział”.</p>
                         <p class="mt-1 text-xs text-muted">„Usługa wyłącznie odpłatna” zawsze jest odpłatna: pokazuje cennik, objaśnienie odpłatności i przycisk kontaktu zamiast opisu darmowego udziału.</p>
                     </div>
                     <div class="grid gap-5 sm:grid-cols-2">
@@ -191,7 +192,7 @@
                     </div>
                 </div>
 
-                <div class="space-y-4 p-6 rounded-md bg-white"
+                <div class="space-y-4 p-6 rounded-md bg-white" data-participant-only
                     x-data="{ paid: {{ old('is_paid', $project->is_paid ?? false) || old('kind', $project->kind ?? 'project') === 'paid_offer' ? 'true' : 'false' }} }" @change.window="if ($event.target && $event.target.id === 'kind' && $event.target.value === 'paid_offer') paid = true">
                     <label class="flex items-center gap-2">
                         <input type="hidden" name="is_paid" value="0">
@@ -462,7 +463,7 @@
             </div>
 
             {{-- ============================ WARUNKI UDZIAŁU ============================ --}}
-            <details class="pe-section rounded-md bg-white" data-pe-section="warunki">
+            <details class="pe-section rounded-md bg-white" data-pe-section="warunki" data-participant-only>
                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Kto może wziąć udział</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
                 <div class="space-y-6 border-t border-gray-100 p-4"
                 x-data="{ rows: @js(array_values((array) old('terms', $project->terms ?? []))), presets: ['Wiek', 'Miejsce', 'Wymagany sprzęt', 'Dostępność sali', 'Termin', 'Zapisy'],
@@ -525,7 +526,7 @@
                         <textarea id="easy_summary" name="easy_summary" rows="4" maxlength="1200" placeholder="2–4 krótkie zdania: co to jest, dla kogo, co trzeba zrobić, żeby wziąć udział." class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('easy_summary', $project->easy_summary) }}</textarea>
                         <p class="mt-1 text-xs text-muted">Pokazywane na początku strony w ramce „Prostym językiem”.</p>
                     </div>
-                    <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="grid gap-4 sm:grid-cols-2" data-participant-only>
                         <div><label for="cta_label" class="mb-1 block text-sm font-bold">Główny przycisk — etykieta</label><input type="text" id="cta_label" name="main_cta[label]" value="{{ old('main_cta.label', $mc['label'] ?? '') }}" maxlength="80" placeholder="np. Zapisz się" class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark"></div>
                         <div><label for="cta_url" class="mb-1 block text-sm font-bold">Adres przycisku</label><input type="text" id="cta_url" name="main_cta[url]" value="{{ old('main_cta.url', $mc['url'] ?? '') }}" placeholder="https://… albo /strona" class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                             @error('main_cta.url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror</div>
@@ -985,7 +986,19 @@
             @include('admin.content-a11y.panel', ['html' => old('content', $project->content), 'formId' => 'project-form'])
         </aside>
         </div>
-    </form>
+    <script>
+    (function () {
+        var kind = document.getElementById('kind');
+        if (!kind) return;
+        function sync() {
+            var simple = kind.value === 'foundation_activity';
+            document.querySelectorAll('[data-participant-only]').forEach(function (el) { el.style.display = simple ? 'none' : ''; });
+        }
+        kind.addEventListener('change', sync);
+        sync();
+    })();
+</script>
+</form>
 
 {{-- Formularz masowych akcji na podstronach działania (poza formularzem działania — zagnieżdżone formularze są niedozwolone). --}}
 @if ($project->exists)

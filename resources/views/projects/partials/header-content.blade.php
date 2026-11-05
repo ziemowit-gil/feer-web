@@ -25,10 +25,10 @@
         : ($hdrFacts['duration'] ?? null);
     $hdrPlace = collect([$hdrFacts['place'] ?? null, isset($hdrFacts['mode']) ? (\App\Models\Project::MODES[$hdrFacts['mode']] ?? null) : null])->filter()->implode(' · ');
     $keyFacts = array_values(array_filter([
-        ['icon' => $hdrPaid ? 'fa-coins' : 'fa-gift', 'label' => 'Udział', 'value' => $hdrPaid ? 'Odpłatny' : 'Bezpłatny'],
+        $project->isFoundationActivity() ? null : ['icon' => $hdrPaid ? 'fa-coins' : 'fa-gift', 'label' => 'Udział', 'value' => $hdrPaid ? 'Odpłatny' : 'Bezpłatny'],
         $hdrTerm ? ['icon' => 'fa-calendar-days', 'label' => 'Termin', 'value' => $hdrTerm] : null,
         $hdrPlace !== '' ? ['icon' => 'fa-location-dot', 'label' => 'Gdzie', 'value' => $hdrPlace] : null,
-        $showForWhom ? ['icon' => 'fa-users', 'label' => 'Dla kogo', 'value' => $project->for_whom, 'inline' => 'for_whom'] : null,
+        ($showForWhom && ! $project->isFoundationActivity()) ? ['icon' => 'fa-users', 'label' => 'Dla kogo', 'value' => $project->for_whom, 'inline' => 'for_whom'] : null,
         $project->since ? ['icon' => 'fa-clock-rotate-left', 'label' => 'Od kiedy', 'value' => $project->since] : null,
     ]));
 @endphp

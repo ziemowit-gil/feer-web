@@ -220,10 +220,16 @@ class Project extends Model implements HasMedia
 
     public const LAYOUT_TEMPLATES = ['classic', 'left', 'three'];
 
-    public const KINDS = ['project' => 'Działanie (bezpłatny lub z formami udziału)', 'paid_offer' => 'Usługa wyłącznie odpłatna'];
+    public const KINDS = ['project' => 'Działanie (bezpłatny lub z formami udziału)', 'paid_offer' => 'Usługa wyłącznie odpłatna', 'foundation_activity' => 'Działanie Fundacji (bez uczestników, z relacją)'];
 
     /** Forma realizacji w „W skrócie". */
     public const MODES = ['onsite' => 'Stacjonarnie', 'online' => 'Online', 'hybrid' => 'Stacjonarnie i online'];
+
+    /** Uproszczona forma: Fundacja coś robi (np. wyjazd na wydarzenie) i publikuje relację — bez uczestników, udziału i odpłatności. */
+    public function isFoundationActivity(): bool
+    {
+        return $this->kind === 'foundation_activity';
+    }
 
     public function isPaidOffer(): bool
     {
