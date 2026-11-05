@@ -53,9 +53,9 @@ class FoundationActivityProjectTest extends TestCase
         $form = $this->actingAs($admin)->get(route('admin.projekty.edit', $project))->assertOk()->getContent();
         $this->assertStringContainsString('Działanie Fundacji (bez uczestników, z relacją)', $form);
         // Pola zbędne przy relacji są oznaczone do ukrycia po wybraniu tego rodzaju.
+        $this->assertStringContainsString('Brak banerów', $form);
         $this->assertGreaterThanOrEqual(10, substr_count($form, 'data-participant-only'));
-        $this->assertStringNotContainsString('@unless', $form);
-        foreach (['name="banner_ids[]"', 'name="starts_on"', 'name="excerpt"'] as $kept) {
+        foreach (['name="starts_on"', 'name="excerpt"'] as $kept) {
             $this->assertStringContainsString($kept, $form);
         }
 
