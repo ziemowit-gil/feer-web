@@ -155,9 +155,10 @@ class PhoneBookModuleTest extends TestCase
         $this->entry();
 
         $html = $this->get('/ksiazka-telefoniczna')->assertOk()
-            ->assertSee('Numer kontaktowy z ogólnymi informacjami o naszej działalności:')
+            ->assertSee('Numer kontaktowy')
+            ->assertSee('Ogólne informacje o naszej działalności.')
             ->assertSee('12 210 06 98')
-            ->assertSee('służą do rozpoznania, kto dzwoni')
+            ->assertSee('pomagają rozpoznać, kto dzwoni')
             ->assertSee('Znajdź osobę, sprawę albo numer')
             ->getContent();
 

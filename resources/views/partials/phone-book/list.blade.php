@@ -68,10 +68,12 @@
     }">
     @php $mainPhone = trim((string) ($siteSettings->contact_phone ?? '')); @endphp
     @if ($mainPhone !== '')
-        <p class="mb-6 max-w-3xl rounded-md bg-gray-50 p-5 leading-relaxed text-ink" role="note">
-            Numer kontaktowy z ogólnymi informacjami o naszej działalności: <span class="font-bold">{{ $mainPhone }}</span>.
-            Numery poniżej służą do rozpoznania, kto dzwoni, a nie do kontaktu z nami. Prosimy dzwonić na numer kontaktowy.
-        </p>
+        <div class="mb-6 max-w-3xl rounded-md bg-gray-50 p-5 text-ink" role="note" aria-label="Numer kontaktowy">
+            <p class="text-sm font-bold uppercase tracking-widest">Numer kontaktowy</p>
+            <p class="mt-1 text-2xl font-bold">{{ $mainPhone }}</p>
+            <p class="mt-1">Ogólne informacje o naszej działalności.</p>
+            <p class="mt-3 leading-relaxed">Numery poniżej pomagają rozpoznać, kto dzwoni, ale nie służą do kontaktu z nami. Jeśli chcesz się z nami skontaktować, zadzwoń na numer kontaktowy.</p>
+        </div>
     @endif
 
     @if ($people->isEmpty())
