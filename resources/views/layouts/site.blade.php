@@ -96,7 +96,7 @@
         })();
     </script>
 </head>
-<body @class(['flex min-h-screen flex-col bg-white text-ink antialiased', 'template-vm' => ($siteSettings->site_template ?? 'default') === 'vm', 'template-test2' => ($siteSettings->site_template ?? 'default') === 'test2', 'template-test3' => ($siteSettings->site_template ?? 'default') === 'test3'])>
+<body @class(['flex min-h-screen flex-col bg-white text-ink antialiased', 'template-vm' => ($siteSettings->site_template ?? 'default') === 'vm', 'template-test2' => ($siteSettings->site_template ?? 'default') === 'test2', 'template-test3' => ($siteSettings->site_template ?? 'default') === 'test3', 'template-elearning' => ($siteSettings->site_template ?? 'default') === 'elearning'])>
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white">
         Przejdź do treści
     </a>
@@ -134,6 +134,10 @@
         @include('templates.test2.partials.header')
     @elseif ($siteTemplate === 'test3')
         @include('templates.test3.partials.header')
+    @elseif ($siteTemplate === 'elearning')
+        @include('templates.elearning.partials.header')
+    @elseif ($siteTemplate === 'podcasts')
+        @include('templates.podcasts.partials.header')
     @elseif ($siteTemplate === 'wrzos')
         @include('templates.wrzos.partials.topbar')
         @include('templates.wrzos.partials.header')

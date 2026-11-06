@@ -238,6 +238,56 @@ class HomeController extends Controller
         ]);
     }
 
+    /**
+     * Strona główna szablonu „elearning” (platforma kursów): hero, kursy pogrupowane w kategorie (moduł „courses”), liczby
+     * z danych witryny, „Dla kogo?” z grup odbiorców kursów, eksperci (prowadzący kursów), partnerzy i FAQ. Sekcje bez danych
+     * się nie pokazują; żadnych przykładowych liczb ani treści.
+     */
+    private function elearningHome(SiteSetting $settings, Collection $slides, Collection $partners)
+    {
+        $courses = $settings->isModuleEnabled('courses') && \Illuminate\Support\Facades\Schema::hasTable('courses')
+            ? \App\Models\Course::query()->forCurrentSite()->visible()->with('facilitator')->orderByDesc('is_featured')->orderBy('order')->orderBy('title')->get()
+            : collect();
+
+        $groups = $courses->groupBy('category')->map(fn ($items, $key) => (object) [
+            'key' => $key, 'label' => \App\Models\Course::CATEGORIES[$key] ?? ucfirst((string) $key), 'courses' => $items->values(),
+        ])->values();
+
+        $experts = $courses->pluck('facilitator')->filter()->unique('id')->values();
+
+        $stats = [];
+        if ($courses->isNotEmpty()) {
+            $stats[] = ['value' => $courses->count(), 'label' => 'kursów na platformie'];
+            $stats[] = ['value' => $groups->count(), 'label' => 'kategorii tematycznych'];
+            if ($experts->isNotEmpty()) {
+                $stats[] = ['value' => $experts->count(), 'label' => 'ekspertów prowadzących'];
+            }
+        }
+
+        $audience = $courses->flatMap(fn ($course) => $course->listOf('audience'))->unique()->take(3)->values();
+
+        $faqs = $settings->isModuleEnabled('faq') && \Illuminate\Support\Facades\Schema::hasTable('faqs')
+            ? \App\Models\Faq::published()->orderBy('order')->limit(8)->get()
+            : collect();
+
+        $heroImage = $slides->map(fn ($slide) => data_get($slide, 'image_url'))->filter()->first();
+
+        return view('templates.elearning.home', compact('groups', 'experts', 'stats', 'audience', 'faqs', 'partners', 'heroImage'));
+    }
+
+    /**
+     * Strona główna szablonu „podcasts”: najnowszy odcinek w hero (z odtwarzaczem), siatka kolejnych dziewięciu odcinków
+     * i partnerzy. Odcinki są wspólne dla serwisu (model Podcast nie jest przypisany do witryny).
+     */
+    private function podcastsHome(SiteSetting $settings, Collection $slides, Collection $partners)
+    {
+        $list = \Illuminate\Support\Facades\Schema::hasTable('podcasts')
+            ? \App\Models\Podcast::published()->latest('published_at')->limit(10)->get()
+            : collect();
+
+        return view('templates.podcasts.home', ['latest' => $list->first(), 'episodes' => $list->slice(1)->values(), 'partners' => $partners]);
+    }
+
     /** Renderuje stronę główną w szablonie "wrzos" (siatka aktualności 4×2, blok "Kim jesteśmy?", karty wartości). */
     private function wrzosHome(SiteSetting $settings, Collection $partners)
     {
@@ -406,6 +456,12 @@ class HomeController extends Controller
         }
         if ($template === 'test3') {
             return $this->test3Home($settings, $slides, $partners, $quickLinks, $gallery);
+        }
+        if ($template === 'elearning') {
+            return $this->elearningHome($settings, $slides, $partners);
+        }
+        if ($template === 'podcasts') {
+            return $this->podcastsHome($settings, $slides, $partners);
         }
         if ($template === 'wrzos') {
             return $this->wrzosHome($settings, $partners);
