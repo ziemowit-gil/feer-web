@@ -32,6 +32,28 @@ class PageMetkaTest extends TestCase
         return $overrides + ['title' => 'Strona', 'slug' => 'strona', 'type' => 'standard', 'parent_id' => '', 'is_published' => '1'];
     }
 
+    public function test_metka_jest_zawsze_przy_stopce(): void
+    {
+        Page::create(['title' => 'A', 'slug' => 'a', 'type' => 'standard', 'is_published' => true, 'content' => '<p>Treść</p>']);
+
+        // Szablon FEER: w ciemnej stopce, po treści strony (nie w <main>).
+        SiteSetting::current()->update(['metka_mode' => 'all', 'site_template' => 'feer']);
+        $this->resetSettings();
+        $html = $this->get('/a')->assertOk()->getContent();
+        $footer = substr($html, strpos($html, '<footer'));
+        $this->assertStringContainsString('page-metka page-metka--footer', $footer);
+        $this->assertStringNotContainsString('page-metka', substr($html, strpos($html, '<main'), strpos($html, '</main>') - strpos($html, '<main')));
+
+        // Inne szablony: pasek tuż nad stopką.
+        SiteSetting::current()->update(['site_template' => 'default']);
+        $this->resetSettings();
+        $html = $this->get('/a')->assertOk()->getContent();
+        $bar = strpos($html, 'page-metka-bar');
+        $this->assertNotFalse($bar);
+        $this->assertGreaterThan(strpos($html, '</main>'), $bar);
+        $this->assertLessThan(strpos($html, '<footer', $bar), $bar);
+    }
+
     public function test_visibility_priority_page_over_type_over_site(): void
     {
         $page = Page::create(['title' => 'A', 'slug' => 'a', 'type' => 'standard', 'is_published' => true]);

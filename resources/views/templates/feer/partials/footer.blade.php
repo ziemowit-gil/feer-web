@@ -113,5 +113,11 @@
         <a href="{{ route('admin.dashboard') }}" class="absolute bottom-3 right-4 rounded-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="Panel administracyjny">
             <i class="fa-solid fa-gear text-sm" aria-hidden="true"></i>
         </a>
+        {{-- Metryczka strony („Pokaż metkę”) — zawsze w stopce (layouts/site przekazuje $footerMetka). --}}
+        @if ($footerMetka ?? null)
+            <div class="mx-auto max-w-6xl border-t px-4" style="border-color: rgba(255,255,255,.18); padding-bottom: .75rem">
+                @include('partials.page-metka', ['page' => $footerMetka, 'onDark' => true])
+            </div>
+        @endif
     </div>
 </footer>

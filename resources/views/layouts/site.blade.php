@@ -193,13 +193,18 @@
 
         @yield('content')
 
-        @php $metkaFor = $metkaPage ?? ($page ?? (isset($project) && $project instanceof \App\Models\Project && request()->routeIs('projects.show') ? $project : null)); @endphp
-        @if (($metkaFor instanceof \App\Models\Page || $metkaFor instanceof \App\Models\Project) && $metkaFor->exists && $metkaFor->showsMetka())
-            @include('partials.page-metka', ['page' => $metkaFor])
-        @endif
 
         @include('partials.feer-bands-sitewide', ['where' => 'site_bottom'])
     </main>
+
+    {{-- Metryczka („Pokaż metkę”) zawsze przy stopce: w szablonie FEER w ciemnej stopce, w pozostałych tuż nad nią. --}}
+    @php
+        $metkaFor = $metkaPage ?? ($page ?? (isset($project) && $project instanceof \App\Models\Project && request()->routeIs('projects.show') ? $project : null));
+        $footerMetka = (($metkaFor instanceof \App\Models\Page || $metkaFor instanceof \App\Models\Project) && $metkaFor->exists && $metkaFor->showsMetka()) ? $metkaFor : null;
+    @endphp
+    @if ($footerMetka && ($siteSettings->site_template ?? 'default') !== 'feer')
+        <div class="page-metka-bar border-t border-gray-200 bg-gray-50">@include('partials.page-metka', ['page' => $footerMetka])</div>
+    @endif
 
     @include('partials.footer')
 
