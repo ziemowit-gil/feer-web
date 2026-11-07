@@ -224,8 +224,26 @@ class FeerTemplateTest extends TestCase
         $this->assertStringNotContainsString('role="tablist"', $html);
         $this->assertStringContainsString('id="formularz-heading"', $html);
         $this->assertStringContainsString('id="dane-heading"', $html);
-        $this->assertStringContainsString('lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]', $html);
+        // Dwie sekcje (dane, formularz) to za mało na menu boczne.
+        $this->assertStringNotContainsString('aria-label="Na tej stronie"', $html);
         $this->assertStringNotContainsString('<section class="relative bg-ink', $html);
+    }
+
+    public function test_kontakt_feer_pokazuje_menu_boczne_od_trzech_sekcji(): void
+    {
+        SiteSetting::current()->update([
+            'site_template' => 'feer', 'contact_layout' => 'tabs', 'krs_number' => '0000779281',
+            'contact_bank_accounts' => [['number' => 'PL12 3456', 'purpose' => 'Darowizny']],
+        ]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get('/kontakt')->assertOk()->getContent();
+        $this->assertStringContainsString('aria-label="Na tej stronie"', $html);
+        $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_20rem]', $html);
+        foreach (['#dane-heading', '#formularz-heading', '#rachunki', '#dane-rejestrowe'] as $anchor) {
+            $this->assertStringContainsString('href="'.$anchor.'"', $html);
+        }
+        $this->assertSame(1, substr_count($html, 'id="rachunki"'));
     }
 
     public function test_inne_szablony_zostaja_przy_ukladzie_z_zakladkami(): void
