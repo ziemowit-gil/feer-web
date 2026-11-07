@@ -73,6 +73,10 @@
                             <div>
                                 <dt class="{{ $dt }}">Godziny pracy biura</dt>
                                 <dd class="mt-1 text-lg font-bold leading-snug text-ink">{{ $hours }}</dd>
+                                {{-- Uwaga o biurze (np. kto obsługuje biurowo) przy godzinach; gdy biuro ma osobny adres, jest już przy nim. --}}
+                                @if (! $hasOffice && filled($siteSettings->contact_office_note))
+                                    <dd class="mt-1 text-sm text-muted">{!! nl2br(e($siteSettings->contact_office_note)) !!}</dd>
+                                @endif
                             </div>
                         @endif
                         @if ($siteSettings->contact_edelivery_address)
