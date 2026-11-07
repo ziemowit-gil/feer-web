@@ -30,6 +30,7 @@
             <div class="contact-main">
                 @switch($section)
                     @case('spotkania') @include('contact.partials.meetings', ['sectionStyle' => 'bare']) @break
+                    @case('gdzie-dzialamy') @include('contact.partials.places', ['hideHeading' => true]) @break
                     @case('przesylki') @include('contact.partials.shipping', ['sectionStyle' => 'bare']) @break
                     @case('rachunki') @include('contact.partials.bank-accounts', ['sectionStyle' => 'bare']) @break
                     @case('oddzialy') @include('contact.partials.branches', ['sectionStyle' => 'bare']) @break

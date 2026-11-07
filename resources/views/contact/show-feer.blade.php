@@ -44,6 +44,7 @@
         <div @class(['contact-cols', 'contact-cols--nav' => $navHtml !== ''])>
 
             <div class="contact-main space-y-12">
+                @include('contact.partials.closure-notice')
                 @include('partials.correspondence-note')
 
                 <section id="dane" aria-labelledby="dane-heading" class="scroll-mt-24">
@@ -87,6 +88,8 @@
                         @endif
                     </dl>
 
+                    @include('contact.partials.visit-info')
+
                     @if ($hasOffice && ($photo = $siteSettings->officePhotoUrl()))
                         <img src="{{ $photo }}" loading="lazy" alt="{{ $siteSettings->contact_office_photo_alt }}" class="mt-6 w-full max-w-sm rounded-md object-cover">
                     @endif
@@ -105,7 +108,7 @@
 
                 <section id="formularz" aria-labelledby="formularz-heading" class="scroll-mt-24 rounded-lg bg-gray-50 p-6 sm:p-8">
                     <h2 id="formularz-heading" class="mb-1 text-2xl font-bold text-ink">Napisz do nas</h2>
-                    <p class="mb-6 text-sm text-muted">Odpowiadamy zwykle w ciągu jednego dnia roboczego.</p>
+                    @include('contact.partials.response-time')
                     @include('contact.partials.form')
                 </section>
             </div>

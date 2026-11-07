@@ -25,6 +25,7 @@
     </div>
 
     <section class="mx-auto max-w-5xl px-4 py-10">
+        @include('contact.partials.closure-notice')
         @include('partials.correspondence-note')
 
         @include('contact.partials.phone-book-note')

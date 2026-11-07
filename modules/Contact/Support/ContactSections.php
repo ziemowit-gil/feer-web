@@ -15,7 +15,7 @@ use App\Modules\ModuleManager;
 class ContactSections
 {
     /** Adresy podstron w kolejności wyświetlania w menu bocznym. */
-    public const SLUGS = ['spotkania', 'przesylki', 'rachunki', 'oddzialy', 'dane-rejestrowe'];
+    public const SLUGS = ['spotkania', 'gdzie-dzialamy', 'przesylki', 'rachunki', 'oddzialy', 'dane-rejestrowe'];
 
     /** Typy stron książki telefonicznej w kontakcie: nowy z modułu i dawny (do czasu przeniesienia stron). */
     public const BOOK_TYPES = ['contact_book', 'phone_book'];
@@ -40,7 +40,40 @@ class ContactSections
     }
 
     /**
-     * Dostępne podstrony: [slug => etykieta]. Puste, gdy moduł Kontakt jest wyłączony.
+     * Podstrony, które mają dane w ustawieniach: [slug => etykieta] — bez względu na ukrycie w opcjach modułu.
+     *
+     * @return array<string, string>
+     */
+    public static function withData(SiteSetting $s, ?bool $showMeetings = null, ?bool $showShipping = null): array
+    {
+        $options = ContactOptions::for($s);
+        $has = [
+            'spotkania' => $showMeetings ?? self::hasMeetings($s),
+            'gdzie-dzialamy' => $options->places() !== [],
+            'przesylki' => $showShipping ?? self::hasShipping($s),
+            'rachunki' => ! empty($s->contact_bank_accounts) || filled($s->contact_bank_accounts_note),
+            'oddzialy' => (bool) $s->contactBranches(),
+            'dane-rejestrowe' => filled($s->krs_number) || filled($s->nip_number) || filled($s->regon_number),
+        ];
+
+        return array_intersect_key(self::labels($s), array_filter($has));
+    }
+
+    /** @return array<string, string> etykiety wszystkich podstron w kolejności SLUGS */
+    public static function labels(SiteSetting $s): array
+    {
+        return [
+            'spotkania' => $s->contact_meeting_title ?: 'Spotkania',
+            'gdzie-dzialamy' => ContactOptions::for($s)->placesTitle(),
+            'przesylki' => 'Przesyłki',
+            'rachunki' => 'Numery rachunków',
+            'oddzialy' => $s->contact_branches_title ?: 'Oddziały',
+            'dane-rejestrowe' => 'Dane rejestrowe',
+        ];
+    }
+
+    /**
+     * Dostępne podstrony: [slug => etykieta] — z danymi i nieukryte w opcjach modułu. Puste, gdy moduł jest wyłączony.
      *
      * @return array<string, string>
      */
@@ -50,29 +83,14 @@ class ContactSections
             return [];
         }
 
-        $has = [
-            'spotkania' => $showMeetings,
-            'przesylki' => $showShipping,
-            'rachunki' => ! empty($s->contact_bank_accounts) || filled($s->contact_bank_accounts_note),
-            'oddzialy' => (bool) $s->contactBranches(),
-            'dane-rejestrowe' => filled($s->krs_number) || filled($s->nip_number) || filled($s->regon_number),
-        ];
-        $labels = [
-            'spotkania' => $s->contact_meeting_title ?: 'Spotkania',
-            'przesylki' => 'Przesyłki',
-            'rachunki' => 'Numery rachunków',
-            'oddzialy' => $s->contact_branches_title ?: 'Oddziały',
-            'dane-rejestrowe' => 'Dane rejestrowe',
-        ];
+        $options = ContactOptions::for($s);
 
-        $out = [];
-        foreach (self::SLUGS as $slug) {
-            if ($has[$slug]) {
-                $out[$slug] = $labels[$slug];
-            }
-        }
-
-        return $out;
+        // Podstronę z danymi można w opcjach modułu ukryć (np. dane rejestrowe tylko w stopce).
+        return array_filter(
+            self::withData($s, $showMeetings, $showShipping),
+            fn (string $slug) => ! $options->sectionHidden($slug),
+            ARRAY_FILTER_USE_KEY
+        );
     }
 
     /**

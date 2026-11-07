@@ -115,6 +115,8 @@
         @endif
     </ul>
 
+    @include('contact.partials.visit-info')
+
     @if ($withCorrespondence ?? false)
         <div class="mt-5">
             @include('partials.correspondence-note', ['variant' => 'inline'])

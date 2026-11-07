@@ -29,6 +29,7 @@ final class PluginModules
         'support' => 'fa-hand-holding-heart',
         'volunteering' => 'fa-hands-holding-child',
         'cooperation' => 'fa-handshake',
+        'contact' => 'fa-address-card',
     ];
 
     public const STATUS_LABELS = [

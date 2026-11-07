@@ -106,6 +106,7 @@
                     @endif
 
                     <div class="mt-6 max-w-3xl">
+                        @include('contact.partials.closure-notice')
                         @include('partials.correspondence-note')
                         @include('contact.partials.phone-book-note')
                     </div>
@@ -134,7 +135,7 @@
                  x-show="tab === 'formularz'" class="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
                 <div class="max-w-3xl">
                     <h2 class="mb-1 text-2xl font-bold text-ink">Napisz do nas</h2>
-                    <p class="mb-6 text-sm text-muted">Odpowiadamy zwykle w ciągu jednego dnia roboczego.</p>
+                    @include('contact.partials.response-time')
 
                     @include('contact.partials.form')
                 </div>

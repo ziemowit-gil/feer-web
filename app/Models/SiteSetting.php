@@ -51,6 +51,7 @@ class SiteSetting extends Model implements HasMedia
         'help_map' => 'Mapa pomocy (punkty wsparcia na mapie)',
         'block_editor' => 'Edytor blokowy',
         'phone_book' => 'Książka telefoniczna (kto, numer i w jakiej sprawie dzwonić)',
+        'contact' => 'Kontakt (strona kontaktu, formularz, podstrony i „Gdzie działamy”)',
     ];
 
     /**
@@ -89,6 +90,7 @@ class SiteSetting extends Model implements HasMedia
         'strategy' => ['group' => 'organization', 'icon' => 'fa-chess', 'desc' => 'Planowanie działań, zasobów i źródeł finansowania.'],
         'authorizations' => ['group' => 'organization', 'icon' => 'fa-file-signature', 'desc' => 'Rejestr pełnomocnictw i upoważnień z terminami ważności.'],
         'phone_book' => ['group' => 'organization', 'icon' => 'fa-address-book', 'desc' => 'Książka telefoniczna zespołu: kto, numer komórkowy i w jakiej sprawie dzwonić, z działami w tabelach.'],
+        'contact' => ['group' => 'organization', 'icon' => 'fa-address-card', 'desc' => 'Strona kontaktu z podstronami w menu bocznym, formularz, „Gdzie działamy”, dojazd i dostępność biura, komunikat o zmianie godzin, wizytówka vCard.'],
         'reports' => ['group' => 'organization', 'icon' => 'fa-file-contract', 'desc' => 'Sprawozdania merytoryczne i finansowe do pobrania.'],
         'bip' => ['group' => 'organization', 'icon' => 'fa-landmark', 'desc' => 'Biuletyn Informacji Publicznej z dokumentami.'],
         'jobs' => ['group' => 'organization', 'icon' => 'fa-briefcase', 'desc' => 'Oferty pracy i rekrutacje.'],
@@ -477,7 +479,7 @@ class SiteSetting extends Model implements HasMedia
         'vm_newsletter_text', 'vm_header_badge_alt', 'vm_footer_note',
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
-        'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
+        'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo', 'contact_options',
         'site_url', 'maintenance_mode', 'maintenance_message', 'under_construction', 'under_construction_message', 'mourning_mode', 'mourning_from', 'mourning_until',
         'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact',
         'phonebook_title', 'phonebook_lead', 'phonebook_layout', 'phonebook_sort', 'phonebook_hide_numbers',
@@ -746,6 +748,7 @@ class SiteSetting extends Model implements HasMedia
         'contact_branches' => 'array',
         'contact_schedule' => 'array',
         'contact_schedule_enabled' => 'boolean',
+        'contact_options' => 'array',
         'show_topbar_bip' => 'boolean',
         'show_topbar_social' => 'boolean',
         'contact_show_form' => 'boolean',

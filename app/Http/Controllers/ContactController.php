@@ -116,6 +116,7 @@ class ContactController extends Controller
             'showShipping'  => $showShipping,
             'locations'     => $locations,
             'metkaPage'     => $page, // metryczka pod treścią (layouts.site)
+            'contactOptions' => \Modules\Contact\Support\ContactOptions::for($settings),
         ];
     }
 

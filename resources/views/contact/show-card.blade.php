@@ -117,12 +117,13 @@
 
     <section class="mx-auto max-w-6xl px-4 py-12">
 
+        @include('contact.partials.closure-notice')
         @include('partials.correspondence-note')
 
         @include('contact.partials.phone-book-note')
         <div class="mx-auto max-w-3xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
             <h2 class="mb-1 text-2xl font-bold text-ink">Napisz do nas</h2>
-            <p class="mb-6 text-sm text-muted">Odpowiadamy zwykle w ciągu jednego dnia roboczego.</p>
+            @include('contact.partials.response-time')
 
             @include('contact.partials.form')
         </div>
