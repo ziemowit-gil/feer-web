@@ -45,4 +45,25 @@ class ContactSections
 
         return $out;
     }
+
+    /**
+     * Książka telefoniczna do podlinkowania ze strony kontaktu: moduł (gdy ma wpisy), a w drugiej kolejności
+     * opublikowana strona typu „Książka telefoniczna”. Null, gdy żadnej nie ma.
+     *
+     * @return array{url: string, title: string}|null
+     */
+    public static function phoneBook(SiteSetting $s): ?array
+    {
+        if ($s->isModuleEnabled('phone_book') && \App\Models\PhoneBookEntry::forCurrentSite()->active()->exists()) {
+            return [
+                'url' => url('/'.\App\Http\Controllers\PhoneBookController::SLUG),
+                'title' => filled($s->phonebook_title) ? $s->phonebook_title : 'Książka telefoniczna',
+            ];
+        }
+        if ($page = \App\Models\Page::forCurrentSite()->where('type', 'phone_book')->where('is_published', true)->orderBy('id')->first()) {
+            return ['url' => $page->publicUrl(), 'title' => $page->title];
+        }
+
+        return null;
+    }
 }

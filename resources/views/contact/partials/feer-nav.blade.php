@@ -1,12 +1,13 @@
 {{--
     Menu boczne strony kontaktu w szablonie FEER (jak menu boczne działania): szare pole, kreska marki pod tytułem,
     bieżąca pozycja na białym i pogrubiona (aria-current="page"). Pozycje: strona Kontakt, automatyczne podstrony
-    z ustawień (App\Support\ContactSections) i opublikowane podstrony strony Kontakt dodane przez redakcję.
+    z ustawień (App\Support\ContactSections), książka telefoniczna (moduł albo strona) i opublikowane podstrony strony Kontakt dodane przez redakcję.
     Zmienne: $current (slug podstrony albo null na stronie głównej kontaktu), $showMeetings, $showShipping, $metkaPage.
     Zwraca nic, gdy nie ma żadnej podstrony (strona zostaje bez menu).
 --}}
 @php
     $navSections = \App\Support\ContactSections::available($siteSettings, $showMeetings, $showShipping);
+    $navBook = \App\Support\ContactSections::phoneBook($siteSettings);
     $navSubpages = ($metkaPage ?? null)?->publishedChildren()->get() ?? collect();
     $navHome = ($metkaPage ?? null)?->publicUrl() ?? route('contact.show');
     $navItem = 'flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-[0.9375rem] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark ';
@@ -14,7 +15,7 @@
     $navCurrent = 'bg-white font-bold text-brand-dark';
     $current = $current ?? null;
 @endphp
-@if ($navSections || $navSubpages->isNotEmpty())
+@if ($navSections || $navBook || $navSubpages->isNotEmpty())
     <nav aria-label="Menu strony kontaktu" class="rounded-md bg-gray-50 p-5">
         <p class="text-base font-bold leading-snug text-ink">Kontakt</p>
         <span class="mb-3 mt-2 block h-1 w-10 bg-brand" aria-hidden="true"></span>
@@ -33,6 +34,14 @@
                     </a>
                 </li>
             @endforeach
+            @if ($navBook)
+                <li>
+                    <a href="{{ $navBook['url'] }}" class="{{ $navItem }}{{ $navIdle }}">
+                        <span class="min-w-0">{{ $navBook['title'] }}</span>
+                        <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
+                    </a>
+                </li>
+            @endif
             @foreach ($navSubpages as $sub)
                 <li>
                     <a href="{{ $sub->publicUrl() }}" class="{{ $navItem }}{{ $navIdle }}">
