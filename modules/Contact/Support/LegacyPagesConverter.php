@@ -96,6 +96,26 @@ final class LegacyPagesConverter
         return $restored;
     }
 
+    /**
+     * Zmiana typu strony w edytorze z dawnej „Książki telefonicznej” na „Kontakt — książka”: osoby wpisane w stronie
+     * trafiają do tabeli książki (bez duplikatów), a w danych strony zostaje ich kopia — formularz nowego typu ich nie
+     * wysyła, więc bez tego by przepadły. Wołane z hooka `updating` modelu Page (ContactServiceProvider).
+     */
+    public function keepContactsOnTypeChange(Page $page): void
+    {
+        $original = $page->getOriginal('type_data');
+        $rows = is_array($original) ? array_values(array_filter($original['contacts'] ?? [], 'is_array')) : [];
+        if ($rows === []) {
+            return;
+        }
+        if (Schema::hasTable('phone_book_entries')) {
+            $this->moveContacts($page->site_id, $rows, false);
+        }
+        $data = is_array($page->type_data) ? $page->type_data : [];
+        $data['contacts'] ??= $rows;
+        $page->type_data = $data;
+    }
+
     public function latestBackup(): ?string
     {
         $files = glob(storage_path(self::BACKUP_DIR).'/contact-*.json') ?: [];

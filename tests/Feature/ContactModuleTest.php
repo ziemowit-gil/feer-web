@@ -264,6 +264,32 @@ class ContactModuleTest extends TestCase
         File::delete(app(LegacyPagesConverter::class)->latestBackup());
     }
 
+    public function test_zmiana_typu_w_edytorze_nie_gubi_osob_ze_strony(): void
+    {
+        $page = $this->legacyBookPage([['name' => 'Jan Nowak', 'phone' => '500 100 200', 'group' => 'Biuro']]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        // Formularz typu „Kontakt — książka” nie wysyła osób (są w module) — dawniej przepadały.
+        $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
+            'title' => 'Książka', 'slug' => 'ksiazka-stara', 'type' => 'contact_book', 'parent_id' => '', 'is_published' => '1',
+            'type_data' => ['layout' => 'table'],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $this->assertSame('contact_book', $page->fresh()->type);
+        $this->assertSame(1, PhoneBookEntry::where('name', 'Jan Nowak')->count());
+        $this->assertCount(1, $page->fresh()->type_data['contacts']);
+        auth()->logout();
+        $this->get('/ksiazka-stara')->assertOk()->assertSee('Jan Nowak');
+    }
+
+    public function test_dawna_strona_bez_wlasnych_osob_pokazuje_osoby_z_modulu(): void
+    {
+        $this->person('Anna Kowalska');
+        Page::create(['title' => 'Nasze numery telefonów', 'slug' => 'numery', 'type' => 'phone_book', 'is_published' => true, 'type_data' => ['contacts' => []]]);
+
+        $this->get('/numery')->assertOk()->assertSee('Anna Kowalska');
+    }
+
     public function test_przeniesiona_strona_wyswietla_osoby_z_tabeli(): void
     {
         $this->legacyBookPage([['name' => 'Jan Nowak', 'phone' => '500 100 200', 'group' => 'Zarząd']]);

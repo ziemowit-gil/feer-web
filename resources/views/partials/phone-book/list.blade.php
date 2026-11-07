@@ -108,15 +108,20 @@
     x-data="{
         q: '', g: '', total: {{ $people->count() }},
         match(el) {
-            const t = this.q.trim().toLowerCase(); const d = t.replace(/\D/g, '');
-            // Szukanie po numerze działa bez spacji i myślników („601350487” znajdzie „601 350 487”).
-            return (this.g === '' || el.dataset.group === this.g) && (t === '' || el.dataset.person.includes(t) || (d.length >= 3 && el.dataset.digits.includes(d)));
+            if (this.g !== '' && el.dataset.group !== this.g) return false;
+            // Tekst bez znaków innych niż litery, cyfry i spacje; numer bez spacji i myślników („601350487” znajdzie „601 350 487”).
+            const t = this.q.toLowerCase().replace(/[^\p{L}\p{N}\s]+/gu, ' ').replace(/\s+/g, ' ').trim();
+            if (t === '') return true;
+            const d = t.replace(/\D/g, '');
+            const onlyDigits = ! /\p{L}/u.test(t);
+            if (onlyDigits) return d.length >= 2 && el.dataset.digits.includes(d);
+            return t.split(' ').every((w) => el.dataset.person.includes(w));
         },
         count() { return [...this.$el.querySelectorAll('[data-person]')].filter((el) => this.match(el)).length; },
         osob(n) { return n === 1 ? 'osoba' : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'osoby' : 'osób'); },
         summary() {
             const n = this.count();
-            return (this.q.trim() || this.g) ? ('Znaleziono: ' + n + ' z ' + this.total) : ('W książce: ' + this.total + ' ' + this.osob(this.total));
+            return (this.q.replace(/[^\p{L}\p{N}]+/gu, '') || this.g) ? ('Znaleziono: ' + n + ' z ' + this.total) : ('W książce: ' + this.total + ' ' + this.osob(this.total));
         },
         save(card, file) {
             const url = URL.createObjectURL(new Blob([card], { type: 'text/vcard;charset=utf-8' }));
@@ -198,7 +203,7 @@
             </section>
         @endforeach
 
-        <p class="pb-empty" x-show="(q.trim() !== '' || g !== '') && count() === 0" x-cloak role="status">
+        <p class="pb-empty" x-show="(q.replace(/[^\p{L}\p{N}]+/gu, '') !== '' || g !== '') && count() === 0" x-cloak role="status">
             Nikogo nie znaleziono. Sprawdź pisownię albo wpisz część numeru, np. „601 350”.
         </p>
     @endif
