@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="pl"@if ($siteSettings->mourningActive()) class="mourning-mode"@endif>
+@php
+    $mourningOn = $siteSettings->mourningActive() && ! $__env->hasSection('menu_preview');
+@endphp
+<html lang="pl"@if ($mourningOn) class="mourning-mode"@endif>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', $siteSettings->site_name)</title>
-    @if ($siteSettings->mourningActive())
+    @if ($mourningOn)
         {{-- Żałoba narodowa: cała witryna w odcieniach szarości (Ustawienia → Serwis). --}}
         <style>html.mourning-mode { filter: grayscale(1); }</style>
     @endif

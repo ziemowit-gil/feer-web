@@ -37,7 +37,6 @@
             <div class="min-w-0 space-y-12">
                 @include('partials.correspondence-note')
 
-                @include('contact.partials.phone-book-note', ['class' => ''])
                 {{-- Dane kontaktowe: wyraźne, płaskie kafelki z dużym tekstem (kontrast ink na #F3F4F6 ≥ 14:1, linki brand-dark) --}}
                 @php
                     $hasOffice = $siteSettings->officeDiffersFromRegistered();
@@ -49,6 +48,8 @@
                 @endphp
                 <section aria-labelledby="dane-heading">
                     <h2 id="dane-heading" class="mb-5 text-2xl font-bold text-ink">{{ $siteSettings->site_name }}</h2>
+                    {{-- Telefon na samej górze: numer kontaktowy, godziny i wyjaśnienie, kto dzwoni z komórek. --}}
+                    @include('contact.partials.phone-book-note', ['class' => 'mb-8'])
                     {{-- Układ listy: ikona w kółku po lewej, podpis i wartość po prawej; bez szarych kafelków. --}}
                     <dl class="divide-y divide-gray-200 border-y border-gray-200">
                         <div class="flex items-center gap-5 py-5">
@@ -58,15 +59,6 @@
                                 <dd class="mt-1"><span class="text-xl font-bold text-ink"><span class="min-w-0 break-words">{{ $siteSettings->contact_email }}</span></span></dd>
                             </div>
                         </div>
-                        @if ($siteSettings->contact_phone)
-                            <div class="flex items-center gap-5 py-5">
-                                <span class="{{ $ico }}" aria-hidden="true"><i class="fa-solid fa-phone"></i></span>
-                                <div class="min-w-0">
-                                    <dt class="{{ $dt }}">Telefon</dt>
-                                    <dd class="mt-1"><span class="text-xl font-bold text-ink">{{ $siteSettings->contact_phone }}</span></dd>
-                                </div>
-                            </div>
-                        @endif
                         <div class="flex items-center gap-5 py-5">
                             <span class="{{ $ico }}" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></span>
                             <div class="min-w-0">
@@ -124,19 +116,6 @@
                         </div>
                     @endif
                 </section>
-                @include('contact.partials.registry', ['wideLayout' => false, 'showAccounts' => empty($siteSettings->contact_bank_accounts)])
-
-                @include('contact.partials.branches', ['sectionStyle' => 'bare'])
-
-                @if ($showMeetings)
-                    <div id="spotkania" class="scroll-mt-24">@include('contact.partials.meetings', ['sectionStyle' => 'bare'])</div>
-                @endif
-                @if ($showShipping)
-                    <div id="przesylki" class="scroll-mt-24">@include('contact.partials.shipping', ['sectionStyle' => 'bare'])</div>
-                @endif
-                @if ($hasBank)
-                    <div id="rachunki" class="scroll-mt-24">@include('contact.partials.bank-accounts', ['sectionStyle' => 'bare'])</div>
-                @endif
             </div>
 
             <section id="formularz" aria-labelledby="formularz-heading"
@@ -145,6 +124,23 @@
                 <p class="mb-6 text-sm text-muted">Odpowiadamy zwykle w ciągu jednego dnia roboczego.</p>
                 @include('contact.partials.form')
             </section>
+        </div>
+
+        {{-- Pod dwiema kolumnami: informacje dodatkowe w osobnych, wyraźnie nazwanych blokach, żeby kolumna z danymi nie była dłuższa od formularza. --}}
+        <div class="mt-14 space-y-12">
+            @include('contact.partials.registry', ['wideLayout' => false, 'showAccounts' => empty($siteSettings->contact_bank_accounts)])
+
+            @include('contact.partials.branches', ['sectionStyle' => 'bare'])
+
+            @if ($showMeetings)
+                <div id="spotkania" class="scroll-mt-24">@include('contact.partials.meetings', ['sectionStyle' => 'bare'])</div>
+            @endif
+            @if ($showShipping)
+                <div id="przesylki" class="scroll-mt-24">@include('contact.partials.shipping', ['sectionStyle' => 'bare'])</div>
+            @endif
+            @if ($hasBank)
+                <div id="rachunki" class="scroll-mt-24">@include('contact.partials.bank-accounts', ['sectionStyle' => 'bare'])</div>
+            @endif
         </div>
 
         @include('contact.partials.locations-map', ['sectionStyle' => 'bare'])
