@@ -557,7 +557,14 @@ class PageController extends Controller
         }
         if (array_key_exists((string) $request->query('type'), Page::types())) {
             $page->type = $request->query('type');
-            $page->title = $request->query('type') === 'contact' ? 'Kontakt' : null;
+            $page->title = match ($request->query('type')) {
+                'contact' => 'Kontakt',
+                'contact_book' => 'Książka telefoniczna',
+                default => null,
+            };
+        }
+        if ($request->filled('parent_id') && Page::whereKey($request->query('parent_id'))->exists()) {
+            $page->parent_id = (int) $request->query('parent_id');
         }
 
         return view('admin.pages.form', [

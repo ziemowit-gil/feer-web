@@ -60,6 +60,15 @@ abstract class PageType
         return null;
     }
 
+    /**
+     * Czy typ jest oferowany w wyborze typu nowej strony i w filtrze listy. Typy wycofane (np. po przejściu na typ z modułu)
+     * zwracają false: istniejące strony dalej się wyświetlają i da się je edytować, ale nowych już się nimi nie tworzy.
+     */
+    public function selectable(): bool
+    {
+        return true;
+    }
+
     /** Czy strona używa standardowej sekcji treści (a nie własnego układu typu). */
     public function standardLayout(): bool
     {

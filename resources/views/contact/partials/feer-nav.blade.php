@@ -1,14 +1,18 @@
 {{--
     Menu boczne strony kontaktu w szablonie FEER (jak menu boczne działania): szare pole, kreska marki pod tytułem,
     bieżąca pozycja na białym i pogrubiona (aria-current="page"). Pozycje: strona Kontakt, automatyczne podstrony
-    z ustawień (App\Support\ContactSections), książka telefoniczna (moduł albo strona) i opublikowane podstrony strony Kontakt dodane przez redakcję.
+    z ustawień (Modules\Contact\Support\ContactSections), książka telefoniczna (moduł albo strona) i opublikowane podstrony strony Kontakt dodane przez redakcję.
     Zmienne: $current (slug podstrony albo null na stronie głównej kontaktu), $showMeetings, $showShipping, $metkaPage.
     Zwraca nic, gdy nie ma żadnej podstrony (strona zostaje bez menu).
 --}}
 @php
-    $navSections = \App\Support\ContactSections::available($siteSettings, $showMeetings, $showShipping);
-    $navBook = \App\Support\ContactSections::phoneBook($siteSettings);
+    $navSections = \Modules\Contact\Support\ContactSections::available($siteSettings, $showMeetings, $showShipping);
+    $navBook = \Modules\Contact\Support\ContactSections::phoneBook($siteSettings);
     $navSubpages = ($metkaPage ?? null)?->publishedChildren()->get() ?? collect();
+    // Książka będąca podstroną kontaktu (typ „Kontakt — książka”) jest już na liście podstron — nie powtarzamy jej.
+    if ($navBook && ($navBook['page_id'] ?? null) && $navSubpages->contains('id', $navBook['page_id'])) {
+        $navBook = null;
+    }
     $navHome = ($metkaPage ?? null)?->publicUrl() ?? route('contact.show');
     $navItem = 'flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-[0.9375rem] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark ';
     $navIdle = 'text-ink hover:bg-white hover:text-brand-dark';

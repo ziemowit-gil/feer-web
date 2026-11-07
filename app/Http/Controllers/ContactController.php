@@ -70,7 +70,7 @@ class ContactController extends Controller
     {
         $settings = SiteSetting::current();
         $data = $this->viewData($settings, $this->contactPageTarget());
-        $sections = \App\Support\ContactSections::available($settings, $data['showMeetings'], $data['showShipping']);
+        $sections = \Modules\Contact\Support\ContactSections::available($settings, $data['showMeetings'], $data['showShipping']);
         abort_unless(isset($sections[$section]), 404);
 
         return view('contact.section-feer', $data + [
@@ -89,13 +89,13 @@ class ContactController extends Controller
         $meetingTitle  = $settings->contact_meeting_title ?: 'Spotkajmy się';
         $onlineUrl     = $settings->contact_online_meeting_url;
         $scheduleItems = $settings->contactScheduleUpcoming();
-        $showMeetings  = filled($onlineUrl) || ! empty($scheduleItems) || filled($settings->contact_remote_note);
+        $showMeetings  = \Modules\Contact\Support\ContactSections::hasMeetings($settings);
 
         $pkCode    = $settings->contact_paczkomat_code;
         $pkAddr    = $settings->contact_paczkomat_address;
         $shipNote  = $settings->contact_shipping_note;
         $shipPhone = $settings->contact_shipping_phone;
-        $showShipping = filled($shipNote) || filled($pkCode) || filled($pkAddr) || filled($shipPhone);
+        $showShipping = \Modules\Contact\Support\ContactSections::hasShipping($settings);
 
         // Mapa „Nasze lokalizacje" — tylko w szablonie federacji, gdy moduł jest
         // włączony; lokalizacje zarządzane z panelu (Mapa pomocy).

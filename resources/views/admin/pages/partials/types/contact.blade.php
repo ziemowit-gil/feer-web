@@ -16,4 +16,7 @@
     </div>
 
     @include('admin.settings.partials.contact-fields', ['settings' => $siteSettings, 'layoutDefault' => $page->exists ? null : 'tabs'])
+
+    {{-- Moduł Kontakt: karta „Podstrony kontaktu” (gdy moduł jest wyłączony, widok nie istnieje i karta się nie pokazuje). --}}
+    @includeIf('contact-module::admin.contact-subpages')
 </div>

@@ -6,7 +6,7 @@
 @php
     $switchboard = trim((string) $siteSettings->contact_phone);
     // Link do książki: moduł „Książka telefoniczna” (gdy ma wpisy), a w drugiej kolejności opublikowana strona tego typu.
-    $phoneBook = \App\Support\ContactSections::phoneBook($siteSettings);
+    $phoneBook = \Modules\Contact\Support\ContactSections::phoneBook($siteSettings);
     $phoneBookUrl = $phoneBook['url'] ?? null;
     $phoneBookTitle = $phoneBook['title'] ?? 'Książka telefoniczna';
     // Szablon FEER pokazuje dane kontaktowe jako zwykły tekst (bez linków tel:), więc numer telefonu też.

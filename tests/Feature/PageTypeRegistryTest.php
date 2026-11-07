@@ -53,7 +53,8 @@ class PageTypeRegistryTest extends TestCase
             'legacy' => 'Prezentacja tego, co było',
             'brand_assets' => 'Marka — identyfikacja wizualna (pliki do pobrania)',
             'about_person' => 'O organizacji — osoba',
-            'contact' => 'Kontakt (formularz, dane teleadresowe, spotkania)',
+            'contact' => 'Kontakt (dane, formularz i podstrony: spotkania, przesyłki, rachunki, oddziały, książka)',
+            'contact_book' => 'Kontakt — książka (kto, numer komórkowy i w jakiej sprawie dzwonić)',
             'form_page' => 'Formularz (wstęp, formularz, co przygotować, co dalej)',
             'phone_book' => 'Książka telefoniczna (kto, numer komórkowy i w jakiej sprawie się kontaktować)',
             'service' => 'Oferta / usługa (korzyści, dla kogo, jak działamy, CTA)',
@@ -84,7 +85,8 @@ class PageTypeRegistryTest extends TestCase
             'Oferta i edukacja' => ['service', 'pricing', 'case_study', 'training_institution', 'recruitment', 'tyflo_consultations', 'tyflo_trainings', 'training_offer', 'training_catalog', 'trainer_profile', 'training_accreditations'],
             'Organizacja' => ['about', 'about_person', 'team', 'wspolpraca', 'legacy', 'brand_assets', 'reports', 'partners', 'tender'],
             'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
-            'Kontakt i wydarzenia' => ['contact', 'form_page', 'phone_book', 'event', 'schedule'],
+            // Dawny typ „Książka telefoniczna” (phone_book) jest wycofany z wyboru — zastąpił go „Kontakt — książka” z modułu Kontakt.
+            'Kontakt i wydarzenia' => ['contact', 'contact_book', 'form_page', 'event', 'schedule'],
             'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move', 'redirect', 'menu_link', 'menu_heading'],
         ], Page::typeGroups());
 
@@ -97,14 +99,14 @@ class PageTypeRegistryTest extends TestCase
             'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
             'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
             'about' => 'fa-building', 'contact' => 'fa-envelope', 'wspolpraca' => 'fa-handshake', 'brand_assets' => 'fa-palette', 'legacy' => 'fa-clock-rotate-left',
-            'training_institution' => 'fa-graduation-cap', 'form_page' => 'fa-pen-to-square', 'phone_book' => 'fa-address-book',
+            'training_institution' => 'fa-graduation-cap', 'form_page' => 'fa-pen-to-square', 'phone_book' => 'fa-address-book', 'contact_book' => 'fa-address-book',
             'training_offer' => 'fa-chalkboard-user', 'training_catalog' => 'fa-graduation-cap', 'trainer_profile' => 'fa-user-tie', 'training_accreditations' => 'fa-award',
         ];
         ksort($expected);
         $this->assertSame($expected, $icons);
 
         $this->assertSame(
-            ['form_page', 'phone_book', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'training_offer', 'training_catalog', 'trainer_profile', 'training_accreditations', 'team', 'documents', 'regulation', 'redirect', 'menu_link', 'reports', 'partners', 'recruitment', 'tender', 'tyflo_consultations', 'tyflo_trainings'],
+            ['contact_book', 'form_page', 'phone_book', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'training_offer', 'training_catalog', 'trainer_profile', 'training_accreditations', 'team', 'documents', 'regulation', 'redirect', 'menu_link', 'reports', 'partners', 'recruitment', 'tender', 'tyflo_consultations', 'tyflo_trainings'],
             Page::typeDataTypes(),
         );
 

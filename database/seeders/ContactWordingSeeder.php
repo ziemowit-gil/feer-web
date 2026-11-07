@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\SiteSetting;
-use Illuminate\Seeder;
+use Illuminate\Database\Seeder;
 
 /**
  * Słownictwo strony kontaktu zapisane w ustawieniach witryny: „ogólny rachunek” → „główny rachunek” (opis rachunków

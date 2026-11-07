@@ -99,6 +99,9 @@ class PageTypeRegistry
 
         $groups = array_fill_keys(self::GROUPS, []);
         foreach ($types as $key => $type) {
+            if (! $type->selectable()) {
+                continue; // typ wycofany: strony go używające działają dalej, ale nie jest w wyborze ani w filtrze
+            }
             $groups[$type->group()][] = $key;
         }
 

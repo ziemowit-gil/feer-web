@@ -21,6 +21,12 @@ class PhoneBook extends PageType
         return 'Kontakt i wydarzenia';
     }
 
+    /** Wycofany: zastąpił go typ „Kontakt — książka” z modułu Kontakt (strony tego typu są przenoszone migracją). */
+    public function selectable(): bool
+    {
+        return false;
+    }
+
     public function order(): int
     {
         return 170;
