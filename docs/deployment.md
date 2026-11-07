@@ -132,7 +132,18 @@ Projekt zawiera gotowy skrypt wdrożeniowy `deploy.sh` realizujący 7-krokowy pr
 ./deploy.sh
 ```
 
-Skrypt pyta o potwierdzenie przed wdrożeniem i pokazuje listę nadchodzących commitów.
+Skrypt pyta o potwierdzenie przed wdrożeniem i pokazuje listę nadchodzących commitów (z typem zmiany i czasem).
+Na terminalu długie kroki mają spinner z czasem, po wszystkim jest podsumowanie z udziałem czasu każdego kroku i ramka wyniku.
+
+| Opcja | Działanie |
+|-------|-----------|
+| `--tak` / `-y` | bez pytania o potwierdzenie (też przez `ssh h68 './deploy.sh --tak'`) |
+| `--verbose` / `-v` | pełne wyjście narzędzi na ekranie (bez spinnera) |
+| `--dry-run` / `-n` | tylko plan kroków i kontrole, bez pull i bez zmian |
+| `--demo` | podgląd wyglądu kreatora: przykładowy przebieg, nic nie jest zmieniane (log w pliku tymczasowym) |
+| `--demo-blad` | to samo z błędem w kroku 6 — tak wygląda przerwane wdrożenie |
+
+Kolory wyłącza `NO_COLOR=1`, wymusza `FORCE_COLOR=1`. Znaczniki w logu (`# start:`, `# wynik:`) czyta pulpit „Kondycja serwisu”.
 
 ### Zmienne środowiskowe skryptu (opcjonalne nadpisanie)
 
