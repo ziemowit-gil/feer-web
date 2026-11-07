@@ -27,7 +27,7 @@
             </li>
             @foreach ($navSections as $slug => $label)
                 <li>
-                    <a href="{{ route('contact.section', $slug) }}" @if ($current === $slug) aria-current="page" @endif class="{{ $navItem }}{{ $current === $slug ? $navCurrent : $navIdle }}">
+                    <a href="{{ url('/kontakt/'.$slug) }}" @if ($current === $slug) aria-current="page" @endif class="{{ $navItem }}{{ $current === $slug ? $navCurrent : $navIdle }}">
                         <span class="min-w-0">{{ $label }}</span>
                         <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
                     </a>
