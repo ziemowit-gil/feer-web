@@ -252,7 +252,7 @@ class FeerTemplateTest extends TestCase
 
         $main = $this->get('/kontakt')->assertOk()->getContent();
         $this->assertStringContainsString('aria-label="Menu strony kontaktu"', $main);
-        $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_20rem]', $main);
+        $this->assertStringContainsString('contact-cols--nav', $main);
         $this->assertStringContainsString('href="'.url('/kontakt/rachunki').'"', $main);
         $this->assertStringContainsString('href="'.url('/kontakt/dane-rejestrowe').'"', $main);
         // Treść sekcji jest na podstronach, nie na stronie głównej kontaktu.

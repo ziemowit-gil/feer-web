@@ -25,8 +25,9 @@
     </section>
 
     <div class="contact-feer mx-auto max-w-6xl px-4 py-8 md:py-10">
-        <div @class(['grid items-start gap-10', 'lg:grid-cols-[minmax(0,1fr)_20rem]' => $navHtml !== ''])>
-            <div class="min-w-0 {{ $navHtml !== '' ? 'lg:col-start-1 lg:row-start-1' : '' }}">
+        @include('contact.partials.feer-cols-style')
+        <div @class(['contact-cols', 'contact-cols--nav' => $navHtml !== ''])>
+            <div class="contact-main">
                 @switch($section)
                     @case('spotkania') @include('contact.partials.meetings', ['sectionStyle' => 'bare']) @break
                     @case('przesylki') @include('contact.partials.shipping', ['sectionStyle' => 'bare']) @break
@@ -36,7 +37,7 @@
                 @endswitch
             </div>
             @if ($navHtml !== '')
-                <aside class="order-first lg:order-none lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">{!! $navHtml !!}</aside>
+                <aside class="contact-aside">{!! $navHtml !!}</aside>
             @endif
         </div>
     </div>

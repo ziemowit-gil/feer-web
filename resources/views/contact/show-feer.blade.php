@@ -40,9 +40,10 @@
 
     <div class="contact-feer mx-auto max-w-6xl px-4 py-8 md:py-10">
         @php $navHtml = trim(view('contact.partials.feer-nav', ['current' => null, 'showMeetings' => $showMeetings, 'showShipping' => $showShipping, 'metkaPage' => $metkaPage ?? null])->render()); @endphp
-        <div @class(['grid items-start gap-10', 'lg:grid-cols-[minmax(0,1fr)_20rem]' => $navHtml !== ''])>
+        @include('contact.partials.feer-cols-style')
+        <div @class(['contact-cols', 'contact-cols--nav' => $navHtml !== ''])>
 
-            <div class="min-w-0 space-y-12 {{ $navHtml !== '' ? 'lg:col-start-1 lg:row-start-1' : '' }}">
+            <div class="contact-main space-y-12">
                 @include('partials.correspondence-note')
 
                 <section id="dane" aria-labelledby="dane-heading" class="scroll-mt-24">
@@ -106,7 +107,7 @@
             </div>
 
             @if ($navHtml !== '')
-                <aside class="order-first lg:order-none lg:col-start-2 lg:row-start-1 lg:sticky lg:top-6">{!! $navHtml !!}</aside>
+                <aside class="contact-aside">{!! $navHtml !!}</aside>
             @endif
         </div>
     </div>
