@@ -504,6 +504,7 @@
     </div>
 
     @include('admin.partials.default-editor-prompt')
+    @include('admin.partials.contrast-mode-badge')
 
     @stack('scripts')
     <script>requestAnimationFrame(function () { requestAnimationFrame(function () { document.documentElement.classList.add('admin-ready'); }); });</script>
