@@ -44,4 +44,14 @@ class MourningModeTest extends TestCase
         $this->setMourning(false, ['mourning_from' => today()->addDay(), 'mourning_until' => today()->addDays(3)]);
         $this->get('/')->assertOk()->assertDontSee('mourning-mode', false);
     }
+
+    public function test_zakladka_serwis_pokazuje_stan_witryny_i_wszystkie_sekcje(): void
+    {
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'maintenance']))->assertOk()
+            ->assertSee('Stan witryny teraz')->assertSee('Dostępność witryny')->assertSee('Komunikaty i wygląd')
+            ->assertSee('Żałoba narodowa')->assertSee('name="mourning_from"', false)->assertSee('name="maintenance_mode"', false)
+            ->assertSee('name="under_construction"', false)->assertSee('name="notice_enabled"', false)->assertSee('name="site_url"', false);
+    }
 }
