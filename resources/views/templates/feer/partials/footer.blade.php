@@ -15,6 +15,7 @@
         [$siteSettings->linkedin_url, 'bi bi-linkedin', 'LinkedIn'],
         [$siteSettings->youtube_url, 'bi bi-youtube', 'YouTube'],
     ];
+    $fo = $siteSettings->footerOptions(); // Ustawienia → Ogólne → Stopka
     $footLink = 'rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink';
 @endphp
 
@@ -57,9 +58,9 @@
                 <p class="leading-snug">
                     <span class="font-bold">{{ $siteSettings->site_name }}</span>
                     <span class="block">
-                        &copy; {{ now()->year }} Wszystkie prawa zastrzeżone
+                        {{ $fo['copyright_text'] }}
                         @if ($siteSettings->show_cms_credit ?? true)
-                            · Napędzane przez <span class="font-bold">weCMS</span> · <a href="mailto:ziemowit.gil@gmail.com" class="{{ $footLink }}">Ziemowit Gil</a>
+                            {{ $fo['copyright_text'] !== '' ? '·' : '' }} Napędzane przez <span class="font-bold">weCMS</span> · <a href="mailto:ziemowit.gil@gmail.com" class="{{ $footLink }}">Ziemowit Gil</a>
                         @endif
                     </span>
                 </p>
@@ -71,9 +72,9 @@
                     @foreach ($footerNavItems as $item)
                         <li><a href="{{ site_href($item->url) }}" class="{{ $footLink }}">{{ $item->label }}</a></li>
                     @endforeach
-                    <li><a href="{{ route('accessibility.show') }}" class="{{ $footLink }}">Deklaracja dostępności</a></li>
-                    <li><a href="{{ route('sitemap.page') }}" class="{{ $footLink }}">Mapa strony</a></li>
-                    @if ($siteSettings->cookie_banner_enabled ?? true)
+                    @if ($fo['show_accessibility'])<li><a href="{{ route('accessibility.show') }}" class="{{ $footLink }}">Deklaracja dostępności</a></li>@endif
+                    @if ($fo['show_sitemap'])<li><a href="{{ route('sitemap.page') }}" class="{{ $footLink }}">Mapa strony</a></li>@endif
+                    @if ($fo['show_cookies'] && ($siteSettings->cookie_banner_enabled ?? true))
                         <li><button type="button" data-cookie-settings class="{{ $footLink }}">Ustawienia cookies</button></li>
                     @endif
                 </ul>
@@ -92,7 +93,7 @@
                             </li>
                         @endif
                     @endforeach
-                    @if ($siteSettings->isModuleEnabled('news'))
+                    @if ($fo['show_rss'] && $siteSettings->isModuleEnabled('news'))
                         <li>
                             <a href="{{ route('feed') }}" aria-label="Kanał RSS z aktualnościami"
                                class="flex h-9 w-9 items-center justify-center rounded-md border border-white text-white transition hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
@@ -100,19 +101,29 @@
                             </a>
                         </li>
                     @endif
+@if ($fo['staff_link'] && $fo['staff_url'] !== '')
                     <li>
-                        <a href="{{ url('/strefa-wspolpracownika-feer') }}" aria-label="Strefa współpracownika" title="Strefa współpracownika"
+                        <a href="{{ str_starts_with($fo['staff_url'], 'http') ? $fo['staff_url'] : url($fo['staff_url']) }}" aria-label="{{ $fo['staff_label'] }}" title="{{ $fo['staff_label'] }}"
                            class="flex h-9 w-9 items-center justify-center rounded-md border border-white text-white transition hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
                             <i class="bi bi-person-badge" aria-hidden="true"></i>
                         </a>
                     </li>
+                    @endif
                 </ul>
             </div>
         </div>
 
-        <a href="{{ route('admin.dashboard') }}" class="absolute bottom-3 right-4 rounded-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="Panel administracyjny">
+@if ($fo['show_admin_link'])
+                <a href="{{ route('admin.dashboard') }}" class="absolute bottom-3 right-4 rounded-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="Panel administracyjny">
             <i class="fa-solid fa-gear text-sm" aria-hidden="true"></i>
         </a>
+        @endif
+        {{-- Zalogowany administrator: skrót do edycji stopki. --}}
+        @if (auth()->user()?->isAdmin())
+            <a href="{{ route('admin.ustawienia.edit', ['tab' => 'general']) }}#gen-footer-h" class="absolute bottom-3 rounded-sm text-xs font-bold text-white underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" style="right: 2.75rem" data-footer-edit>
+                <i class="fa-solid fa-pen mr-1" aria-hidden="true"></i>Edytuj stopkę
+            </a>
+        @endif
         {{-- Metryczka strony („Pokaż metkę”) — zawsze w stopce (layouts/site przekazuje $footerMetka). --}}
         @if ($footerMetka ?? null)
             <div class="mx-auto max-w-6xl border-t px-4" style="border-color: rgba(255,255,255,.18); padding-bottom: .75rem">

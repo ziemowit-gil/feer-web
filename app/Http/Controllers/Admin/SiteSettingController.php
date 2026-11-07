@@ -188,6 +188,16 @@ class SiteSettingController extends Controller
             'cookie_banner_enabled' => ['sometimes', 'boolean'],
             'cookie_banner_text' => ['nullable', 'string', 'max:1000'],
             'show_cms_credit' => ['sometimes', 'boolean'],
+            'footer_options' => ['nullable', 'array'],
+            'footer_options.copyright' => ['nullable', 'string', 'max:200'],
+            'footer_options.staff_url' => ['nullable', 'string', 'max:500', 'regex:~^(https?://\S+|/(?!/)\S*)$~i'],
+            'footer_options.staff_label' => ['nullable', 'string', 'max:60'],
+            'footer_options.show_accessibility' => ['nullable', 'boolean'],
+            'footer_options.show_sitemap' => ['nullable', 'boolean'],
+            'footer_options.show_cookies' => ['nullable', 'boolean'],
+            'footer_options.show_rss' => ['nullable', 'boolean'],
+            'footer_options.staff_link' => ['nullable', 'boolean'],
+            'footer_options.show_admin_link' => ['nullable', 'boolean'],
             'mail_transport' => ['required', Rule::in(array_keys(SiteSetting::MAIL_TRANSPORTS))],
             'mail_from_address' => ['nullable', 'email', 'max:255'],
             'mail_from_name' => ['nullable', 'string', 'max:255'],
@@ -598,6 +608,13 @@ class SiteSettingController extends Controller
             ? $request->boolean('show_cms_credit')
             : true;
 
+        // Stopka (Ustawienia → Ogólne → Stopka): zapisywana tylko, gdy jej pola przyszły w żądaniu (zapis innej sekcji jej nie zeruje).
+        if ($request->has('footer_options')) {
+            $data['footer_options'] = SiteSetting::normalizeFooterOptions((array) $request->input('footer_options'));
+        } else {
+            unset($data['footer_options']);
+        }
+
         $data['disabled_modules'] = $request->has('enabled_modules')
             ? array_values(array_diff(array_keys(SiteSetting::MODULES), $request->input('enabled_modules')))
             : (SiteSetting::current()->disabled_modules ?? []);
@@ -719,7 +736,7 @@ class SiteSettingController extends Controller
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['homepage_sections_enabled']);
 
         // Do czasu wykonania migracji (nowa kolumna) zapis ustawień nie może padać — pomijamy brakującą kolumnę.
-        foreach (['support_steps_hidden', 'support_steps_title', 'support_steps_subtitle', 'support_step1_title', 'support_step1_text', 'support_step2_title', 'support_step2_text', 'support_step3_title', 'support_step3_text', 'homepage_sections_hidden', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'parent_link_label', 'parent_link_url', 'is_cta_label', 'is_cta_url', 'contact_branches', 'contact_branches_title', 'courses_registration_enabled', 'clarity_project_id', 'under_construction', 'under_construction_message', 'mourning_mode', 'mourning_from', 'mourning_until', 'contact_options', 'contact_phone_hours', 'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact'] as $newColumn) {
+        foreach (['support_steps_hidden', 'support_steps_title', 'support_steps_subtitle', 'support_step1_title', 'support_step1_text', 'support_step2_title', 'support_step2_text', 'support_step3_title', 'support_step3_text', 'homepage_sections_hidden', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'parent_link_label', 'parent_link_url', 'is_cta_label', 'is_cta_url', 'contact_branches', 'contact_branches_title', 'courses_registration_enabled', 'clarity_project_id', 'under_construction', 'under_construction_message', 'mourning_mode', 'mourning_from', 'mourning_until', 'contact_options', 'footer_options', 'contact_phone_hours', 'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact'] as $newColumn) {
             if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', $newColumn)) {
                 unset($data[$newColumn]);
             }

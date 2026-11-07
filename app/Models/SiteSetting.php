@@ -479,7 +479,7 @@ class SiteSetting extends Model implements HasMedia
         'vm_newsletter_text', 'vm_header_badge_alt', 'vm_footer_note',
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
-        'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo', 'contact_options',
+        'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo', 'contact_options', 'footer_options',
         'site_url', 'maintenance_mode', 'maintenance_message', 'under_construction', 'under_construction_message', 'mourning_mode', 'mourning_from', 'mourning_until',
         'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact',
         'phonebook_title', 'phonebook_lead', 'phonebook_layout', 'phonebook_sort', 'phonebook_hide_numbers',
@@ -749,6 +749,7 @@ class SiteSetting extends Model implements HasMedia
         'contact_schedule' => 'array',
         'contact_schedule_enabled' => 'boolean',
         'contact_options' => 'array',
+        'footer_options' => 'array',
         'show_topbar_bip' => 'boolean',
         'show_topbar_social' => 'boolean',
         'contact_show_form' => 'boolean',
@@ -2159,6 +2160,53 @@ class SiteSetting extends Model implements HasMedia
     public function newsDefaultImageUrl(): ?string
     {
         return $this->getFirstMediaUrl('news_default_image') ?: null;
+    }
+
+    /** Stopka: ustawienia domyślne (tak wyglądała stopka FEER przed edycją w panelu). */
+    public const FOOTER_DEFAULTS = [
+        'copyright' => '© {rok} Wszystkie prawa zastrzeżone',
+        'show_accessibility' => true,
+        'show_sitemap' => true,
+        'show_cookies' => true,
+        'show_rss' => true,
+        'staff_link' => true,
+        'staff_url' => '/strefa-wspolpracownika-feer',
+        'staff_label' => 'Strefa współpracownika',
+        'show_admin_link' => true,
+    ];
+
+    /**
+     * Ustawienia stopki (Ustawienia → Ogólne → Stopka) z wartościami domyślnymi; bez kolumny (kod przed migracją)
+     * — same wartości domyślne. Tekst praw autorskich z `{rok}` zamienionym na bieżący rok jest w kluczu `copyright_text`.
+     *
+     * @return array<string, mixed>
+     */
+    public function footerOptions(): array
+    {
+        $o = self::normalizeFooterOptions(is_array($raw = $this->getAttribute('footer_options')) ? $raw : []);
+        $o['copyright_text'] = trim(str_replace('{rok}', (string) now()->year, $o['copyright']));
+
+        return $o;
+    }
+
+    /** @param array<string, mixed> $in @return array<string, mixed> */
+    public static function normalizeFooterOptions(array $in): array
+    {
+        $d = self::FOOTER_DEFAULTS;
+        $out = [];
+        foreach ($d as $key => $default) {
+            if (is_bool($default)) {
+                $out[$key] = array_key_exists($key, $in) ? filter_var($in[$key], FILTER_VALIDATE_BOOLEAN) : $default;
+            } else {
+                $out[$key] = array_key_exists($key, $in) ? mb_substr(trim((string) $in[$key]), 0, $key === 'staff_url' ? 500 : 200) : $default;
+            }
+        }
+        if ($out['staff_url'] !== '' && preg_match('~^(https?://\S+|/(?!/)\S*)$~i', $out['staff_url']) !== 1) {
+            $out['staff_url'] = $d['staff_url'];
+        }
+        $out['staff_label'] = $out['staff_label'] !== '' ? mb_substr($out['staff_label'], 0, 60) : $d['staff_label'];
+
+        return $out;
     }
 
     public function isModuleEnabled(string $module): bool

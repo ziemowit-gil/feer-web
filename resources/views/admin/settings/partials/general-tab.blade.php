@@ -135,8 +135,42 @@
 
     <section aria-labelledby="gen-footer-h" class="rounded-lg border border-gray-200 p-5">
         <h2 id="gen-footer-h" class="text-base font-bold text-ink">Stopka</h2>
-        <p class="mt-1 text-xs text-muted">Podpis autora CMS w stopce strony.</p>
+        <p class="mt-1 text-xs text-muted">Tekst, stałe linki i ikony w stopce strony{{ ($settings->site_template ?? 'default') === 'feer' ? '' : ' (szablon FEER)' }}. Własne linki stopki dodajesz w <a href="{{ route('admin.pozycje-menu.index', ['location' => 'footer']) }}" class="font-bold text-brand-dark underline">Menu nawigacji → Stopka</a>, profile społecznościowe w zakładce Social, a metkę w Treści → Metryczka.</p>
+        @php
+            $fo = old('footer_options', $settings->footerOptions());
+            $foChk = 'mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark';
+            $foBox = fn (string $key, string $label, string $hint = '') => '<label class="flex items-start gap-2 text-sm"><input type="hidden" name="footer_options['.$key.']" value="0"><input type="checkbox" name="footer_options['.$key.']" value="1" '.(filter_var($fo[$key] ?? true, FILTER_VALIDATE_BOOLEAN) ? 'checked' : '').' class="'.$foChk.'"><span><span class="font-bold">'.e($label).'</span>'.($hint !== '' ? '<span class="block text-xs text-muted">'.e($hint).'</span>' : '').'</span></label>';
+        @endphp
         <div class="mt-4 space-y-5">
+        <div>
+            <label for="footer-copyright" class="mb-1 block text-sm font-bold">Tekst pod nazwą organizacji</label>
+            <input id="footer-copyright" type="text" name="footer_options[copyright]" maxlength="200" value="{{ $fo['copyright'] ?? '' }}" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand-dark focus:ring-brand-dark" aria-describedby="footer-copyright-hint">
+            <p id="footer-copyright-hint" class="mt-1 text-xs text-muted"><code>{rok}</code> zamienia się na bieżący rok. Puste pole = bez tekstu.</p>
+            @error('footer_options.copyright') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+        <fieldset class="space-y-2">
+            <legend class="mb-1 text-sm font-bold">Stałe linki</legend>
+            {!! $foBox('show_accessibility', 'Deklaracja dostępności') !!}
+            {!! $foBox('show_sitemap', 'Mapa strony') !!}
+            {!! $foBox('show_cookies', 'Ustawienia cookies', 'Tylko gdy baner cookies jest włączony.') !!}
+        </fieldset>
+        <fieldset class="space-y-3">
+            <legend class="mb-1 text-sm font-bold">Ikony obok profili społecznościowych</legend>
+            {!! $foBox('show_rss', 'Kanał RSS aktualności', 'Gdy moduł Aktualności jest włączony.') !!}
+            {!! $foBox('staff_link', 'Odnośnik dla współpracowników') !!}
+            <div class="grid gap-3 sm:grid-cols-2">
+                <div>
+                    <label for="footer-staff-label" class="mb-1 block text-xs font-bold text-muted">Opis odnośnika (dla czytników ekranu i podpowiedzi)</label>
+                    <input id="footer-staff-label" type="text" name="footer_options[staff_label]" maxlength="60" value="{{ $fo['staff_label'] ?? '' }}" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                </div>
+                <div>
+                    <label for="footer-staff-url" class="mb-1 block text-xs font-bold text-muted">Adres</label>
+                    <input id="footer-staff-url" type="text" name="footer_options[staff_url]" maxlength="500" value="{{ $fo['staff_url'] ?? '' }}" class="w-full rounded-lg border-gray-300 text-sm focus:border-brand-dark focus:ring-brand-dark" placeholder="/strefa-wspolpracownika-feer">
+                    @error('footer_options.staff_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+        </fieldset>
+        {!! $foBox('show_admin_link', 'Ikona panelu administracyjnego (koło zębate w rogu stopki)') !!}
         @php $isFeerInstall = str_contains(request()->getHost(), 'feer.org.pl'); @endphp
         <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
             <input type="checkbox" name="show_cms_credit" value="1"
