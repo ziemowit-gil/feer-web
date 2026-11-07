@@ -17,10 +17,10 @@ class AdminSidebarFlyoutTest extends TestCase
 
         $html = $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->getContent();
 
-        $this->assertStringContainsString('flyout() { return this.collapsed || window.matchMedia(\'(min-width: 1024px)\').matches; }', $html);
+        $this->assertStringContainsString('flyout() { return this.collapsed || (this.style === \'flyout\' && window.matchMedia(\'(min-width: 1024px)\').matches); }', $html);
         $this->assertStringContainsString('x-show="fly && $store.adminNav.flyout()"', $html);
         $this->assertStringContainsString("'top:' + flyTop + 'px; left:' + flyLeft + 'px'", $html);
-        $this->assertStringContainsString('.admin-sidebar .tm-panel { display: none !important; }', $html);
+        $this->assertStringContainsString('.admin-sidebar.nav-style-flyout .tm-panel { display: none !important; }', $html);
         $this->assertStringContainsString('@keydown.escape.stop="if (fly)', $html);
         // Podpozycja (Strefy bannerów pod Bannery) także w wysuwanym panelu.
         $this->assertStringContainsString('class="nav-flyout', $html);

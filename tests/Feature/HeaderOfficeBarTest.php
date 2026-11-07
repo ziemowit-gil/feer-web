@@ -47,7 +47,9 @@ class HeaderOfficeBarTest extends TestCase
             ->assertSee('Pasek informacyjny i dostępność', false);
 
         // Belka pokazuje maksymalnie trzy pierwsze uzupełnione profile.
-        $this->assertSame(3, substr_count($response->getContent(), 'otwiera się w nowej karcie') / 2);
+        $html = $response->getContent();
+        $bar = substr($html, 0, (int) strpos($html, '<main'));
+        $this->assertSame(3, substr_count($bar, 'otwiera się w nowej karcie') / 2);
     }
 
     public function test_office_bar_elements_can_be_switched_off(): void

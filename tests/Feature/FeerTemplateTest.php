@@ -542,7 +542,8 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
         $list = $this->get('/podcasty')->assertOk()->assertSee('Najnowszy odcinek')->assertSee('Wcześniejsze odcinki')->assertSee('Pierwszy odcinek')->getContent();
-        $this->assertStringContainsString('feer-card group relative', $list);
+        // Najnowszy odcinek ma odtwarzacz w nagłówku listy, pozostałe to płaskie wiersze (index-feer).
+        $this->assertStringContainsString('Trzeci odcinek', $list);
 
         $podcast = \App\Models\Podcast::where('slug', 'odc-3')->first();
         $this->get(route('podcasts.show', $podcast))->assertOk()->assertSee('Trzeci odcinek')->assertSee('Wszystkie odcinki');
@@ -785,15 +786,16 @@ class FeerTemplateTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->get('/formularz/zgloszenie-test')->assertOk()->assertSee('border-gray-300 bg-white', false)->assertDontSee('border-0 border-b-2', false);
+        $this->get('/formularz/zgloszenie-test')->assertOk()->assertSee('border-gray-300 bg-white', false)->assertDontSee('ff-input', false);
 
         SiteSetting::current()->update(['site_template' => 'feer']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
         \Illuminate\Support\Facades\Cache::flush();
 
         $html = $this->get('/formularz/zgloszenie-test')->assertOk()->getContent();
-        $this->assertStringContainsString('border-0 border-b-2', $html);
-        $this->assertStringContainsString('bg-gray-100', $html);
+        // W FEER pola mają własny CSS (klasy ff-*): jasne tło zamiast obwódki, niezależnie od przebudowy Tailwinda.
+        $this->assertStringContainsString('ff-input', $html);
+        $this->assertStringContainsString('border: 0', $html);
         $this->assertStringNotContainsString('rounded-xl border border-gray-200 bg-white p-6 shadow-sm', $html);
     }
 
