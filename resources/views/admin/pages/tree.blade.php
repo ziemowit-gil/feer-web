@@ -381,8 +381,22 @@
                         </p>
                     @endunless
 
-                    <dl class="mt-4 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2 xl:grid-cols-3">
+                    {{-- Najważniejsze: adres, menu, ostatnia zmiana; reszta (położenie, nawigacja, publikacja) w „Więcej o stronie”. --}}
+                    <dl class="mt-4 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Adres</dt><dd class="mt-0.5 break-all font-mono text-xs">/{{ $selected->slug }}</dd></div>
+                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">W menu</dt><dd class="mt-0.5">
+                            @if ($selectedMenu)
+                                {{ collect($selectedMenu)->map(fn ($p) => $p['location_label'].($p['parent'] ? ' › '.$p['parent'] : ''))->unique()->implode(', ') }}
+                                <a href="#menu-nawigacji" onclick="document.getElementById('menu-nawigacji').open = true" class="ml-1 text-xs font-bold text-brand-dark underline">zmień</a>
+                            @else
+                                Nie <a href="#menu-nawigacji" onclick="document.getElementById('menu-nawigacji').open = true" class="ml-1 text-xs font-bold text-brand-dark underline">dodaj</a>
+                            @endif
+                        </dd></div>
+                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Ostatnia zmiana</dt><dd class="mt-0.5">{{ $selected->updated_at?->format('d.m.Y H:i') ?? '—' }}</dd></div>
+                    </dl>
+                    <details class="mt-3 text-sm" id="wiecej-o-stronie">
+                        <summary class="inline-flex min-h-9 cursor-pointer items-center gap-1.5 text-xs font-bold text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i> Więcej o stronie</summary>
+                        <dl class="mt-2 grid gap-x-6 gap-y-3 sm:grid-cols-2 xl:grid-cols-3">
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Strona nadrzędna</dt>
                             <dd class="mt-0.5">@if ($rootline->isNotEmpty())<a href="{{ route('admin.podstrony.index', ['wybrana' => $rootline->last()->id]) }}" class="text-brand-dark hover:underline">{{ $rootline->last()->title }}</a>@else<span class="text-muted">— strona najwyższego poziomu</span>@endif</dd></div>
                         <div>
@@ -395,23 +409,15 @@
                                 @endif
                             </dd>
                         </div>
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">W menu</dt><dd class="mt-0.5">
-                            @if ($selectedMenu)
-                                {{ collect($selectedMenu)->map(fn ($p) => $p['location_label'].($p['parent'] ? ' › '.$p['parent'] : ''))->unique()->implode(', ') }}
-                                <a href="#menu-nawigacji" class="ml-1 text-xs font-bold text-brand-dark underline">zmień</a>
-                            @else
-                                Nie <a href="#menu-nawigacji" class="ml-1 text-xs font-bold text-brand-dark underline">dodaj</a>
-                            @endif
-                        </dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Nawigacja po podstronach</dt><dd class="mt-0.5">{{ $selected->show_side_nav ? (\App\Models\Page::SIDE_NAV_STYLES[$selected->side_nav_style] ?? 'Boczne drzewo') : 'Wyłączona' }}</dd></div>
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Ostatnia zmiana</dt><dd class="mt-0.5">{{ $selected->updated_at?->format('d.m.Y H:i') ?? '—' }}</dd></div>
                         @if ($selected->publish_at && ! $selectedLive && $selected->is_published)
                             <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Publikacja</dt><dd class="mt-0.5">{{ $selected->publish_at->format('d.m.Y H:i') }}</dd></div>
                         @endif
                         @if ($personsCount)
                             <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Osoby</dt><dd class="mt-0.5"><a href="{{ route('admin.osoby.index') }}" class="text-brand-dark hover:underline">{{ $personsCount }} {{ trans_choice('osoba|osoby|osób', $personsCount) }}</a></dd></div>
                         @endif
-                    </dl>
+                        </dl>
+                    </details>
 
                     {{-- Szybkie akcje --}}
                     @if ($canEditSelected)
@@ -489,9 +495,10 @@
 
                         {{-- Przeniesienie w drzewie: nowa strona nadrzędna i miejsce wśród jej podstron (kolejność wśród
                              obecnych sąsiadów zmieniają przyciski „Wyżej / Niżej” przy pozycji oraz przeciąganie w drzewie). --}}
-                        <form method="POST" action="{{ route('admin.podstrony.przenies', $selected) }}" class="mt-4 rounded-lg bg-gray-50 p-3" aria-labelledby="move-heading">
+                        <details class="mt-4 rounded-lg bg-gray-50 p-3">
+                        <summary class="cursor-pointer text-xs font-bold uppercase tracking-wide text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Przenieś w drzewie</summary>
+                        <form method="POST" action="{{ route('admin.podstrony.przenies', $selected) }}" class="mt-2" aria-label="Przenieś w drzewie">
                             @csrf @method('PATCH')
-                            <h3 id="move-heading" class="text-xs font-bold uppercase tracking-wide text-muted">Przenieś w drzewie</h3>
                             <div class="mt-2 flex flex-wrap items-end gap-2">
                                 <div class="min-w-56 flex-1">
                                     <label for="move-parent" class="mb-1 block text-xs font-bold text-ink">Pod stronę</label>
@@ -513,6 +520,7 @@
                             </div>
                             <p class="mt-2 text-xs text-muted">Adres URL strony nie zmienia się. Strona nie może trafić do samej siebie ani do własnej podstrony.</p>
                         </form>
+                        </details>
                     @endif
                 </div>
 
