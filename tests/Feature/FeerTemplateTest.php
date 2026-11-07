@@ -224,7 +224,7 @@ class FeerTemplateTest extends TestCase
         $this->assertStringNotContainsString('role="tablist"', $html);
         $this->assertStringContainsString('id="formularz-heading"', $html);
         $this->assertStringContainsString('id="dane-heading"', $html);
-        $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_26rem]', $html);
+        $this->assertStringContainsString('lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]', $html);
         $this->assertStringNotContainsString('<section class="relative bg-ink', $html);
     }
 
