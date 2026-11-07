@@ -18,6 +18,11 @@
     $topSocials    = $siteSettings->show_topbar_social ? $siteSettings->socialLinks() : [];
     $searchInNav   = $siteSettings->headerLayoutValue() === 'wide_mission' && ($siteSettings->wide_mission_search_in_nav ?? false);
 
+    // Szablon FEER: „Wesprzyj” i numer konta w jednym, niezawijanym wierszu. Numer (długi) pokazujemy od xl, gdzie mieści się
+    // obok wyszukiwarki; niżej zostaje sam link „Wesprzyj” (numer jest na stronie wsparcia i w menu mobilnym).
+    $barSupportUrl = \Illuminate\Support\Facades\Route::has('support.show') ? route('support.show') : null;
+    $barAccount    = trim((string) $siteSettings->bank_account_number);
+
     $topLink = 'inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-sm font-semibold text-ink transition hover:text-brand '
         . 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1';
 @endphp
@@ -40,10 +45,21 @@
             <span class="sr-only sm:hidden">Ułatwienia dostępu</span>
         </button>
 
-        @if ($feerBar)
-            {{-- Szablon FEER: numer konta i „Wesprzyj" w tym samym rzędzie (nie w osobnym pasku pod spodem) --}}
-            <div class="hidden min-w-0 md:block">
-                @include('partials.wide-support-line', ['onBar' => true, 'onDark' => true])
+        @if ($feerBar && ($barSupportUrl || $barAccount !== ''))
+            {{-- Jeden wiersz, bez zawijania: link „Wesprzyj” (akcja), obok numer konta (informacja, jasnoszary #D1D5DB na #1D1D1A ≈ 12:1). --}}
+            <div class="hidden min-w-0 items-center gap-x-5 whitespace-nowrap text-sm md:flex">
+                @if ($barSupportUrl)
+                    <a href="{{ $barSupportUrl }}"
+                       class="inline-flex min-h-9 items-center gap-2 rounded-md px-2 font-bold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
+                        <i class="fa-solid fa-heart text-xs" aria-hidden="true"></i>Wesprzyj naszą działalność
+                    </a>
+                @endif
+                @if ($barAccount !== '')
+                    <span class="hidden items-center gap-1.5 text-white xl:inline-flex">
+                        <span class="font-medium">Nr konta:</span>
+                        <span class="font-mono text-gray-300">{{ $barAccount }}</span>
+                    </span>
+                @endif
             </div>
         @endif
 
@@ -62,8 +78,8 @@
                       class="hidden items-center overflow-hidden rounded-md border border-gray-300 bg-white transition focus-within:border-brand focus-within:ring-2 focus-within:ring-brand sm:flex">
                     <label for="site-search" class="sr-only">Wyszukaj w serwisie</label>
                     <input id="site-search" type="search" name="q" value="{{ request('q') }}"
-                           placeholder="Wyszukaj w serwisie" autocomplete="off"
-                           class="min-h-9 w-40 border-0 bg-transparent px-3 text-sm text-ink placeholder:text-gray-600 focus:outline-none focus:ring-0 md:w-52">
+                           placeholder="Szukaj w serwisie" autocomplete="off"
+                           class="min-h-9 w-40 border-0 bg-transparent px-3 text-sm text-ink placeholder:text-gray-600 focus:outline-none focus:ring-0 md:w-48">
                     <button type="submit"
                             class="flex h-9 w-9 flex-none items-center justify-center text-ink transition hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
                             aria-label="Szukaj">

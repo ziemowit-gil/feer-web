@@ -134,6 +134,14 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('<input type="hidden" name="header_layout" value="classic">', $html);
         $this->assertStringNotContainsString('type="radio" name="header_layout"', $html);
     }
+    private function hubPage(): void
+    {
+        \App\Models\Page::create([
+            'title' => 'Dołącz', 'slug' => 'dolacz-hub-test', 'type' => 'links_hub', 'is_published' => true, 'hub_intro' => 'Zostań z nami',
+            'hub_links' => [['label' => 'Wolontariat', 'url' => '/wolontariat', 'icon' => 'fa-solid fa-hand', 'color' => 'green', 'description' => 'Pomagaj']],
+        ]);
+    }
+
     public function test_strona_hub_w_szablonie_feer_ma_plaskie_karty_bez_kolorowych_naglowkow(): void
     {
         $this->hubPage();
@@ -200,6 +208,12 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('site-topbar-feer', $html);
         // Numer konta: pasek górny i panel mobilny; osobnego paska nad belką już nie ma.
         $this->assertSame(2, substr_count($html, 'Nr konta:'), 'pasek górny + panel mobilny');
+        // Pasek górny to jeden, niezawijany wiersz: „Wesprzyj” przed numerem konta, numer dopiero od xl.
+        $bar = substr($html, strpos($html, 'class="site-topbar border-b site-topbar-feer'), 6000);
+        $this->assertStringContainsString('whitespace-nowrap', $bar);
+        $this->assertStringContainsString('xl:inline-flex', $bar);
+        $this->assertLessThan(strpos($bar, 'Nr konta:'), strpos($bar, 'Wesprzyj naszą działalność'));
+        $this->assertStringContainsString('placeholder="Szukaj w serwisie"', $bar);
         $this->assertStringNotContainsString('bg-brand-light/50', $html);
     }
 
