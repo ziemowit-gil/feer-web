@@ -650,3 +650,10 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
 .be-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; margin: .5rem 0 0; padding: .5rem .75rem; background: var(--be-ui-soft); border: 1px solid var(--be-ui); border-radius: 6px; color: var(--be-ink); font-size: .875rem; }
 .be-suggest-text { flex: 1 1 14rem; }
 .be-suggest-text svg { vertical-align: -2px; margin-right: .25rem; }
+
+/* Zaznaczanie kilku bloków: ramka (nie tylko kolor) i pasek akcji pod zaznaczeniem. */
+.be-block.is-multi { outline: 2px dashed var(--be-ui); outline-offset: 2px; background: var(--be-ui-soft); }
+.be-multibar { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; margin: .5rem 0 0; padding: .4rem .75rem; background: #fff; border: 2px solid var(--be-ui); border-radius: 6px; color: var(--be-ink); font-size: .875rem; }
+.be-multibar-text { flex: 1 1 10rem; font-weight: 700; }
+.be-btn--danger { color: var(--be-danger); }
+.be-btn--danger:hover { background: #fef2f2; color: var(--be-danger); }

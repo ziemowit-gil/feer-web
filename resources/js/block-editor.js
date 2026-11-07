@@ -2464,6 +2464,144 @@ function start(config) {
         fn(el);
     }
 
+    // ── Zaznaczanie kilku bloków naraz ─────────────────────────────────────
+    // Myszką: przeciągnięcie zaznaczenia przez co najmniej dwa kolejne bloki albo Shift+klik w drugi blok. Z klawiatury:
+    // Shift+↑/↓ w trybie nawigacji (fokus na bloku). Zaznaczone bloki mają ramkę, a pod nimi pasek akcji: duplikuj,
+    // przenieś w górę/w dół, usuń, odznacz (Esc). Zaznaczenie dotyczy kolejnych bloków z jednej listy (nie kolumn).
+    let multi = [], multiBar = null, multiAnchor = null, multiCursor = null, multiFromDrag = false;
+
+    function siblingRange(a, b) {
+        const ra = find(a), rb = find(b);
+        if (!ra || !rb || ra.list !== rb.list || ra.block.type === 'column') return [];
+        const [i, j] = ra.index <= rb.index ? [ra.index, rb.index] : [rb.index, ra.index];
+        return ra.list.slice(i, j + 1).map((x) => x.id);
+    }
+    function clearMultiMarks() { canvas.querySelectorAll('.is-multi').forEach((el) => el.classList.remove('is-multi')); }
+    function clearMulti() { multi = []; multiAnchor = multiCursor = null; multiFromDrag = false; clearMultiMarks(); multiBar?.remove(); multiBar = null; }
+    function multiRefs() {
+        const rs = multi.map((id) => find(id));
+        return rs.length > 1 && rs.every(Boolean) ? rs : null;
+    }
+    function setMulti(ids, { fromDrag = false } = {}) {
+        if (multiBar?.isConnected && ids.length === multi.length && ids.every((x, i) => x === multi[i])) return;
+        clearMultiMarks(); multiBar?.remove(); multiBar = null;
+        multi = ids.length > 1 ? ids : [];
+        multiFromDrag = fromDrag;
+        if (!multi.length) { multiAnchor = multiCursor = null; return; }
+        multi.forEach((id) => wrapperOf(id)?.classList.add('is-multi'));
+        const n = multi.length;
+        const keep = (e) => e.preventDefault(); // zaznaczenie zostaje
+        const btn = (label, iconName, onClick, cls = 'be-btn be-btn--ghost') => h('button', { type: 'button', class: cls, onMousedown: keep, onClick }, icon(iconName), ' ' + label);
+        multiBar = h('div', { class: 'be-multibar', role: 'group', 'aria-label': `Zaznaczone bloki: ${n}` },
+            h('span', { class: 'be-multibar-text' }, `Zaznaczono ${n} ${plural(n, 'blok', 'bloki', 'bloków')}`),
+            btn('Duplikuj', 'copy', multiDuplicate),
+            btn('W górę', 'chevron-up', () => multiMove(-1)),
+            btn('W dół', 'chevron-down', () => multiMove(1)),
+            btn('Usuń', 'trash', multiRemove, 'be-btn be-btn--ghost be-btn--danger'),
+            btn('Odznacz', 'xmark', () => { clearMulti(); }));
+        wrapperOf(multi[n - 1])?.append(multiBar);
+        announce(`Zaznaczono ${n} ${plural(n, 'blok', 'bloki', 'bloków')}. Pod zaznaczeniem są przyciski: duplikuj, przenieś, usuń. Esc odznacza.`);
+    }
+    function multiRemove() {
+        const rs = multiRefs();
+        if (!rs) return clearMulti();
+        const { list, index } = rs[0], n = rs.length;
+        pushHistory();
+        list.splice(index, n);
+        S.selectedId = null;
+        clearMulti();
+        markDirty();
+        renderAll();
+        announce(`Usunięto ${n} ${plural(n, 'blok', 'bloki', 'bloków')}`);
+        const next = list[Math.min(index, list.length - 1)];
+        if (next) focusBlock(next.id, 'start');
+    }
+    function multiDuplicate() {
+        const rs = multiRefs();
+        if (!rs) return clearMulti();
+        const copies = rs.map((r) => withNewIds(r.block));
+        const lastId = rs[rs.length - 1].block.id;
+        clearMulti();
+        insertBlocks(copies, { afterId: lastId });
+        setMulti(copies.map((c) => c.id));
+        multiAnchor = copies[0].id; multiCursor = copies[copies.length - 1].id;
+        announce(`Zduplikowano ${copies.length} ${plural(copies.length, 'blok', 'bloki', 'bloków')}`);
+    }
+    function multiMove(dir) {
+        const rs = multiRefs();
+        if (!rs) return clearMulti();
+        const { list, index } = rs[0], n = rs.length, to = index + dir;
+        if (to < 0 || to + n > list.length) { announce(dir < 0 ? 'Zaznaczone bloki są już na początku' : 'Zaznaczone bloki są już na końcu'); return; }
+        const ids = multi.slice();
+        pushHistory();
+        const moved = list.splice(index, n);
+        list.splice(to, 0, ...moved);
+        markDirty();
+        clearMulti();
+        renderCanvas();
+        setMulti(ids);
+        multiAnchor = ids[0]; multiCursor = ids[ids.length - 1];
+        announce(`Przeniesiono ${n} ${plural(n, 'blok', 'bloki', 'bloków')} ${dir < 0 ? 'w górę' : 'w dół'}`);
+    }
+    // Przeciągnięcie myszką (zwykłe zaznaczenie tekstu) przez kilka bloków = zaznaczenie bloków.
+    function updateMultiFromSelection() {
+        if (multiBar && multiBar.contains(document.activeElement)) return;
+        const drop = () => { if (multi.length && multiFromDrag) clearMulti(); };
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed || !sel.rangeCount) return drop();
+        const range = sel.getRangeAt(0);
+        const wrapOf = (node) => (node?.nodeType === 1 ? node : node?.parentElement)?.closest?.('.be-block');
+        let wa = wrapOf(range.startContainer), wb = wrapOf(range.endContainer);
+        if (!wa || !wb || wa === wb || !canvas.contains(wa) || !canvas.contains(wb)) return drop();
+        const ids = siblingRange(wa.dataset.id, wb.dataset.id);
+        if (ids.length < 2) return drop();
+        // Potrójne kliknięcie albo koniec zaznaczenia na samym początku następnego bloku nie zaznacza tego bloku.
+        const bodyOf = (w) => w.querySelector('[data-be-editable]') || w;
+        const head = range.cloneRange(); head.setEnd(bodyOf(wa), bodyOf(wa).childNodes.length);
+        const tail = range.cloneRange(); tail.setStart(bodyOf(wb), 0);
+        // Bloki bez pola tekstowego (zdjęcie, separator…) liczą się do zaznaczenia zawsze.
+        const hasHead = head.toString().trim() !== '' || !wa.querySelector('[data-be-editable]');
+        const hasTail = tail.toString().trim() !== '' || !wb.querySelector('[data-be-editable]');
+        const from = hasHead ? 0 : 1, to = hasTail ? ids.length : ids.length - 1;
+        const real = ids.slice(from, to);
+        if (real.length < 2) return drop();
+        setMulti(real, { fromDrag: true });
+    }
+    // Shift+klik w drugi blok: zaznacza wszystkie bloki między zaznaczonym a klikniętym.
+    canvas.addEventListener('mousedown', (e) => {
+        if (!e.shiftKey || e.button !== 0 || e.target.closest('.be-toolbar, .be-multibar, .be-suggest, .be-appender, .be-root-appender')) return;
+        const wrap = e.target.closest('.be-block');
+        const anchor = multiAnchor || S.selectedId;
+        if (!wrap || !anchor || wrap.dataset.id === anchor) return;
+        const ids = siblingRange(anchor, wrap.dataset.id);
+        if (ids.length < 2) return;
+        e.preventDefault();
+        e.stopPropagation();
+        window.getSelection()?.removeAllRanges();
+        multiAnchor = anchor; multiCursor = wrap.dataset.id;
+        S.selectedId = null; applySelection();
+        setMulti(ids);
+        multiAnchor = anchor; multiCursor = wrap.dataset.id;
+    }, true);
+    // Shift+↑/↓ w trybie nawigacji (fokus na bloku) rozszerza zaznaczenie o sąsiedni blok.
+    canvas.addEventListener('keydown', (e) => {
+        if (!e.shiftKey || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') || !e.target.classList?.contains('be-block')) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const anchor = multiAnchor || e.target.dataset.id;
+        const cursor = multiCursor || e.target.dataset.id;
+        const r = find(cursor);
+        const next = r && r.list[r.index + (e.key === 'ArrowDown' ? 1 : -1)];
+        if (!next || next.type === 'column') { announce('Nie ma kolejnego bloku do zaznaczenia'); return; }
+        const ids = siblingRange(anchor, next.id);
+        multiAnchor = anchor; multiCursor = next.id;
+        setMulti(ids);
+        multiAnchor = anchor; multiCursor = next.id;
+    }, true);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && multi.length) { clearMulti(); announce('Odznaczono bloki'); }
+    });
+
     // ── Podpowiedź „zamień na listę” ───────────────────────────────────────
     // Zaznaczenie co najmniej dwóch linii (w jednym akapicie albo w kilku kolejnych akapitach), z których każda zaczyna się
     // od „-”, „–”, „•”, „*” albo od „1.”, „2)” itd., pokazuje pod blokiem podpowiedź z przyciskiem „Zamień na listę”
@@ -2554,7 +2692,7 @@ function start(config) {
     }
     function scheduleListSuggest() {
         clearTimeout(suggestTimer);
-        suggestTimer = setTimeout(updateListSuggest, 150);
+        suggestTimer = setTimeout(() => { updateMultiFromSelection(); updateListSuggest(); }, 150);
     }
     document.addEventListener('keydown', (e) => {
         if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyL') {
@@ -2574,6 +2712,7 @@ function start(config) {
         const changed = S.selectedId !== id;
         S.selectedId = id;
         if (changed) {
+            if (multi.length && !multiFromDrag) clearMulti();
             applySelection();
             if (S.sidebarTab !== 'block' && id) S.sidebarTab = 'block';
             renderSidebar();
