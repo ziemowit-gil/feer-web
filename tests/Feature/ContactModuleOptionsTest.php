@@ -186,6 +186,12 @@ class ContactModuleOptionsTest extends TestCase
             $this->assertStringContainsString($part, $html, $part);
         }
         $this->assertStringContainsString('href="'.route('admin.kontakt.index').'"', $html); // pozycja w menu bocznym panelu
+
+        // Ekran podzielony na karty (zakładki) z jednym zapisem.
+        $this->assertStringContainsString('role="tablist" aria-label="Opcje kontaktu"', $html);
+        $this->assertSame(6, substr_count($html, 'role="tabpanel"'));
+        $this->assertSame(6, substr_count($html, 'role="tab" id="kt-tabbtn-'));
+        $this->assertStringContainsString("tab: 'przeglad'", $html);
     }
 
     public function test_zapis_opcji_i_ustawien_formularza(): void
@@ -235,6 +241,11 @@ class ContactModuleOptionsTest extends TestCase
             'options' => ['closure_from' => '2026-12-24', 'closure_until' => '2026-12-01'],
             'form' => ['notification_email' => 'biuro@example.org, to-nie-mail'],
         ])->assertRedirect(route('admin.kontakt.index'))->assertSessionHasErrors(['options.closure_until', 'form.notification_email']);
+
+        // Po błędzie otwiera się karta z pierwszym błędnym polem.
+        $this->actingAs($this->admin())->from(route('admin.kontakt.index'))->followingRedirects()->put(route('admin.kontakt.update'), [
+            'options' => ['closure_from' => '2026-12-24', 'closure_until' => '2026-12-01'],
+        ])->assertOk()->assertSee("tab: 'komunikat'", false);
     }
 
     public function test_redaktor_bez_dostepu_do_modulu_nie_wejdzie(): void

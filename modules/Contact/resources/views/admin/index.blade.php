@@ -23,6 +23,26 @@
         $places = array_merge($places, array_fill(0, 2, []));
         $fs = $form?->settings ?? [];
         $fv = fn (string $k, $d = '') => old('form.'.$k, $fs[$k] ?? $d);
+        // Karty ekranu. Po błędzie walidacji otwiera się karta z błędnym polem; wybór zapamiętuje adres (#karta).
+        $ktTabs = [
+            'przeglad' => ['Przegląd', 'fa-gauge'],
+            'formularz' => ['Formularz', 'fa-envelope-open-text'],
+            'podstrony' => ['Podstrony', 'fa-list'],
+            'miejsca' => ['Gdzie działamy', 'fa-location-dot'],
+            'dojazd' => ['Dojazd i dostępność', 'fa-route'],
+            'komunikat' => ['Komunikat', 'fa-calendar-xmark'],
+        ];
+        $ktErrorTab = null;
+        foreach (array_keys($errors->getMessages()) as $ktKey) {
+            $ktErrorTab ??= match (true) {
+                str_starts_with($ktKey, 'form.'), $ktKey === 'options.response_time' => 'formularz',
+                str_starts_with($ktKey, 'options.shown_sections') => 'podstrony',
+                str_starts_with($ktKey, 'options.places') => 'miejsca',
+                str_starts_with($ktKey, 'options.closure') => 'komunikat',
+                str_starts_with($ktKey, 'options.') => 'dojazd',
+                default => null,
+            };
+        }
     @endphp
 
     <div class="mb-6">
@@ -34,8 +54,34 @@
         <div class="mb-5 rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-950" role="status">Baza nie ma jeszcze pola na opcje modułu — uruchom migracje (<code>php artisan migrate</code>), a potem zapisz opcje.</div>
     @endunless
 
+    {{-- Karty: przyciski z role="tab", strzałki ←/→, Home/End; bez JS wszystkie panele są widoczne jeden pod drugim. --}}
+    <div x-data="{
+            tab: @js($ktErrorTab ?? 'przeglad'),
+            keys: @js(array_keys($ktTabs)),
+            init() { const h = location.hash.replace('#', ''); if (! @js((bool) $ktErrorTab) && this.keys.includes(h)) this.tab = h; },
+            go(k, focus) { this.tab = k; history.replaceState(null, '', '#' + k); if (focus) this.$nextTick(() => document.getElementById('kt-tabbtn-' + k).focus()); },
+            key(e) {
+                const i = this.keys.indexOf(this.tab);
+                const n = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: this.keys.length - 1 }[e.key];
+                if (n === undefined) return;
+                e.preventDefault(); this.go(this.keys[(n + this.keys.length) % this.keys.length], true);
+            }
+        }">
+        <div role="tablist" aria-label="Opcje kontaktu" class="mb-5 flex flex-wrap gap-1 rounded-lg bg-white p-1.5" @keydown="key($event)">
+            @foreach ($ktTabs as $ktKey => [$ktLabel, $ktIcon])
+                <button type="button" role="tab" id="kt-tabbtn-{{ $ktKey }}" aria-controls="kt-tab-{{ $ktKey }}"
+                        :aria-selected="(tab === @js($ktKey)).toString()" :tabindex="tab === @js($ktKey) ? 0 : -1"
+                        aria-selected="{{ $loop->first ? 'true' : 'false' }}" @click="go(@js($ktKey))"
+                        :class="tab === @js($ktKey) ? 'bg-brand-dark text-white' : 'text-ink hover:bg-gray-100'"
+                        class="inline-flex min-h-11 items-center gap-2 rounded-md px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                    <i class="fa-solid {{ $ktIcon }}" aria-hidden="true"></i>{{ $ktLabel }}
+                </button>
+            @endforeach
+        </div>
+
     {{-- Stan: strona, formularz, książka --}}
-    <div class="mb-6 grid gap-4 lg:grid-cols-3">
+        <div role="tabpanel" id="kt-tab-przeglad" aria-labelledby="kt-tabbtn-przeglad" tabindex="0" x-show="tab === 'przeglad'" class="focus-visible:outline-none">
+    <div class="grid gap-4 lg:grid-cols-3">
         <section class="{{ $card }}" aria-labelledby="kt-page-h">
             <h2 id="kt-page-h" class="{{ $h2 }}"><i class="fa-solid fa-envelope mr-1.5 text-brand-dark" aria-hidden="true"></i>Strona kontaktu</h2>
             @if ($contactPage)
@@ -82,12 +128,15 @@
             </p>
         </section>
     </div>
+        <p class="mt-4 text-sm text-muted">Opcje zmieniasz w kolejnych kartach; zapis obejmuje wszystkie karty naraz.</p>
+        </div>
 
     <form method="POST" action="{{ route('admin.kontakt.update') }}" class="space-y-6">
         @csrf
         @method('PUT')
 
         {{-- Formularz kontaktowy --}}
+        <div role="tabpanel" id="kt-tab-formularz" aria-labelledby="kt-tabbtn-formularz" tabindex="0" x-show="tab === 'formularz'" class="focus-visible:outline-none">
         <section class="{{ $card }} space-y-5" aria-labelledby="kt-form-h">
             <div>
                 <h2 id="kt-form-h" class="{{ $h2 }}">Formularz kontaktowy</h2>
@@ -159,8 +208,10 @@
                 </fieldset>
             @endif
         </section>
+        </div>
 
         {{-- Podstrony w menu bocznym --}}
+        <div role="tabpanel" id="kt-tab-podstrony" aria-labelledby="kt-tabbtn-podstrony" tabindex="0" x-show="tab === 'podstrony'" class="focus-visible:outline-none">
         <section class="{{ $card }}" aria-labelledby="kt-sections-h">
             <h2 id="kt-sections-h" class="{{ $h2 }}">Podstrony w menu bocznym kontaktu</h2>
             <p class="{{ $hint }}">Podstrona pokazuje się, gdy ma dane i jest zaznaczona. Odznacz, żeby ją ukryć (dane zostają, np. w stopce).</p>
@@ -180,8 +231,10 @@
                 </ul>
             </fieldset>
         </section>
+        </div>
 
         {{-- Gdzie działamy --}}
+        <div role="tabpanel" id="kt-tab-miejsca" aria-labelledby="kt-tabbtn-miejsca" tabindex="0" x-show="tab === 'miejsca'" class="focus-visible:outline-none">
         <section class="{{ $card }} space-y-5" aria-labelledby="kt-places-h">
             <div>
                 <h2 id="kt-places-h" class="{{ $h2 }}">Gdzie działamy</h2>
@@ -235,8 +288,10 @@
                 @endforeach
             </ol>
         </section>
+        </div>
 
         {{-- Dojazd, dostępność, mapa, vCard --}}
+        <div role="tabpanel" id="kt-tab-dojazd" aria-labelledby="kt-tabbtn-dojazd" tabindex="0" x-show="tab === 'dojazd'" class="focus-visible:outline-none">
         <section class="{{ $card }} space-y-5" aria-labelledby="kt-visit-h">
             <div>
                 <h2 id="kt-visit-h" class="{{ $h2 }}">Dojazd i dostępność biura</h2>
@@ -265,8 +320,10 @@
                     <span class="block text-xs text-muted">Plik wizytówki (.vcf) z nazwą, numerem kontaktowym, e-mailem i adresem.</span></span>
             </label>
         </section>
+        </div>
 
         {{-- Komunikat o zmianie godzin --}}
+        <div role="tabpanel" id="kt-tab-komunikat" aria-labelledby="kt-tabbtn-komunikat" tabindex="0" x-show="tab === 'komunikat'" class="focus-visible:outline-none">
         <section class="{{ $card }} space-y-5" aria-labelledby="kt-closure-h">
             <div>
                 <h2 id="kt-closure-h" class="{{ $h2 }}">Komunikat o zmianie godzin lub nieobecności</h2>
@@ -287,10 +344,12 @@
                 </div>
             </div>
         </section>
+        </div>
 
-        <div class="flex flex-wrap items-center gap-4">
+        <div class="flex flex-wrap items-center gap-4" x-show="tab !== 'przeglad'">
             <button type="submit" class="min-h-11 rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Zapisz opcje kontaktu</button>
             <a href="{{ url('/kontakt') }}" target="_blank" rel="noopener" class="{{ $link }}">Zobacz stronę kontaktu<span class="sr-only"> (nowa karta)</span></a>
         </div>
     </form>
+    </div>
 @endsection
