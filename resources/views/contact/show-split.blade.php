@@ -48,7 +48,7 @@
             [
                 'show'  => filled($siteSettings->contact_office_hours),
                 'icon'  => 'fa-regular fa-clock',
-                'label' => 'Godziny pracy',
+                'label' => 'Godziny pracy biura',
                 'value' => $siteSettings->contact_office_hours,
             ],
             [

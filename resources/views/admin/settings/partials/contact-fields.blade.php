@@ -158,7 +158,7 @@
             </div>
 
             <div class="mt-4">
-                <label for="contact_office_hours" class="mb-1 block text-sm font-bold">Godziny pracy <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                <label for="contact_office_hours" class="mb-1 block text-sm font-bold">Godziny pracy biura <span class="font-normal text-muted">(opcjonalnie)</span></label>
                 <input type="text" id="contact_office_hours" name="contact_office_hours"
                     value="{{ old('contact_office_hours', $settings->contact_office_hours) }}"
                     placeholder="np. Poniedziałek – piątek: 9:00–17:00"

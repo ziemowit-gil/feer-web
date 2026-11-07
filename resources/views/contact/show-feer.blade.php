@@ -1,6 +1,6 @@
 {{--
     Wariant „FEER" (dedykowany szablonowi FEER), uproszczony: jedna kolumna treści i, jak na stronie działania,
-    menu boczne „Na tej stronie” (odnośniki do sekcji; pokazuje się tylko, gdy sekcji jest co najmniej trzy).
+    menu boczne „Na tej stronie” (odnośniki do sekcji, gdy jest ich co najmniej trzy, oraz opublikowane podstrony strony Kontakt).
     Kolejność: dane kontaktowe (telefon z wyjaśnieniem, e-mail, adres, godziny), formularz, potem sekcje dodatkowe
     (spotkania, przesyłki, rachunki, oddziały, dane rejestrowe). Płasko: jasnoszare tła, bez ramek i kresek.
     Dane kontaktowe to zwykły tekst (bez linków tel:). Dostępność: h1/h2 w kolejności, <nav> z nazwą, aria-current
@@ -36,7 +36,9 @@
             $hasBranches ? ['id' => 'oddzialy', 'label' => $siteSettings->contact_branches_title ?: 'Oddziały'] : null,
             $hasRegistry ? ['id' => 'dane-rejestrowe', 'label' => 'Dane rejestrowe'] : null,
         ]));
-        $showNav = count($navItems) >= 3;
+        // Opublikowane podstrony strony „Kontakt” (gdy redakcja je dodała) — odnośniki pod sekcjami; z nimi menu ma sens zawsze.
+        $subpages = ($metkaPage ?? null)?->publishedChildren()->get() ?? collect();
+        $showNav = count($navItems) >= 3 || $subpages->isNotEmpty();
     @endphp
 
     <section class="bg-gray-50">
@@ -83,7 +85,7 @@
                         @endif
                         @if ($hours)
                             <div>
-                                <dt class="{{ $dt }}">Godziny pracy</dt>
+                                <dt class="{{ $dt }}">Godziny pracy biura</dt>
                                 <dd class="mt-1 text-lg font-bold leading-snug text-ink">{{ $hours }}</dd>
                             </div>
                         @endif
@@ -152,6 +154,20 @@
                                 </li>
                             @endforeach
                         </ul>
+                        @if ($subpages->isNotEmpty())
+                            <p class="mt-5 text-sm font-bold uppercase tracking-widest text-muted">Podstrony</p>
+                            <ul role="list" class="mt-2 space-y-0.5">
+                                @foreach ($subpages as $sub)
+                                    <li>
+                                        <a href="{{ $sub->publicUrl() }}"
+                                           class="flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-[0.9375rem] text-ink transition hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                            <span class="min-w-0">{{ $sub->title }}</span>
+                                            <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </nav>
                 </aside>
             @endif

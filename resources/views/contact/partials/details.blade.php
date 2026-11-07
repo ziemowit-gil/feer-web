@@ -84,7 +84,7 @@
                     <i class="fa-regular fa-clock {{ $iconSizeClass }}"></i>
                 </span>
                 <span class="min-w-0">
-                    <span class="block text-xs font-bold uppercase tracking-wide text-muted">Godziny pracy</span>
+                    <span class="block text-xs font-bold uppercase tracking-wide text-muted">Godziny pracy biura</span>
                     <span class="block font-medium text-ink">{{ $siteSettings->contact_office_hours }}</span>
                 </span>
             </li>

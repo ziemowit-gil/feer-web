@@ -229,6 +229,18 @@ class FeerTemplateTest extends TestCase
         $this->assertStringNotContainsString('<section class="relative bg-ink', $html);
     }
 
+    public function test_kontakt_feer_pokazuje_podstrony_w_menu_bocznym(): void
+    {
+        SiteSetting::current()->update(['site_template' => 'feer', 'contact_layout' => 'tabs']);
+        $kontakt = \App\Models\Page::create(['title' => 'Kontakt', 'slug' => 'kontakt-2', 'type' => 'contact', 'is_published' => true]);
+        \App\Models\Page::create(['title' => 'Dla mediów', 'slug' => 'dla-mediow', 'parent_id' => $kontakt->id, 'is_published' => true]);
+        \App\Models\Page::create(['title' => 'Szkic podstrony', 'slug' => 'szkic', 'parent_id' => $kontakt->id, 'is_published' => false]);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $this->get('/kontakt-2')->assertOk()
+            ->assertSee('aria-label="Na tej stronie"', false)->assertSee('Podstrony')->assertSee('Dla mediów')->assertDontSee('Szkic podstrony');
+    }
+
     public function test_kontakt_feer_pokazuje_menu_boczne_od_trzech_sekcji(): void
     {
         SiteSetting::current()->update([
