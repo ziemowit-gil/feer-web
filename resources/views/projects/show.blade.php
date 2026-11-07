@@ -299,7 +299,7 @@
                     <x-proj-frame icon="fa-coins">
                         Z tej usługi skorzystasz <strong>za opłatą</strong>. Część kosztów pokrywa <strong>Beneficjent</strong>, czyli Ty lub osoba, która korzysta z usługi. Cenę i zasady znajdziesz poniżej.
                         @if ($rulesPage = $siteSettings->paidInfoPage())
-                            <x-slot:links><a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a></x-slot:links>
+                            <x-slot:links><a href="{{ route('page.show', $rulesPage) }}">Jak i dlaczego pobieramy odpłaty <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a></x-slot:links>
                         @endif
                     </x-proj-frame>
                 @endif
@@ -307,7 +307,7 @@
                     <x-proj-frame icon="fa-coins">
                         Ta forma jest <strong>płatna</strong>. Część kosztów pokrywa <strong>Beneficjent</strong>, czyli Ty lub osoba, która korzysta z działania.
                         @if ($rulesPage = $siteSettings->paidInfoPage())
-                            <x-slot:links><a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a></x-slot:links>
+                            <x-slot:links><a href="{{ route('page.show', $rulesPage) }}">Jak i dlaczego pobieramy odpłaty <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a></x-slot:links>
                         @endif
                     </x-proj-frame>
                 @endif
@@ -357,7 +357,7 @@
                                     </a>
                                 @endforeach
                                 @if ($rulesPage = $siteSettings->paidInfoPage())
-                                    <a href="{{ route('page.show', $rulesPage) }}">Zasady odpłatnej działalności <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a>
+                                    <a href="{{ route('page.show', $rulesPage) }}">Jak i dlaczego pobieramy odpłaty <span aria-hidden="true">→</span><span class="sr-only">: {{ $rulesPage->title }}</span></a>
                                 @endif
                             </x-slot:links>
                         </x-proj-frame>

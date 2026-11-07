@@ -47,6 +47,22 @@ class ProjectPageImprovementsTest extends TestCase
         $this->assertSame(1, substr_count($html, 'Masz pytania? Chętnie odpowiemy'), 'Kontakt tylko raz (w menu bocznym).');
     }
 
+    public function test_odnosnik_do_strony_o_odplatach_nazywa_sie_jak_i_dlaczego_pobieramy_odplaty(): void
+    {
+        // Strona z zasadami odpłatności istnieje po migracjach; w razie braku tworzymy ją na potrzeby testu.
+        $rules = Page::firstOrCreate(['slug' => 'odplatna-dzialalnosc-pozytku-publicznego'], ['title' => 'Odpłatna działalność pożytku publicznego', 'type' => 'standard', 'content' => '<p>Zasady</p>']);
+        $rules->forceFill(['is_published' => true, 'is_disabled' => false])->save();
+        $p = $this->project();
+        $p->update(['kind' => 'paid_offer']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+
+        $html = $this->get(route('projects.show', $p->fresh()))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Jak i dlaczego pobieramy odpłaty', $html);
+        $this->assertStringContainsString('href="'.route('page.show', $rules).'"', $html);
+        $this->assertStringNotContainsString('Zasady odpłatnej działalności', $html);
+    }
+
     public function test_metka_on_project_when_enabled(): void
     {
         $p = $this->project();
