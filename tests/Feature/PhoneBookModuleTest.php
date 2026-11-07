@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/** Moduł „Książka telefoniczna”: panel (osoby i ustawienia), strona /ksiazka-telefoniczna, skrót i link w kontakcie. */
+/** Moduł „Książka telefoniczna”: panel (osoby i ustawienia), strona /nasze-numery-telefonow, skrót i link w kontakcie. */
 class PhoneBookModuleTest extends TestCase
 {
     use RefreshDatabase;
@@ -98,7 +98,7 @@ class PhoneBookModuleTest extends TestCase
         SiteSetting::current()->update(['phonebook_title' => 'Telefony do zespołu', 'phonebook_lead' => 'Dzwoń w dni robocze.']);
         $this->flush();
 
-        $html = $this->get('/ksiazka-telefoniczna')->assertOk()
+        $html = $this->get('/nasze-numery-telefonow')->assertOk()
             ->assertSee('Telefony do zespołu')->assertSee('Dzwoń w dni robocze.')
             ->assertSee('Anna Kowalska')->assertSee('Jan Nowak')->assertSee('Zapisy na szkolenia')
             ->assertSee('601 350 487')->assertDontSee('href="tel:', false)
@@ -115,15 +115,15 @@ class PhoneBookModuleTest extends TestCase
         SiteSetting::current()->update(['disabled_modules' => ['phone_book']]);
         $this->flush();
 
-        $this->get('/ksiazka-telefoniczna')->assertNotFound();
+        $this->get('/nasze-numery-telefonow')->assertNotFound();
     }
 
     public function test_published_page_with_the_same_slug_takes_precedence(): void
     {
         $this->entry();
-        Page::create(['title' => 'Własna książka', 'slug' => 'ksiazka-telefoniczna', 'type' => 'standard', 'content' => '<p>Treść własnej strony</p>', 'is_published' => true]);
+        Page::create(['title' => 'Własna książka', 'slug' => 'nasze-numery-telefonow', 'type' => 'standard', 'content' => '<p>Treść własnej strony</p>', 'is_published' => true]);
 
-        $this->get('/ksiazka-telefoniczna')->assertOk()->assertSee('Treść własnej strony')->assertDontSee('Anna Kowalska');
+        $this->get('/nasze-numery-telefonow')->assertOk()->assertSee('Treść własnej strony')->assertDontSee('Anna Kowalska');
     }
 
     public function test_shortcode_embeds_the_list_in_a_page(): void
@@ -146,7 +146,7 @@ class PhoneBookModuleTest extends TestCase
         $this->get('/kontakt')->assertOk()->assertDontSee('sprawdź, kto i w jakiej sprawie dzwoni');
 
         $this->entry();
-        $this->get('/kontakt')->assertOk()->assertSee('Telefony do zespołu: sprawdź, kto i w jakiej sprawie dzwoni')->assertSee('/ksiazka-telefoniczna"', false);
+        $this->get('/kontakt')->assertOk()->assertSee('Telefony do zespołu: sprawdź, kto i w jakiej sprawie dzwoni')->assertSee('/nasze-numery-telefonow"', false);
     }
 
     public function test_list_explains_main_number_and_searches_by_digits(): void
@@ -155,7 +155,7 @@ class PhoneBookModuleTest extends TestCase
         $this->flush();
         $this->entry();
 
-        $html = $this->get('/ksiazka-telefoniczna')->assertOk()
+        $html = $this->get('/nasze-numery-telefonow')->assertOk()
             ->assertSee('Numer kontaktowy')
             ->assertSee('Informacje o naszej działalności.')
             ->assertSee('12 210 06 98')
@@ -168,6 +168,6 @@ class PhoneBookModuleTest extends TestCase
 
         SiteSetting::current()->update(['contact_phone' => '']);
         $this->flush();
-        $this->get('/ksiazka-telefoniczna')->assertOk()->assertDontSee('Numer kontaktowy z ogólnymi informacjami');
+        $this->get('/nasze-numery-telefonow')->assertOk()->assertDontSee('Numer kontaktowy z ogólnymi informacjami');
     }
 }

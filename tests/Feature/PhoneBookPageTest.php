@@ -22,7 +22,7 @@ class PhoneBookPageTest extends TestCase
     private function book(array $contacts): Page
     {
         return Page::create([
-            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'is_published' => true,
+            'title' => 'Książka telefoniczna', 'slug' => 'nasze-numery-telefonow', 'type' => 'phone_book', 'is_published' => true,
             'type_data' => ['lead' => 'Dzwoń w dni robocze.', 'contacts' => $contacts],
         ]);
     }
@@ -45,7 +45,7 @@ class PhoneBookPageTest extends TestCase
             ['name' => '', 'phone' => '', 'topic' => 'wiersz bez osoby i numeru'],
         ]);
 
-        $this->get('/ksiazka-telefoniczna')->assertOk()
+        $this->get('/nasze-numery-telefonow')->assertOk()
             ->assertSee('data-page-type="phone_book"', false)
             ->assertSee('Dzwoń w dni robocze.')
             ->assertSee('Biuro')->assertSee('Finanse')
@@ -59,11 +59,11 @@ class PhoneBookPageTest extends TestCase
     public function test_empty_book_shows_hint_and_text_is_escaped(): void
     {
         $this->book([]);
-        $this->get('/ksiazka-telefoniczna')->assertOk()->assertSee('nie ma jeszcze wpisów');
+        $this->get('/nasze-numery-telefonow')->assertOk()->assertSee('nie ma jeszcze wpisów');
 
-        $page = Page::where('slug', 'ksiazka-telefoniczna')->first();
+        $page = Page::where('slug', 'nasze-numery-telefonow')->first();
         $page->update(['type_data' => ['contacts' => [['name' => '<script>x</script>', 'phone' => '600 000 000']]]]);
-        $this->get('/ksiazka-telefoniczna')->assertOk()->assertDontSee('<script>x</script>', false);
+        $this->get('/nasze-numery-telefonow')->assertOk()->assertDontSee('<script>x</script>', false);
     }
 
     public function test_admin_form_renders_fields_and_saves_contacts(): void
@@ -77,7 +77,7 @@ class PhoneBookPageTest extends TestCase
             ->assertSee('W jakiej sprawie się kontaktować');
 
         $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
-            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
+            'title' => 'Książka telefoniczna', 'slug' => 'nasze-numery-telefonow', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
             'type_data' => ['contacts' => [
                 ['name' => 'Jan Nowak', 'phone' => '500 100 200', 'topic' => 'Faktury', 'group' => 'Finanse'],
                 ['name' => '', 'phone' => '', 'topic' => ''],
@@ -93,7 +93,7 @@ class PhoneBookPageTest extends TestCase
     private function bookWith(array $typeData): Page
     {
         return Page::create([
-            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'is_published' => true,
+            'title' => 'Książka telefoniczna', 'slug' => 'nasze-numery-telefonow', 'type' => 'phone_book', 'is_published' => true,
             'type_data' => $typeData,
         ]);
     }
@@ -105,7 +105,7 @@ class PhoneBookPageTest extends TestCase
             ['group' => 'Finanse', 'name' => 'Jan Nowak', 'phone' => '500 100 200', 'topic' => 'Faktury'],
         ]]);
 
-        $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
+        $html = $this->get('/nasze-numery-telefonow')->assertOk()->getContent();
 
         $this->assertStringContainsString('<dt>Kiedy dzwonić:</dt><dd>pon.–śr. 10–12</dd>', $html);
         $this->assertStringContainsString('role="group" aria-label="Filtr działów"', $html);
@@ -124,7 +124,7 @@ class PhoneBookPageTest extends TestCase
     {
         $this->bookWith(['contacts' => [['group' => 'Biuro', 'name' => 'Anna', 'phone' => '601 350 487']]]);
 
-        $this->get('/ksiazka-telefoniczna')->assertOk()->assertDontSee('Filtr działów');
+        $this->get('/nasze-numery-telefonow')->assertOk()->assertDontSee('Filtr działów');
     }
 
     public function test_alphabetical_sort_orders_groups_and_people(): void
@@ -135,14 +135,14 @@ class PhoneBookPageTest extends TestCase
             ['group' => 'Biuro', 'name' => 'Adam Ae', 'phone' => '600 000 001'],
         ]]);
 
-        $this->get('/ksiazka-telefoniczna')->assertOk()->assertSeeInOrder(['Biuro', 'Adam Ae', 'Piotr Pe', 'Zarząd', 'Zofia Zet']);
+        $this->get('/nasze-numery-telefonow')->assertOk()->assertSeeInOrder(['Biuro', 'Adam Ae', 'Piotr Pe', 'Zarząd', 'Zofia Zet']);
     }
 
     public function test_hide_numbers_wraps_number_in_reveal_with_button(): void
     {
         $this->bookWith(['hide_numbers' => '1', 'contacts' => [['name' => 'Anna Kowalska', 'phone' => '601 350 487']]]);
 
-        $this->get('/ksiazka-telefoniczna')->assertOk()
+        $this->get('/nasze-numery-telefonow')->assertOk()
             ->assertSee('phone-reveal phone-reveal--inline', false)
             ->assertSee('data-phone-reveal', false)
             ->assertSee('Pokaż numer: Anna Kowalska')
@@ -160,7 +160,7 @@ class PhoneBookPageTest extends TestCase
             ->assertSee('name="type_data[hide_numbers]"', false);
 
         $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
-            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
+            'title' => 'Książka telefoniczna', 'slug' => 'nasze-numery-telefonow', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
             'type_data' => ['sort' => 'alpha', 'hide_numbers' => '1', 'contacts' => [['name' => 'Anna', 'phone' => '601 350 487', 'hours' => 'pon.–śr. 10–12']]],
         ])->assertRedirect()->assertSessionHasNoErrors();
 
@@ -170,7 +170,7 @@ class PhoneBookPageTest extends TestCase
         $this->assertSame('pon.–śr. 10–12', $td['contacts'][0]['hours']);
 
         $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
-            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
+            'title' => 'Książka telefoniczna', 'slug' => 'nasze-numery-telefonow', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
             'type_data' => ['sort' => 'losowo', 'contacts' => []],
         ])->assertSessionHasErrors('type_data.sort');
     }
@@ -182,7 +182,7 @@ class PhoneBookPageTest extends TestCase
             ['group' => 'Finanse', 'name' => 'Jan Nowak', 'phone' => '500 100 200', 'topic' => 'Faktury'],
         ]]);
 
-        $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
+        $html = $this->get('/nasze-numery-telefonow')->assertOk()->getContent();
 
         // Jeden panel na górze (numer, wyszukiwarka, filtr, licznik) i lista osób w każdym dziale.
         $this->assertSame(2, substr_count($html, 'class="pb-list pb-list--rows"'));
@@ -198,13 +198,13 @@ class PhoneBookPageTest extends TestCase
     public function test_cards_layout_and_missing_hours_column(): void
     {
         $this->bookWith(['layout' => 'cards', 'contacts' => [['name' => 'Anna', 'phone' => '601 350 487', 'topic' => 'Zapisy', 'hours' => 'pon.–śr.']]]);
-        $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
+        $html = $this->get('/nasze-numery-telefonow')->assertOk()->getContent();
         $this->assertStringContainsString('class="pb-list pb-list--cards"', $html);
         $this->assertStringContainsString('Kiedy dzwonić:', $html);
 
         // Bez godzin osoba nie ma pustego wiersza „Kiedy dzwonić”.
-        Page::where('slug', 'ksiazka-telefoniczna')->first()->update(['type_data' => ['contacts' => [['name' => 'Anna', 'phone' => '601 350 487', 'topic' => 'Zapisy']]]]);
-        $this->get('/ksiazka-telefoniczna')->assertOk()->assertDontSee('Kiedy dzwonić:', false);
+        Page::where('slug', 'nasze-numery-telefonow')->first()->update(['type_data' => ['contacts' => [['name' => 'Anna', 'phone' => '601 350 487', 'topic' => 'Zapisy']]]]);
+        $this->get('/nasze-numery-telefonow')->assertOk()->assertDontSee('Kiedy dzwonić:', false);
     }
 
     public function test_admin_offers_layout_and_rejects_unknown_value(): void
@@ -215,13 +215,13 @@ class PhoneBookPageTest extends TestCase
         $this->actingAs($admin)->get(route('admin.podstrony.edit', $page))->assertOk()->assertSee('name="type_data[layout]"', false);
 
         $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
-            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
+            'title' => 'Książka telefoniczna', 'slug' => 'nasze-numery-telefonow', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
             'type_data' => ['layout' => 'cards', 'contacts' => []],
         ])->assertRedirect()->assertSessionHasNoErrors();
         $this->assertSame('cards', $page->refresh()->typeData()['layout']);
 
         $this->actingAs($admin)->put(route('admin.podstrony.update', $page), [
-            'title' => 'Książka telefoniczna', 'slug' => 'ksiazka-telefoniczna', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
+            'title' => 'Książka telefoniczna', 'slug' => 'nasze-numery-telefonow', 'type' => 'phone_book', 'parent_id' => '', 'is_published' => '1',
             'type_data' => ['layout' => 'siatka', 'contacts' => []],
         ])->assertSessionHasErrors('type_data.layout');
     }
@@ -233,7 +233,7 @@ class PhoneBookPageTest extends TestCase
             ['name' => 'Jan Nowak', 'phone' => '500 100 200'],
         ]]);
 
-        $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
+        $html = $this->get('/nasze-numery-telefonow')->assertOk()->getContent();
         $book = substr($html, strpos($html, 'data-phone-book'));
         $book = substr($book, 0, (int) strpos($book, '</main>'));
         $this->assertSame(1, substr_count($book, 'href="mailto:'));

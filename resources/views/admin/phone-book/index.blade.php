@@ -7,7 +7,7 @@
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
             <h1 class="text-lg font-bold text-ink">Książka telefoniczna</h1>
-            <p class="text-sm text-muted">Kto, numer komórkowy i w jakiej sprawie dzwonić. Strona publiczna: <a href="{{ url('/ksiazka-telefoniczna') }}" class="font-bold text-brand-dark underline">/ksiazka-telefoniczna</a>; do treści strony wstawisz ją skrótem <code class="rounded bg-gray-100 px-1">[ksiazka-telefoniczna]</code>.</p>
+            <p class="text-sm text-muted">Kto, numer komórkowy i w jakiej sprawie dzwonić. Strona publiczna: <a href="{{ url('/'.\App\Http\Controllers\PhoneBookController::SLUG) }}" class="font-bold text-brand-dark underline">/{{ \App\Http\Controllers\PhoneBookController::SLUG }}</a>; do treści strony wstawisz ją skrótem <code class="rounded bg-gray-100 px-1">[ksiazka-telefoniczna]</code>.</p>
         </div>
         <a href="{{ route('admin.ksiazka-telefoniczna.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">Dodaj osobę</a>
     </div>

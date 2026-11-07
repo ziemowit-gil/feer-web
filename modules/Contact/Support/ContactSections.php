@@ -95,7 +95,7 @@ class ContactSections
 
     /**
      * Książka telefoniczna do podlinkowania ze strony kontaktu: opublikowana strona „Kontakt — książka” (a w drugiej
-     * kolejności dawna „Książka telefoniczna”), potem moduł „Książka telefoniczna” (/ksiazka-telefoniczna), gdy ma wpisy.
+     * kolejności dawna „Książka telefoniczna”), potem moduł „Książka telefoniczna” (/nasze-numery-telefonow), gdy ma wpisy.
      * `page_id` to id strony, gdy książka jest stroną (menu boczne nie powtarza jej jako podstrony).
      *
      * @return array{url: string, title: string, page_id: int|null}|null

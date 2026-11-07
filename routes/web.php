@@ -300,7 +300,9 @@ Route::post('/b/imp/{banner}', [BannerTrackingController::class, 'impression'])
 Route::get('/b/click/{banner}', [BannerTrackingController::class, 'click'])
     ->name('banner.click');
 
-Route::get('/ksiazka-telefoniczna', [\App\Http\Controllers\PhoneBookController::class, 'show'])->name('phonebook.show')->middleware('module:phone_book');
+// Książka telefoniczna zawsze pod jednym adresem (strona albo lista z modułu); dawny adres przekierowuje (301).
+Route::get('/nasze-numery-telefonow', [\App\Http\Controllers\PhoneBookController::class, 'show'])->name('phonebook.show');
+Route::get('/ksiazka-telefoniczna', [\App\Http\Controllers\PhoneBookController::class, 'legacy'])->name('phonebook.legacy');
 Route::get('/kontakt', [ContactController::class, 'index'])->name('contact.show');
 Route::post('/kontakt', [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,1');
 Route::post('/kontakt/przyjde', [MeetingSignupController::class, 'store'])->name('meeting.signup')->middleware('throttle:5,1');

@@ -563,7 +563,7 @@ class PageController extends Controller
             $page->type = $request->query('type');
             $page->title = match ($request->query('type')) {
                 'contact' => 'Kontakt',
-                'contact_book' => 'Książka telefoniczna',
+                'contact_book' => 'Nasze numery telefonów', // adres: /nasze-numery-telefonow
                 default => null,
             };
         }

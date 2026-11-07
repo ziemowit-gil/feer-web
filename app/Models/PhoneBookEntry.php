@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Moduł „Książka telefoniczna”: osoba z działem, rolą, numerem komórkowym, e-mailem, sprawą (w jakiej sprawie się
- * kontaktować) i godzinami kontaktu. Lista na stronie /ksiazka-telefoniczna i w skrócie [ksiazka-telefoniczna].
+ * kontaktować) i godzinami kontaktu. Lista na stronie /nasze-numery-telefonow i w skrócie [ksiazka-telefoniczna].
  */
 class PhoneBookEntry extends Model
 {
