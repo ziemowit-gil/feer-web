@@ -51,6 +51,38 @@ class ContactController extends Controller
     public function render(?\App\Models\Page $page = null)
     {
         $settings = SiteSetting::current();
+        $view = match ($settings->contactLayoutValue()) {
+            'split' => 'contact.show-split',
+            'card'  => 'contact.show-card',
+            'tabs'  => 'contact.show-tabs',
+            'feer'  => 'contact.show-feer',
+            default => 'contact.show',
+        };
+
+        return view($view, $this->viewData($settings, $page));
+    }
+
+    /**
+     * Automatyczna podstrona kontaktu (szablon FEER): jedna sekcja ustawień pod własnym adresem,
+     * np. /kontakt/rachunki. Nieistniejąca albo pusta sekcja to 404.
+     */
+    public function section(string $section)
+    {
+        $settings = SiteSetting::current();
+        $data = $this->viewData($settings, $this->contactPageTarget());
+        $sections = \App\Support\ContactSections::available($settings, $data['showMeetings'], $data['showShipping']);
+        abort_unless(isset($sections[$section]), 404);
+
+        return view('contact.section-feer', $data + [
+            'section' => $section,
+            'sectionLabel' => $sections[$section],
+            'contactSections' => $sections,
+        ]);
+    }
+
+    /** Dane wspólne dla wszystkich wariantów strony kontaktu i jej podstron. */
+    private function viewData(SiteSetting $settings, ?\App\Models\Page $page): array
+    {
 
         // Widoczność sekcji i ich dane liczymy tu, bo korzystają z nich oba
         // warianty strony (klasyczny i kafelkowy) oraz wspólne partiale.
@@ -71,15 +103,7 @@ class ContactController extends Controller
             ? HelpPoint::where('is_published', true)->orderBy('order')->orderBy('name')->get()
             : collect();
 
-        $view = match ($settings->contactLayoutValue()) {
-            'split' => 'contact.show-split',
-            'card'  => 'contact.show-card',
-            'tabs'  => 'contact.show-tabs',
-            'feer'  => 'contact.show-feer',
-            default => 'contact.show',
-        };
-
-        return view($view, [
+        return [
             'coordinators'  => $this->loadCoordinators(),
             'meetingTitle'  => $meetingTitle,
             'onlineUrl'     => $onlineUrl,
@@ -92,7 +116,7 @@ class ContactController extends Controller
             'showShipping'  => $showShipping,
             'locations'     => $locations,
             'metkaPage'     => $page, // metryczka pod treścią (layouts.site)
-        ]);
+        ];
     }
 
     /** Waliduje wiadomość kontaktową, zapisuje do bazy i wysyła e-mail. */

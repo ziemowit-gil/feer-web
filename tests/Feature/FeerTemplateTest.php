@@ -225,7 +225,8 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('id="formularz-heading"', $html);
         $this->assertStringContainsString('id="dane-heading"', $html);
         // Dwie sekcje (dane, formularz) to za mało na menu boczne.
-        $this->assertStringNotContainsString('aria-label="Na tej stronie"', $html);
+        // Bez podstron i sekcji dodatkowych strona nie ma menu bocznego.
+        $this->assertStringNotContainsString('aria-label="Menu strony kontaktu"', $html);
         $this->assertStringNotContainsString('<section class="relative bg-ink', $html);
     }
 
@@ -238,10 +239,10 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
         $this->get('/kontakt-2')->assertOk()
-            ->assertSee('aria-label="Na tej stronie"', false)->assertSee('Podstrony')->assertSee('Dla mediów')->assertDontSee('Szkic podstrony');
+            ->assertSee('aria-label="Menu strony kontaktu"', false)->assertSee('Dla mediów')->assertDontSee('Szkic podstrony');
     }
 
-    public function test_kontakt_feer_pokazuje_menu_boczne_od_trzech_sekcji(): void
+    public function test_kontakt_feer_ma_automatyczne_podstrony_i_menu_boczne(): void
     {
         SiteSetting::current()->update([
             'site_template' => 'feer', 'contact_layout' => 'tabs', 'krs_number' => '0000779281',
@@ -249,13 +250,19 @@ class FeerTemplateTest extends TestCase
         ]);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
-        $html = $this->get('/kontakt')->assertOk()->getContent();
-        $this->assertStringContainsString('aria-label="Na tej stronie"', $html);
-        $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_20rem]', $html);
-        foreach (['#dane-heading', '#formularz-heading', '#rachunki', '#dane-rejestrowe'] as $anchor) {
-            $this->assertStringContainsString('href="'.$anchor.'"', $html);
-        }
-        $this->assertSame(1, substr_count($html, 'id="rachunki"'));
+        $main = $this->get('/kontakt')->assertOk()->getContent();
+        $this->assertStringContainsString('aria-label="Menu strony kontaktu"', $main);
+        $this->assertStringContainsString('lg:grid-cols-[minmax(0,1fr)_20rem]', $main);
+        $this->assertStringContainsString('href="'.url('/kontakt/rachunki').'"', $main);
+        $this->assertStringContainsString('href="'.url('/kontakt/dane-rejestrowe').'"', $main);
+        // Treść sekcji jest na podstronach, nie na stronie głównej kontaktu.
+        $this->assertStringNotContainsString('PL12 3456', $main);
+
+        $this->get('/kontakt/rachunki')->assertOk()->assertSee('PL12 3456')->assertSee('aria-current="page"', false);
+        $this->get('/kontakt/dane-rejestrowe')->assertOk()->assertSee('0000779281');
+        // Sekcje bez danych nie mają podstrony.
+        $this->get('/kontakt/spotkania')->assertNotFound();
+        $this->get('/kontakt/przesylki')->assertNotFound();
     }
 
     public function test_inne_szablony_zostaja_przy_ukladzie_z_zakladkami(): void
@@ -313,7 +320,7 @@ class FeerTemplateTest extends TestCase
 
         $this->get('/kontakt')->assertRedirect('/kontakt-2');
         $this->get('/kontakt-2')->assertOk()
-            ->assertSee('id="formularz-heading"', false)->assertSee('601 350 487')->assertSee('PL12 3456')->assertSee('contact-feer', false)
+            ->assertSee('id="formularz-heading"', false)->assertSee('601 350 487')->assertSee('contact-feer', false)
             // Od abcf9a4 dane kontaktowe to zwykły tekst, bez linków tel:.
             ->assertDontSee('tel:601350487', false);
     }

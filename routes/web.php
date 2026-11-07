@@ -303,6 +303,7 @@ Route::get('/b/click/{banner}', [BannerTrackingController::class, 'click'])
 Route::get('/ksiazka-telefoniczna', [\App\Http\Controllers\PhoneBookController::class, 'show'])->name('phonebook.show')->middleware('module:phone_book');
 Route::get('/kontakt', [ContactController::class, 'index'])->name('contact.show');
 Route::post('/kontakt', [ContactController::class, 'store'])->name('contact.store')->middleware('throttle:5,1');
+Route::get('/kontakt/{section}', [ContactController::class, 'section'])->name('contact.section')->whereIn('section', \App\Support\ContactSections::SLUGS);
 Route::post('/kontakt/przyjde', [MeetingSignupController::class, 'store'])->name('meeting.signup')->middleware('throttle:5,1');
 
 // Samodzielny moduł rezerwacji spotkań (bez panelu CMS, dostępny publicznie).
