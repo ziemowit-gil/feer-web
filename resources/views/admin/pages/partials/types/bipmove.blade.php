@@ -9,9 +9,9 @@
     <div>
         <label for="bip_move_url" class="mb-1 block text-sm font-bold">Bezpośredni link do treści w BIP <span class="font-normal text-muted">(opcjonalnie)</span></label>
         <input type="url" id="bip_move_url" name="bip_move_url" value="{{ old('bip_move_url', $page->bip_move_url) }}"
-            placeholder="https://bip… — puste = ogólny adres BIP z Ustawień"
+            placeholder="https://bip… — puste = główny adres BIP z Ustawień"
             class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-        <p class="mt-1 text-xs text-muted">Puste = przycisk poprowadzi do ogólnego adresu BIP z „Ustawienia → Media i BIP". Dodatkowy opis wpiszesz w polu „Dodatkowa informacja" poniżej.</p>
+        <p class="mt-1 text-xs text-muted">Puste = przycisk poprowadzi do głównego adresu BIP z „Ustawienia → Media i BIP". Dodatkowy opis wpiszesz w polu „Dodatkowa informacja" poniżej.</p>
         @error('bip_move_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
 

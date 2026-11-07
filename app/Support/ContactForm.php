@@ -51,7 +51,7 @@ class ContactForm
                 $field('Imię i nazwisko', 'text', true),
                 $field('E-mail', 'email', true),
                 $field('Telefon', 'tel'),
-                $field('Do kogo piszesz', 'coordinator', false, 'Wybierz osobę, jeśli piszesz w sprawie konkretnego działania. Bez wyboru wiadomość trafi na ogólny adres fundacji.'),
+                $field('Do kogo piszesz', 'coordinator', false, 'Wybierz osobę, jeśli piszesz w sprawie konkretnego działania. Bez wyboru wiadomość trafi na główny adres fundacji.'),
                 $field('Temat', 'text'),
                 $field('Wiadomość', 'textarea', true),
                 $field('Wyrażam zgodę na przetwarzanie moich danych osobowych w celu odpowiedzi na wiadomość.', 'consent', true),

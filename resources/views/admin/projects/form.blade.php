@@ -847,7 +847,7 @@
                         <div>
                             <label for="coordinator_email" class="mb-1 block text-sm font-bold">E-mail <span class="font-normal text-muted">(opcjonalnie)</span></label>
                             <input type="email" id="coordinator_email" name="coordinator_email" value="{{ old('coordinator_email', $project->coordinator_email) }}"
-                                placeholder="zostanie użyty ogólny e-mail fundacji"
+                                placeholder="zostanie użyty główny e-mail fundacji"
                                 class="w-full rounded-lg border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                             @error('coordinator_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>

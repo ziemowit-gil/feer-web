@@ -1,6 +1,6 @@
 {{--
     Numer osoby w książce telefonicznej: zwykły tekst (bez linku tel: i bez „Kopiuj numer" — książka służy do
-    rozpoznania, kto dzwoni, a kontakt idzie przez numer ogólny), albo przycisk „Pokaż numer", gdy numery są ukryte,
+    rozpoznania, kto dzwoni, a kontakt idzie przez numer kontaktowy), albo przycisk „Pokaż numer", gdy numery są ukryte,
     oraz przycisk „Zapisz w telefonie". Używany w kartach i w tabeli (typed/phone-book).
     Zmienne: $p (osoba), $hideNumbers, $link, $act (klasy), $vcard (closure), $wrap (klasy kontenera).
 --}}

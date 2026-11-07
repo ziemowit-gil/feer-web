@@ -112,10 +112,10 @@ class ContactPhoneBookNoteTest extends TestCase
 
         $this->get('/kontakt')->assertOk()
             ->assertSee('Numer kontaktowy')
-            ->assertSee('Ogólne informacje o naszej działalności.')
+            ->assertSee('Informacje o naszej działalności.')
             ->assertDontSee('Numer ogólny');
 
         SiteSetting::current()->update(['contact_phone' => '']);
-        $this->get('/kontakt')->assertOk()->assertDontSee('Ogólne informacje o naszej działalności.');
+        $this->get('/kontakt')->assertOk()->assertDontSee('Informacje o naszej działalności.');
     }
 }

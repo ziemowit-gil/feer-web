@@ -33,7 +33,7 @@ class EducationalMaterial extends Model implements HasMedia
         'graficy' => 'Graficy i projektanci UI',
         'programisci' => 'Programiści',
         'pracownicy_biurowi' => 'Pracownicy biurowi',
-        'ogolny' => 'Ogólny (dla wszystkich)',
+        'ogolny' => 'Dla wszystkich',
     ];
 
     protected $fillable = [

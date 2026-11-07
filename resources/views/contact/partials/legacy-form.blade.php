@@ -43,7 +43,7 @@
                 <select id="coordinator_email" name="coordinator_email"
                         aria-describedby="coordinator-hint"
                         class="w-full {{ $fieldClass }} {{ $errors->has('coordinator_email') ? 'border-red-400' : '' }}">
-                    <option value="">— Ogólny kontakt —</option>
+                    <option value="">— Do zespołu —</option>
                     @foreach ($coordinators as $c)
                         <option value="{{ $c['email'] }}" {{ (old('coordinator_email') ?: request('do')) === $c['email'] ? 'selected' : '' }}>
                             {{ $c['name'] }} (Działanie: {{ $c['project'] }})

@@ -28,12 +28,12 @@
             @endif
         @endif
         @if ($switchboard !== '')
-            <p class="mt-1">Ogólne informacje o naszej działalności.</p>
+            <p class="mt-1">Informacje o naszej działalności.</p>
         @endif
         @if ($switchboard !== '' && $phoneHours !== '')
             <p class="mt-1"><span class="font-bold">Kiedy dzwonić:</span> {{ $phoneHours }}</p>
         @endif
-        <p class="{{ $switchboard !== '' ? 'mt-3 ' : '' }}leading-relaxed">Pracujemy zdalnie, dlatego koordynatorzy i inni pracownicy często dzwonią z własnych lub służbowych komórek.@if ($phoneBookUrl) Numery w książce telefonicznej pomagają rozpoznać, kto dzwoni, ale nie służą do kontaktu z nami.@endif @if ($switchboard !== '') Jeśli chcesz się z nami skontaktować, zadzwoń na numer kontaktowy.@endif</p>
+        <p class="{{ $switchboard !== '' ? 'mt-3 ' : '' }}leading-relaxed">Pracujemy zdalnie, dlatego pracownicy dzwonią z własnych lub służbowych komórek.@if ($phoneBookUrl) Kto to był, sprawdzisz w książce telefonicznej.@endif @if ($switchboard !== '') Żeby coś u nas załatwić, dzwoń na numer kontaktowy.@endif</p>
         @if ($showBookLink)
             <p class="mt-1"><a href="{{ $phoneBookUrl }}" class="{{ $pbLink }}"><i class="fa-solid fa-address-book" aria-hidden="true"></i>{{ $phoneBookTitle }}: sprawdź, kto i w jakiej sprawie dzwoni</a></p>
         @endif

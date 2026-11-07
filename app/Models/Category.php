@@ -149,7 +149,7 @@ class Category extends Model
      * nie o „działaniach”, więc domyślne treści są neutralne, a każdą można zmienić w panelu.
      */
     public const PORTAL_LABELS = [
-        'overview'     => ['Pierwszy link w rozwiniętym podmenu', 'Informacje ogólne'],
+        'overview'     => ['Pierwszy link w rozwiniętym podmenu', 'Informacje'],
         'slide_button' => ['Przycisk na slajdach tworzonych automatycznie', 'Dowiedz się więcej'],
         'all_link'     => ['Domyślny skrót do pełnej listy', 'Zobacz pełną listę'],
         'nav_empty'    => ['Gdy menu jest puste', 'Wkrótce pojawią się tu nowe informacje.'],

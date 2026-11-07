@@ -71,8 +71,8 @@
         <div class="mb-6 max-w-3xl rounded-md bg-gray-50 p-5 text-ink" role="note" aria-label="Numer kontaktowy">
             <p class="text-sm font-bold uppercase tracking-widest">Numer kontaktowy</p>
             <p class="mt-1 text-2xl font-bold">{{ $mainPhone }}</p>
-            <p class="mt-1">Ogólne informacje o naszej działalności.</p>
-            <p class="mt-3 leading-relaxed">Numery poniżej pomagają rozpoznać, kto dzwoni, ale nie służą do kontaktu z nami. Jeśli chcesz się z nami skontaktować, zadzwoń na numer kontaktowy.</p>
+            <p class="mt-1">Informacje o naszej działalności.</p>
+            <p class="mt-3 leading-relaxed">Z tą listą sprawdzisz, kto do Ciebie dzwonił. Żeby coś u nas załatwić, dzwoń na numer kontaktowy.</p>
         </div>
     @endif
 

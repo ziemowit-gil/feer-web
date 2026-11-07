@@ -464,7 +464,7 @@
                         @if ($hasError) aria-invalid="true" @endif
                         @if ($describedByStr) aria-describedby="{{ $describedByStr }}" @endif
                         class="{{ $baseInputClass }} {{ $feerForm ? '' : 'py-2 pl-3 pr-8' }}">
-                        <option value="">{{ $required ? '— wybierz —' : '— ogólny kontakt —' }}</option>
+                        <option value="">{{ $required ? '— wybierz —' : '— do zespołu —' }}</option>
                         @foreach ($coordinatorOptions as $c)
                             <option value="{{ $c['email'] }}" {{ ($oldVal ?: request('do')) === $c['email'] ? 'selected' : '' }}>{{ $c['name'] }}{{ $c['project'] !== $c['name'] ? ' — '.$c['project'] : '' }}</option>
                         @endforeach

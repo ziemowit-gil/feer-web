@@ -35,7 +35,7 @@ class ContactTextsHumanizedSeeder extends Seeder
         }
 
         if (str_starts_with((string) $settings->contact_bank_accounts_note, 'Opłaty za szkolenia firm i osób prawnych, a także')) {
-            $settings->contact_bank_accounts_note = 'Opłaty za szkolenia firm i osób prawnych oraz za inne usługi odpłatne prosimy wpłacać na ogólny rachunek bankowy: 88 1020 2906 0000 1302 0661 7932. '
+            $settings->contact_bank_accounts_note = 'Opłaty za szkolenia firm i osób prawnych oraz za inne usługi odpłatne prosimy wpłacać na główny rachunek bankowy: 88 1020 2906 0000 1302 0661 7932. '
                 .'Osoby fizyczne mają indywidualny numer rachunku wirtualnego do płatności za szkolenia indywidualne. Numer i szczegóły przesyłamy w e-mailu potwierdzającym zapis na szkolenie. '
                 .'Przed przelewem prosimy sprawdzić, czy wybrano właściwy numer konta, dzięki temu wpłata zostanie prawidłowo zaksięgowana.';
         }

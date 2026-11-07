@@ -912,7 +912,7 @@
                     <label for="accessibility_contact_email" class="mb-1 block text-sm font-bold">E-mail do zgłoszeń</label>
                     <input type="email" id="accessibility_contact_email" name="accessibility_contact_email" value="{{ old('accessibility_contact_email', $settings->accessibility_contact_email) }}" placeholder="{{ $settings->contact_email }}"
                         class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    <p class="mt-1 text-xs text-muted">Puste = ogólny e-mail kontaktowy. Tu trafiają zgłoszenia barier.</p>
+                    <p class="mt-1 text-xs text-muted">Puste = główny e-mail kontaktowy. Tu trafiają zgłoszenia barier.</p>
                     @error('accessibility_contact_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
@@ -2483,7 +2483,7 @@
             <div>
                 <h2 class="text-base font-bold text-ink">Szablon strony</h2>
                 <p class="mt-1 text-xs text-muted">
-                    Szablon określa ogólny wygląd serwisu: układ nagłówka, stopki oraz strony głównej.
+                    Szablon określa wygląd serwisu: układ nagłówka, stopki oraz strony głównej.
                     Zmiana szablonu nie usuwa żadnych treści.
                 </p>
             </div>
