@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * Godziny pracy biura na stronie kontaktu: dotychczasowe „Od poniedziałku do środy, 10:00 do 12:00” zmieniają się na
- * godziny 9:00 do 16:00, a przy nich pojawia się informacja, że biurowo obsługuje nas HubKolektyw, a zespół FEER pracuje zdalnie.
+ * godziny 9:00 do 16:00, a przy nich pojawia się informacja, że obsługą biura zajmuje się HubKolektyw, a zespół FEER pracuje zdalnie.
  *
  * Idempotentny: godziny są podmieniane tylko przy dawnym brzmieniu, a informacja dopisywana tylko do pustego pola
  * „Uwaga przy adresie biura” (contact_office_note), więc seeder nie nadpisze zmian zrobionych później w panelu.
@@ -20,7 +20,7 @@ class ContactOfficeHoursSeeder extends Seeder
 
     public const NEW_HOURS = 'Od poniedziałku do środy, 9:00 do 16:00';
 
-    public const NOTE = 'Biurowo obsługuje nas HubKolektyw, a my pracujemy zdalnie. Wizytę w biurze warto umówić wcześniej.';
+    public const NOTE = 'Obsługą biura zajmuje się HubKolektyw, a my pracujemy zdalnie. Wizytę w biurze warto umówić wcześniej.';
 
     public function run(): void
     {
