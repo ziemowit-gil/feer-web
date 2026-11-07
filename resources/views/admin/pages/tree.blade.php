@@ -395,7 +395,14 @@
                                 @endif
                             </dd>
                         </div>
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">W menu głównym</dt><dd class="mt-0.5">{{ ! $selected->parent_id && $selected->show_in_menu ? 'Tak' : 'Nie' }}</dd></div>
+                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">W menu</dt><dd class="mt-0.5">
+                            @if ($selectedMenu)
+                                {{ collect($selectedMenu)->map(fn ($p) => $p['location_label'].($p['parent'] ? ' › '.$p['parent'] : ''))->unique()->implode(', ') }}
+                                <a href="#menu-nawigacji" class="ml-1 text-xs font-bold text-brand-dark underline">zmień</a>
+                            @else
+                                Nie <a href="#menu-nawigacji" class="ml-1 text-xs font-bold text-brand-dark underline">dodaj</a>
+                            @endif
+                        </dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Nawigacja po podstronach</dt><dd class="mt-0.5">{{ $selected->show_side_nav ? (\App\Models\Page::SIDE_NAV_STYLES[$selected->side_nav_style] ?? 'Boczne drzewo') : 'Wyłączona' }}</dd></div>
                         <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Ostatnia zmiana</dt><dd class="mt-0.5">{{ $selected->updated_at?->format('d.m.Y H:i') ?? '—' }}</dd></div>
                         @if ($selected->publish_at && ! $selectedLive && $selected->is_published)
@@ -508,6 +515,9 @@
                         </form>
                     @endif
                 </div>
+
+                {{-- Menu nawigacji tej strony (Strony i nawigacja na jednym ekranie) --}}
+                @include('admin.pages.partials.page-menu', ['page' => $selected, 'positions' => $selectedMenu, 'mainMenuParents' => $mainMenuParents, 'btn' => $btn])
 
                 {{-- Podstrony --}}
                 <div>

@@ -760,6 +760,11 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('kampanie/zbiorczo', [AdminCampaignController::class, 'bulk'])->name('kampanie.bulk')->middleware('edition:campaigns');
 
         Route::resource('pozycje-menu', NavItemController::class)->parameters(['pozycje-menu' => 'navItem'])->except('show');
+        // „Strony i nawigacja”: menu ustawiane z panelu strony w drzewie stron.
+        Route::post('podstrony/{page}/menu', [\App\Http\Controllers\Admin\PageMenuController::class, 'store'])->name('podstrony.menu.store');
+        Route::patch('podstrony/{page}/menu/{navItem}', [\App\Http\Controllers\Admin\PageMenuController::class, 'update'])->name('podstrony.menu.update');
+        Route::delete('podstrony/{page}/menu/{navItem}', [\App\Http\Controllers\Admin\PageMenuController::class, 'destroy'])->name('podstrony.menu.destroy');
+        Route::patch('podstrony/{page}/menu-auto', [\App\Http\Controllers\Admin\PageMenuController::class, 'disableAuto'])->name('podstrony.menu.auto');
         Route::patch('pozycje-menu/{navItem}/przenies', [NavItemController::class, 'move'])->name('pozycje-menu.przenies');
         Route::post('pozycje-menu/kolejnosc', [NavItemController::class, 'reorder'])->name('pozycje-menu.reorder');
         Route::post('pozycje-menu/ze-stron', [NavItemController::class, 'storeFromPages'])->name('pozycje-menu.ze-stron');

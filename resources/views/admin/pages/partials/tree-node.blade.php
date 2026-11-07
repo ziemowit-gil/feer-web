@@ -19,7 +19,7 @@
             // Dane dla menu kontekstowego drzewa (tree.blade.php): adresy podglądu i uprawnienia wiersza.
             $nodeLive = $node->is_published && ($node->publish_at === null || $node->publish_at->isPast());
         @endphp
-        <li data-tree-node data-page-id="{{ $node->id }}" data-pos="{{ $loop->index }}" data-project="{{ $node->project_id ?: 0 }}" data-folder="{{ $kids->isNotEmpty() ? 1 : 0 }}" data-state="{{ $state }}" data-menu="{{ $node->show_in_menu ? 1 : 0 }}" data-title="{{ \Illuminate\Support\Str::lower($node->title) }}"
+        <li data-tree-node data-page-id="{{ $node->id }}" data-pos="{{ $loop->index }}" data-project="{{ $node->project_id ?: 0 }}" data-folder="{{ $kids->isNotEmpty() ? 1 : 0 }}" data-state="{{ $state }}" data-menu="{{ ! empty(($menuPositions ?? [])[$node->id] ?? null) ? 1 : 0 }}" data-title="{{ \Illuminate\Support\Str::lower($node->title) }}"
             data-label="{{ $node->title }}" data-published="{{ $node->is_published ? 1 : 0 }}" data-system="{{ $node->is_system ? 1 : 0 }}"
             data-can-edit="{{ ! $node->is_locked || auth()->user()->isAdmin() ? 1 : 0 }}"
             data-public-url="{{ $node->publicUrl() }}" data-view-url="{{ $nodeLive ? $node->publicUrl() : $node->previewUrl() }}" @if ($kids->isNotEmpty()) x-data="{ open: {{ $isOpen ? 'true' : 'false' }} }" @endif>
@@ -43,6 +43,10 @@
                     @if ($node->project_id)<span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm text-[10px] font-bold leading-none" style="{{ $isSel ? 'background:#fff;color:#166534' : 'background:#166534;color:#fff' }}" aria-hidden="true">D</span><span class="sr-only">(podstrona działania)</span>@endif
                     @if ($node->is_system)<i class="fa-solid fa-lock text-[10px] opacity-60" aria-hidden="true"></i><span class="sr-only">(systemowa)</span>@endif
                     @if ($node->access_level && ! in_array($node->access_level, ['inherit', 'public'], true))<i class="fa-solid fa-key text-[10px] {{ $isSel ? 'text-white' : 'text-gray-500' }}" aria-hidden="true"></i><span class="sr-only">(dostęp ograniczony: {{ \App\Models\Page::ACCESS_LEVELS[$node->access_level] ?? $node->access_level }})</span>@endif
+                    @if (! empty(($menuPositions ?? [])[$node->id] ?? null))
+                        @php $nodeMenu = collect(($menuPositions ?? [])[$node->id])->map(fn ($p) => $p['location_label'].($p['parent'] ? ' › '.$p['parent'] : ''))->unique()->implode(', '); @endphp
+                        <i class="fa-solid fa-bars text-[10px] {{ $isSel ? 'text-white' : 'text-brand-dark' }}" title="W menu: {{ $nodeMenu }}" aria-hidden="true"></i><span class="sr-only">(w menu: {{ $nodeMenu }})</span>
+                    @endif
                     @if ($node->is_featured)<i class="fa-solid fa-star text-[10px] {{ $isSel ? 'text-white' : 'text-amber-500' }}" aria-hidden="true"></i><span class="sr-only">(wyróżniona)</span>@endif
                     @unless ($isSel)
                         <span data-tree-chip class="inline-flex">@include('admin.pages.partials.status-chip', ['page' => $node, 'compact' => true, 'inherited' => isset($inheritedDisabled[$node->id])])</span>

@@ -164,6 +164,10 @@ class PageController extends Controller
             'parentKey' => $parentKey,
             'moveOptions' => $moveOptions,
             'projectOptions' => Project::orderBy('title')->get(['id', 'title']),
+            // „Strony i nawigacja”: gdzie w menu jest każda strona (znacznik w drzewie, karta w panelu strony).
+            'menuPositions' => $menuPositions = \App\Support\PageMenuPositions::forPages($all),
+            'selectedMenu' => $selected ? ($menuPositions[$selected->id] ?? []) : [],
+            'mainMenuParents' => \App\Models\NavItem::forCurrentSite()->where('location', 'main')->whereNull('parent_id')->orderBy('order')->get(['id', 'label']),
             'personsCount' => $selected && $selected->isAbout()
                 ? Page::where('type', 'about_person')->where('parent_id', $selected->id)->count()
                 : 0,

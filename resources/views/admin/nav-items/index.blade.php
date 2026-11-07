@@ -46,6 +46,15 @@
 
         @include('admin.partials.content-nav-tabs')
 
+        @if ($location !== 'bip')
+            {{-- Strony i nawigacja: strony dodaje się do menu z panelu strony; tu zostaje reszta menu. --}}
+            <p class="mb-3 rounded-md bg-white px-3 py-2 text-sm text-ink" data-nav-pages-hint>
+                <i class="fa-solid fa-sitemap mr-1 text-brand-dark" aria-hidden="true"></i>
+                Strony dodajesz do menu w <a href="{{ route('admin.podstrony.index') }}" class="font-bold text-brand-dark underline">Strony</a> (wybrana strona → „W menu nawigacji”).
+                Tutaj ustawiasz kolejność oraz linki zewnętrzne, nagłówki, menu rozwijane i mega-menu.
+            </p>
+        @endif
+
         {{-- Wskaźnik zapisu po drag & drop (ukryty do czasu użycia) --}}
         <div id="nav-dnd-status" role="status" aria-live="polite" class="mb-3 hidden px-3 py-2 text-sm rounded-md bg-white"></div>
 
