@@ -105,7 +105,8 @@ class PhoneBookModuleTest extends TestCase
             ->assertDontSee('Ukryty Wpis')
             ->getContent();
 
-        $this->assertSame(2, substr_count($html, '<table class="phone-book-table'));
+        // Domyślny widok: lista osób w działach (po jednej liście na dział).
+        $this->assertSame(2, substr_count($html, 'class="pb-list pb-list--rows"'));
     }
 
     public function test_module_can_be_disabled(): void
@@ -130,7 +131,7 @@ class PhoneBookModuleTest extends TestCase
         $this->entry();
         Page::create(['title' => 'Zespół', 'slug' => 'zespol', 'type' => 'standard', 'content' => '<p>[ksiazka-telefoniczna]</p>', 'is_published' => true]);
 
-        $this->get('/zespol')->assertOk()->assertSee('Anna Kowalska')->assertSee('phone-book-table', false)->assertDontSee('[ksiazka-telefoniczna]', false);
+        $this->get('/zespol')->assertOk()->assertSee('Anna Kowalska')->assertSee('data-phone-book', false)->assertDontSee('[ksiazka-telefoniczna]', false);
 
         SiteSetting::current()->update(['disabled_modules' => ['phone_book']]);
         $this->flush();

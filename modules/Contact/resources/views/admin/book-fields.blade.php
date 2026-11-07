@@ -29,7 +29,7 @@
         <div>
             <label for="td-contactbook-layout" class="{{ $lbl }}">Układ</label>
             <select id="td-contactbook-layout" name="type_data[layout]" class="{{ $inp }}">
-                <option value="table" @selected(($td['layout'] ?? 'table') !== 'cards')>Tabele (każdy dział to tabela: osoba, numer, sprawa, kiedy dzwonić)</option>
+                <option value="table" @selected(($td['layout'] ?? 'table') !== 'cards')>Lista (osoby w wierszach, w działach: kto, numer, sprawa, kiedy dzwonić)</option>
                 <option value="cards" @selected(($td['layout'] ?? '') === 'cards')>Karty (osoby jako kafelki)</option>
             </select>
         </div>

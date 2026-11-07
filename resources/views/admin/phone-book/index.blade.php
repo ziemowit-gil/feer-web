@@ -74,7 +74,7 @@
             <div>
                 <label for="phonebook_layout" class="mb-1 block text-sm font-bold">Układ</label>
                 <select id="phonebook_layout" name="phonebook_layout" class="{{ $f }}">
-                    <option value="table" @selected(old('phonebook_layout', $settings->phonebook_layout ?: 'table') === 'table')>Tabele (każdy dział to tabela)</option>
+                    <option value="table" @selected(old('phonebook_layout', $settings->phonebook_layout ?: 'table') === 'table')>Lista (osoby w wierszach, w działach)</option>
                     <option value="cards" @selected(old('phonebook_layout', $settings->phonebook_layout) === 'cards')>Karty</option>
                 </select>
             </div>

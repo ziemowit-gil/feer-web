@@ -107,8 +107,7 @@ class PhoneBookPageTest extends TestCase
 
         $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
 
-        $this->assertStringContainsString('<th scope="col">Kiedy dzwonić</th>', $html);
-        $this->assertStringContainsString('pon.–śr. 10–12', $html);
+        $this->assertStringContainsString('<dt>Kiedy dzwonić:</dt><dd>pon.–śr. 10–12</dd>', $html);
         $this->assertStringContainsString('role="group" aria-label="Filtr działów"', $html);
         // Książka służy do rozpoznania, kto dzwoni: bez linków „zadzwoń” i bez kopiowania numeru.
         $this->assertStringNotContainsString('Kopiuj numer', $html);
@@ -176,7 +175,7 @@ class PhoneBookPageTest extends TestCase
         ])->assertSessionHasErrors('type_data.sort');
     }
 
-    public function test_default_layout_is_a_table_per_department(): void
+    public function test_default_layout_is_a_list_per_department(): void
     {
         $this->bookWith(['contacts' => [
             ['group' => 'Biuro', 'name' => 'Anna Kowalska', 'role' => 'Koordynatorka', 'phone' => '601 350 487', 'topic' => 'Zapisy', 'hours' => 'pon.–śr.'],
@@ -185,23 +184,27 @@ class PhoneBookPageTest extends TestCase
 
         $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
 
-        $this->assertSame(2, substr_count($html, '<table class="phone-book-table'));
-        $this->assertStringContainsString('<caption class="sr-only">Biuro: kto, numer telefonu, w jakiej sprawie', $html);
-        $this->assertStringContainsString('<th scope="col">Numer komórkowy</th>', $html);
-        $this->assertStringContainsString('<th scope="row" data-label="Osoba">', $html);
-        $this->assertStringContainsString('data-label="W jakiej sprawie">Zapisy', $html);
-        $this->assertStringNotContainsString('rounded-md bg-gray-50 p-5', $html);
+        // Jeden panel na górze (numer, wyszukiwarka, filtr, licznik) i lista osób w każdym dziale.
+        $this->assertSame(2, substr_count($html, 'class="pb-list pb-list--rows"'));
+        $this->assertStringContainsString('<h2 id="phonebook-group-0" class="pb-group-h">Biuro <span class="pb-group-n">(1)</span></h2>', $html);
+        $this->assertStringContainsString('<p class="pb-name">Anna Kowalska</p>', $html);
+        $this->assertStringContainsString('<p class="pb-role">Koordynatorka</p>', $html);
+        $this->assertStringContainsString('<dt>W sprawie:</dt><dd>Zapisy</dd>', $html);
+        $this->assertStringContainsString('W książce: 2 osoby', $html);
+        $this->assertStringContainsString('aria-label="Wyczyść wyszukiwanie"', $html);
+        $this->assertStringNotContainsString('<table', $html);
     }
 
     public function test_cards_layout_and_missing_hours_column(): void
     {
         $this->bookWith(['layout' => 'cards', 'contacts' => [['name' => 'Anna', 'phone' => '601 350 487', 'topic' => 'Zapisy', 'hours' => 'pon.–śr.']]]);
         $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
-        $this->assertStringNotContainsString('<table class="phone-book-table', $html);
+        $this->assertStringContainsString('class="pb-list pb-list--cards"', $html);
         $this->assertStringContainsString('Kiedy dzwonić:', $html);
 
+        // Bez godzin osoba nie ma pustego wiersza „Kiedy dzwonić”.
         Page::where('slug', 'ksiazka-telefoniczna')->first()->update(['type_data' => ['contacts' => [['name' => 'Anna', 'phone' => '601 350 487', 'topic' => 'Zapisy']]]]);
-        $this->get('/ksiazka-telefoniczna')->assertOk()->assertDontSee('<th scope="col">Kiedy dzwonić</th>', false);
+        $this->get('/ksiazka-telefoniczna')->assertOk()->assertDontSee('Kiedy dzwonić:', false);
     }
 
     public function test_admin_offers_layout_and_rejects_unknown_value(): void
@@ -223,7 +226,7 @@ class PhoneBookPageTest extends TestCase
         ])->assertSessionHasErrors('type_data.layout');
     }
 
-    public function test_table_has_separate_email_column_only_when_someone_has_email(): void
+    public function test_email_shows_only_for_people_who_have_one(): void
     {
         $this->bookWith(['contacts' => [
             ['name' => 'Anna Kowalska', 'phone' => '601 350 487', 'email' => 'anna@example.org'],
@@ -231,13 +234,9 @@ class PhoneBookPageTest extends TestCase
         ]]);
 
         $html = $this->get('/ksiazka-telefoniczna')->assertOk()->getContent();
-        $this->assertStringContainsString('<th scope="col">E-mail</th>', $html);
-        $this->assertStringContainsString('<td data-label="E-mail"><a href="mailto:anna@example.org"', $html);
-        $this->assertStringContainsString('<td data-label="E-mail"></td>', $html);
-        // E-mail nie jest już w kolumnie „Osoba”.
-        $this->assertStringNotContainsString('font-normal"><i class="fa-solid fa-envelope"', $html);
-
-        Page::where('slug', 'ksiazka-telefoniczna')->first()->update(['type_data' => ['contacts' => [['name' => 'Jan', 'phone' => '500 100 200']]]]);
-        $this->get('/ksiazka-telefoniczna')->assertOk()->assertDontSee('<th scope="col">E-mail</th>', false);
+        $book = substr($html, strpos($html, 'data-phone-book'));
+        $book = substr($book, 0, (int) strpos($book, '</main>'));
+        $this->assertSame(1, substr_count($book, 'href="mailto:'));
+        $this->assertStringContainsString('<a href="mailto:anna@example.org" class="pb-link">', $html);
     }
 }

@@ -1,14 +1,20 @@
 {{--
-    Lista książki telefonicznej (wspólna dla typu strony „Książka telefoniczna” i modułu): kto, numer komórkowy,
-    w jakiej sprawie i kiedy dzwonić. Układ tabelaryczny (każdy dział to tabela) albo karty, filtr działów, wyszukiwarka,
-    zapis kontaktu .vcf i opcjonalne ukrywanie numerów za przyciskiem (numery bez linków „zadzwoń”).
-    Zmienne: $contacts (tablice: group, name, role, phone, email, topic, hours), $layout (table|cards),
-    $sort (manual|alpha), $hide (bool). Płasko, kolory firmowe; tekst ink na szarym tle ≥ 14:1, cele dotyku ≥ 44 px.
+    Lista książki telefonicznej (wspólna dla modułu „Książka telefoniczna”, typu „Kontakt — książka” i dawnego typu):
+    kto, numer komórkowy, w jakiej sprawie i kiedy dzwonić.
+
+    Układ: jeden panel na górze (numer kontaktowy, wyszukiwarka z czyszczeniem, filtr działów, licznik wyników),
+    a pod nim działy z osobami. $layout = table → lista (osoba w wierszu: dane po lewej, numer po prawej),
+    $layout = cards → siatka kart. Numery bez linków „zadzwoń” (książka służy do rozpoznania, kto dzwoni),
+    opcjonalnie ukryte za przyciskiem; „Zapisz w telefonie” tworzy plik .vcf w przeglądarce.
+    Zmienne: $contacts (tablice: group, name, role, phone, email, topic, hours), $layout (table|cards), $sort (manual|alpha), $hide (bool).
+
+    Style w bloku <style> poniżej (klasy pb-*), żeby wygląd nie zależał od przebudowy Tailwinda na serwerze.
+    Płasko, kolory marki; tekst ink (#1D1D1A) i #374151 na #F3F4F6 ≥ 7:1, cele dotyku ≥ 44 px, widoczny fokus.
 --}}
 @php
     $alpha = ($sort ?? 'manual') === 'alpha';
     $hideNumbers = ! empty($hide);
-    $asTable = ($layout ?? 'table') !== 'cards';
+    $asRows = ($layout ?? 'table') !== 'cards';
     $people = collect($contacts ?? [])
         ->filter(fn ($c) => filled($c['name'] ?? null) || filled($c['phone'] ?? null))
         ->map(fn ($c) => [
@@ -22,8 +28,6 @@
             'hours' => trim((string) ($c['hours'] ?? '')),
         ])
         ->values();
-    $anyHours = $people->contains(fn ($p) => $p['hours'] !== '');
-    $anyEmail = $people->contains(fn ($p) => $p['email'] !== '');
     if ($alpha) {
         $people = $people->sortBy(fn ($p) => mb_strtolower($p['name'] ?: $p['phone']), SORT_NATURAL | SORT_FLAG_CASE)->values();
     }
@@ -32,6 +36,7 @@
         $groups = $groups->sortBy(fn ($list, $name) => $name === '' ? '' : mb_strtolower($name), SORT_NATURAL | SORT_FLAG_CASE);
     }
     $groupNames = $groups->keys()->filter(fn ($g) => $g !== '')->values();
+    $osob = fn (int $n) => $n === 1 ? 'osoba' : (($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 12 || $n % 100 > 14)) ? 'osoby' : 'osób');
 
     // Karta kontaktu .vcf (vCard 3.0), tworzona w przeglądarce z tego tekstu.
     $vEsc = fn (string $v) => str_replace(['\\', "\n", ',', ';'], ['\\\\', '\\n', '\\,', '\;'], $v);
@@ -47,127 +52,154 @@
         'END:VCARD',
     ])) . "\r\n";
 
-    $link = 'inline-flex min-h-11 items-center gap-2 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
-    $act = 'inline-flex min-h-11 items-center gap-2 rounded-md bg-white px-3 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
+    $link = 'pb-link';
+    $act = 'pb-act';
+    $mainPhone = trim((string) ($siteSettings->contact_phone ?? ''));
 @endphp
 
-<div data-phone-book
+@once
+<style>
+    .pb-panel { background: #f3f4f6; border-radius: .75rem; padding: 1.25rem; color: #1d1d1a; }
+    @media (min-width: 48rem) { .pb-panel { padding: 1.5rem 1.75rem; } }
+    .pb-main { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; }
+    .pb-main-ico { display: flex; width: 2.75rem; height: 2.75rem; flex: none; align-items: center; justify-content: center; border-radius: 999px; background: #fff; color: var(--color-brand-dark, #1752bf); }
+    .pb-label { font-size: .8125rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .pb-main-num { font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
+    .pb-main-text { margin-top: .5rem; max-width: 46rem; line-height: 1.6; }
+    .pb-tools { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #d1d5db; }
+    .pb-search { position: relative; max-width: 40rem; margin-top: .5rem; }
+    .pb-search input { width: 100%; min-height: 3rem; border: 2px solid #6b7280; border-radius: .5rem; background: #fff; padding: 0 3rem 0 2.75rem; font-size: 1rem; color: #1d1d1a; }
+    .pb-search input::placeholder { color: #4b5563; opacity: 1; }
+    .pb-search input:focus { outline: 3px solid var(--color-brand-dark, #1752bf); outline-offset: 2px; border-color: var(--color-brand-dark, #1752bf); }
+    .pb-search .pb-search-ico { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); pointer-events: none; }
+    .pb-clear { position: absolute; right: .125rem; top: 50%; transform: translateY(-50%); display: flex; width: 2.75rem; height: 2.75rem; align-items: center; justify-content: center; border-radius: .375rem; background: transparent; color: #1d1d1a; }
+    .pb-clear:hover { background: #e5e7eb; }
+    .pb-clear:focus-visible, .pb-chip:focus-visible, .pb-act:focus-visible, .pb-link:focus-visible { outline: 3px solid var(--color-brand-dark, #1752bf); outline-offset: 2px; }
+    .pb-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+    .pb-chip { min-height: 2.75rem; border-radius: 999px; padding: 0 1rem; font-weight: 700; background: #fff; color: #1d1d1a; }
+    .pb-chip:hover { background: #e5e7eb; }
+    .pb-chip[aria-pressed="true"] { background: var(--color-brand-dark, #1752bf); color: #fff; }
+    .pb-count { margin-top: .875rem; font-weight: 700; }
+    .pb-group { margin-top: 2.5rem; }
+    .pb-group-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; font-size: 1.375rem; font-weight: 800; color: #1d1d1a; }
+    .pb-group-n { font-size: 1rem; font-weight: 600; color: #374151; }
+    .pb-bar { display: block; width: 2.5rem; height: .25rem; margin-top: .5rem; background: var(--color-brand, #1e6dff); }
+    .pb-list { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .75rem; }
+    .pb-list--cards { grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
+    .pb-person { display: grid; gap: .75rem 2rem; border-radius: .75rem; background: #f3f4f6; padding: 1.125rem 1.25rem; color: #1d1d1a; }
+    @media (min-width: 48rem) { .pb-list--rows .pb-person { grid-template-columns: minmax(0, 1fr) 17rem; align-items: start; } }
+    .pb-name { font-size: 1.125rem; font-weight: 800; line-height: 1.3; }
+    .pb-role { color: #374151; }
+    .pb-meta { margin: .625rem 0 0; display: grid; gap: .25rem; line-height: 1.55; }
+    .pb-meta div { display: flex; flex-wrap: wrap; gap: 0 .375rem; }
+    .pb-meta dt { font-weight: 700; }
+    .pb-meta dd { margin: 0; }
+    .pb-phone .text-xl { font-size: 1.25rem; }
+    .pb-link { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .5rem; font-weight: 700; color: var(--color-brand-dark, #1752bf); text-decoration: underline; text-underline-offset: 4px; word-break: break-all; }
+    .pb-link:hover { text-decoration: none; }
+    .pb-act { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .5rem; border-radius: .375rem; background: #fff; padding: 0 .875rem; font-size: .875rem; font-weight: 700; color: var(--color-brand-dark, #1752bf); }
+    .pb-act:hover { background: var(--color-brand-light, #e8f0ff); }
+    .pb-empty { margin-top: 2rem; border-radius: .75rem; background: #f3f4f6; padding: 1.25rem; }
+    @media print { .pb-tools, .pb-act { display: none !important; } .pb-person { break-inside: avoid; } }
+</style>
+@endonce
+
+<div data-phone-book class="pb"
     x-data="{
-        q: '', g: '',
+        q: '', g: '', total: {{ $people->count() }},
         match(el) {
             const t = this.q.trim().toLowerCase(); const d = t.replace(/\D/g, '');
             // Szukanie po numerze działa bez spacji i myślników („601350487” znajdzie „601 350 487”).
             return (this.g === '' || el.dataset.group === this.g) && (t === '' || el.dataset.person.includes(t) || (d.length >= 3 && el.dataset.digits.includes(d)));
         },
         count() { return [...this.$el.querySelectorAll('[data-person]')].filter((el) => this.match(el)).length; },
+        osob(n) { return n === 1 ? 'osoba' : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'osoby' : 'osób'); },
+        summary() {
+            const n = this.count();
+            return (this.q.trim() || this.g) ? ('Znaleziono: ' + n + ' z ' + this.total) : ('W książce: ' + this.total + ' ' + this.osob(this.total));
+        },
         save(card, file) {
             const url = URL.createObjectURL(new Blob([card], { type: 'text/vcard;charset=utf-8' }));
             const a = document.createElement('a'); a.href = url; a.download = file; document.body.appendChild(a); a.click(); a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
     }">
-    @php $mainPhone = trim((string) ($siteSettings->contact_phone ?? '')); @endphp
-    @if ($mainPhone !== '')
-        <div class="mb-6 max-w-3xl rounded-md bg-gray-50 p-5 text-ink" role="note" aria-label="Numer kontaktowy">
-            <p class="text-sm font-bold uppercase tracking-widest">Numer kontaktowy</p>
-            <p class="mt-1 text-2xl font-bold">{{ $mainPhone }}</p>
-            <p class="mt-1">Informacje o naszej działalności.</p>
-            <p class="mt-3 leading-relaxed">Z tą listą sprawdzisz, kto do Ciebie dzwonił. Żeby coś u nas załatwić, dzwoń na numer kontaktowy.</p>
+
+    @if ($mainPhone !== '' || $people->isNotEmpty())
+        <div class="pb-panel">
+            @if ($mainPhone !== '')
+                <div role="note" aria-label="Numer kontaktowy">
+                    <div class="pb-main">
+                        <span class="pb-main-ico" aria-hidden="true"><i class="fa-solid fa-phone"></i></span>
+                        <div>
+                            <p class="pb-label">Numer kontaktowy</p>
+                            <p class="pb-main-num">{{ $mainPhone }}</p>
+                        </div>
+                    </div>
+                    <p class="pb-main-text">Informacje o naszej działalności. Z tą listą sprawdzisz, kto do Ciebie dzwonił. Żeby coś u nas załatwić, dzwoń na numer kontaktowy.</p>
+                </div>
+            @endif
+
+            @if ($people->isNotEmpty())
+                <div class="{{ $mainPhone !== '' ? 'pb-tools' : '' }} no-print">
+                    <label for="phonebook-q" class="font-bold">Znajdź osobę, sprawę albo numer</label>
+                    <div class="pb-search">
+                        <i class="fa-solid fa-magnifying-glass pb-search-ico" aria-hidden="true"></i>
+                        <input id="phonebook-q" x-ref="q" type="search" x-model.debounce.150ms="q" placeholder="np. faktury, zapisy, imię albo numer" autocomplete="off">
+                        <button type="button" class="pb-clear" x-show="q !== ''" x-cloak @click="q = ''; $refs.q.focus()" aria-label="Wyczyść wyszukiwanie"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+                    </div>
+
+                    @if ($groupNames->count() > 1)
+                        <div class="pb-chips" role="group" aria-label="Filtr działów">
+                            <button type="button" class="pb-chip" @click="g = ''" :aria-pressed="(g === '').toString()" aria-pressed="true">Wszystkie</button>
+                            @foreach ($groupNames as $gn)
+                                <button type="button" class="pb-chip" @click="g = @js($gn)" :aria-pressed="(g === @js($gn)).toString()" aria-pressed="false">{{ $gn }}</button>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <p class="pb-count" aria-live="polite" x-text="summary()">W książce: {{ $people->count() }} {{ $osob($people->count()) }}</p>
+                </div>
+            @endif
         </div>
     @endif
 
     @if ($people->isEmpty())
-        <p class="text-ink">Książka telefoniczna nie ma jeszcze wpisów. Dodaj osoby w panelu (edycja strony → Książka telefoniczna).</p>
+        <p class="pb-empty">Książka telefoniczna nie ma jeszcze wpisów. Dodaj osoby w panelu (Komunikacja → Książka telefoniczna).</p>
     @else
-        <div class="mb-8 max-w-xl rounded-md bg-brand-light p-5">
-            <label for="phonebook-q" class="mb-2 block font-bold text-ink">Znajdź osobę, sprawę albo numer</label>
-            <div class="relative">
-                <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink" aria-hidden="true"></i>
-                <input id="phonebook-q" type="search" x-model.debounce.150ms="q" placeholder="np. faktury, zapisy, imię albo numer" autocomplete="off"
-                       class="min-h-11 w-full rounded-md bg-white pl-9 text-base text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-brand-dark">
-            </div>
-        </div>
-
-        @if ($groupNames->count() > 1)
-            <div class="mb-8 flex flex-wrap gap-2 no-print" role="group" aria-label="Filtr działów">
-                @php $chip = 'min-h-11 rounded-full px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark'; @endphp
-                <button type="button" @click="g = ''" :aria-pressed="g === ''" :class="g === '' ? 'bg-brand-dark text-white' : 'bg-gray-50 text-ink hover:bg-brand-light'" class="{{ $chip }}">Wszystkie</button>
-                @foreach ($groupNames as $gn)
-                    <button type="button" @click="g = @js($gn)" :aria-pressed="g === @js($gn)" :class="g === @js($gn) ? 'bg-brand-dark text-white' : 'bg-gray-50 text-ink hover:bg-brand-light'" class="{{ $chip }}">{{ $gn }}</button>
-                @endforeach
-            </div>
-        @endif
-
-        <p class="sr-only" aria-live="polite" x-text="(q.trim() || g) ? ('Znaleziono osób: ' + count()) : ''"></p>
-
         @foreach ($groups as $groupName => $list)
-            <section class="{{ $loop->first ? '' : 'mt-10' }}" @if ($groupName !== '') aria-labelledby="phonebook-group-{{ $loop->index }}" @endif
+            <section class="pb-group" @if ($groupName !== '') aria-labelledby="phonebook-group-{{ $loop->index }}" @else aria-label="Osoby" @endif
                      x-show="[...$el.querySelectorAll('[data-person]')].some((el) => match(el))">
                 @if ($groupName !== '')
-                    <h2 id="phonebook-group-{{ $loop->index }}" class="mb-4 text-2xl font-bold text-ink">{{ $groupName }}</h2>
+                    <h2 id="phonebook-group-{{ $loop->index }}" class="pb-group-h">{{ $groupName }} <span class="pb-group-n">({{ $list->count() }})</span></h2>
+                    <span class="pb-bar" aria-hidden="true"></span>
                 @endif
-                @if ($asTable)
-                    <table class="phone-book-table w-full text-left text-ink">
-                        <caption class="sr-only">{{ $groupName !== '' ? $groupName : 'Osoby' }}: kto, numer telefonu, w jakiej sprawie{{ $anyHours ? ' i kiedy dzwonić' : '' }}</caption>
-                        <thead>
-                            <tr>
-                                <th scope="col">Osoba</th>
-                                <th scope="col">Numer komórkowy</th>
-                                @if ($anyEmail)<th scope="col">E-mail</th>@endif
-                                <th scope="col">W jakiej sprawie</th>
-                                @if ($anyHours)<th scope="col">Kiedy dzwonić</th>@endif
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($list as $p)
-                                <tr data-group="{{ $p['group'] }}" data-digits="{{ preg_replace('/\D/', '', $p['phone']) }}" data-person="{{ mb_strtolower($p['name'].' '.$p['role'].' '.$p['topic'].' '.$p['phone'].' '.$p['group'].' '.$p['hours']) }}" x-show="match($el)">
-                                    <th scope="row" data-label="Osoba">
-                                        <span class="block text-lg font-bold">{{ $p['name'] !== '' ? $p['name'] : $p['phone'] }}</span>
-                                        @if ($p['role'] !== '')<span class="block font-normal">{{ $p['role'] }}</span>@endif
-                                    </th>
-                                    <td data-label="Numer komórkowy">
-                                        @include('page.partials.typed._phone-book-number', ['p' => $p, 'hideNumbers' => $hideNumbers, 'link' => $link, 'act' => $act, 'vcard' => $vcard, 'wrap' => ''])
-                                    </td>
-                                    @if ($anyEmail)
-                                        <td data-label="E-mail">@if ($p['email'] !== '')<a href="mailto:{{ $p['email'] }}" class="{{ $link }} break-all"><i class="fa-solid fa-envelope" aria-hidden="true"></i>{{ $p['email'] }}</a>@endif</td>
-                                    @endif
-                                    <td data-label="W jakiej sprawie">{{ $p['topic'] }}</td>
-                                    @if ($anyHours)<td data-label="Kiedy dzwonić">{{ $p['hours'] }}</td>@endif
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @else
-                <ul class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <ul role="list" class="pb-list {{ $asRows ? 'pb-list--rows' : 'pb-list--cards' }}">
                     @foreach ($list as $p)
-                        <li class="rounded-md bg-gray-50 p-5" data-group="{{ $p['group'] }}" data-digits="{{ preg_replace('/\D/', '', $p['phone']) }}" data-person="{{ mb_strtolower($p['name'].' '.$p['role'].' '.$p['topic'].' '.$p['phone'].' '.$p['group'].' '.$p['hours']) }}"
-                            x-show="match($el)">
-                            @if ($p['name'] !== '')
-                                <p class="text-lg font-bold text-ink">{{ $p['name'] }}</p>
-                            @endif
-                            @if ($p['role'] !== '')
-                                <p class="text-ink">{{ $p['role'] }}</p>
-                            @endif
-                            @if ($p['topic'] !== '')
-                                <p class="mt-3 leading-relaxed text-ink"><span class="font-bold">W sprawie:</span> {{ $p['topic'] }}</p>
-                            @endif
-                            @if ($p['hours'] !== '')
-                                <p class="mt-1 text-ink"><span class="font-bold">Kiedy dzwonić:</span> {{ $p['hours'] }}</p>
-                            @endif
-
-                            @include('page.partials.typed._phone-book-number', ['p' => $p, 'hideNumbers' => $hideNumbers, 'link' => $link, 'act' => $act, 'vcard' => $vcard, 'wrap' => 'mt-3'])
-                            @if ($p['email'] !== '')
-                                <p><a href="mailto:{{ $p['email'] }}" class="{{ $link }}"><i class="fa-solid fa-envelope" aria-hidden="true"></i>{{ $p['email'] }}</a></p>
-                            @endif
+                        <li class="pb-person" data-group="{{ $p['group'] }}" data-digits="{{ preg_replace('/\D/', '', $p['phone']) }}"
+                            data-person="{{ mb_strtolower($p['name'].' '.$p['role'].' '.$p['topic'].' '.$p['phone'].' '.$p['group'].' '.$p['hours'].' '.$p['email']) }}" x-show="match($el)">
+                            <div class="min-w-0">
+                                <p class="pb-name">{{ $p['name'] !== '' ? $p['name'] : $p['phone'] }}</p>
+                                @if ($p['role'] !== '')<p class="pb-role">{{ $p['role'] }}</p>@endif
+                                @if ($p['topic'] !== '' || $p['hours'] !== '' || $p['email'] !== '')
+                                    <dl class="pb-meta">
+                                        @if ($p['topic'] !== '')<div><dt>W sprawie:</dt><dd>{{ $p['topic'] }}</dd></div>@endif
+                                        @if ($p['hours'] !== '')<div><dt>Kiedy dzwonić:</dt><dd>{{ $p['hours'] }}</dd></div>@endif
+                                        @if ($p['email'] !== '')<div><dt class="sr-only">E-mail:</dt><dd><a href="mailto:{{ $p['email'] }}" class="pb-link"><i class="fa-solid fa-envelope" aria-hidden="true"></i>{{ $p['email'] }}</a></dd></div>@endif
+                                    </dl>
+                                @endif
+                            </div>
+                            <div class="pb-phone">
+                                @include('page.partials.typed._phone-book-number', ['p' => $p, 'hideNumbers' => $hideNumbers, 'link' => $link, 'act' => $act, 'vcard' => $vcard, 'wrap' => ''])
+                            </div>
                         </li>
                     @endforeach
                 </ul>
-                @endif
             </section>
         @endforeach
 
-        <p class="mt-8 text-ink" x-show="(q.trim() !== '' || g !== '') && count() === 0" x-cloak>
-            Brak osób pasujących do wybranych kryteriów.
+        <p class="pb-empty" x-show="(q.trim() !== '' || g !== '') && count() === 0" x-cloak role="status">
+            Nikogo nie znaleziono. Sprawdź pisownię albo wpisz część numeru, np. „601 350”.
         </p>
     @endif
 </div>
