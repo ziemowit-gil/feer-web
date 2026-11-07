@@ -2449,6 +2449,7 @@ function start(config) {
         const node = sel.anchorNode;
         const el = (node?.nodeType === 1 ? node : node?.parentElement)?.closest?.('[data-be-editable]');
         if (el && canvas.contains(el)) lastSel = { el, range: sel.getRangeAt(0).cloneRange() };
+        scheduleListSuggest();
     });
     function withSelection(fn) {
         const active = document.activeElement?.closest?.('[data-be-editable]');
@@ -2462,6 +2463,111 @@ function start(config) {
         if (!el) { announce('Najpierw zaznacz tekst'); return; }
         fn(el);
     }
+
+    // ── Podpowiedź „zamień na listę” ───────────────────────────────────────
+    // Zaznaczenie co najmniej dwóch linii (w jednym akapicie albo w kilku kolejnych akapitach), z których każda zaczyna się
+    // od „-”, „–”, „•”, „*” albo od „1.”, „2)” itd., pokazuje pod blokiem podpowiedź z przyciskiem „Zamień na listę”
+    // (to samo: Alt+L). Zamiana obejmuje tylko zaznaczone linie; reszta akapitu zostaje akapitem.
+    const BULLET_LINE = /^\s*[-–—•*]\s+(?=\S)/;
+    const NUMBER_LINE = /^\s*\d{1,3}[.)]\s+(?=\S)/;
+    const LINE_MARKER = /^((?:<(?:strong|b|em|i|u|span)[^>]*>)*)(?:\s|&nbsp;| )*(?:[-–—•*]|\d{1,3}[.)])(?:&nbsp;| |\s)+/i;
+    let suggestEl = null, suggestSig = '', suggestDismissed = '', suggestCand = null, suggestTimer = 0;
+
+    function lineGroups(el) {
+        const groups = [[]];
+        el.childNodes.forEach((n) => { if (n.nodeName === 'BR') groups.push([]); else groups[groups.length - 1].push(n); });
+        return groups;
+    }
+    const groupHtml = (g) => g.map((n) => (n.nodeType === 1 ? n.outerHTML : escapeHtml(n.textContent))).join('');
+    const groupText = (g) => g.map((n) => n.textContent).join('').replace(/ /g, ' ').trim();
+
+    function listCandidate() {
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
+        const range = sel.getRangeAt(0);
+        const editableOf = (node) => (node?.nodeType === 1 ? node : node?.parentElement)?.closest?.('[data-be-editable]');
+        const startEl = editableOf(range.startContainer), endEl = editableOf(range.endContainer);
+        if (!startEl || !endEl || !canvas.contains(startEl) || !canvas.contains(endEl)) return null;
+        const wrapA = startEl.closest('.be-block'), wrapB = endEl.closest('.be-block');
+        const ra = wrapA && find(wrapA.dataset.id), rb = wrapB && find(wrapB.dataset.id);
+        if (!ra || !rb || ra.list !== rb.list || rb.index < ra.index) return null;
+        const blocks = ra.list.slice(ra.index, rb.index + 1);
+        if (!blocks.every((b) => b.type === 'paragraph')) return null;
+        const parts = blocks.map((b) => {
+            const el = wrapperOf(b.id)?.querySelector('[data-be-editable]');
+            if (!el) return null;
+            const groups = lineGroups(el);
+            const flags = groups.map((g) => groupText(g) !== '' && g.some((n) => range.intersectsNode(n)));
+            return { b, groups, flags };
+        });
+        if (parts.some((p) => !p)) return null;
+        const picked = parts.flatMap((p) => p.groups.filter((g, i) => p.flags[i]));
+        if (picked.length < 2) return null;
+        const texts = picked.map(groupText);
+        const ordered = texts.every((t) => NUMBER_LINE.test(t));
+        if (!ordered && !texts.every((t) => BULLET_LINE.test(t))) return null;
+        return { parts, ordered, count: picked.length, sig: blocks.map((b) => b.id).join(',') + ':' + texts.join('|') };
+    }
+
+    function applyListSuggestion(c) {
+        const first = c.parts[0], last = c.parts[c.parts.length - 1];
+        const firstIdx = first.flags.indexOf(true);
+        const lastIdx = last.flags.lastIndexOf(true);
+        const paragraphOf = (groups) => {
+            const html = groups.map(groupHtml).join('<br>');
+            return textOf(html) ? [block('paragraph', { text: html, align: first.b.attrs.align || 'left' })] : [];
+        };
+        const items = c.parts.flatMap((p) => p.groups.filter((g, i) => p.flags[i]).map((g) => groupHtml(g).trim().replace(LINE_MARKER, '$1')));
+        const list = block('list', { ordered: c.ordered, items });
+        const out = [...paragraphOf(first.groups.slice(0, firstIdx)), list, ...paragraphOf(last.groups.slice(lastIdx + 1))];
+        const r = find(first.b.id);
+        if (!r) return;
+        pushHistory();
+        r.list.splice(r.index, c.parts.length, ...out);
+        markDirty();
+        renderCanvas();
+        focusBlock(list.id, 'end');
+        announce(`Zamieniono na ${c.ordered ? 'listę numerowaną' : 'listę punktowaną'}: ${items.length} ${plural(items.length, 'punkt', 'punkty', 'punktów')}. Cofnij: ${mod}+Z.`);
+    }
+
+    function removeListSuggest() { suggestEl?.remove(); suggestEl = null; suggestSig = ''; suggestCand = null; }
+
+    function updateListSuggest() {
+        // Fokus na przyciskach podpowiedzi (Tab z pola) nie może jej zamykać.
+        if (suggestEl && suggestEl.contains(document.activeElement)) return;
+        const c = listCandidate();
+        if (!c || c.sig === suggestDismissed) { removeListSuggest(); return; }
+        if (c.sig === suggestSig && suggestEl?.isConnected) { suggestCand = c; return; }
+        removeListSuggest();
+        const wrap = wrapperOf(c.parts[c.parts.length - 1].b.id);
+        if (!wrap) return;
+        const kind = c.ordered ? 'listę numerowaną' : 'listę punktowaną';
+        const keep = (e) => e.preventDefault(); // zaznaczenie zostaje
+        suggestEl = h('div', { class: 'be-suggest', role: 'group', 'aria-label': 'Podpowiedź: zamiana na listę' },
+            h('span', { class: 'be-suggest-text' }, icon('list-ul'), ` Zaznaczony tekst wygląda jak lista (${c.count} ${plural(c.count, 'punkt', 'punkty', 'punktów')}).`),
+            h('button', { type: 'button', class: 'be-btn be-btn--primary', onMousedown: keep, onClick: () => { const cand = suggestCand || c; removeListSuggest(); applyListSuggestion(cand); } }, `Zamień na ${kind}`, h('span', { class: 'be-sr-only' }, ' (Alt+L)')),
+            h('button', { type: 'button', class: 'be-btn be-btn--ghost', onMousedown: keep, onClick: () => { suggestDismissed = c.sig; removeListSuggest(); } }, 'Nie teraz'));
+        wrap.append(suggestEl);
+        suggestSig = c.sig;
+        suggestCand = c;
+        announce(`Zaznaczony tekst wygląda jak lista. Naciśnij Alt+L, aby zamienić go na ${kind}.`);
+    }
+    function scheduleListSuggest() {
+        clearTimeout(suggestTimer);
+        suggestTimer = setTimeout(updateListSuggest, 150);
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.altKey && !e.shiftKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyL') {
+            const c = (suggestEl && suggestCand) || listCandidate();
+            if (!c) return;
+            e.preventDefault();
+            removeListSuggest();
+            applyListSuggestion(c);
+        } else if (e.key === 'Escape' && suggestEl) {
+            suggestDismissed = suggestSig;
+            removeListSuggest();
+        }
+    });
 
     // ── Zaznaczenie i pasek narzędzi bloku ─────────────────────────────────
     function selectBlock(id, { focusWrapper = false } = {}) {
@@ -3521,7 +3627,7 @@ function start(config) {
             ['Esc', 'W tekście bloku: tryb nawigacji (strzałki — wybór bloku, Enter — edycja, Delete — usuń)'],
             ['Esc', 'W lewym panelu (Dodaj blok, Widok listy, Dostępność): zamknij panel i wróć tam, skąd go otwarto'],
             ['Alt+F10', 'Przejdź do paska narzędzi bloku'], ['Alt+Shift+↑ / ↓', 'Przenieś blok w górę / w dół'],
-            [mod + '+Shift+D', 'Duplikuj blok'], ['Shift+Alt+Z', 'Usuń blok'],
+            [mod + '+Shift+D', 'Duplikuj blok'], ['Shift+Alt+Z', 'Usuń blok'], ['Alt+L', 'Zamień zaznaczone linie „- …” lub „1. …” na listę'],
             [mod + '+C / X / V', 'W trybie nawigacji (Esc): kopiuj, wytnij, wklej cały blok'],
         ];
         const dlg = h('dialog', { class: 'be-dialog be-dialog--small', 'aria-labelledby': 'be-keys-title' },
