@@ -93,7 +93,7 @@ class MaterialsFeerLayoutTest extends TestCase
 
         $html = $this->get('/materialy')->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('~<h2 id="grupa-h-0" class="mat-group-h">\s*Ogólny \(dla wszystkich\)\s*<span class="mat-group-count">3 materiały</span>~u', $html);
+        $this->assertMatchesRegularExpression('~<h2 id="grupa-h-0" class="mat-group-h">\s*Dla wszystkich\s*<span class="mat-group-count">3 materiały</span>~u', $html);
         $this->assertStringContainsString('<form role="search"', $html);
         $this->assertStringContainsString('<label for="material-search" class="mat-label">Szukaj materiału</label>', $html);
         $this->assertStringContainsString('role="group" aria-label="Typ materiału"', $html);
