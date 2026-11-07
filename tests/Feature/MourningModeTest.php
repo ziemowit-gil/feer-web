@@ -54,4 +54,16 @@ class MourningModeTest extends TestCase
             ->assertSee('Żałoba narodowa')->assertSee('name="mourning_from"', false)->assertSee('name="maintenance_mode"', false)
             ->assertSee('name="under_construction"', false)->assertSee('name="notice_enabled"', false)->assertSee('name="site_url"', false);
     }
+
+    public function test_zakladka_ogolne_ma_sekcje_i_wszystkie_pola(): void
+    {
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+
+        $html = $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'general']))->assertOk()
+            ->assertSee('Tożsamość strony')->assertSee('Edycja treści i integracje')->assertSee('Pliki cookies')->assertSee('Stopka')->getContent();
+
+        foreach (['site_name', 'site_name_genitive', 'tagline', 'content_editor', 'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit', 'logo', 'logo_alt', 'logo_only'] as $field) {
+            $this->assertStringContainsString('name="'.$field.'"', $html, $field);
+        }
+    }
 }
