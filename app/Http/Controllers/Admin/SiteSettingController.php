@@ -131,6 +131,9 @@ class SiteSettingController extends Controller
             'maintenance_mode' => ['sometimes', 'boolean'],
             'maintenance_message' => ['nullable', 'string', 'max:2000'],
             'under_construction' => ['sometimes', 'boolean'],
+            'mourning_mode' => ['sometimes', 'boolean'],
+            'mourning_from' => ['nullable', 'date'],
+            'mourning_until' => ['nullable', 'date', 'after_or_equal:mourning_from'],
             'under_construction_message' => ['nullable', 'string', 'max:2000'],
             'notice_title' => ['nullable', 'string', 'max:120'],
             'notice_text' => ['nullable', 'string', 'max:1000'],
@@ -464,6 +467,7 @@ class SiteSettingController extends Controller
         $data['logo_only'] = $request->boolean('logo_only');
         $data['maintenance_mode'] = $request->boolean('maintenance_mode');
         $data['under_construction'] = $request->boolean('under_construction');
+        $data['mourning_mode'] = $request->boolean('mourning_mode');
         $data['notice_enabled'] = $request->boolean('notice_enabled');
         $data['notice_on_home'] = $request->boolean('notice_on_home');
         $data['notice_on_contact'] = $request->boolean('notice_on_contact');
@@ -715,7 +719,7 @@ class SiteSettingController extends Controller
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['homepage_sections_enabled']);
 
         // Do czasu wykonania migracji (nowa kolumna) zapis ustawień nie może padać — pomijamy brakującą kolumnę.
-        foreach (['support_steps_hidden', 'support_steps_title', 'support_steps_subtitle', 'support_step1_title', 'support_step1_text', 'support_step2_title', 'support_step2_text', 'support_step3_title', 'support_step3_text', 'homepage_sections_hidden', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'parent_link_label', 'parent_link_url', 'is_cta_label', 'is_cta_url', 'contact_branches', 'contact_branches_title', 'courses_registration_enabled', 'clarity_project_id', 'under_construction', 'under_construction_message', 'contact_phone_hours', 'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact'] as $newColumn) {
+        foreach (['support_steps_hidden', 'support_steps_title', 'support_steps_subtitle', 'support_step1_title', 'support_step1_text', 'support_step2_title', 'support_step2_text', 'support_step3_title', 'support_step3_text', 'homepage_sections_hidden', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'parent_link_label', 'parent_link_url', 'is_cta_label', 'is_cta_url', 'contact_branches', 'contact_branches_title', 'courses_registration_enabled', 'clarity_project_id', 'under_construction', 'under_construction_message', 'mourning_mode', 'mourning_from', 'mourning_until', 'contact_phone_hours', 'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact'] as $newColumn) {
             if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', $newColumn)) {
                 unset($data[$newColumn]);
             }

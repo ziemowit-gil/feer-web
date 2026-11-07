@@ -874,6 +874,32 @@
             </div>
 
             <div class="border-t border-gray-100 pt-6">
+                <h2 class="text-base font-bold text-ink">Żałoba narodowa</h2>
+                <p class="mt-1 text-xs text-muted">Cała witryna publiczna wyświetla się w odcieniach szarości (czerń i biel). Panel administracyjny zostaje kolorowy.</p>
+                <label class="mt-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm">
+                    <input type="checkbox" name="mourning_mode" value="1" @checked(old('mourning_mode', $settings->mourning_mode))
+                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    <span>
+                        <span class="font-bold text-sky-900">Włącz tryb czarno-biały (żałoba)</span>
+                        <span class="block text-xs text-sky-800">Wyłącz po zakończeniu żałoby.</span>
+                    </span>
+                </label>
+                <p class="mt-4 text-xs text-muted">Albo zaplanuj: w podanym przedziale dat (włącznie) tryb włączy się i wyłączy sam, bez cron-a. Zostaw puste, jeśli nie planujesz.</p>
+                <div class="mt-2 grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="mourning_from" class="mb-1 block text-sm font-bold">Od dnia</label>
+                        <input type="date" id="mourning_from" name="mourning_from" value="{{ old('mourning_from', $settings->mourning_from?->format('Y-m-d')) }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @error('mourning_from') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="mourning_until" class="mb-1 block text-sm font-bold">Do dnia (włącznie)</label>
+                        <input type="date" id="mourning_until" name="mourning_until" value="{{ old('mourning_until', $settings->mourning_until?->format('Y-m-d')) }}" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @error('mourning_until') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-6">
                 <h2 class="text-base font-bold text-ink">Ramka z komunikatem</h2>
                 <p class="mt-1 text-xs text-muted">Krótka, wyróżniona informacja widoczna dla odwiedzających na stronie głównej i/lub w Kontakcie (np. zmiana godzin pracy, przerwa urlopowa).</p>
                 <label class="mt-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm">

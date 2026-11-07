@@ -477,7 +477,7 @@ class SiteSetting extends Model implements HasMedia
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
         'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo',
-        'site_url', 'maintenance_mode', 'maintenance_message', 'under_construction', 'under_construction_message',
+        'site_url', 'maintenance_mode', 'maintenance_message', 'under_construction', 'under_construction_message', 'mourning_mode', 'mourning_from', 'mourning_until',
         'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact',
         'phonebook_title', 'phonebook_lead', 'phonebook_layout', 'phonebook_sort', 'phonebook_hide_numbers',
         'microsoft_login_enabled', 'microsoft_only_login', 'emergency_login_token', 'microsoft_client_id', 'microsoft_client_secret', 'microsoft_tenant_id',
@@ -765,6 +765,9 @@ class SiteSetting extends Model implements HasMedia
         'logo_only' => 'boolean',
         'maintenance_mode' => 'boolean',
         'under_construction' => 'boolean',
+        'mourning_mode' => 'boolean',
+        'mourning_from' => 'date',
+        'mourning_until' => 'date',
         'notice_enabled' => 'boolean',
         'notice_on_home' => 'boolean',
         'notice_on_contact' => 'boolean',
@@ -2039,6 +2042,24 @@ class SiteSetting extends Model implements HasMedia
      * zewnętrzny BIP (tryb „external”) albo wbudowana strona /bip tej witryny.
      * Null, gdy tryb zewnętrzny nie ma podanego adresu.
      */
+    /**
+     * Czy witryna ma być teraz w odcieniach szarości (żałoba): włączona ręcznie albo dziś mieści się w przedziale
+     * „od – do” (obie daty włącznie; sama data „od” działa bez końca, sama „do” od zawsze do tego dnia).
+     */
+    public function mourningActive(): bool
+    {
+        if ($this->mourning_mode) {
+            return true;
+        }
+        if (! $this->mourning_from && ! $this->mourning_until) {
+            return false;
+        }
+        $today = today();
+
+        return (! $this->mourning_from || $today->gte($this->mourning_from->startOfDay()))
+            && (! $this->mourning_until || $today->lte($this->mourning_until->startOfDay()));
+    }
+
     public function bipHref(): ?string
     {
         $bipSite = $this->bipSite();
