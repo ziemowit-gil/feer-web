@@ -147,7 +147,14 @@
         .tm-panel { margin: .125rem 0 .25rem .9rem; padding-left: .625rem; border-left: 2px solid #e5e7eb; }
         .tm-sub { margin: .5rem .5rem .125rem; font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #4b5563; }
         .tm-sub:first-child { margin-top: .25rem; }
-        .admin-sidebar.is-collapsed .tm-panel, .admin-sidebar.is-collapsed .nav-search { display: none !important; }
+        /* Wygląd paska: wyraźniejsze oddzielenie grup, cele dotyku ≥ 2,5 rem, pionowy znacznik bieżącej pozycji. */
+        .tm-group + .tm-group { margin-top: .25rem; padding-top: .25rem; border-top: 1px solid #eef0f2; }
+        .tm-head { min-height: 2.5rem; font-size: .9375rem; }
+        .tm-panel a, .tm-panel .tm-premium-item { min-height: 2.25rem; }
+        .tm-panel [aria-current="page"] { position: relative; font-weight: 700; }
+        .tm-panel [aria-current="page"]::before { content: ""; position: absolute; left: -.9rem; top: .2rem; bottom: .2rem; width: 3px; border-radius: 2px; background: var(--color-brand-dark); }
+        .tm-sub { color: #374151; letter-spacing: .08em; }
+        .admin-sidebar.is-collapsed .tm-panel, .admin-sidebar.is-collapsed .nav-search, .admin-sidebar.is-collapsed .nav-quick { display: none !important; }
         /* Moduły premium (AdminMenu::PREMIUM_*): niebieska obwódka w kolorze marki (brand-dark ≥ 3:1 dla obramowań). */
         .tm-head.tm-premium { box-shadow: inset 0 0 0 2px var(--color-brand-dark), inset 0 0 0 4px #fff; }
         .admin-joomla .tm-head.tm-premium { border-color: var(--color-brand-dark); }
@@ -176,16 +183,22 @@
          pierwszy wynik, Escape czyści pole. Ukryta w zwiniętej szynie ikon. --}}
     @php
         $menuEntries = [];
+        $currentEntry = null; // bieżąca strona w menu (do „Ostatnio otwarte” i „Przypnij tę stronę”)
         foreach ($menu as $g) {
             foreach ($g['blocks'] as $b) {
                 foreach ($b['items'] as $it) {
-                    $menuEntries[] = ['label' => $it['label'], 'url' => $it['url'], 'path' => $g['label'] . ($b['heading'] ? ' › ' . $b['heading'] : ''), 'icon' => $it['icon']];
+                    $entry = ['label' => $it['label'], 'url' => $it['url'], 'path' => $g['label'] . ($b['heading'] ? ' › ' . $b['heading'] : ''), 'icon' => $it['icon']];
+                    $menuEntries[] = $entry;
+                    if ($it['active'] && $it['children'] === [] && ! $currentEntry && $g['key'] !== 'start') { $currentEntry = $entry; }
                     foreach ($it['children'] as $ch) {
-                        $menuEntries[] = ['label' => $ch['label'], 'url' => $ch['url'], 'path' => $g['label'] . ' › ' . $it['label'], 'icon' => $ch['icon'] ?: $it['icon']];
+                        $childEntry = ['label' => $ch['label'], 'url' => $ch['url'], 'path' => $g['label'] . ' › ' . $it['label'], 'icon' => $ch['icon'] ?: $it['icon']];
+                        $menuEntries[] = $childEntry;
+                        if ($ch['active'] && $g['key'] !== 'start') { $currentEntry = $childEntry; }
                     }
                 }
             }
         }
+        $quickKey = 'admin-nav-quick:' . ($authUser?->id ?? 0) . ':' . ($siteSettings->id ?? 0);
     @endphp
     <div class="nav-search flex-none border-b border-gray-200 px-3 py-1.5"
          x-data="{
@@ -200,12 +213,14 @@
             update() { $store.adminNav.searching = this.q.trim() !== ''; },
             clear() { this.q = ''; this.update(); },
             go() { const r = this.results[0]; if (r) window.location.href = r.url; },
-         }">
+            focusFirst() { this.$root.querySelector('#admin-menu-results a')?.focus(); },
+         }"
+         @keydown.window="if ($event.key === '/' && ! $event.ctrlKey && ! $event.metaKey && ! $event.altKey && ! /^(input|textarea|select)$/i.test($event.target.tagName) && ! $event.target.isContentEditable) { $event.preventDefault(); if ($store.adminNav.collapsed) { $store.adminNav.toggleCollapsed(); } $nextTick(() => $refs.search.focus()); }">
         <label for="admin-menu-search" class="sr-only">Szukaj w menu panelu</label>
         <div class="relative">
             <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400" aria-hidden="true"></i>
-            <input id="admin-menu-search" type="search" x-model="q" @input="update()" @keydown.enter.prevent="go()" @keydown.escape.stop="clear()"
-                   placeholder="Szukaj w menu…" autocomplete="off" aria-controls="admin-menu-results"
+            <input id="admin-menu-search" type="search" x-model="q" @input="update()" @keydown.enter.prevent="go()" @keydown.escape.stop="clear()" @keydown.arrow-down.prevent="focusFirst()" x-ref="search"
+                   placeholder="Szukaj w menu… (naciśnij /)" autocomplete="off" aria-controls="admin-menu-results"
                    class="w-full rounded-lg border-gray-500 bg-gray-50 py-1.5 pl-8 pr-8 text-sm focus:border-brand-dark focus:bg-white focus:ring-brand-dark">
             <button type="button" x-show="q !== ''" x-cloak @click="clear(); $refs.search?.focus()" aria-label="Wyczyść wyszukiwanie"
                     class="absolute right-1.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-gray-400 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
@@ -227,6 +242,90 @@
             <p x-show="results.length === 0" class="px-2 py-3 text-sm text-muted">Brak pozycji menu dla „<span x-text="q"></span>".</p>
         </div>
     </div>
+
+    {{-- ── Ulubione i ostatnio otwarte: skróty użytkownika (przeglądarka, osobno dla konta i witryny; localStorage) ── --}}
+    <div class="nav-quick flex-none border-b border-gray-200 px-3 py-2" x-show="! $store.adminNav.searching" x-cloak
+         x-data="navQuick(@js($quickKey), @js($currentEntry))">
+        <template x-if="pins.length > 0">
+            <section aria-labelledby="nav-pins-h">
+                <p class="tm-sub" id="nav-pins-h" style="margin: 0 .25rem .25rem">Ulubione</p>
+                <ul class="space-y-0.5" role="list">
+                    <template x-for="p in pins" :key="p.url">
+                        <li class="nav-quick-row flex items-center">
+                            <a :href="p.url" class="flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1 text-[13px] font-medium text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                <i class="fa-solid fa-star w-4 flex-none text-center text-[0.7rem] text-brand-dark" aria-hidden="true"></i>
+                                <span class="truncate" x-text="p.label"></span>
+                            </a>
+                            <button type="button" @click="unpin(p.url)" class="flex h-8 w-8 flex-none items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
+                                <span class="sr-only" x-text="'Usuń z ulubionych: ' + p.label"></span>
+                            </button>
+                        </li>
+                    </template>
+                </ul>
+            </section>
+        </template>
+        <template x-if="visibleRecents.length > 0">
+            <section aria-labelledby="nav-recent-h" :class="pins.length > 0 && 'mt-2'">
+                <p class="tm-sub" id="nav-recent-h" style="margin: 0 .25rem .25rem">Ostatnio otwarte</p>
+                <ul class="space-y-0.5" role="list">
+                    <template x-for="r in visibleRecents" :key="r.url">
+                        <li>
+                            <a :href="r.url" class="flex min-w-0 items-center gap-2 rounded-md px-2 py-1 text-[13px] text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                <i class="fa-solid fa-clock-rotate-left w-4 flex-none text-center text-[0.7rem] text-gray-500" aria-hidden="true"></i>
+                                <span class="truncate" x-text="r.label"></span>
+                            </a>
+                        </li>
+                    </template>
+                </ul>
+            </section>
+        </template>
+        <button type="button" x-show="current" @click="togglePin()" :aria-pressed="isPinned.toString()"
+                class="mt-1 flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-[13px] font-bold text-brand-dark hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
+                :class="(pins.length > 0 || visibleRecents.length > 0) && 'mt-2'">
+            <i class="fa-star w-4 flex-none text-center text-[0.75rem]" :class="isPinned ? 'fa-solid' : 'fa-regular'" aria-hidden="true"></i>
+            <span x-text="isPinned ? 'Usuń tę stronę z ulubionych' : 'Dodaj tę stronę do ulubionych'"></span>
+        </button>
+        <p class="sr-only" role="status" aria-live="polite" x-text="status"></p>
+    </div>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('navQuick', (storeKey, current) => ({
+                pins: [], recents: [], current: current, status: '',
+                init() {
+                    this.pins = this.read(storeKey + ':pins');
+                    this.recents = this.read(storeKey + ':recent');
+                    if (this.current && this.current.url) {
+                        this.recents = [this.current].concat(this.recents.filter(r => r.url !== this.current.url)).slice(0, 8);
+                        this.write(storeKey + ':recent', this.recents);
+                    }
+                },
+                read(key) {
+                    try {
+                        const v = JSON.parse(localStorage.getItem(key) || '[]');
+                        // Tylko adresy z tej witryny (wpis w localStorage nie może prowadzić gdzie indziej).
+                        return Array.isArray(v) ? v.filter(e => e && e.label && typeof e.url === 'string' && (e.url.startsWith('/') || e.url.startsWith(location.origin + '/'))).slice(0, 12) : [];
+                    } catch (e) { return []; }
+                },
+                write(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} },
+                get isPinned() { return !! this.current && this.pins.some(p => p.url === this.current.url); },
+                get visibleRecents() { return this.recents.filter(r => ! this.pins.some(p => p.url === r.url) && (! this.current || r.url !== this.current.url)).slice(0, 4); },
+                togglePin() {
+                    if (! this.current) return;
+                    if (this.isPinned) { return this.unpin(this.current.url); }
+                    this.pins = this.pins.concat([this.current]).slice(-8);
+                    this.write(storeKey + ':pins', this.pins);
+                    this.status = 'Dodano do ulubionych: ' + this.current.label;
+                },
+                unpin(url) {
+                    const gone = this.pins.find(p => p.url === url);
+                    this.pins = this.pins.filter(p => p.url !== url);
+                    this.write(storeKey + ':pins', this.pins);
+                    this.status = 'Usunięto z ulubionych: ' + (gone ? gone.label : '');
+                },
+            }));
+        });
+    </script>
 
     <nav class="nav-scroll flex-1 overflow-y-auto overscroll-contain px-2 py-2 text-sm" aria-label="Menu panelu" x-show="! $store.adminNav.searching"
          x-data="navAccordion(@js(collect($menu)->firstWhere('active', true)['key'] ?? ''), @js($menu[0]['key'] ?? ''))">

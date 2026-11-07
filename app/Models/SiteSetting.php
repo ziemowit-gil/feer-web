@@ -217,8 +217,9 @@ class SiteSetting extends Model implements HasMedia
 
     public const SETTINGS_TAB_GROUPS = [
         'Wygląd' => ['general', 'header', 'colors', 'template', 'homepage'],
+        'Stan witryny' => ['maintenance'],
         'Treści i dane' => ['content', 'contact', 'social', 'support', 'join', 'registry'],
-        'Funkcje i integracje' => ['modules', 'login', 'mail', 'szo', 'maintenance'],
+        'Funkcje i integracje' => ['modules', 'login', 'mail', 'szo'],
         'SEO i dostępność' => ['seo', 'accessibility'],
     ];
 

@@ -83,7 +83,7 @@ class AdminMenuGroupsTest extends TestCase
         $tabItems = collect($settings['blocks'])->flatMap(fn ($b) => $b['items'])->filter(fn ($i) => str_contains($i['url'], 'tab='));
         $this->assertCount(count(SiteSetting::SETTINGS_TABS), $tabItems, 'Każda zakładka ustawień trafia do menu dokładnie raz.');
         $this->assertSame(
-            ['Wygląd', 'Treści i dane', 'Funkcje i integracje', 'SEO i dostępność', 'Zaawansowane'],
+            ['Wygląd', 'Stan witryny', 'Treści i dane', 'Funkcje i integracje', 'SEO i dostępność', 'Zaawansowane'],
             array_column($settings['blocks'], 'heading')
         );
 
