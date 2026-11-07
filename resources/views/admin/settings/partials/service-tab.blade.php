@@ -140,7 +140,7 @@
 
         <div class="rounded-lg border border-gray-200 p-5">
             <h3 class="text-base font-bold text-ink">Żałoba narodowa</h3>
-            <p class="mt-1 text-xs text-muted">Cała witryna publiczna wyświetla się w odcieniach szarości (czerń i biel). Panel administracyjny zostaje kolorowy.</p>
+            <p class="mt-1 text-xs text-muted">Cała witryna publiczna wyświetla się odwiedzającym w odcieniach szarości (czerń i biel). Panel administracyjny zostaje kolorowy, a zalogowany administrator widzi także samą witrynę w kolorach (żeby mógł ją edytować); żałobę widzą wszyscy pozostali.</p>
             <label class="mt-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm">
                 <input type="checkbox" name="mourning_mode" value="1" x-model="mourning" @checked(old('mourning_mode', $settings->mourning_mode)) class="{{ $svcCheck }}">
                 <span>

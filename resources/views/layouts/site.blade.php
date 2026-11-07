@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 @php
-    $mourningOn = $siteSettings->mourningActive() && ! $__env->hasSection('menu_preview');
+    // Żałoba (szarość) dotyczy odwiedzających. Zalogowany administrator widzi witrynę w kolorach, żeby mógł ją edytować
+    // i sprawdzać; podgląd menu z panelu też jest kolorowy.
+    $mourningOn = $siteSettings->mourningActive()
+        && ! $__env->hasSection('menu_preview')
+        && ! (auth()->check() && auth()->user()->isAdmin());
 @endphp
 <html lang="pl"@if ($mourningOn) class="mourning-mode"@endif>
 <head>

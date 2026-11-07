@@ -26,6 +26,25 @@ class MourningModeTest extends TestCase
         $this->get('/')->assertOk()->assertSee('class="mourning-mode"', false)->assertSee('grayscale(1)', false);
     }
 
+    public function test_zalogowany_administrator_widzi_witryne_w_kolorach_mimo_zalobu(): void
+    {
+        $this->setMourning(true);
+        $admin = \App\Models\User::factory()->create(['role' => \App\Models\User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->get('/')->assertOk()->assertDontSee('mourning-mode', false)->assertDontSee('grayscale(1)', false);
+        // Odwiedzający (niezalogowany) nadal widzi żałobę.
+        auth()->logout();
+        $this->get('/')->assertOk()->assertSee('class="mourning-mode"', false);
+    }
+
+    public function test_zalogowany_redaktor_nie_administrator_widzi_zalobe(): void
+    {
+        $this->setMourning(true);
+        $editor = \App\Models\User::factory()->create(['role' => \App\Models\User::ROLE_EDITOR]);
+
+        $this->actingAs($editor)->get('/')->assertOk()->assertSee('class="mourning-mode"', false);
+    }
+
     public function test_domyslnie_witryna_jest_kolorowa(): void
     {
         $this->setMourning(false);
