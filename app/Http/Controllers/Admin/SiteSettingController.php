@@ -845,7 +845,11 @@ class SiteSettingController extends Controller
             ? $redirectTab
             : 'general';
 
-        return redirect()->route('admin.ustawienia.edit', ['tab' => $redirectTab])->with('status', $status);
+        // Otwarta karta sekcji (pasek kart w admin/partials/section-cards) — po zapisie wracamy do tej samej karty.
+        $redirectCard = (string) $request->input('_redirect_card', '');
+        $redirectParams = ['tab' => $redirectTab] + (preg_match('/^[a-z0-9-]{1,40}$/', $redirectCard) ? ['karta' => $redirectCard] : []);
+
+        return redirect()->route('admin.ustawienia.edit', $redirectParams)->with('status', $status);
     }
 
     /**

@@ -130,6 +130,8 @@
         @csrf
         @method('PUT')
         <input type="hidden" name="_redirect_tab" :value="tab">
+        {{-- Otwarta karta sekcji (admin/partials/section-cards) — po zapisie wracamy do niej. --}}
+        <input type="hidden" name="_redirect_card" value="">
 
         {{-- Sekcje wybiera się w menu bocznym panelu (Ustawienia strony → …, adres ?tab=…). --}}
         <header class="mb-8 border-b border-gray-100 pb-5">
@@ -562,162 +564,166 @@
             </details>
         </div>
 
-        <div x-show="tab === 'colors'" x-cloak class="space-y-6">
-            @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'menu_highlight_color'))
-            <div class="rounded-md bg-gray-50 p-4">
-                <label for="menu_highlight_color" class="mb-1 block text-sm font-bold">Kolor wyróżnienia pozycji menu</label>
-                <p class="mb-2 text-xs text-muted">Aktywna i najechana pozycja w górnym i bocznym menu (np. menu działania, strony działu). Pusty = kolor główny marki. Kolor zostanie przyciemniony, jeśli jest za jasny na białym tle (WCAG).</p>
-                <div class="flex flex-wrap items-center gap-3">
-                    <input id="menu_highlight_color" name="menu_highlight_color" type="text" value="{{ old('menu_highlight_color', $settings->menu_highlight_color) }}" placeholder="np. #ea8f00" pattern="#[0-9a-fA-F]{6}" data-color-picker
-                        class="w-40 rounded border-gray-500 font-mono text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-                    @error('menu_highlight_color') <p class="text-sm text-red-700">{{ $message }}</p> @enderror
+        <div x-show="tab === 'colors'" x-cloak class="space-y-6" data-cards="colors" data-cards-label="Karty sekcji Kolory">
+            <div class="space-y-6" data-card="marka" data-card-label="Kolory marki" data-card-icon="fa-palette">
+                @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'menu_highlight_color'))
+                <div class="rounded-md bg-gray-50 p-4">
+                    <label for="menu_highlight_color" class="mb-1 block text-sm font-bold">Kolor wyróżnienia pozycji menu</label>
+                    <p class="mb-2 text-xs text-muted">Aktywna i najechana pozycja w górnym i bocznym menu (np. menu działania, strony działu). Pusty = kolor główny marki. Kolor zostanie przyciemniony, jeśli jest za jasny na białym tle (WCAG).</p>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input id="menu_highlight_color" name="menu_highlight_color" type="text" value="{{ old('menu_highlight_color', $settings->menu_highlight_color) }}" placeholder="np. #ea8f00" pattern="#[0-9a-fA-F]{6}" data-color-picker
+                            class="w-40 rounded border-gray-500 font-mono text-sm focus-visible:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
+                        @error('menu_highlight_color') <p class="text-sm text-red-700">{{ $message }}</p> @enderror
+                    </div>
                 </div>
-            </div>
-            @endif
-            @php $subBrands = array_values((array) old('sub_brands', $settings->sub_brands ?? [])); @endphp
-            <p class="text-xs text-muted">Kolor przewodni strony oraz nazwane kolory submarek dla różnych treści (działań i aktualności). Każdy kolor jest przy zapisie przyciemniany do kontrastu WCAG AA wobec bieli.</p>
+                @endif
+                @php $subBrands = array_values((array) old('sub_brands', $settings->sub_brands ?? [])); @endphp
+                <p class="text-xs text-muted">Kolor przewodni strony oraz nazwane kolory submarek dla różnych treści (działań i aktualności). Każdy kolor jest przy zapisie przyciemniany do kontrastu WCAG AA wobec bieli.</p>
 
-            @if (($settings->site_template ?? 'default') === 'feer')
-                @php
-                    $feerSwatches = [
-                        ['Kolor główny', 'brand_color', $settings->brand_color ?: '#1e6dff', 'Przyciski, linki, akcenty'],
-                        ['Kolor 2', 'brand_color_2', $settings->brand_color_2 ?: '#ea8f00', 'Partnerstwo z NGO, wyróżnienia'],
-                        ['Kolor 3', 'brand_color_3', $settings->brand_color_3 ?: '#1d1d1a', 'Grafit — tekst na jasnym tle'],
-                        ['Kolor 4', 'brand_color_4', $settings->brand_color_4 ?: '#cbd5e7', 'Jasne tło pomocnicze'],
-                    ];
-                @endphp
-                <section class="p-4 rounded-md bg-gray-50" aria-labelledby="feer-theme-colors-h">
-                    <h3 id="feer-theme-colors-h" class="text-sm font-bold text-ink">Kolory motywu FEER</h3>
-                    <p class="mb-3 mt-1 text-xs text-muted">Wszystkie kolory używane przez motyw FEER w jednym miejscu. Zmieniasz je w polach niżej (kolor przewodni oraz kolory 2–4) albo w pełnym panelu kolorów.</p>
-                    <ul role="list" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                        @foreach ($feerSwatches as [$fLabel, $fKey, $fHex, $fNote])
-                            <li class="flex items-center gap-3 p-2 rounded-md bg-white">
-                                <span class="h-10 w-10 flex-none rounded border border-gray-300" style="background: {{ $fHex }}" aria-hidden="true"></span>
-                                <span class="min-w-0 text-xs"><span class="block font-bold text-ink">{{ $fLabel }}</span><span class="font-mono text-muted">{{ strtoupper($fHex) }}</span><span class="block text-muted">{{ $fNote }}</span></span>
-                            </li>
-                        @endforeach
-                    </ul>
-                    <p class="mt-3 text-xs"><a href="{{ route('admin.kolory.edit') }}" class="font-bold text-brand-dark underline hover:text-ink">Otwórz pełny panel kolorów (podgląd, kontrast, gotowe palety)</a></p>
-                </section>
-            @endif
+                @if (($settings->site_template ?? 'default') === 'feer')
+                    @php
+                        $feerSwatches = [
+                            ['Kolor główny', 'brand_color', $settings->brand_color ?: '#1e6dff', 'Przyciski, linki, akcenty'],
+                            ['Kolor 2', 'brand_color_2', $settings->brand_color_2 ?: '#ea8f00', 'Partnerstwo z NGO, wyróżnienia'],
+                            ['Kolor 3', 'brand_color_3', $settings->brand_color_3 ?: '#1d1d1a', 'Grafit — tekst na jasnym tle'],
+                            ['Kolor 4', 'brand_color_4', $settings->brand_color_4 ?: '#cbd5e7', 'Jasne tło pomocnicze'],
+                        ];
+                    @endphp
+                    <section class="p-4 rounded-md bg-gray-50" aria-labelledby="feer-theme-colors-h">
+                        <h3 id="feer-theme-colors-h" class="text-sm font-bold text-ink">Kolory motywu FEER</h3>
+                        <p class="mb-3 mt-1 text-xs text-muted">Wszystkie kolory używane przez motyw FEER w jednym miejscu. Zmieniasz je w polach niżej (kolor przewodni oraz kolory 2–4) albo w pełnym panelu kolorów.</p>
+                        <ul role="list" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            @foreach ($feerSwatches as [$fLabel, $fKey, $fHex, $fNote])
+                                <li class="flex items-center gap-3 p-2 rounded-md bg-white">
+                                    <span class="h-10 w-10 flex-none rounded border border-gray-300" style="background: {{ $fHex }}" aria-hidden="true"></span>
+                                    <span class="min-w-0 text-xs"><span class="block font-bold text-ink">{{ $fLabel }}</span><span class="font-mono text-muted">{{ strtoupper($fHex) }}</span><span class="block text-muted">{{ $fNote }}</span></span>
+                                </li>
+                            @endforeach
+                        </ul>
+                        <p class="mt-3 text-xs"><a href="{{ route('admin.kolory.edit') }}" class="font-bold text-brand-dark underline hover:text-ink">Otwórz pełny panel kolorów (podgląd, kontrast, gotowe palety)</a></p>
+                    </section>
+                @endif
 
-            <div class="flex items-start gap-3 rounded-md bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
-                <input type="hidden" name="brand_skip_contrast" value="0">
-                <input type="checkbox" id="brand_skip_contrast" name="brand_skip_contrast" value="1"
-                    {{ old('brand_skip_contrast', $settings->brand_skip_contrast) ? 'checked' : '' }}
-                    class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                <label for="brand_skip_contrast" class="text-sm leading-snug">
-                    <span class="font-bold">Nie poprawiaj kolorów do WCAG</span>
-                    <span class="block text-xs text-muted">Kolory nie będą przyciemniane ani korygowane (przy zapisie i na stronie). Użyj tylko gdy identyfikacja wizualna organizacji wymaga konkretnego koloru niespełniającego WCAG AA.</span>
-                </label>
-            </div>
-
-            <div class="flex items-start gap-3 p-3 dark:border-gray-700 dark:bg-gray-900 rounded-md bg-gray-50">
-                <input type="hidden" name="nav_dark_text" value="0">
-                <input type="checkbox" id="nav_dark_text" name="nav_dark_text" value="1"
-                    {{ old('nav_dark_text', $settings->nav_dark_text) ? 'checked' : '' }}
-                    class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                <label for="nav_dark_text" class="text-sm leading-snug">
-                    <span class="font-bold">Czarna czcionka w menu nawigacyjnym</span>
-                    <span class="block text-xs text-muted">Gdy kolor marki jest jasny i białe litery w menu nie mają wystarczającego kontrastu, zaznacz tę opcję, aby linki menu były czarne.</span>
-                </label>
-            </div>
-
-            <div>
-                <label for="brand_color" class="mb-1 block text-sm font-bold">Kolor przewodni (marka)</label>
-                <div class="flex flex-wrap items-center gap-3">
-                    <input type="color" id="brand_color" name="brand_color" value="{{ old('brand_color', $settings->brand_color) }}"
-                        class="h-10 w-16 rounded border-gray-500">
-                    <input type="text" id="brand_color_text" value="{{ old('brand_color', $settings->brand_color) }}"
-                        oninput="document.getElementById('brand_color').value = this.value"
-                        class="w-32 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                    <span id="contrast-badge" class="text-xs font-bold"></span>
-                    <button type="button" id="contrast-fix-button" hidden
-                        class="rounded border border-brand-dark px-3 py-1 text-xs font-bold text-brand-dark hover:bg-brand-light">
-                        Dostosuj automatycznie
-                    </button>
-                </div>
-                <p class="mt-1 text-xs text-muted">Ciemniejszy i jaśniejszy odcień zostaną obliczone automatycznie. Kontrast liczony jest wobec bieli — tak jak kolor jest używany na przyciskach i linkach.</p>
-                @error('brand_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-
-            <div class="border-t border-gray-100 pt-5">
-                <p class="mb-1 text-sm font-bold">Dodatkowe kolory marki (identyfikacja)</p>
-                <p class="mb-3 text-xs text-muted">Kolory 2–4 z identyfikacji wizualnej, korespondujące z kolorem przewodnim. Dostępne w kodzie jako <code class="rounded bg-gray-100 px-1">brand-2/3/4</code> i użyte jako pasek akcentu pod nagłówkiem. Puste = niewykorzystane. Zbyt jasny kolor zostanie przyciemniony dla kontrastu (WCAG).</p>
-                <div class="grid gap-4 sm:grid-cols-3">
-                    @foreach ([2, 3, 4] as $n)
-                        @php $val = old('brand_color_'.$n, $settings->{'brand_color_'.$n}); @endphp
-                        <div>
-                            <label for="brand_color_{{ $n }}_text" class="mb-1 block text-xs font-bold text-muted">Kolor {{ $n }}</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" id="brand_color_{{ $n }}_picker" value="{{ $val ?: $settings->brand_color }}"
-                                    oninput="document.getElementById('brand_color_{{ $n }}_text').value = this.value"
-                                    class="h-10 w-12 flex-none rounded border-gray-500" aria-label="Wybierz kolor {{ $n }} marki">
-                                <input type="text" id="brand_color_{{ $n }}_text" name="brand_color_{{ $n }}" value="{{ $val }}"
-                                    placeholder="#RRGGBB" pattern="^#[0-9a-fA-F]{6}$"
-                                    oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('brand_color_{{ $n }}_picker').value = this.value"
-                                    class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                            </div>
-                            @error('brand_color_'.$n) <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
-            <div class="border-t border-gray-100 pt-5">
-                <label for="ngo_color_text" class="mb-1 block text-sm font-bold">Kolor submarki „NGO" <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                <div class="flex flex-wrap items-center gap-3">
-                    <input type="color" id="ngo_color_picker" value="{{ old('ngo_color', $settings->ngo_color ?: '#1f6feb') }}"
-                        oninput="document.getElementById('ngo_color_text').value = this.value"
-                        class="h-10 w-16 rounded border-gray-500" aria-label="Wybierz kolor NGO">
-                    <input type="text" id="ngo_color_text" name="ngo_color" value="{{ old('ngo_color', $settings->ngo_color) }}"
-                        placeholder="np. #1f6feb — puste = brak"
-                        oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('ngo_color_picker').value = this.value"
-                        class="w-48 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                </div>
-                <p class="mt-1 text-xs text-muted">Wbudowana submarka „NGO", wybierana przy działaniach i aktualnościach. Zostaw puste, aby używać koloru przewodniego.</p>
-                @error('ngo_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                <div class="mt-3 flex items-start gap-2">
-                    <input type="hidden" name="ngo_skip_contrast" value="0">
-                    <input type="checkbox" id="ngo_skip_contrast" name="ngo_skip_contrast" value="1"
-                        {{ old('ngo_skip_contrast', $settings->ngo_skip_contrast) ? 'checked' : '' }}
+                <div class="flex items-start gap-3 rounded-md bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
+                    <input type="hidden" name="brand_skip_contrast" value="0">
+                    <input type="checkbox" id="brand_skip_contrast" name="brand_skip_contrast" value="1"
+                        {{ old('brand_skip_contrast', $settings->brand_skip_contrast) ? 'checked' : '' }}
                         class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                    <label for="ngo_skip_contrast" class="text-xs leading-snug text-muted">
-                        Wyłącz korygowanie kontrastu dla tego koloru
+                    <label for="brand_skip_contrast" class="text-sm leading-snug">
+                        <span class="font-bold">Nie poprawiaj kolorów do WCAG</span>
+                        <span class="block text-xs text-muted">Kolory nie będą przyciemniane ani korygowane (przy zapisie i na stronie). Użyj tylko gdy identyfikacja wizualna organizacji wymaga konkretnego koloru niespełniającego WCAG AA.</span>
                     </label>
                 </div>
+
+                <div class="flex items-start gap-3 p-3 dark:border-gray-700 dark:bg-gray-900 rounded-md bg-gray-50">
+                    <input type="hidden" name="nav_dark_text" value="0">
+                    <input type="checkbox" id="nav_dark_text" name="nav_dark_text" value="1"
+                        {{ old('nav_dark_text', $settings->nav_dark_text) ? 'checked' : '' }}
+                        class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    <label for="nav_dark_text" class="text-sm leading-snug">
+                        <span class="font-bold">Czarna czcionka w menu nawigacyjnym</span>
+                        <span class="block text-xs text-muted">Gdy kolor marki jest jasny i białe litery w menu nie mają wystarczającego kontrastu, zaznacz tę opcję, aby linki menu były czarne.</span>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="brand_color" class="mb-1 block text-sm font-bold">Kolor przewodni (marka)</label>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input type="color" id="brand_color" name="brand_color" value="{{ old('brand_color', $settings->brand_color) }}"
+                            class="h-10 w-16 rounded border-gray-500">
+                        <input type="text" id="brand_color_text" value="{{ old('brand_color', $settings->brand_color) }}"
+                            oninput="document.getElementById('brand_color').value = this.value"
+                            class="w-32 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <span id="contrast-badge" class="text-xs font-bold"></span>
+                        <button type="button" id="contrast-fix-button" hidden
+                            class="rounded border border-brand-dark px-3 py-1 text-xs font-bold text-brand-dark hover:bg-brand-light">
+                            Dostosuj automatycznie
+                        </button>
+                    </div>
+                    <p class="mt-1 text-xs text-muted">Ciemniejszy i jaśniejszy odcień zostaną obliczone automatycznie. Kontrast liczony jest wobec bieli — tak jak kolor jest używany na przyciskach i linkach.</p>
+                    @error('brand_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="border-t border-gray-100 pt-5">
+                    <p class="mb-1 text-sm font-bold">Dodatkowe kolory marki (identyfikacja)</p>
+                    <p class="mb-3 text-xs text-muted">Kolory 2–4 z identyfikacji wizualnej, korespondujące z kolorem przewodnim. Dostępne w kodzie jako <code class="rounded bg-gray-100 px-1">brand-2/3/4</code> i użyte jako pasek akcentu pod nagłówkiem. Puste = niewykorzystane. Zbyt jasny kolor zostanie przyciemniony dla kontrastu (WCAG).</p>
+                    <div class="grid gap-4 sm:grid-cols-3">
+                        @foreach ([2, 3, 4] as $n)
+                            @php $val = old('brand_color_'.$n, $settings->{'brand_color_'.$n}); @endphp
+                            <div>
+                                <label for="brand_color_{{ $n }}_text" class="mb-1 block text-xs font-bold text-muted">Kolor {{ $n }}</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="brand_color_{{ $n }}_picker" value="{{ $val ?: $settings->brand_color }}"
+                                        oninput="document.getElementById('brand_color_{{ $n }}_text').value = this.value"
+                                        class="h-10 w-12 flex-none rounded border-gray-500" aria-label="Wybierz kolor {{ $n }} marki">
+                                    <input type="text" id="brand_color_{{ $n }}_text" name="brand_color_{{ $n }}" value="{{ $val }}"
+                                        placeholder="#RRGGBB" pattern="^#[0-9a-fA-F]{6}$"
+                                        oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('brand_color_{{ $n }}_picker').value = this.value"
+                                        class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                                </div>
+                                @error('brand_color_'.$n) <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
 
-            <div class="border-t border-gray-100 pt-5" data-subbrands>
-                <p class="mb-1 text-sm font-bold">Kolory submarek</p>
-                <p class="mb-3 text-xs text-muted">Zdefiniuj nazwane kolory dla różnych rodzajów treści (np. „Seniorzy", „Szkoły", „Wolontariat"). Pojawią się do wyboru w polu „Grupa docelowa (kolorystyka)" przy działaniach i aktualnościach. Puste wiersze są pomijane.</p>
-                <div data-subbrands-rows class="space-y-2">
-                    @foreach ($subBrands as $i => $sb)
-                        <div data-subbrands-row class="flex flex-wrap items-center gap-2">
-                            <input type="color" value="{{ $sb['color'] ?? '#1f6feb' }}" oninput="this.nextElementSibling.value = this.value"
-                                class="h-10 w-14 flex-none rounded border-gray-500" aria-label="Kolor submarki {{ $i + 1 }}">
-                            <input type="text" name="sub_brands[{{ $i }}][color]" value="{{ $sb['color'] ?? '' }}" data-color-picker placeholder="#1f6feb"
-                                oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) this.previousElementSibling.value = this.value"
-                                class="w-32 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Kod koloru submarki {{ $i + 1 }}">
-                            <input type="text" name="sub_brands[{{ $i }}][name]" value="{{ $sb['name'] ?? '' }}" placeholder="Nazwa, np. Seniorzy"
-                                class="min-w-0 flex-1 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Nazwa submarki {{ $i + 1 }}">
-                            <button type="button" data-subbrands-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń submarkę {{ $i + 1 }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
-                        </div>
-                    @endforeach
-                </div>
-                <button type="button" data-subbrands-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kolor submarki</button>
-                <template data-subbrands-template>
-                    <div data-subbrands-row class="flex flex-wrap items-center gap-2">
-                        <input type="color" value="#1f6feb" oninput="this.nextElementSibling.value = this.value"
-                            class="h-10 w-14 flex-none rounded border-gray-500" aria-label="Kolor submarki">
-                        <input type="text" name="sub_brands[__INDEX__][color]" data-color-picker placeholder="#1f6feb"
-                            oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) this.previousElementSibling.value = this.value"
-                            class="w-32 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Kod koloru submarki">
-                        <input type="text" name="sub_brands[__INDEX__][name]" placeholder="Nazwa, np. Seniorzy"
-                            class="min-w-0 flex-1 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Nazwa submarki">
-                        <button type="button" data-subbrands-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń submarkę"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+            <div class="space-y-6" data-card="submarki" data-card-label="Submarki" data-card-icon="fa-tags">
+                <div class="border-t border-gray-100 pt-5">
+                    <label for="ngo_color_text" class="mb-1 block text-sm font-bold">Kolor submarki „NGO" <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input type="color" id="ngo_color_picker" value="{{ old('ngo_color', $settings->ngo_color ?: '#1f6feb') }}"
+                            oninput="document.getElementById('ngo_color_text').value = this.value"
+                            class="h-10 w-16 rounded border-gray-500" aria-label="Wybierz kolor NGO">
+                        <input type="text" id="ngo_color_text" name="ngo_color" value="{{ old('ngo_color', $settings->ngo_color) }}"
+                            placeholder="np. #1f6feb — puste = brak"
+                            oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('ngo_color_picker').value = this.value"
+                            class="w-48 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
-                </template>
+                    <p class="mt-1 text-xs text-muted">Wbudowana submarka „NGO", wybierana przy działaniach i aktualnościach. Zostaw puste, aby używać koloru przewodniego.</p>
+                    @error('ngo_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    <div class="mt-3 flex items-start gap-2">
+                        <input type="hidden" name="ngo_skip_contrast" value="0">
+                        <input type="checkbox" id="ngo_skip_contrast" name="ngo_skip_contrast" value="1"
+                            {{ old('ngo_skip_contrast', $settings->ngo_skip_contrast) ? 'checked' : '' }}
+                            class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                        <label for="ngo_skip_contrast" class="text-xs leading-snug text-muted">
+                            Wyłącz korygowanie kontrastu dla tego koloru
+                        </label>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-5" data-subbrands>
+                    <p class="mb-1 text-sm font-bold">Kolory submarek</p>
+                    <p class="mb-3 text-xs text-muted">Zdefiniuj nazwane kolory dla różnych rodzajów treści (np. „Seniorzy", „Szkoły", „Wolontariat"). Pojawią się do wyboru w polu „Grupa docelowa (kolorystyka)" przy działaniach i aktualnościach. Puste wiersze są pomijane.</p>
+                    <div data-subbrands-rows class="space-y-2">
+                        @foreach ($subBrands as $i => $sb)
+                            <div data-subbrands-row class="flex flex-wrap items-center gap-2">
+                                <input type="color" value="{{ $sb['color'] ?? '#1f6feb' }}" oninput="this.nextElementSibling.value = this.value"
+                                    class="h-10 w-14 flex-none rounded border-gray-500" aria-label="Kolor submarki {{ $i + 1 }}">
+                                <input type="text" name="sub_brands[{{ $i }}][color]" value="{{ $sb['color'] ?? '' }}" data-color-picker placeholder="#1f6feb"
+                                    oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) this.previousElementSibling.value = this.value"
+                                    class="w-32 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Kod koloru submarki {{ $i + 1 }}">
+                                <input type="text" name="sub_brands[{{ $i }}][name]" value="{{ $sb['name'] ?? '' }}" placeholder="Nazwa, np. Seniorzy"
+                                    class="min-w-0 flex-1 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Nazwa submarki {{ $i + 1 }}">
+                                <button type="button" data-subbrands-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń submarkę {{ $i + 1 }}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                            </div>
+                        @endforeach
+                    </div>
+                    <button type="button" data-subbrands-add class="mt-3 inline-flex items-center gap-2 rounded border border-brand-dark px-3 py-1.5 text-sm font-bold text-brand-dark hover:bg-brand-light"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kolor submarki</button>
+                    <template data-subbrands-template>
+                        <div data-subbrands-row class="flex flex-wrap items-center gap-2">
+                            <input type="color" value="#1f6feb" oninput="this.nextElementSibling.value = this.value"
+                                class="h-10 w-14 flex-none rounded border-gray-500" aria-label="Kolor submarki">
+                            <input type="text" name="sub_brands[__INDEX__][color]" data-color-picker placeholder="#1f6feb"
+                                oninput="if (/^#[0-9a-fA-F]{6}$/.test(this.value)) this.previousElementSibling.value = this.value"
+                                class="w-32 rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Kod koloru submarki">
+                            <input type="text" name="sub_brands[__INDEX__][name]" placeholder="Nazwa, np. Seniorzy"
+                                class="min-w-0 flex-1 rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark" aria-label="Nazwa submarki">
+                            <button type="button" data-subbrands-remove class="rounded p-2 text-muted hover:bg-red-50 hover:text-red-600" aria-label="Usuń submarkę"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                        </div>
+                    </template>
+                </div>
             </div>
         </div>
 
@@ -1473,178 +1479,180 @@
             @error('join_us_texts.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
-        <div x-show="tab === 'social'" x-cloak>
-            <p class="mb-4 text-xs text-muted">Wypełnione linki pojawią się w górnym pasku i stopce. Puste pola zostają ukryte, zamiast prowadzić donikąd.</p>
+        <div x-show="tab === 'social'" x-cloak class="space-y-6" data-cards="social" data-cards-label="Karty sekcji Media i BIP">
+            <div data-card="media" data-card-label="Media społecznościowe" data-card-icon="fa-share-nodes">
+                <p class="mb-4 text-xs text-muted">Wypełnione linki pojawią się w górnym pasku i stopce. Puste pola zostają ukryte, zamiast prowadzić donikąd.</p>
 
-            <div class="mb-5 flex flex-wrap gap-4">
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" name="show_topbar_bip" value="1" {{ old('show_topbar_bip', $settings->show_topbar_bip) ? 'checked' : '' }}
-                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                    Pokaż link BIP w górnym pasku
-                </label>
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" name="show_topbar_social" value="1" {{ old('show_topbar_social', $settings->show_topbar_social) ? 'checked' : '' }}
-                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                    Pokaż ikony mediów społecznościowych w górnym pasku
-                </label>
+                <div class="mb-5 flex flex-wrap gap-4">
+                    <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="show_topbar_bip" value="1" {{ old('show_topbar_bip', $settings->show_topbar_bip) ? 'checked' : '' }}
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                        Pokaż link BIP w górnym pasku
+                    </label>
+                    <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="show_topbar_social" value="1" {{ old('show_topbar_social', $settings->show_topbar_social) ? 'checked' : '' }}
+                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                        Pokaż ikony mediów społecznościowych w górnym pasku
+                    </label>
+                </div>
+                <p class="mb-4 text-xs text-muted">Dotyczy tylko górnego paska nad logo. Ikony mediów społecznościowych w stopce pozostają widoczne niezależnie od tego ustawienia (BIP nie jest wyświetlany w stopce).</p>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="facebook_url" class="mb-1 block text-sm font-bold">Facebook</label>
+                        <input type="text" id="facebook_url" name="facebook_url" value="{{ old('facebook_url', $settings->facebook_url) }}" placeholder="https://facebook.com/..."
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @error('facebook_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="facebook_group_url" class="mb-1 block text-sm font-bold">Grupa Facebook</label>
+                        <input type="text" id="facebook_group_url" name="facebook_group_url" value="{{ old('facebook_group_url', $settings->facebook_group_url) }}" placeholder="https://facebook.com/groups/..."
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Link do grupy FB — pojawi się w nagłówku i stopce obok ikony strony.</p>
+                        @error('facebook_group_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="twitter_url" class="mb-1 block text-sm font-bold">Twitter / X</label>
+                        <input type="text" id="twitter_url" name="twitter_url" value="{{ old('twitter_url', $settings->twitter_url) }}" placeholder="https://x.com/..."
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @error('twitter_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="instagram_url" class="mb-1 block text-sm font-bold">Instagram</label>
+                        <input type="text" id="instagram_url" name="instagram_url" value="{{ old('instagram_url', $settings->instagram_url) }}" placeholder="https://instagram.com/..."
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @error('instagram_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="linkedin_url" class="mb-1 block text-sm font-bold">LinkedIn</label>
+                        <input type="text" id="linkedin_url" name="linkedin_url" value="{{ old('linkedin_url', $settings->linkedin_url) }}" placeholder="https://linkedin.com/company/..."
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @error('linkedin_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="youtube_url" class="mb-1 block text-sm font-bold">YouTube</label>
+                        <input type="text" id="youtube_url" name="youtube_url" value="{{ old('youtube_url', $settings->youtube_url) }}" placeholder="https://youtube.com/@..."
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @error('youtube_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="substack_url" class="mb-1 block text-sm font-bold">Substack (blog)</label>
+                        <input type="text" id="substack_url" name="substack_url" value="{{ old('substack_url', $settings->substack_url) }}" placeholder="https://fundacjafeer.substack.com"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Adres profilu Substack. Najnowsze wpisy pojawią się na stronie głównej w sekcji „O tym piszemy" (kolejność ustawisz w zakładce „Strona główna").</p>
+                        @error('substack_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
             </div>
-            <p class="mb-4 text-xs text-muted">Dotyczy tylko górnego paska nad logo. Ikony mediów społecznościowych w stopce pozostają widoczne niezależnie od tego ustawienia (BIP nie jest wyświetlany w stopce).</p>
 
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div x-data="{ bipMode: '{{ old('bip_mode', $settings->bip_mode ?? 'internal') }}' }">
-                    {{-- Tryb BIP --}}
-                    <fieldset class="mb-4">
-                        <legend class="mb-2 text-sm font-bold">Tryb BIP</legend>
-                        <div class="space-y-2">
-                            <label class="flex items-start gap-2 text-sm">
-                                <input type="radio" name="bip_mode" value="internal" x-model="bipMode"
-                                    class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
-                                <span>
-                                    <strong>Własny BIP</strong> — dokumenty zarządzane w tym panelu<br>
-                                    <span class="text-xs text-muted">Wymaga włączonego modułu BIP w zakładce Moduły oraz dodania dokumentów w <a href="{{ route('admin.bip-dokumenty.index') }}" class="text-brand-dark underline">Publikacje → BIP</a>.</span>
-                                </span>
-                            </label>
-                            <label class="flex items-start gap-2 text-sm">
-                                <input type="radio" name="bip_mode" value="external" x-model="bipMode"
-                                    class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
-                                <span>
-                                    <strong>Zewnętrzny BIP</strong> — odnośnik do osobnej strony BIP<br>
-                                    <span class="text-xs text-muted">Strona /bip pokazuje opis i przycisk prowadzący do zewnętrznego adresu.</span>
-                                </span>
+            <div x-data="{ bipMode: '{{ old('bip_mode', $settings->bip_mode ?? 'internal') }}' }" data-card="bip" data-card-label="BIP" data-card-icon="fa-landmark">
+                {{-- Tryb BIP --}}
+                <fieldset class="mb-4">
+                    <legend class="mb-2 text-sm font-bold">Tryb BIP</legend>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2 text-sm">
+                            <input type="radio" name="bip_mode" value="internal" x-model="bipMode"
+                                class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span>
+                                <strong>Własny BIP</strong> — dokumenty zarządzane w tym panelu<br>
+                                <span class="text-xs text-muted">Wymaga włączonego modułu BIP w zakładce Moduły oraz dodania dokumentów w <a href="{{ route('admin.bip-dokumenty.index') }}" class="text-brand-dark underline">Publikacje → BIP</a>.</span>
+                            </span>
+                        </label>
+                        <label class="flex items-start gap-2 text-sm">
+                            <input type="radio" name="bip_mode" value="external" x-model="bipMode"
+                                class="mt-0.5 border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span>
+                                <strong>Zewnętrzny BIP</strong> — odnośnik do osobnej strony BIP<br>
+                                <span class="text-xs text-muted">Strona /bip pokazuje opis i przycisk prowadzący do zewnętrznego adresu.</span>
+                            </span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                {{-- Adres zewnętrzny — tylko w trybie zewnętrznym --}}
+                <div x-show="bipMode === 'external'" x-cloak class="mb-4">
+                    <label for="bip_url" class="mb-1 block text-sm font-bold">Adres zewnętrznego BIP</label>
+                    <input type="text" id="bip_url" name="bip_url" value="{{ old('bip_url', $settings->bip_url) }}" placeholder="https://bip..."
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    <p class="mt-1 text-xs text-muted">Pojawi się jako przycisk „Przejdź do pełnego BIP" na stronie /bip.</p>
+                    @error('bip_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="mt-3">
+                    <label class="mb-1 block text-sm font-bold">Treść strony <code>/bip</code> <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    @include('admin.partials.editor', ['name' => 'bip_intro', 'value' => old('bip_intro', $settings->bip_intro)])
+                    <p class="mt-1 text-xs text-muted">Pełny opis Biuletynu — możesz formatować (nagłówki, listy, pogrubienia, linki). Puste = domyślny opis. Skróty <code>/instagram</code> i <code>/fb</code> przekierowują do adresów z pól obok.</p>
+                    @error('bip_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="mt-3">
+                    <p class="mb-1 text-sm font-bold">Logo BIP <span class="font-normal text-muted">(opcjonalnie)</span></p>
+                    @if ($settings->bipLogoUrl())
+                        <div class="mb-2 flex items-center gap-3">
+                            <img src="{{ $settings->bipLogoUrl() }}" alt="Logo BIP" class="h-12 w-auto rounded bg-white object-contain p-1 ring-1 ring-gray-200">
+                            <label class="flex items-center gap-2 text-sm text-muted">
+                                <input type="checkbox" name="remove_bip_logo" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                Usuń logo BIP
                             </label>
                         </div>
-                    </fieldset>
+                    @endif
+                    <input type="file" name="bip_logo" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                    <p class="mt-1 text-xs text-muted">Oficjalne logo BIP na stronie <code>/bip</code>. Puste = wbudowany znak „BIP".</p>
+                    @error('bip_logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
 
-                    {{-- Adres zewnętrzny — tylko w trybie zewnętrznym --}}
-                    <div x-show="bipMode === 'external'" x-cloak class="mb-4">
-                        <label for="bip_url" class="mb-1 block text-sm font-bold">Adres zewnętrznego BIP</label>
-                        <input type="text" id="bip_url" name="bip_url" value="{{ old('bip_url', $settings->bip_url) }}" placeholder="https://bip..."
-                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                        <p class="mt-1 text-xs text-muted">Pojawi się jako przycisk „Przejdź do pełnego BIP" na stronie /bip.</p>
-                        @error('bip_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
+                {{-- Sprawozdania w BIP (opcja) --}}
+                <div class="flex items-start gap-3 p-3 rounded-md bg-gray-50">
+                    <input type="hidden" name="bip_show_reports" value="0">
+                    <input type="checkbox" id="bip_show_reports" name="bip_show_reports" value="1" @checked(old('bip_show_reports', $settings->bip_show_reports ?? true)) class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    <label for="bip_show_reports" class="text-sm leading-snug"><span class="font-bold">Pokaż w BIP sprawozdania roczne</span><span class="block text-xs text-muted">Łączy moduł „Sprawozdania” z BIP: sprawozdania merytoryczne i finansowe z plikami do pobrania pojawiają się na stronie BIP i są przeszukiwane wyszukiwarką.</span></label>
+                </div>
 
-                    <div class="mt-3">
-                        <label class="mb-1 block text-sm font-bold">Treść strony <code>/bip</code> <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                        @include('admin.partials.editor', ['name' => 'bip_intro', 'value' => old('bip_intro', $settings->bip_intro)])
-                        <p class="mt-1 text-xs text-muted">Pełny opis Biuletynu — możesz formatować (nagłówki, listy, pogrubienia, linki). Puste = domyślny opis. Skróty <code>/instagram</code> i <code>/fb</code> przekierowują do adresów z pól obok.</p>
-                        @error('bip_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div class="mt-3">
-                        <p class="mb-1 text-sm font-bold">Logo BIP <span class="font-normal text-muted">(opcjonalnie)</span></p>
-                        @if ($settings->bipLogoUrl())
-                            <div class="mb-2 flex items-center gap-3">
-                                <img src="{{ $settings->bipLogoUrl() }}" alt="Logo BIP" class="h-12 w-auto rounded bg-white object-contain p-1 ring-1 ring-gray-200">
-                                <label class="flex items-center gap-2 text-sm text-muted">
-                                    <input type="checkbox" name="remove_bip_logo" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                                    Usuń logo BIP
-                                </label>
-                            </div>
-                        @endif
-                        <input type="file" name="bip_logo" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
-                        <p class="mt-1 text-xs text-muted">Oficjalne logo BIP na stronie <code>/bip</code>. Puste = wbudowany znak „BIP".</p>
-                        @error('bip_logo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    {{-- Sprawozdania w BIP (opcja) --}}
-                    <div class="flex items-start gap-3 p-3 rounded-md bg-gray-50">
-                        <input type="hidden" name="bip_show_reports" value="0">
-                        <input type="checkbox" id="bip_show_reports" name="bip_show_reports" value="1" @checked(old('bip_show_reports', $settings->bip_show_reports ?? true)) class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <label for="bip_show_reports" class="text-sm leading-snug"><span class="font-bold">Pokaż w BIP sprawozdania roczne</span><span class="block text-xs text-muted">Łączy moduł „Sprawozdania” z BIP: sprawozdania merytoryczne i finansowe z plikami do pobrania pojawiają się na stronie BIP i są przeszukiwane wyszukiwarką.</span></label>
-                    </div>
-
-                    {{-- Redaktor BIP — wymóg rozporządzenia MSWiA --}}
-                    <div>
-                        <label for="bip_editor_name" class="mb-1 block text-sm font-bold">Redaktor BIP — imię i nazwisko</label>
-                        <input type="text" id="bip_editor_name" name="bip_editor_name"
-                            value="{{ old('bip_editor_name', $settings->bip_editor_name) }}"
-                            placeholder="Jan Kowalski"
-                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                        <p class="mt-1 text-xs text-muted">Wymagane przez rozporządzenie MSWiA — imię i nazwisko redaktora strony BIP widoczne publicznie.</p>
-                        @error('bip_editor_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
-                        <label for="bip_editor_email" class="mb-1 block text-sm font-bold">Redaktor BIP — adres e-mail</label>
-                        <input type="email" id="bip_editor_email" name="bip_editor_email"
-                            value="{{ old('bip_editor_email', $settings->bip_editor_email) }}"
-                            placeholder="bip@example.org"
-                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                        <p class="mt-1 text-xs text-muted">Kontaktowy adres e-mail redaktora BIP — widoczny publicznie jako punkt kontaktowy.</p>
-                        @error('bip_editor_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
-                        <label for="bip_gov_url" class="mb-1 block text-sm font-bold">Adres rejestracyjny na gov.pl/bip</label>
-                        <input type="url" id="bip_gov_url" name="bip_gov_url"
-                            value="{{ old('bip_gov_url', $settings->bip_gov_url) }}"
-                            placeholder="https://www.gov.pl/web/podmiot/bip-fundacja-..."
-                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                        <p class="mt-1 text-xs text-muted">
-                            Każda strona BIP musi być zarejestrowana u Ministra ds. Informatyzacji.
-                            Podaj URL wpisu podmiotu na <a href="https://www.gov.pl/web/gov/bip" target="_blank" rel="noopener" class="text-brand-dark underline">gov.pl/bip</a>.
-                        </p>
-                        @error('bip_gov_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
+                {{-- Redaktor BIP — wymóg rozporządzenia MSWiA --}}
+                <div>
+                    <label for="bip_editor_name" class="mb-1 block text-sm font-bold">Redaktor BIP — imię i nazwisko</label>
+                    <input type="text" id="bip_editor_name" name="bip_editor_name"
+                        value="{{ old('bip_editor_name', $settings->bip_editor_name) }}"
+                        placeholder="Jan Kowalski"
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    <p class="mt-1 text-xs text-muted">Wymagane przez rozporządzenie MSWiA — imię i nazwisko redaktora strony BIP widoczne publicznie.</p>
+                    @error('bip_editor_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label for="facebook_url" class="mb-1 block text-sm font-bold">Facebook</label>
-                    <input type="text" id="facebook_url" name="facebook_url" value="{{ old('facebook_url', $settings->facebook_url) }}" placeholder="https://facebook.com/..."
+                    <label for="bip_editor_email" class="mb-1 block text-sm font-bold">Redaktor BIP — adres e-mail</label>
+                    <input type="email" id="bip_editor_email" name="bip_editor_email"
+                        value="{{ old('bip_editor_email', $settings->bip_editor_email) }}"
+                        placeholder="bip@example.org"
                         class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    @error('facebook_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    <p class="mt-1 text-xs text-muted">Kontaktowy adres e-mail redaktora BIP — widoczny publicznie jako punkt kontaktowy.</p>
+                    @error('bip_editor_email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label for="facebook_group_url" class="mb-1 block text-sm font-bold">Grupa Facebook</label>
-                    <input type="text" id="facebook_group_url" name="facebook_group_url" value="{{ old('facebook_group_url', $settings->facebook_group_url) }}" placeholder="https://facebook.com/groups/..."
+                    <label for="bip_gov_url" class="mb-1 block text-sm font-bold">Adres rejestracyjny na gov.pl/bip</label>
+                    <input type="url" id="bip_gov_url" name="bip_gov_url"
+                        value="{{ old('bip_gov_url', $settings->bip_gov_url) }}"
+                        placeholder="https://www.gov.pl/web/podmiot/bip-fundacja-..."
                         class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    <p class="mt-1 text-xs text-muted">Link do grupy FB — pojawi się w nagłówku i stopce obok ikony strony.</p>
-                    @error('facebook_group_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="twitter_url" class="mb-1 block text-sm font-bold">Twitter / X</label>
-                    <input type="text" id="twitter_url" name="twitter_url" value="{{ old('twitter_url', $settings->twitter_url) }}" placeholder="https://x.com/..."
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    @error('twitter_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="instagram_url" class="mb-1 block text-sm font-bold">Instagram</label>
-                    <input type="text" id="instagram_url" name="instagram_url" value="{{ old('instagram_url', $settings->instagram_url) }}" placeholder="https://instagram.com/..."
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    @error('instagram_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="linkedin_url" class="mb-1 block text-sm font-bold">LinkedIn</label>
-                    <input type="text" id="linkedin_url" name="linkedin_url" value="{{ old('linkedin_url', $settings->linkedin_url) }}" placeholder="https://linkedin.com/company/..."
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    @error('linkedin_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="youtube_url" class="mb-1 block text-sm font-bold">YouTube</label>
-                    <input type="text" id="youtube_url" name="youtube_url" value="{{ old('youtube_url', $settings->youtube_url) }}" placeholder="https://youtube.com/@..."
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    @error('youtube_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="substack_url" class="mb-1 block text-sm font-bold">Substack (blog)</label>
-                    <input type="text" id="substack_url" name="substack_url" value="{{ old('substack_url', $settings->substack_url) }}" placeholder="https://fundacjafeer.substack.com"
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    <p class="mt-1 text-xs text-muted">Adres profilu Substack. Najnowsze wpisy pojawią się na stronie głównej w sekcji „O tym piszemy" (kolejność ustawisz w zakładce „Strona główna").</p>
-                    @error('substack_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    <p class="mt-1 text-xs text-muted">
+                        Każda strona BIP musi być zarejestrowana u Ministra ds. Informatyzacji.
+                        Podaj URL wpisu podmiotu na <a href="https://www.gov.pl/web/gov/bip" target="_blank" rel="noopener" class="text-brand-dark underline">gov.pl/bip</a>.
+                    </p>
+                    @error('bip_gov_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
         </div>
 
-        <div x-show="tab === 'content'" x-cloak class="space-y-6">
+        <div x-show="tab === 'content'" x-cloak class="space-y-6" data-cards="content" data-cards-label="Karty sekcji Treści">
             @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'ai_enabled'))
-            <fieldset class="space-y-4 rounded-md bg-gray-50 p-5">
+            <fieldset class="space-y-4 rounded-md bg-gray-50 p-5" data-card="asystent-ai" data-card-label="Asystent AI" data-card-icon="fa-wand-magic-sparkles">
                 <legend class="sr-only">Asystent AI</legend>
                 <p class="text-sm font-bold"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-brand-dark" aria-hidden="true"></i>Asystent AI przy pisaniu tekstów (Claude)</p>
                 <p class="text-xs text-muted">Przycisk „Asystent AI” przy edytorze treści: poprawa języka, prosty język, tekst łatwy do czytania (ETR), skracanie, rozwijanie, propozycje tytułu, zajawki i opisu SEO. Wynik zawsze najpierw widzisz w podglądzie. Tekst, na którym pracuje asystent, jest wysyłany do firmy Anthropic (USA) — nie używaj go do danych osobowych i poufnych.</p>
@@ -1678,7 +1686,7 @@
                 $metkaMode = old('metka_mode', $settings->metka_mode ?? 'off');
                 $metkaTypes = (array) old('metka_types', $settings->metka_types ?? []);
             @endphp
-            <fieldset x-data="{ mode: @js($metkaMode) }" class="space-y-4">
+            <fieldset x-data="{ mode: @js($metkaMode) }" class="space-y-4" data-card="metryczka" data-card-label="Metryczka" data-card-icon="fa-circle-info">
                 <legend class="mb-1 text-sm font-bold">Metryczka stron („Pokaż metkę”)</legend>
                 <p class="text-xs text-muted">Rozwijana metryczka pod treścią strony: autor, osoba publikująca, podmiot publikujący, data publikacji i aktualizacji. W edycji strony (sekcja „Metryczka”) można ją włączyć lub wyłączyć dla pojedynczej strony.</p>
                 <div class="flex flex-col gap-2">
@@ -1722,166 +1730,178 @@
             </fieldset>
             @endif
 
-            <div>
-                <label for="editor-projects_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie działań <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('projects.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/projekty</a> i na stronach kategorii.</p>
-                @include('admin.partials.editor', ['name' => 'projects_intro', 'value' => old('projects_intro', $settings->projects_intro)])
-                @error('projects_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-
-            <fieldset class="border-t border-gray-100 pt-6">
-                <legend class="mb-3 text-sm font-bold">Układ listy działań</legend>
-                @php $projectsLayout = old('projects_layout', $settings->projects_layout ?? 'list'); @endphp
-                <div class="flex flex-wrap gap-6">
-                    <label class="flex cursor-pointer items-center gap-2 text-sm">
-                        <input type="radio" name="projects_layout" value="list" {{ $projectsLayout !== 'tiles' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
-                        Standardowy (zależny od szablonu)
-                    </label>
-                    <label class="flex cursor-pointer items-center gap-2 text-sm">
-                        <input type="radio" name="projects_layout" value="tiles" {{ $projectsLayout === 'tiles' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
-                        Nawigacja kafelkowa (działania jako duże kolorowe kafelki)
-                    </label>
+            <div class="space-y-6" data-card="dzialania" data-card-label="Działania" data-card-icon="fa-diagram-project">
+                <div>
+                    <label for="editor-projects_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie działań <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('projects.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/projekty</a> i na stronach kategorii.</p>
+                    @include('admin.partials.editor', ['name' => 'projects_intro', 'value' => old('projects_intro', $settings->projects_intro)])
+                    @error('projects_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
-            </fieldset>
 
-            <div class="border-t border-gray-100 pt-6">
-                <label for="paid_activity_info" class="mb-1 block text-sm font-bold">Objaśnienie odpłatnej działalności pożytku publicznego (dla całego serwisu)</label>
-                <p class="mb-2 text-xs text-muted">Pokazywane przy płatnych formach udziału w rozwijanym objaśnieniu. Pisz prostym językiem: krótkie zdania, bez trudnych słów. Puste pole = tekst domyślny. Akapity rozdzielaj pustą linią. W formularzu działania można to zmienić dla pojedynczego projektu. Upewnij się, że opis „jak to działa u nas” zgadza się z faktycznymi zasadami organizacji i statutem.</p>
-                <textarea id="paid_activity_info" name="paid_activity_info" rows="8" maxlength="3000" placeholder="{{ \Illuminate\Support\Str::limit(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT, 160) }}"
-                    class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('paid_activity_info', $settings->paid_activity_info) }}</textarea>
-                <button type="button" class="mt-1 text-xs font-bold text-brand-dark underline" onclick="document.getElementById('paid_activity_info').value = @js(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT)">Wstaw tekst domyślny do edycji</button>
-                @error('paid_activity_info') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
-
-                <div class="mt-4">
-                    <label for="paid_info_page_id" class="mb-1 block text-sm font-bold">Strona z pełnym objaśnieniem (link „Przeczytaj więcej”)</label>
-                    <select id="paid_info_page_id" name="paid_info_page_id" class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:w-2/3">
-                        <option value="">— automatycznie: strona „odplatna-dzialalnosc-pozytku-publicznego” —</option>
-                        @foreach (\App\Models\Page::orderBy('title')->get(['id', 'title', 'is_published']) as $pgOpt)
-                            <option value="{{ $pgOpt->id }}" {{ (int) old('paid_info_page_id', $settings->paid_info_page_id) === $pgOpt->id ? 'selected' : '' }}>{{ $pgOpt->title }}{{ $pgOpt->is_published ? '' : ' (szkic)' }}</option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-muted">Link pojawia się w objaśnieniu dopiero, gdy ta strona jest opublikowana.</p>
-                </div>
-            </div>
-
-            <fieldset class="border-t border-gray-100 pt-6">
-                <legend class="mb-1 text-sm font-bold">Drukowanie</legend>
-                <label class="flex items-start gap-3">
-                    <input type="hidden" name="show_print_button" value="0">
-                    <input type="checkbox" name="show_print_button" value="1" {{ old('show_print_button', $settings->show_print_button ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                    <span><span class="block text-sm font-bold">Przycisk „Drukuj tę stronę”</span><span class="block text-xs text-muted">Pokazuje przycisk na stronach i w projektach. Wydruk zawiera samą treść: bez nagłówka, menu i stopki, z rozwiniętymi sekcjami i adresami linków.</span></span>
-                </label>
-            </fieldset>
-
-            <fieldset class="border-t border-gray-100 pt-6">
-                <legend class="mb-1 text-sm font-bold">Rozszerzenia modułu działań</legend>
-                <p class="mb-3 text-xs text-muted">Włącz dodatkowe pola w formularzu działania i ich wyświetlanie na stronie projektu. Wyłączone: zakładki znikają z formularza, a strona niczego nie pokazuje (zapisane dane zostają).</p>
-                <div class="space-y-3">
-                    <label class="flex items-start gap-3">
-                        <input type="hidden" name="projects_subprojects_enabled" value="0">
-                        <input type="checkbox" name="projects_subprojects_enabled" value="1" {{ old('projects_subprojects_enabled', $settings->projects_subprojects_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span><span class="block text-sm font-bold">Poddziałania (formy udziału)</span><span class="block text-xs text-muted">Pole „Działanie nadrzędne”, dziedziczenie pól oraz sekcja „Formy udziału” z objaśnieniem odpłatności.</span></span>
-                    </label>
-                    <label class="flex items-start gap-3">
-                        <input type="hidden" name="projects_extras_enabled" value="0">
-                        <input type="checkbox" name="projects_extras_enabled" value="1" {{ old('projects_extras_enabled', $settings->projects_extras_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span><span class="block text-sm font-bold">Dodatkowe informacje o projekcie</span><span class="block text-xs text-muted">W skrócie (termin, miejsce, forma, liczba miejsc), streszczenie prostym językiem, główny przycisk, wskaźniki rezultatów, opinie uczestników i pytania (FAQ).</span></span>
-                    </label>
-                    @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'portals_enabled'))
-                        <label class="flex items-start gap-3">
-                            <input type="hidden" name="portals_enabled" value="0">
-                            <input type="checkbox" name="portals_enabled" value="1" {{ old('portals_enabled', $settings->portals_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                            <span><span class="block text-sm font-bold">Portale kategorii</span><span class="block text-xs text-muted">Strony /portal/{adres} i krótkie adresy w subdomenach, ustawiane w Działania → Kategorie. Wyłączone: portale przestają działać, a linki prowadzą do zwykłej strony kategorii (ustawienia portali zostają).</span></span>
+                <fieldset class="border-t border-gray-100 pt-6">
+                    <legend class="mb-3 text-sm font-bold">Układ listy działań</legend>
+                    @php $projectsLayout = old('projects_layout', $settings->projects_layout ?? 'list'); @endphp
+                    <div class="flex flex-wrap gap-6">
+                        <label class="flex cursor-pointer items-center gap-2 text-sm">
+                            <input type="radio" name="projects_layout" value="list" {{ $projectsLayout !== 'tiles' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
+                            Standardowy (zależny od szablonu)
                         </label>
-                    @endif
-                    <label class="flex items-start gap-3">
-                        <input type="hidden" name="projects_terms_enabled" value="0">
-                        <input type="checkbox" name="projects_terms_enabled" value="1" {{ old('projects_terms_enabled', $settings->projects_terms_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span><span class="block text-sm font-bold">Kto może wziąć udział</span><span class="block text-xs text-muted">Zakładka „Kto może wziąć udział” w formularzu (wiek, miejsce, sprzęt, dostępność sali) i ramka o tej nazwie na stronie projektu.</span></span>
-                    </label>
-                    <label class="flex items-start gap-3">
-                        <input type="hidden" name="projects_stages_enabled" value="0">
-                        <input type="checkbox" name="projects_stages_enabled" value="1" {{ old('projects_stages_enabled', $settings->projects_stages_enabled ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span><span class="block text-sm font-bold">Etapy, status i harmonogram</span><span class="block text-xs text-muted">Status realizacji, daty, etapy z oznaczeniem postępu.</span></span>
-                    </label>
-                    <label class="flex items-start gap-3">
-                        <input type="hidden" name="projects_team_funding_enabled" value="0">
-                        <input type="checkbox" name="projects_team_funding_enabled" value="1" {{ old('projects_team_funding_enabled', $settings->projects_team_funding_enabled ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span><span class="block text-sm font-bold">Zespół, partnerzy i finansowanie</span><span class="block text-xs text-muted">Osoby zaangażowane, partnerzy z logotypami, źródła dofinansowania, budżet i obowiązkowe oznaczenia.</span></span>
-                    </label>
-                </div>
-            </fieldset>
-
-            <fieldset class="border-t border-gray-100 pt-6">
-                <legend class="mb-1 text-sm font-bold">Nawigacja po sekcjach działania (dla całego serwisu)</legend>
-                <p class="mb-3 text-xs text-muted">Jak pokazać sekcje i podstrony na stronie projektu. W formularzu działania można to nadpisać dla pojedynczego projektu.</p>
-                @php $sectionsNav = old('project_sections_nav', $settings->project_sections_nav ?? 'tabs'); @endphp
-                <div class="flex flex-wrap gap-6">
-                    <label class="flex cursor-pointer items-center gap-2 text-sm">
-                        <input type="radio" name="project_sections_nav" value="tabs" {{ $sectionsNav !== 'sidebar' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
-                        Zakładki (pasek pod nagłówkiem)
-                    </label>
-                    <label class="flex cursor-pointer items-center gap-2 text-sm">
-                        <input type="radio" name="project_sections_nav" value="sidebar" {{ $sectionsNav === 'sidebar' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
-                        Menu boczne (po lewej, z zagnieżdżonymi podstronami)
-                    </label>
-                </div>
-            </fieldset>
-
-            <div class="border-t border-gray-100 pt-6">
-                <label for="editor-materials_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie materiałów <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('materials.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/materialy</a>.</p>
-                @include('admin.partials.editor', ['name' => 'materials_intro', 'value' => old('materials_intro', $settings->materials_intro)])
-                @error('materials_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-
-            <div class="border-t border-gray-100 pt-6">
-                <p class="mb-1 text-sm font-bold">Domyślne zdjęcie newsa <span class="font-normal text-muted">(opcjonalnie)</span></p>
-                @if ($settings->newsDefaultImageUrl())
-                    <div class="mb-2 flex items-center gap-3">
-                        <img src="{{ $settings->newsDefaultImageUrl() }}" alt="Domyślne zdjęcie newsa" class="h-20 w-32 rounded object-cover">
-                        <label class="flex items-center gap-2 text-sm text-muted">
-                            <input type="checkbox" name="remove_news_default_image" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                            Usuń
+                        <label class="flex cursor-pointer items-center gap-2 text-sm">
+                            <input type="radio" name="projects_layout" value="tiles" {{ $projectsLayout === 'tiles' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
+                            Nawigacja kafelkowa (działania jako duże kolorowe kafelki)
                         </label>
                     </div>
-                @endif
-                <input type="file" name="news_default_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
-                <p class="mt-1 text-xs text-muted">Używane dla newsów bez własnego zdjęcia (lista aktualności, strona główna, sekcja na stronie działania).</p>
-                @error('news_default_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </fieldset>
+
+                <div class="border-t border-gray-100 pt-6">
+                    <label for="paid_activity_info" class="mb-1 block text-sm font-bold">Objaśnienie odpłatnej działalności pożytku publicznego (dla całego serwisu)</label>
+                    <p class="mb-2 text-xs text-muted">Pokazywane przy płatnych formach udziału w rozwijanym objaśnieniu. Pisz prostym językiem: krótkie zdania, bez trudnych słów. Puste pole = tekst domyślny. Akapity rozdzielaj pustą linią. W formularzu działania można to zmienić dla pojedynczego projektu. Upewnij się, że opis „jak to działa u nas” zgadza się z faktycznymi zasadami organizacji i statutem.</p>
+                    <textarea id="paid_activity_info" name="paid_activity_info" rows="8" maxlength="3000" placeholder="{{ \Illuminate\Support\Str::limit(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT, 160) }}"
+                        class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('paid_activity_info', $settings->paid_activity_info) }}</textarea>
+                    <button type="button" class="mt-1 text-xs font-bold text-brand-dark underline" onclick="document.getElementById('paid_activity_info').value = @js(\App\Models\SiteSetting::PAID_ACTIVITY_DEFAULT)">Wstaw tekst domyślny do edycji</button>
+                    @error('paid_activity_info') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+
+                    <div class="mt-4">
+                        <label for="paid_info_page_id" class="mb-1 block text-sm font-bold">Strona z pełnym objaśnieniem (link „Przeczytaj więcej”)</label>
+                        <select id="paid_info_page_id" name="paid_info_page_id" class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark sm:w-2/3">
+                            <option value="">— automatycznie: strona „odplatna-dzialalnosc-pozytku-publicznego” —</option>
+                            @foreach (\App\Models\Page::orderBy('title')->get(['id', 'title', 'is_published']) as $pgOpt)
+                                <option value="{{ $pgOpt->id }}" {{ (int) old('paid_info_page_id', $settings->paid_info_page_id) === $pgOpt->id ? 'selected' : '' }}>{{ $pgOpt->title }}{{ $pgOpt->is_published ? '' : ' (szkic)' }}</option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-muted">Link pojawia się w objaśnieniu dopiero, gdy ta strona jest opublikowana.</p>
+                    </div>
+                </div>
+
+                <fieldset class="border-t border-gray-100 pt-6">
+                    <legend class="mb-1 text-sm font-bold">Drukowanie</legend>
+                    <label class="flex items-start gap-3">
+                        <input type="hidden" name="show_print_button" value="0">
+                        <input type="checkbox" name="show_print_button" value="1" {{ old('show_print_button', $settings->show_print_button ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                        <span><span class="block text-sm font-bold">Przycisk „Drukuj tę stronę”</span><span class="block text-xs text-muted">Pokazuje przycisk na stronach i w projektach. Wydruk zawiera samą treść: bez nagłówka, menu i stopki, z rozwiniętymi sekcjami i adresami linków.</span></span>
+                    </label>
+                </fieldset>
+
+                <fieldset class="border-t border-gray-100 pt-6">
+                    <legend class="mb-1 text-sm font-bold">Rozszerzenia modułu działań</legend>
+                    <p class="mb-3 text-xs text-muted">Włącz dodatkowe pola w formularzu działania i ich wyświetlanie na stronie projektu. Wyłączone: zakładki znikają z formularza, a strona niczego nie pokazuje (zapisane dane zostają).</p>
+                    <div class="space-y-3">
+                        <label class="flex items-start gap-3">
+                            <input type="hidden" name="projects_subprojects_enabled" value="0">
+                            <input type="checkbox" name="projects_subprojects_enabled" value="1" {{ old('projects_subprojects_enabled', $settings->projects_subprojects_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span><span class="block text-sm font-bold">Poddziałania (formy udziału)</span><span class="block text-xs text-muted">Pole „Działanie nadrzędne”, dziedziczenie pól oraz sekcja „Formy udziału” z objaśnieniem odpłatności.</span></span>
+                        </label>
+                        <label class="flex items-start gap-3">
+                            <input type="hidden" name="projects_extras_enabled" value="0">
+                            <input type="checkbox" name="projects_extras_enabled" value="1" {{ old('projects_extras_enabled', $settings->projects_extras_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span><span class="block text-sm font-bold">Dodatkowe informacje o projekcie</span><span class="block text-xs text-muted">W skrócie (termin, miejsce, forma, liczba miejsc), streszczenie prostym językiem, główny przycisk, wskaźniki rezultatów, opinie uczestników i pytania (FAQ).</span></span>
+                        </label>
+                        @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'portals_enabled'))
+                            <label class="flex items-start gap-3">
+                                <input type="hidden" name="portals_enabled" value="0">
+                                <input type="checkbox" name="portals_enabled" value="1" {{ old('portals_enabled', $settings->portals_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                <span><span class="block text-sm font-bold">Portale kategorii</span><span class="block text-xs text-muted">Strony /portal/{adres} i krótkie adresy w subdomenach, ustawiane w Działania → Kategorie. Wyłączone: portale przestają działać, a linki prowadzą do zwykłej strony kategorii (ustawienia portali zostają).</span></span>
+                            </label>
+                        @endif
+                        <label class="flex items-start gap-3">
+                            <input type="hidden" name="projects_terms_enabled" value="0">
+                            <input type="checkbox" name="projects_terms_enabled" value="1" {{ old('projects_terms_enabled', $settings->projects_terms_enabled ?? true) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span><span class="block text-sm font-bold">Kto może wziąć udział</span><span class="block text-xs text-muted">Zakładka „Kto może wziąć udział” w formularzu (wiek, miejsce, sprzęt, dostępność sali) i ramka o tej nazwie na stronie projektu.</span></span>
+                        </label>
+                        <label class="flex items-start gap-3">
+                            <input type="hidden" name="projects_stages_enabled" value="0">
+                            <input type="checkbox" name="projects_stages_enabled" value="1" {{ old('projects_stages_enabled', $settings->projects_stages_enabled ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span><span class="block text-sm font-bold">Etapy, status i harmonogram</span><span class="block text-xs text-muted">Status realizacji, daty, etapy z oznaczeniem postępu.</span></span>
+                        </label>
+                        <label class="flex items-start gap-3">
+                            <input type="hidden" name="projects_team_funding_enabled" value="0">
+                            <input type="checkbox" name="projects_team_funding_enabled" value="1" {{ old('projects_team_funding_enabled', $settings->projects_team_funding_enabled ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span><span class="block text-sm font-bold">Zespół, partnerzy i finansowanie</span><span class="block text-xs text-muted">Osoby zaangażowane, partnerzy z logotypami, źródła dofinansowania, budżet i obowiązkowe oznaczenia.</span></span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <fieldset class="border-t border-gray-100 pt-6">
+                    <legend class="mb-1 text-sm font-bold">Nawigacja po sekcjach działania (dla całego serwisu)</legend>
+                    <p class="mb-3 text-xs text-muted">Jak pokazać sekcje i podstrony na stronie projektu. W formularzu działania można to nadpisać dla pojedynczego projektu.</p>
+                    @php $sectionsNav = old('project_sections_nav', $settings->project_sections_nav ?? 'tabs'); @endphp
+                    <div class="flex flex-wrap gap-6">
+                        <label class="flex cursor-pointer items-center gap-2 text-sm">
+                            <input type="radio" name="project_sections_nav" value="tabs" {{ $sectionsNav !== 'sidebar' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
+                            Zakładki (pasek pod nagłówkiem)
+                        </label>
+                        <label class="flex cursor-pointer items-center gap-2 text-sm">
+                            <input type="radio" name="project_sections_nav" value="sidebar" {{ $sectionsNav === 'sidebar' ? 'checked' : '' }} class="text-brand-dark focus:ring-brand-dark">
+                            Menu boczne (po lewej, z zagnieżdżonymi podstronami)
+                        </label>
+                    </div>
+                </fieldset>
             </div>
 
-            <div class="border-t border-gray-100 pt-6">
-                <p class="mb-3 text-sm font-bold">Układ listy aktualności</p>
-                <div class="flex gap-6">
-                    <label class="flex cursor-pointer items-center gap-2">
-                        <input type="radio" name="news_layout" value="grid"
-                            {{ old('news_layout', $settings->news_layout ?? 'grid') === 'grid' ? 'checked' : '' }}
-                            class="border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span class="text-sm"><i class="fa-solid fa-grip text-muted"></i> Siatka (domyślna)</span>
-                    </label>
-                    <label class="flex cursor-pointer items-center gap-2">
-                        <input type="radio" name="news_layout" value="list"
-                            {{ old('news_layout', $settings->news_layout ?? 'grid') === 'list' ? 'checked' : '' }}
-                            class="border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span class="text-sm"><i class="fa-solid fa-list text-muted"></i> Lista</span>
-                    </label>
-                    <label class="flex cursor-pointer items-center gap-2">
-                        <input type="radio" name="news_layout" value="cards"
-                            {{ old('news_layout', $settings->news_layout ?? 'grid') === 'cards' ? 'checked' : '' }}
-                            class="border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span class="text-sm"><i class="fa-solid fa-table-cells-large text-muted"></i> Karty 3-kolumnowe</span>
-                    </label>
-                    <label class="flex cursor-pointer items-center gap-2">
-                        <input type="radio" name="news_layout" value="side"
-                            {{ old('news_layout', $settings->news_layout ?? 'grid') === 'side' ? 'checked' : '' }}
-                            class="border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span class="text-sm"><i class="fa-solid fa-image text-muted"></i> Zdjęcie obok (kwadrat)</span>
-                    </label>
+            <div class="space-y-6" data-card="materialy" data-card-label="Materiały" data-card-icon="fa-folder-open">
+                <div class="border-t border-gray-100 pt-6">
+                    <label for="editor-materials_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie materiałów <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('materials.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/materialy</a>.</p>
+                    @include('admin.partials.editor', ['name' => 'materials_intro', 'value' => old('materials_intro', $settings->materials_intro)])
+                    @error('materials_intro') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div class="border-t border-gray-100 pt-6">
+                    <label for="editor-materials_notice" class="mb-1 block text-sm font-bold">Informacja w ramce (materiały) <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <p class="mb-2 text-xs text-muted">Wyróżniona ramka informacyjna na stronie materiałów (np. ważny komunikat, warunki korzystania).</p>
+                    @include('admin.partials.editor', ['name' => 'materials_notice', 'value' => old('materials_notice', $settings->materials_notice)])
+                    @error('materials_notice') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
 
-            <div class="border-t border-gray-100 pt-6">
+            <div class="space-y-6" data-card="aktualnosci" data-card-label="Aktualności" data-card-icon="fa-newspaper">
+                <div class="border-t border-gray-100 pt-6">
+                    <p class="mb-1 text-sm font-bold">Domyślne zdjęcie newsa <span class="font-normal text-muted">(opcjonalnie)</span></p>
+                    @if ($settings->newsDefaultImageUrl())
+                        <div class="mb-2 flex items-center gap-3">
+                            <img src="{{ $settings->newsDefaultImageUrl() }}" alt="Domyślne zdjęcie newsa" class="h-20 w-32 rounded object-cover">
+                            <label class="flex items-center gap-2 text-sm text-muted">
+                                <input type="checkbox" name="remove_news_default_image" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                Usuń
+                            </label>
+                        </div>
+                    @endif
+                    <input type="file" name="news_default_image" accept="image/*" class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                    <p class="mt-1 text-xs text-muted">Używane dla newsów bez własnego zdjęcia (lista aktualności, strona główna, sekcja na stronie działania).</p>
+                    @error('news_default_image') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="border-t border-gray-100 pt-6">
+                    <p class="mb-3 text-sm font-bold">Układ listy aktualności</p>
+                    <div class="flex gap-6">
+                        <label class="flex cursor-pointer items-center gap-2">
+                            <input type="radio" name="news_layout" value="grid"
+                                {{ old('news_layout', $settings->news_layout ?? 'grid') === 'grid' ? 'checked' : '' }}
+                                class="border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span class="text-sm"><i class="fa-solid fa-grip text-muted"></i> Siatka (domyślna)</span>
+                        </label>
+                        <label class="flex cursor-pointer items-center gap-2">
+                            <input type="radio" name="news_layout" value="list"
+                                {{ old('news_layout', $settings->news_layout ?? 'grid') === 'list' ? 'checked' : '' }}
+                                class="border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span class="text-sm"><i class="fa-solid fa-list text-muted"></i> Lista</span>
+                        </label>
+                        <label class="flex cursor-pointer items-center gap-2">
+                            <input type="radio" name="news_layout" value="cards"
+                                {{ old('news_layout', $settings->news_layout ?? 'grid') === 'cards' ? 'checked' : '' }}
+                                class="border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span class="text-sm"><i class="fa-solid fa-table-cells-large text-muted"></i> Karty 3-kolumnowe</span>
+                        </label>
+                        <label class="flex cursor-pointer items-center gap-2">
+                            <input type="radio" name="news_layout" value="side"
+                                {{ old('news_layout', $settings->news_layout ?? 'grid') === 'side' ? 'checked' : '' }}
+                                class="border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            <span class="text-sm"><i class="fa-solid fa-image text-muted"></i> Zdjęcie obok (kwadrat)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-6" data-card="wolontariat" data-card-label="Wolontariat" data-card-icon="fa-hand-holding-heart">
                 <p class="mb-3 text-sm font-bold">Układ listy ofert wolontariatu</p>
                 <div class="flex gap-6">
                     <label class="flex cursor-pointer items-center gap-2">
@@ -1899,12 +1919,6 @@
                 </div>
             </div>
 
-            <div class="border-t border-gray-100 pt-6">
-                <label for="editor-materials_notice" class="mb-1 block text-sm font-bold">Informacja w ramce (materiały) <span class="font-normal text-muted">(opcjonalnie)</span></label>
-                <p class="mb-2 text-xs text-muted">Wyróżniona ramka informacyjna na stronie materiałów (np. ważny komunikat, warunki korzystania).</p>
-                @include('admin.partials.editor', ['name' => 'materials_notice', 'value' => old('materials_notice', $settings->materials_notice)])
-                @error('materials_notice') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
         </div>
 
         <div x-show="tab === 'modules'" x-cloak>
@@ -1970,111 +1984,113 @@
                     get visibleCount() { return Object.keys(this.items).filter((k) => this.visible(k)).length; },
                     get enabledCount() { return this.toggleKeys.filter((k) => this.enabled[k]).length; },
                     plural(n) { const t = n % 10, h = n % 100; return n === 1 ? 'pozycja' : (t >= 2 && t <= 4 && (h < 12 || h > 14) ? 'pozycje' : 'pozycji'); },
-                }">
-                <p class="mb-4 text-sm text-muted">Wyłącz moduł, aby ukryć go z panelu i strony publicznej. Adresy powiązane z wyłączonym modułem przestaną działać (błąd 404), dopóki nie zostanie ponownie włączony. Zmiany przełączników zapisuje przycisk „Zapisz” na dole strony.</p>
+                }" data-cards="modules" data-cards-label="Karty sekcji Moduły">
+                <div data-card="moduly" data-card-label="Moduły" data-card-icon="fa-puzzle-piece">
+                    <p class="mb-4 text-sm text-muted">Wyłącz moduł, aby ukryć go z panelu i strony publicznej. Adresy powiązane z wyłączonym modułem przestaną działać (błąd 404), dopóki nie zostanie ponownie włączony. Zmiany przełączników zapisuje przycisk „Zapisz” na dole strony.</p>
 
-                {{-- Pasek narzędzi: wyszukiwarka, licznik, filtr stanu --}}
-                <div class="mb-6 flex flex-col gap-4 rounded-md bg-gray-50 p-4 lg:flex-row lg:items-end lg:justify-between">
-                    <div class="w-full lg:max-w-sm">
-                        <label for="modules-search" class="mb-1 block text-sm font-bold text-ink">Szukaj modułu lub opcji</label>
-                        <div class="relative">
-                            <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted" aria-hidden="true"></i>
-                            <input type="search" id="modules-search" x-model.debounce.250ms="q" autocomplete="off"
-                                aria-describedby="modules-search-result"
-                                @keydown.enter.prevent
-                                placeholder="np. galeria, wydarzenia"
-                                class="w-full rounded-md border border-gray-500 bg-white py-2 pl-9 pr-3 text-sm text-ink focus:border-brand-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                    {{-- Pasek narzędzi: wyszukiwarka, licznik, filtr stanu --}}
+                    <div class="mb-6 flex flex-col gap-4 rounded-md bg-gray-50 p-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div class="w-full lg:max-w-sm">
+                            <label for="modules-search" class="mb-1 block text-sm font-bold text-ink">Szukaj modułu lub opcji</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted" aria-hidden="true"></i>
+                                <input type="search" id="modules-search" x-model.debounce.250ms="q" autocomplete="off"
+                                    aria-describedby="modules-search-result"
+                                    @keydown.enter.prevent
+                                    placeholder="np. galeria, wydarzenia"
+                                    class="w-full rounded-md border border-gray-500 bg-white py-2 pl-9 pr-3 text-sm text-ink focus:border-brand-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                            </div>
+                        </div>
+
+                        <p class="text-sm text-ink">
+                            Włączone moduły: <strong x-text="enabledCount">{{ count(array_intersect(array_keys(\App\Models\SiteSetting::MODULES), $enabledModules)) }}</strong> z <strong>{{ $toggleCount }}</strong>
+                        </p>
+
+                        <div role="group" aria-label="Pokaż" class="flex flex-wrap items-center gap-2">
+                            <span class="text-sm font-bold text-ink" aria-hidden="true">Pokaż:</span>
+                            @foreach (['all' => 'wszystkie', 'on' => 'włączone', 'off' => 'wyłączone'] as $value => $label)
+                                <button type="button" @click="show = '{{ $value }}'"
+                                    :aria-pressed="(show === '{{ $value }}').toString()"
+                                    aria-pressed="{{ $value === 'all' ? 'true' : 'false' }}"
+                                    :class="show === '{{ $value }}' ? 'bg-brand-dark text-white hover:bg-ink' : 'bg-white text-ink ring-1 ring-gray-500 hover:bg-gray-100'"
+                                    class="rounded-md px-3 py-1.5 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">{{ $label }}</button>
+                            @endforeach
                         </div>
                     </div>
 
-                    <p class="text-sm text-ink">
-                        Włączone moduły: <strong x-text="enabledCount">{{ count(array_intersect(array_keys(\App\Models\SiteSetting::MODULES), $enabledModules)) }}</strong> z <strong>{{ $toggleCount }}</strong>
+                    <p id="modules-search-result" role="status" aria-live="polite" class="sr-only"
+                        x-text="'Widoczne: ' + visibleCount + ' ' + plural(visibleCount)"></p>
+
+                    <p x-show="visibleCount === 0" x-cloak class="mb-6 rounded-md bg-gray-50 p-4 text-sm text-ink">
+                        Brak modułów ani opcji pasujących do wyszukiwania lub filtra.
                     </p>
 
-                    <div role="group" aria-label="Pokaż" class="flex flex-wrap items-center gap-2">
-                        <span class="text-sm font-bold text-ink" aria-hidden="true">Pokaż:</span>
-                        @foreach (['all' => 'wszystkie', 'on' => 'włączone', 'off' => 'wyłączone'] as $value => $label)
-                            <button type="button" @click="show = '{{ $value }}'"
-                                :aria-pressed="(show === '{{ $value }}').toString()"
-                                aria-pressed="{{ $value === 'all' ? 'true' : 'false' }}"
-                                :class="show === '{{ $value }}' ? 'bg-brand-dark text-white hover:bg-ink' : 'bg-white text-ink ring-1 ring-gray-500 hover:bg-gray-100'"
-                                class="rounded-md px-3 py-1.5 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">{{ $label }}</button>
-                        @endforeach
-                    </div>
-                </div>
-
-                <p id="modules-search-result" role="status" aria-live="polite" class="sr-only"
-                    x-text="'Widoczne: ' + visibleCount + ' ' + plural(visibleCount)"></p>
-
-                <p x-show="visibleCount === 0" x-cloak class="mb-6 rounded-md bg-gray-50 p-4 text-sm text-ink">
-                    Brak modułów ani opcji pasujących do wyszukiwania lub filtra.
-                </p>
-
-                {{-- Przełączniki modułów wbudowanych (zapisywane jako enabled_modules[]) --}}
-                @foreach ($moduleGroups as $groupKey => $group)
-                    <section class="mb-8" aria-labelledby="modules-group-{{ $groupKey }}"
-                        x-show="anyVisible(@js(array_keys($group['modules'])))">
-                        <h2 id="modules-group-{{ $groupKey }}" class="mb-3 text-base font-bold text-ink">{{ $group['label'] }}</h2>
-                        <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                            @foreach ($group['modules'] as $key => $module)
-                                @php $isOn = in_array($key, $enabledModules, true); @endphp
-                                <li x-show="visible('{{ $key }}')"
-                                    class="flex flex-col gap-3 rounded-md p-4 {{ $isOn ? 'bg-brand-light' : 'bg-gray-50' }}"
-                                    :class="enabled['{{ $key }}'] ? 'bg-brand-light' : 'bg-gray-50'">
-                                    <div class="flex items-start gap-3">
-                                        <i class="fa-solid {{ $module['icon'] }} mt-0.5 w-5 flex-none text-center text-lg text-brand-dark" aria-hidden="true"></i>
-                                        <div class="min-w-0 flex-1">
-                                            <h3 class="font-bold text-ink">
-                                                <label for="module-switch-{{ $key }}" class="cursor-pointer">{{ $module['label'] }}</label>
-                                            </h3>
-                                            @if ($module['desc'] !== '')
-                                                <p id="module-desc-{{ $key }}" class="mt-1 text-sm text-muted">{{ $module['desc'] }}@unless (\App\Support\Edition::allows($key)) <span class="font-bold text-ink">Wersja płatna — w darmowej tylko podgląd dotychczasowych treści.</span>@endunless</p>
-                                            @endif
+                    {{-- Przełączniki modułów wbudowanych (zapisywane jako enabled_modules[]) --}}
+                    @foreach ($moduleGroups as $groupKey => $group)
+                        <section class="mb-8" aria-labelledby="modules-group-{{ $groupKey }}"
+                            x-show="anyVisible(@js(array_keys($group['modules'])))">
+                            <h2 id="modules-group-{{ $groupKey }}" class="mb-3 text-base font-bold text-ink">{{ $group['label'] }}</h2>
+                            <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                                @foreach ($group['modules'] as $key => $module)
+                                    @php $isOn = in_array($key, $enabledModules, true); @endphp
+                                    <li x-show="visible('{{ $key }}')"
+                                        class="flex flex-col gap-3 rounded-md p-4 {{ $isOn ? 'bg-brand-light' : 'bg-gray-50' }}"
+                                        :class="enabled['{{ $key }}'] ? 'bg-brand-light' : 'bg-gray-50'">
+                                        <div class="flex items-start gap-3">
+                                            <i class="fa-solid {{ $module['icon'] }} mt-0.5 w-5 flex-none text-center text-lg text-brand-dark" aria-hidden="true"></i>
+                                            <div class="min-w-0 flex-1">
+                                                <h3 class="font-bold text-ink">
+                                                    <label for="module-switch-{{ $key }}" class="cursor-pointer">{{ $module['label'] }}</label>
+                                                </h3>
+                                                @if ($module['desc'] !== '')
+                                                    <p id="module-desc-{{ $key }}" class="mt-1 text-sm text-muted">{{ $module['desc'] }}@unless (\App\Support\Edition::allows($key)) <span class="font-bold text-ink">Wersja płatna — w darmowej tylko podgląd dotychczasowych treści.</span>@endunless</p>
+                                                @endif
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="mt-auto">
-                                        @include('admin.modules.partials.switch', [
-                                            'id' => 'module-switch-'.$key,
-                                            'name' => 'enabled_modules[]',
-                                            'value' => $key,
-                                            'checked' => $isOn,
-                                            'stateKey' => $key,
-                                            'label' => $module['label'],
-                                            'onText' => 'Włączony',
-                                            'offText' => 'Wyłączony',
-                                            'describedBy' => $module['desc'] !== '' ? 'module-desc-'.$key : null,
-                                        ])
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </section>
-                @endforeach
+                                        <div class="mt-auto">
+                                            @include('admin.modules.partials.switch', [
+                                                'id' => 'module-switch-'.$key,
+                                                'name' => 'enabled_modules[]',
+                                                'value' => $key,
+                                                'checked' => $isOn,
+                                                'stateKey' => $key,
+                                                'label' => $module['label'],
+                                                'onText' => 'Włączony',
+                                                'offText' => 'Wyłączony',
+                                                'describedBy' => $module['desc'] !== '' ? 'module-desc-'.$key : null,
+                                            ])
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </section>
+                    @endforeach
 
-                {{-- Moduły instalowane (rozszerzenia z katalogu modules/). Przyciski akcji
-                     wskazują atrybutem form="…" formularze dodane przez @push('scripts')
-                     poza głównym formularzem ustawień (HTML nie pozwala zagnieżdżać <form>). --}}
-                @if ($pluginCards->isNotEmpty())
-                    <section class="mb-8" aria-labelledby="modules-group-plugins"
-                        x-show="anyVisible(@js($pluginCards->keys()->map(fn ($id) => 'plugin:'.$id)->values()))">
-                        <h2 id="modules-group-plugins" class="mb-1 text-base font-bold text-ink">Moduły instalowane (rozszerzenia)</h2>
-                        <p class="mb-3 text-sm text-muted">Dodatki z osobnymi funkcjami panelu. Instalacja i aktywacja działa od razu, bez przycisku „Zapisz”. Pełna lista: <a href="{{ route('admin.moduly.index') }}" class="font-bold text-brand-dark underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Moduły systemu</a>.</p>
-                        <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                            @foreach ($pluginCards as $card)
-                                @include('admin.modules.partials.plugin-card', ['card' => $card, 'filterable' => true, 'heading' => 'h3'])
-                            @endforeach
-                        </ul>
-                    </section>
+                    {{-- Moduły instalowane (rozszerzenia z katalogu modules/). Przyciski akcji
+                         wskazują atrybutem form="…" formularze dodane przez @push('scripts')
+                         poza głównym formularzem ustawień (HTML nie pozwala zagnieżdżać <form>). --}}
+                    @if ($pluginCards->isNotEmpty())
+                        <section class="mb-8" aria-labelledby="modules-group-plugins"
+                            x-show="anyVisible(@js($pluginCards->keys()->map(fn ($id) => 'plugin:'.$id)->values()))">
+                            <h2 id="modules-group-plugins" class="mb-1 text-base font-bold text-ink">Moduły instalowane (rozszerzenia)</h2>
+                            <p class="mb-3 text-sm text-muted">Dodatki z osobnymi funkcjami panelu. Instalacja i aktywacja działa od razu, bez przycisku „Zapisz”. Pełna lista: <a href="{{ route('admin.moduly.index') }}" class="font-bold text-brand-dark underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Moduły systemu</a>.</p>
+                            <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                                @foreach ($pluginCards as $card)
+                                    @include('admin.modules.partials.plugin-card', ['card' => $card, 'filterable' => true, 'heading' => 'h3'])
+                                @endforeach
+                            </ul>
+                        </section>
 
-                    @push('scripts')
-                        @include('admin.modules.partials.plugin-forms', ['cards' => $pluginCards, 'returnTo' => 'settings'])
-                    @endpush
-                @endif
+                        @push('scripts')
+                            @include('admin.modules.partials.plugin-forms', ['cards' => $pluginCards, 'returnTo' => 'settings'])
+                        @endpush
+                    @endif
+                </div>
 
                 {{-- Typy treści i układy: opcje do ukrycia w listach wyboru (blocked_options).
                      Żądanie niesie DOSTĘPNE wartości (allowed_options[grupa][]); znacznik
                      blocked_options_form mówi kontrolerowi, że sekcja była w formularzu. --}}
-                <section class="mt-10" aria-labelledby="content-options-heading">
+                <section class="mt-10" aria-labelledby="content-options-heading" data-card="typy-tresci" data-card-label="Typy treści i układy" data-card-icon="fa-shapes">
                     <input type="hidden" name="blocked_options_form" value="1">
                     <h2 id="content-options-heading" class="mb-1 text-lg font-bold text-ink">Typy treści i układy</h2>
                     <p class="mb-6 text-sm text-muted">Ukryta opcja znika z list wyboru przy tworzeniu i edycji. Treści, które już jej używają, działają dalej i zachowują swój wybór. W każdej grupie musi zostać co najmniej jedna dostępna opcja.</p>
@@ -2133,7 +2149,7 @@
             </div>
         </div>
 
-        <div x-show="tab === 'homepage'" x-cloak>
+        <div x-show="tab === 'homepage'" x-cloak data-cards="homepage" data-cards-label="Karty sekcji Strona główna">
             {{-- Układ strony głównej — jak moduł „Strona" w TYPO3: sekcje jako elementy w kolumnie,
                  przeciągane lub przesuwane strzałkami, z przełącznikiem włączenia (ukrycia). --}}
             @php
@@ -2146,7 +2162,7 @@
                     'substack' => 'Wpisy z Substack',
                 ];
             @endphp
-            <div class="mb-6">
+            <div class="mb-6" data-card="uklad" data-card-label="Układ strony głównej" data-card-icon="fa-table-list">
                 <div class="mb-4 flex items-start gap-3 p-3 rounded-md bg-gray-50">
                     <input type="hidden" name="home_search_enabled" value="0">
                     <input type="checkbox" id="home_search_enabled" name="home_search_enabled" value="1" @checked(old('home_search_enabled', $settings->home_search_enabled ?? false)) class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
@@ -2192,12 +2208,10 @@
                 <input type="hidden" id="section-order-json" name="section_order_json">
             </div>
 
-            <h3 class="mb-3 text-sm font-bold text-ink">Właściwości sekcji</h3>
-
 
             {{-- Slider hero --}}
-            <details class="mt-3 rounded-md bg-gray-50">
-                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Slider hero</summary>
+            <div class="rounded-md bg-gray-50" data-card="slider" data-card-label="Slider hero" data-card-icon="fa-images">
+                <h2 class="px-5 py-3 text-sm font-bold text-ink">Slider hero</h2>
                 <div class="border-t border-gray-200 p-5">
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="checkbox" name="hero_mission_slide" value="1"
@@ -2214,12 +2228,12 @@
                     </label>
                 @endif
                 </div>
-            </details>
+            </div>
 
             @if ($settings->site_template === 'federation')
                 {{-- Nagłówek i wstęp hero — tylko szablon "federation". Te same pola można
                      edytować też bezpośrednio na stronie głównej (edycja "na żywo"). --}}
-                <div class="mt-6 p-5 rounded-md bg-gray-50">
+                <div class="mt-6 p-5 rounded-md bg-gray-50" data-card="hero-tekst" data-card-label="Hero: nagłówek i wstęp" data-card-icon="fa-heading">
                     <p class="mb-3 text-sm font-bold text-ink">Nagłówek i wstęp hero (strona główna)</p>
                     <label class="mb-3 block">
                         <span class="mb-1 block text-xs font-bold text-muted">Nagłówek</span>
@@ -2238,7 +2252,7 @@
 
                 {{-- Kafelki hero — tylko szablon "federation" --}}
                 @php $heroTiles = array_values((array) old('federation_hero_tiles', $settings->federationHeroTiles())); @endphp
-                <div class="mt-6 p-5 rounded-md bg-gray-50" data-hero-tiles>
+                <div class="mt-6 p-5 rounded-md bg-gray-50" data-hero-tiles data-card="hero-kafelki" data-card-label="Kafelki hero" data-card-icon="fa-table-cells">
                     <p class="mb-1 text-sm font-bold text-ink">Kafelki bloku hero (strona główna)</p>
                     <p class="mb-3 text-xs text-muted">
                         Mozaika kolorowych kafelków obok tekstu „O nas". Każdy kafelek to albo duża liczba (np. rok
@@ -2304,7 +2318,7 @@
 
                 {{-- Kafelki "Dlaczego warto?" (Dołącz do nas) — tylko szablon "federation" --}}
                 @php $joinBenefits = array_values((array) old('federation_join_benefits', $settings->federationJoinBenefits())); @endphp
-                <div class="mt-6 p-5 rounded-md bg-gray-50" data-join-benefits>
+                <div class="mt-6 p-5 rounded-md bg-gray-50" data-join-benefits data-card="dlaczego-warto" data-card-label="Dlaczego warto?" data-card-icon="fa-circle-question">
                     <p class="mb-1 text-sm font-bold text-ink">Kafelki „Dlaczego warto?" (strona „Dołącz do nas")</p>
                     <p class="mb-3 text-xs text-muted">Cztery (albo więcej) powody, dla których warto dołączyć do federacji — ikona, tytuł i krótki opis.</p>
                     <div data-join-benefits-rows class="space-y-3">
@@ -2347,7 +2361,7 @@
             @if ($settings->site_template === 'ngo_3')
                 {{-- Pasek statystyk (strona główna, szablon "ngo_3") --}}
                 @php $ngo3Stats = array_values((array) old('ngo_3_stats', $settings->ngo3Stats())); @endphp
-                <div class="mt-6 p-5 rounded-md bg-gray-50" data-ngo3-stats>
+                <div class="mt-6 p-5 rounded-md bg-gray-50" data-ngo3-stats data-card="statystyki" data-card-label="Pasek statystyk" data-card-icon="fa-chart-simple">
                     <p class="mb-1 text-sm font-bold text-ink">Pasek statystyk (strona główna)</p>
                     <p class="mb-3 text-xs text-muted">Liczby, którymi organizacja się chwali — np. lata działania, liczba działań, wolontariuszy.</p>
                     <div data-ngo3-stats-rows class="space-y-3">
@@ -2388,8 +2402,8 @@
             @endif
 
             {{-- Sekcja skrótów —- styl tła --}}
-            <details class="mt-3 rounded-md bg-gray-50">
-                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Ankieta i szybkie akcje</summary>
+            <div class="rounded-md bg-gray-50" data-card="ankieta" data-card-label="Ankieta i szybkie akcje" data-card-icon="fa-square-poll-vertical">
+                <h2 class="px-5 py-3 text-sm font-bold text-ink">Ankieta i szybkie akcje</h2>
                 <div class="border-t border-gray-200 p-5">
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="hidden" name="quick_actions_panel_negative" value="0">
@@ -2399,11 +2413,11 @@
                     <span class="text-sm font-bold">Białe tło sekcji <span class="font-normal text-muted">(domyślnie sekcja ma szare tło — zaznacz, aby zmienić na białe)</span></span>
                 </label>
                 </div>
-            </details>
+            </div>
 
             {{-- Kolor sekcji „Szkolenia i wydarzenia" na stronie głównej --}}
-            <details class="mt-3 rounded-md bg-gray-50">
-                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Szkolenia i wydarzenia</summary>
+            <div class="rounded-md bg-gray-50" data-card="wydarzenia" data-card-label="Szkolenia i wydarzenia" data-card-icon="fa-calendar-days">
+                <h2 class="px-5 py-3 text-sm font-bold text-ink">Szkolenia i wydarzenia</h2>
                 <div class="border-t border-gray-200 p-5">
                 <label for="events_home_color_text" class="mb-1 block text-sm font-bold">Kolor sekcji „Szkolenia i wydarzenia"</label>
                 <p class="mb-2 text-xs text-muted">Akcent bloku wydarzeń na stronie głównej. Zostaw pusty, aby użyć koloru marki. Zbyt jasny kolor zostanie przyciemniony dla kontrastu (WCAG).</p>
@@ -2418,11 +2432,11 @@
                 </div>
                 @error('events_home_color') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
-            </details>
+            </div>
 
             {{-- Pasek informacyjny na górze strony głównej --}}
-            <details class="mt-3 rounded-md bg-gray-50" @if ($errors->hasAny(['homepage_banner_text', 'homepage_banner_link_label', 'homepage_banner_link_url', 'homepage_banner_visible_from', 'homepage_banner_visible_until'])) open @endif>
-                <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Pasek informacyjny</summary>
+            <div class="rounded-md bg-gray-50" data-card="pasek" data-card-label="Pasek informacyjny" data-card-icon="fa-bars-staggered">
+                <h2 class="px-5 py-3 text-sm font-bold text-ink">Pasek informacyjny</h2>
                 <div class="space-y-4 border-t border-gray-200 p-5">
                 <div>
                     <p class="text-sm font-bold text-ink">Pasek informacyjny na stronie głównej</p>
@@ -2473,37 +2487,39 @@
                     </div>
                 </div>
                 </div>
-            </details>
+            </div>
         </div>
 
         {{-- ═══ SZABLON STRONY ════════════════════════════════════════════════════════ --}}
         <div x-show="tab === 'template'" x-cloak class="space-y-6"
-            x-data="{ tpl: @js(old('site_template', $settings->site_template ?? 'default')) }">
+            x-data="{ tpl: @js(old('site_template', $settings->site_template ?? 'default')) }" data-cards="template" data-cards-label="Karty sekcji Szablon strony">
 
-            <div>
-                <h2 class="text-base font-bold text-ink">Szablon strony</h2>
-                <p class="mt-1 text-xs text-muted">
-                    Szablon określa wygląd serwisu: układ nagłówka, stopki oraz strony głównej.
-                    Zmiana szablonu nie usuwa żadnych treści.
-                </p>
+            <div class="space-y-6" data-card="szablon" data-card-label="Szablon" data-card-icon="fa-swatchbook">
+                <div>
+                    <h2 class="text-base font-bold text-ink">Szablon strony</h2>
+                    <p class="mt-1 text-xs text-muted">
+                        Szablon określa wygląd serwisu: układ nagłówka, stopki oraz strony głównej.
+                        Zmiana szablonu nie usuwa żadnych treści.
+                    </p>
+                </div>
+
+                <div>
+                    <label for="site_template" class="mb-1 block text-sm font-bold">Aktywny szablon</label>
+                    <select id="site_template" name="site_template" x-model="tpl"
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @foreach (\App\Models\SiteSetting::SITE_TEMPLATES as $value => $label)
+                            @continue($settings->isOptionBlocked('site_templates', $value) && old('site_template', $settings->site_template ?? 'default') !== $value)
+                            @php $tplLocked = ! \App\Support\Edition::allowsTemplate($value) && ($settings->site_template ?? 'default') !== $value; @endphp
+                            <option value="{{ $value }}" @disabled($tplLocked)
+                                {{ old('site_template', $settings->site_template ?? 'default') === $value ? 'selected' : '' }}>
+                                {{ $label }}{{ $tplLocked ? ' — wersja płatna' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
-            <div>
-                <label for="site_template" class="mb-1 block text-sm font-bold">Aktywny szablon</label>
-                <select id="site_template" name="site_template" x-model="tpl"
-                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    @foreach (\App\Models\SiteSetting::SITE_TEMPLATES as $value => $label)
-                        @continue($settings->isOptionBlocked('site_templates', $value) && old('site_template', $settings->site_template ?? 'default') !== $value)
-                        @php $tplLocked = ! \App\Support\Edition::allowsTemplate($value) && ($settings->site_template ?? 'default') !== $value; @endphp
-                        <option value="{{ $value }}" @disabled($tplLocked)
-                            {{ old('site_template', $settings->site_template ?? 'default') === $value ? 'selected' : '' }}>
-                            {{ $label }}{{ $tplLocked ? ' — wersja płatna' : '' }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <fieldset aria-describedby="podcasts_template_help">
+            <fieldset aria-describedby="podcasts_template_help" data-card="podcasty" data-card-label="Podcasty" data-card-icon="fa-podcast">
                 <legend class="mb-1 block text-sm font-bold">Wygląd podstrony „Podcasty”</legend>
                 <p id="podcasts_template_help" class="mb-3 text-xs text-muted">
                     Dedykowany wygląd (nagłówek, stopka, układ listy i odcinków) tylko dla <span class="font-bold">/podcasty</span> i podstron odcinków.
@@ -2538,407 +2554,411 @@
                 </div>
             </fieldset>
 
-            {{-- Opis szablonów, które nie mają własnych pól --}}
-            <div x-show="tpl === 'default'" x-cloak class="p-5 rounded-md bg-gray-50">
-                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Domyślny (klasyczny)</h3>
-                <p class="mt-1 text-xs text-muted">
-                    Ten szablon nie ma własnych pól — jego wygląd ustawiasz w zakładkach
-                    <span class="font-bold">Nagłówek</span> (układ belki, pasek informacyjny, social),
-                    <span class="font-bold">Strona główna</span> (kolejność sekcji) i <span class="font-bold">Kolory</span>.
-                </p>
-            </div>
-
-            <div x-show="tpl === 'ngo'" x-cloak class="p-5 rounded-md bg-gray-50">
-                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (rozbudowany)</h3>
-                <p class="mt-1 text-xs text-muted">
-                    Szablon ma własny nagłówek, stopkę i stronę główną (hero, trzy aktualności, działania,
-                    wezwanie do wsparcia, wydarzenia, karuzela). Treść sekcji bierze się z modułów —
-                    włączasz je w zakładce <span class="font-bold">Moduły</span>.
-                </p>
-            </div>
-
-            <div x-show="tpl === 'ngo_mix'" x-cloak class="p-5 rounded-md bg-gray-50">
-                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (mieszany)</h3>
-                <p class="mt-1 text-xs text-muted">
-                    Klasyczny górny pasek, nagłówek i stopka (ustawiasz je w zakładce <span class="font-bold">Nagłówek</span>)
-                    plus rozbudowana strona główna z sekcją szkoleń. Kolejność sekcji strony głównej jest w tym
-                    szablonie stała.
-                </p>
-            </div>
-
-            <div x-show="tpl === 'feer'" x-cloak class="p-5 rounded-md bg-gray-50">
-                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: FEER</h3>
-                <p class="mt-1 text-xs text-muted">
-                    Szablon dedykowany Fundacji FEER, zgodny z Brand bookiem 2024: klasyczny górny pasek, nagłówek i stopka
-                    (ustawiasz je w zakładce <span class="font-bold">Nagłówek</span>) oraz rozbudowana strona główna z sekcją szkoleń.
-                    Montserrat w całym serwisie, tekst <span class="font-mono">#1D1D1A</span>, płaskie powierzchnie bez gradientów i cieni.
-                    Kolory motywu (domyślnie z Brand booka: <span class="font-mono">#1E6DFF</span>, <span class="font-mono">#EA8F00</span>,
-                    <span class="font-mono">#1D1D1A</span>, <span class="font-mono">#CBD5E7</span>) zmieniasz w zakładce <span class="font-bold">Kolory</span>.
-                </p>
-            </div>
-
-            <div x-show="tpl === 'ngo_3'" x-cloak class="p-5 rounded-md bg-gray-50">
-                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (rozbudowany 3)</h3>
-                <p class="mt-1 text-xs text-muted">
-                    Nagłówek i stopka jak w szablonie „NGO / fundacja (rozbudowany)". Strona główna: hero,
-                    siatka „Na skróty" (moduł <span class="font-bold">Szybkie akcje</span>), aktualności, pasek
-                    statystyk, działania, wydarzenia, zapis na newsletter, wezwanie do wsparcia. Statystyki
-                    edytujesz w zakładce <span class="font-bold">Strona główna</span> poniżej.
-                </p>
-            </div>
-
-            {{-- Ustawienia szablonu VM (styl fundacjavismaior.pl) --}}
-            @php
-                $vmButtons = array_values((array) old('vm_intro_buttons', $settings->vm_intro_buttons ?: $settings->vmIntroButtons()));
-                $vmButtons = array_pad($vmButtons, 3, ['label' => '', 'url' => '']);
-                $vmPages = \App\Models\Page::forCurrentSite()->whereNull('parent_id')->orderBy('title')->get(['id', 'title']);
-            @endphp
-            <div x-show="tpl === 'vm'" x-cloak class="space-y-5 p-5 rounded-md bg-gray-50">
-                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: VM</h3>
-                <p class="text-xs text-muted">
-                    Czarny pasek (KRS, 1,5%, czcionka, kontrast, kontakt, szukajka), belka z logo i przyciskiem „Wpłać",
-                    slider z kartą (moduł <span class="font-bold">Slider</span>), blok powitalny, aktualności, działania,
-                    sekcja „Wiedza", współpraca (moduł <span class="font-bold">Partnerzy</span>) i newsletter (kod z zakładki
-                    <span class="font-bold">Newsletter</span>). Blok powitalny można też edytować „na żywo" na stronie głównej.
-                </p>
-
-                <div>
-                    <label for="vm_intro_heading" class="mb-1 block text-sm font-bold">Nagłówek bloku powitalnego</label>
-                    <input type="text" id="vm_intro_heading" name="vm_intro_heading" maxlength="255"
-                        value="{{ old('vm_intro_heading', $settings->vm_intro_heading) }}" placeholder="{{ $settings->site_name }}"
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    <p class="mt-1 text-xs text-muted">Puste = nazwa organizacji.</p>
-                    @error('vm_intro_heading') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="vm_intro_text" class="mb-1 block text-sm font-bold">Tekst bloku powitalnego <span class="font-normal text-muted">(HTML — akapity &lt;p&gt;)</span></label>
-                    <textarea id="vm_intro_text" name="vm_intro_text" rows="6"
-                        class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('vm_intro_text', $settings->vm_intro_text) }}</textarea>
-                    @error('vm_intro_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <fieldset>
-                    <legend class="mb-1 text-sm font-bold">Przyciski pod blokiem powitalnym</legend>
-                    <p class="mb-2 text-xs text-muted">Wiersz bez etykiety albo adresu jest pomijany. Gdy wszystkie są puste — domyślnie „Wesprzyj nas", „Wolontariat", „Kontakt" (wg włączonych modułów).</p>
-                    <div class="space-y-2">
-                        @foreach (array_slice($vmButtons, 0, 6) as $i => $button)
-                            <div class="grid gap-2 sm:grid-cols-[1fr_2fr]">
-                                <label class="sr-only" for="vm_intro_buttons_{{ $i }}_label">Przycisk {{ $i + 1 }} — etykieta</label>
-                                <input type="text" id="vm_intro_buttons_{{ $i }}_label" name="vm_intro_buttons[{{ $i }}][label]" maxlength="60"
-                                    value="{{ $button['label'] ?? '' }}" placeholder="Etykieta, np. Wesprzyj nas"
-                                    class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
-                                <label class="sr-only" for="vm_intro_buttons_{{ $i }}_url">Przycisk {{ $i + 1 }} — adres</label>
-                                <input type="text" id="vm_intro_buttons_{{ $i }}_url" name="vm_intro_buttons[{{ $i }}][url]" maxlength="255"
-                                    value="{{ $button['url'] ?? '' }}" placeholder="Adres, np. /wsparcie"
-                                    class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
-                            </div>
-                        @endforeach
-                    </div>
-                    @error('vm_intro_buttons.*.url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </fieldset>
-
-                <div>
-                    <label for="vm_knowledge_page_id" class="mb-1 block text-sm font-bold">Strona sekcji „Wiedza"</label>
-                    <select id="vm_knowledge_page_id" name="vm_knowledge_page_id"
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                        <option value="">— nie pokazuj sekcji —</option>
-                        @foreach ($vmPages as $vmPage)
-                            <option value="{{ $vmPage->id }}" @selected((int) old('vm_knowledge_page_id', $settings->vm_knowledge_page_id) === $vmPage->id)>{{ $vmPage->title }}</option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-muted">Tytuł strony staje się nagłówkiem sekcji, a jej opublikowane podstrony — listą linków.</p>
-                    @error('vm_knowledge_page_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                @foreach ([
-                    'vm_knowledge_image' => ['Zdjęcie sekcji „Wiedza"', $settings->vmKnowledgeImageUrl(), 'Zdjęcie dekoracyjne po lewej stronie sekcji. Maks. 4 MB.'],
-                    'vm_header_badge' => ['Logo partnera / programu w nagłówku', $settings->vmHeaderBadgeUrl(), 'Np. znak działania lub źródła finansowania — obok logo organizacji. Maks. 2 MB.'],
-                ] as $vmField => [$vmLabel, $vmUrl, $vmHelp])
-                    <div>
-                        <label for="{{ $vmField }}" class="mb-1 block text-sm font-bold">{{ $vmLabel }}</label>
-                        @if ($vmUrl)
-                            <div class="mb-2 flex items-center gap-3">
-                                <img src="{{ $vmUrl }}" alt="Aktualny plik: {{ $vmLabel }}" class="h-16 w-auto rounded object-contain ring-1 ring-gray-200">
-                                <label class="flex items-center gap-2 text-sm text-muted">
-                                    <input type="checkbox" name="remove_{{ $vmField }}" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                                    Usuń
-                                </label>
-                            </div>
-                        @endif
-                        <input type="file" id="{{ $vmField }}" name="{{ $vmField }}" accept="image/*"
-                            class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
-                        <p class="mt-1 text-xs text-muted">{{ $vmHelp }}</p>
-                        @error($vmField) <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                @endforeach
-
-                <div>
-                    <label for="vm_header_badge_alt" class="mb-1 block text-sm font-bold">Tekst alternatywny logo partnera</label>
-                    <input type="text" id="vm_header_badge_alt" name="vm_header_badge_alt" maxlength="255"
-                        value="{{ old('vm_header_badge_alt', $settings->vm_header_badge_alt) }}" placeholder="np. Unia Europejska"
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    @error('vm_header_badge_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="vm_newsletter_text" class="mb-1 block text-sm font-bold">Tekst nad formularzem newslettera</label>
-                    <textarea id="vm_newsletter_text" name="vm_newsletter_text" rows="2" maxlength="500"
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('vm_newsletter_text', $settings->vm_newsletter_text) }}</textarea>
-                    @error('vm_newsletter_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="vm_footer_note" class="mb-1 block text-sm font-bold">Nota w stopce <span class="font-normal text-muted">(np. informacja o finansowaniu)</span></label>
-                    <textarea id="vm_footer_note" name="vm_footer_note" rows="2" maxlength="1000"
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('vm_footer_note', $settings->vm_footer_note) }}</textarea>
-                    @error('vm_footer_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            {{-- Link powrotu do portalu głównego: tylko witryny w sieci --}}
-            @if ($settings->parent_site_id)
-                <div class="p-5 space-y-4 rounded-md bg-gray-50">
-                    <h3 class="text-sm font-bold text-ink">Link powrotu do portalu Fundacji</h3>
-                    <p class="text-xs text-ink">Zawsze widoczny w górnym pasku tej witryny. Możesz zmienić napis i adres; puste pola oznaczają napis „Powrót do portalu Fundacji” i adres witryny głównej.</p>
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label for="parent_link_label" class="mb-1 block text-sm font-bold">Napis</label>
-                            <input type="text" id="parent_link_label" name="parent_link_label" maxlength="80" placeholder="Powrót do portalu Fundacji"
-                                value="{{ old('parent_link_label', $settings->parent_link_label) }}"
-                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                            @error('parent_link_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        </div>
-                        <div>
-                            <label for="parent_link_url" class="mb-1 block text-sm font-bold">Adres</label>
-                            <input type="text" id="parent_link_url" name="parent_link_url" maxlength="255" placeholder="https://feer.org.pl"
-                                value="{{ old('parent_link_url', $settings->parent_link_url) }}"
-                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                            @error('parent_link_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            {{-- Wariant motywu FEER (podmodel) „FEER IS”: układ strony głównej portalu usług --}}
-            <div x-show="tpl === 'feer'" x-cloak class="p-5 space-y-5 rounded-md bg-gray-50">
-                <h3 class="text-sm font-bold text-ink">Wariant motywu FEER: FEER IS</h3>
-                <p class="text-xs text-ink">Nagłówek, stopka i podstrony zostają FEER. „FEER IS” zmienia tylko układ strony głównej (portal usług jak gov.pl).</p>
-
-                <div>
-                    <label for="theme_variant" class="mb-1 block text-sm font-bold">Układ strony głównej</label>
-                    <select id="theme_variant" name="theme_variant" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                        @foreach (\App\Models\SiteSetting::THEME_VARIANTS as $variantKey => $variantLabel)
-                            <option value="{{ $variantKey }}" @selected(old('theme_variant', $settings->themeVariant()) === $variantKey)>{{ $variantLabel }}</option>
-                        @endforeach
-                    </select>
-                    @error('theme_variant') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="services_tabs" class="mb-1 block text-sm font-bold">Zakładki odbiorców (portal usług)</label>
-                    <textarea id="services_tabs" name="services_tabs" rows="4" maxlength="2000" placeholder="Dla osób z niepełnosprawnością|dla-osob|mi-accessibility_new&#10;Dla instytucji|dla-instytucji|mi-apartment"
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('services_tabs', $settings->services_tabs) }}</textarea>
-                    <p class="mt-1 text-xs text-ink">Jedna zakładka na wiersz: <code>Nazwa zakładki|adres strony|ikona</code> (sam slug, bez ukośnika; ikona opcjonalna, np. <code>mi-groups</code>). Usługi w zakładce to opublikowane podstrony tej strony; opis usługi to jej opis meta.</p>
-                    @error('services_tabs') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <label class="flex items-start gap-3 text-sm text-ink">
-                    <input type="hidden" name="courses_registration_enabled" value="0">
-                    <input type="checkbox" name="courses_registration_enabled" value="1" class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked($settings->coursesRegistrationEnabled())>
-                    <span><span class="font-bold">Zapisy online na szkolenia</span> <span class="block text-ink">Po wyłączeniu strona szkolenia pokazuje zamiast formularza zachętę do kontaktu, a wysłanie zgłoszenia jest zablokowane.</span></span>
-                </label>
-
-                <div class="space-y-3">
-                    <p class="text-sm font-bold">Przycisk w nagłówku <span class="font-normal text-ink">(tylko FEER IS; zastępuje „Materiały edukacyjne”)</span></p>
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label for="is_cta_label" class="mb-1 block text-sm font-bold">Napis przycisku</label>
-                            <input type="text" id="is_cta_label" name="is_cta_label" maxlength="60" placeholder="np. Zapisz się na szkolenie"
-                                value="{{ old('is_cta_label', $settings->is_cta_label) }}"
-                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                        </div>
-                        <div>
-                            <label for="is_cta_url" class="mb-1 block text-sm font-bold">Adres przycisku</label>
-                            <input type="text" id="is_cta_url" name="is_cta_url" maxlength="255" placeholder="/formularz/zapisy"
-                                value="{{ old('is_cta_url', $settings->is_cta_url) }}"
-                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                        </div>
-                    </div>
-                    <p class="text-xs text-ink">Puste pola oznaczają brak przycisku w nagłówku.</p>
-                </div>
-
-                <div class="grid gap-4 sm:grid-cols-2">
-                    <div>
-                        <label for="services_all_label" class="mb-1 block text-sm font-bold">Przycisk pod siatką usług</label>
-                        <input type="text" id="services_all_label" name="services_all_label" maxlength="80" placeholder="Zobacz wszystkie usługi"
-                            value="{{ old('services_all_label', $settings->services_all_label) }}"
-                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    </div>
-                    <div>
-                        <label for="services_all_url" class="mb-1 block text-sm font-bold">Adres przycisku</label>
-                        <input type="text" id="services_all_url" name="services_all_url" maxlength="255" placeholder="/dzialania"
-                            value="{{ old('services_all_url', $settings->services_all_url) }}"
-                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    </div>
-                </div>
-            </div>
-
-            {{-- Ustawienia szablonu Gmina / urząd --}}
-            <div x-show="tpl === 'municipality'" x-cloak class="p-5 space-y-5 rounded-md bg-gray-50">
-                <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Gmina / urząd</h3>
-                <p class="text-xs text-muted">Pola widoczne tylko przy tym szablonie. Zapisane wartości zostają w bazie, gdy przełączysz szablon na inny.</p>
-
-                <div>
-                    <label for="municipality_shortcuts_slug" class="mb-1 block text-sm font-bold">
-                        Slug strony „Na skróty" (typ: siatka kafelków)
-                    </label>
-                    <input type="text" id="municipality_shortcuts_slug" name="municipality_shortcuts_slug"
-                        value="{{ old('municipality_shortcuts_slug', $settings->municipality_shortcuts_slug) }}"
-                        placeholder="np. na-skroty"
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+            <div class="space-y-6" data-card="opcje-szablonu" data-card-label="Opcje szablonu" data-card-icon="fa-sliders">
+                {{-- Opis szablonów, które nie mają własnych pól --}}
+                <div x-show="tpl === 'default'" x-cloak class="p-5 rounded-md bg-gray-50">
+                    <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Domyślny (klasyczny)</h3>
                     <p class="mt-1 text-xs text-muted">
-                        Utwórz stronę o typie „Siatka kafelków" (podstrony → nowa → typ: Siatka kafelków),
-                        wpisz jej slug (bez ukośnika).
+                        Ten szablon nie ma własnych pól — jego wygląd ustawiasz w zakładkach
+                        <span class="font-bold">Nagłówek</span> (układ belki, pasek informacyjny, social),
+                        <span class="font-bold">Strona główna</span> (kolejność sekcji) i <span class="font-bold">Kolory</span>.
                     </p>
-                    @error('municipality_shortcuts_slug')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
                 </div>
 
-                <div>
-                    <label for="municipality_carousel_title" class="mb-1 block text-sm font-bold">
-                        Tytuł sekcji „Polecamy"
-                    </label>
-                    <input type="text" id="municipality_carousel_title" name="municipality_carousel_title"
-                        value="{{ old('municipality_carousel_title', $settings->municipality_carousel_title) }}"
-                        placeholder="Polecamy"
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                </div>
-
-                <div class="grid gap-4 sm:grid-cols-2">
-                    <div>
-                        <label for="municipality_weather_lat" class="mb-1 block text-sm font-bold">
-                            Pogoda — szerokość geograficzna (lat)
-                        </label>
-                        <input type="number" id="municipality_weather_lat" name="municipality_weather_lat"
-                            step="0.000001" min="-90" max="90"
-                            value="{{ old('municipality_weather_lat', $settings->municipality_weather_lat) }}"
-                            placeholder="np. 53.136985"
-                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                        <p class="mt-1 text-xs text-muted">Pozostaw puste, by ukryć pogodę.</p>
-                    </div>
-                    <div>
-                        <label for="municipality_weather_lon" class="mb-1 block text-sm font-bold">
-                            Pogoda — długość geograficzna (lon)
-                        </label>
-                        <input type="number" id="municipality_weather_lon" name="municipality_weather_lon"
-                            step="0.000001" min="-180" max="180"
-                            value="{{ old('municipality_weather_lon', $settings->municipality_weather_lon) }}"
-                            placeholder="np. 17.057556"
-                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="flex items-center gap-2 text-sm font-medium">
-                        <input type="checkbox" name="municipality_show_google_translate" value="1"
-                            {{ old('municipality_show_google_translate', $settings->municipality_show_google_translate) ? 'checked' : '' }}
-                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        Pokaż przycisk Google Translate w pasku górnym
-                    </label>
-                    <p class="ml-6 mt-1 text-xs text-muted">
-                        Wymaga połączenia z serwerami Google. Narzędzie ładuje się po kliknięciu przycisku.
+                <div x-show="tpl === 'ngo'" x-cloak class="p-5 rounded-md bg-gray-50">
+                    <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (rozbudowany)</h3>
+                    <p class="mt-1 text-xs text-muted">
+                        Szablon ma własny nagłówek, stopkę i stronę główną (hero, trzy aktualności, działania,
+                        wezwanie do wsparcia, wydarzenia, karuzela). Treść sekcji bierze się z modułów —
+                        włączasz je w zakładce <span class="font-bold">Moduły</span>.
                     </p>
+                </div>
+
+                <div x-show="tpl === 'ngo_mix'" x-cloak class="p-5 rounded-md bg-gray-50">
+                    <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (mieszany)</h3>
+                    <p class="mt-1 text-xs text-muted">
+                        Klasyczny górny pasek, nagłówek i stopka (ustawiasz je w zakładce <span class="font-bold">Nagłówek</span>)
+                        plus rozbudowana strona główna z sekcją szkoleń. Kolejność sekcji strony głównej jest w tym
+                        szablonie stała.
+                    </p>
+                </div>
+
+                <div x-show="tpl === 'feer'" x-cloak class="p-5 rounded-md bg-gray-50">
+                    <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: FEER</h3>
+                    <p class="mt-1 text-xs text-muted">
+                        Szablon dedykowany Fundacji FEER, zgodny z Brand bookiem 2024: klasyczny górny pasek, nagłówek i stopka
+                        (ustawiasz je w zakładce <span class="font-bold">Nagłówek</span>) oraz rozbudowana strona główna z sekcją szkoleń.
+                        Montserrat w całym serwisie, tekst <span class="font-mono">#1D1D1A</span>, płaskie powierzchnie bez gradientów i cieni.
+                        Kolory motywu (domyślnie z Brand booka: <span class="font-mono">#1E6DFF</span>, <span class="font-mono">#EA8F00</span>,
+                        <span class="font-mono">#1D1D1A</span>, <span class="font-mono">#CBD5E7</span>) zmieniasz w zakładce <span class="font-bold">Kolory</span>.
+                    </p>
+                </div>
+
+                <div x-show="tpl === 'ngo_3'" x-cloak class="p-5 rounded-md bg-gray-50">
+                    <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: NGO / fundacja (rozbudowany 3)</h3>
+                    <p class="mt-1 text-xs text-muted">
+                        Nagłówek i stopka jak w szablonie „NGO / fundacja (rozbudowany)". Strona główna: hero,
+                        siatka „Na skróty" (moduł <span class="font-bold">Szybkie akcje</span>), aktualności, pasek
+                        statystyk, działania, wydarzenia, zapis na newsletter, wezwanie do wsparcia. Statystyki
+                        edytujesz w zakładce <span class="font-bold">Strona główna</span> poniżej.
+                    </p>
+                </div>
+
+                {{-- Ustawienia szablonu VM (styl fundacjavismaior.pl) --}}
+                @php
+                    $vmButtons = array_values((array) old('vm_intro_buttons', $settings->vm_intro_buttons ?: $settings->vmIntroButtons()));
+                    $vmButtons = array_pad($vmButtons, 3, ['label' => '', 'url' => '']);
+                    $vmPages = \App\Models\Page::forCurrentSite()->whereNull('parent_id')->orderBy('title')->get(['id', 'title']);
+                @endphp
+                <div x-show="tpl === 'vm'" x-cloak class="space-y-5 p-5 rounded-md bg-gray-50">
+                    <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: VM</h3>
+                    <p class="text-xs text-muted">
+                        Czarny pasek (KRS, 1,5%, czcionka, kontrast, kontakt, szukajka), belka z logo i przyciskiem „Wpłać",
+                        slider z kartą (moduł <span class="font-bold">Slider</span>), blok powitalny, aktualności, działania,
+                        sekcja „Wiedza", współpraca (moduł <span class="font-bold">Partnerzy</span>) i newsletter (kod z zakładki
+                        <span class="font-bold">Newsletter</span>). Blok powitalny można też edytować „na żywo" na stronie głównej.
+                    </p>
+
+                    <div>
+                        <label for="vm_intro_heading" class="mb-1 block text-sm font-bold">Nagłówek bloku powitalnego</label>
+                        <input type="text" id="vm_intro_heading" name="vm_intro_heading" maxlength="255"
+                            value="{{ old('vm_intro_heading', $settings->vm_intro_heading) }}" placeholder="{{ $settings->site_name }}"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Puste = nazwa organizacji.</p>
+                        @error('vm_intro_heading') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="vm_intro_text" class="mb-1 block text-sm font-bold">Tekst bloku powitalnego <span class="font-normal text-muted">(HTML — akapity &lt;p&gt;)</span></label>
+                        <textarea id="vm_intro_text" name="vm_intro_text" rows="6"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('vm_intro_text', $settings->vm_intro_text) }}</textarea>
+                        @error('vm_intro_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <fieldset>
+                        <legend class="mb-1 text-sm font-bold">Przyciski pod blokiem powitalnym</legend>
+                        <p class="mb-2 text-xs text-muted">Wiersz bez etykiety albo adresu jest pomijany. Gdy wszystkie są puste — domyślnie „Wesprzyj nas", „Wolontariat", „Kontakt" (wg włączonych modułów).</p>
+                        <div class="space-y-2">
+                            @foreach (array_slice($vmButtons, 0, 6) as $i => $button)
+                                <div class="grid gap-2 sm:grid-cols-[1fr_2fr]">
+                                    <label class="sr-only" for="vm_intro_buttons_{{ $i }}_label">Przycisk {{ $i + 1 }} — etykieta</label>
+                                    <input type="text" id="vm_intro_buttons_{{ $i }}_label" name="vm_intro_buttons[{{ $i }}][label]" maxlength="60"
+                                        value="{{ $button['label'] ?? '' }}" placeholder="Etykieta, np. Wesprzyj nas"
+                                        class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                                    <label class="sr-only" for="vm_intro_buttons_{{ $i }}_url">Przycisk {{ $i + 1 }} — adres</label>
+                                    <input type="text" id="vm_intro_buttons_{{ $i }}_url" name="vm_intro_buttons[{{ $i }}][url]" maxlength="255"
+                                        value="{{ $button['url'] ?? '' }}" placeholder="Adres, np. /wsparcie"
+                                        class="rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                                </div>
+                            @endforeach
+                        </div>
+                        @error('vm_intro_buttons.*.url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </fieldset>
+
+                    <div>
+                        <label for="vm_knowledge_page_id" class="mb-1 block text-sm font-bold">Strona sekcji „Wiedza"</label>
+                        <select id="vm_knowledge_page_id" name="vm_knowledge_page_id"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            <option value="">— nie pokazuj sekcji —</option>
+                            @foreach ($vmPages as $vmPage)
+                                <option value="{{ $vmPage->id }}" @selected((int) old('vm_knowledge_page_id', $settings->vm_knowledge_page_id) === $vmPage->id)>{{ $vmPage->title }}</option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-muted">Tytuł strony staje się nagłówkiem sekcji, a jej opublikowane podstrony — listą linków.</p>
+                        @error('vm_knowledge_page_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    @foreach ([
+                        'vm_knowledge_image' => ['Zdjęcie sekcji „Wiedza"', $settings->vmKnowledgeImageUrl(), 'Zdjęcie dekoracyjne po lewej stronie sekcji. Maks. 4 MB.'],
+                        'vm_header_badge' => ['Logo partnera / programu w nagłówku', $settings->vmHeaderBadgeUrl(), 'Np. znak działania lub źródła finansowania — obok logo organizacji. Maks. 2 MB.'],
+                    ] as $vmField => [$vmLabel, $vmUrl, $vmHelp])
+                        <div>
+                            <label for="{{ $vmField }}" class="mb-1 block text-sm font-bold">{{ $vmLabel }}</label>
+                            @if ($vmUrl)
+                                <div class="mb-2 flex items-center gap-3">
+                                    <img src="{{ $vmUrl }}" alt="Aktualny plik: {{ $vmLabel }}" class="h-16 w-auto rounded object-contain ring-1 ring-gray-200">
+                                    <label class="flex items-center gap-2 text-sm text-muted">
+                                        <input type="checkbox" name="remove_{{ $vmField }}" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                        Usuń
+                                    </label>
+                                </div>
+                            @endif
+                            <input type="file" id="{{ $vmField }}" name="{{ $vmField }}" accept="image/*"
+                                class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand-dark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
+                            <p class="mt-1 text-xs text-muted">{{ $vmHelp }}</p>
+                            @error($vmField) <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    @endforeach
+
+                    <div>
+                        <label for="vm_header_badge_alt" class="mb-1 block text-sm font-bold">Tekst alternatywny logo partnera</label>
+                        <input type="text" id="vm_header_badge_alt" name="vm_header_badge_alt" maxlength="255"
+                            value="{{ old('vm_header_badge_alt', $settings->vm_header_badge_alt) }}" placeholder="np. Unia Europejska"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @error('vm_header_badge_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="vm_newsletter_text" class="mb-1 block text-sm font-bold">Tekst nad formularzem newslettera</label>
+                        <textarea id="vm_newsletter_text" name="vm_newsletter_text" rows="2" maxlength="500"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('vm_newsletter_text', $settings->vm_newsletter_text) }}</textarea>
+                        @error('vm_newsletter_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="vm_footer_note" class="mb-1 block text-sm font-bold">Nota w stopce <span class="font-normal text-muted">(np. informacja o finansowaniu)</span></label>
+                        <textarea id="vm_footer_note" name="vm_footer_note" rows="2" maxlength="1000"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('vm_footer_note', $settings->vm_footer_note) }}</textarea>
+                        @error('vm_footer_note') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                {{-- Link powrotu do portalu głównego: tylko witryny w sieci --}}
+                @if ($settings->parent_site_id)
+                    <div class="p-5 space-y-4 rounded-md bg-gray-50">
+                        <h3 class="text-sm font-bold text-ink">Link powrotu do portalu Fundacji</h3>
+                        <p class="text-xs text-ink">Zawsze widoczny w górnym pasku tej witryny. Możesz zmienić napis i adres; puste pola oznaczają napis „Powrót do portalu Fundacji” i adres witryny głównej.</p>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label for="parent_link_label" class="mb-1 block text-sm font-bold">Napis</label>
+                                <input type="text" id="parent_link_label" name="parent_link_label" maxlength="80" placeholder="Powrót do portalu Fundacji"
+                                    value="{{ old('parent_link_label', $settings->parent_link_label) }}"
+                                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                                @error('parent_link_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="parent_link_url" class="mb-1 block text-sm font-bold">Adres</label>
+                                <input type="text" id="parent_link_url" name="parent_link_url" maxlength="255" placeholder="https://feer.org.pl"
+                                    value="{{ old('parent_link_url', $settings->parent_link_url) }}"
+                                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                                @error('parent_link_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Wariant motywu FEER (podmodel) „FEER IS”: układ strony głównej portalu usług --}}
+                <div x-show="tpl === 'feer'" x-cloak class="p-5 space-y-5 rounded-md bg-gray-50">
+                    <h3 class="text-sm font-bold text-ink">Wariant motywu FEER: FEER IS</h3>
+                    <p class="text-xs text-ink">Nagłówek, stopka i podstrony zostają FEER. „FEER IS” zmienia tylko układ strony głównej (portal usług jak gov.pl).</p>
+
+                    <div>
+                        <label for="theme_variant" class="mb-1 block text-sm font-bold">Układ strony głównej</label>
+                        <select id="theme_variant" name="theme_variant" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            @foreach (\App\Models\SiteSetting::THEME_VARIANTS as $variantKey => $variantLabel)
+                                <option value="{{ $variantKey }}" @selected(old('theme_variant', $settings->themeVariant()) === $variantKey)>{{ $variantLabel }}</option>
+                            @endforeach
+                        </select>
+                        @error('theme_variant') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="services_tabs" class="mb-1 block text-sm font-bold">Zakładki odbiorców (portal usług)</label>
+                        <textarea id="services_tabs" name="services_tabs" rows="4" maxlength="2000" placeholder="Dla osób z niepełnosprawnością|dla-osob|mi-accessibility_new&#10;Dla instytucji|dla-instytucji|mi-apartment"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">{{ old('services_tabs', $settings->services_tabs) }}</textarea>
+                        <p class="mt-1 text-xs text-ink">Jedna zakładka na wiersz: <code>Nazwa zakładki|adres strony|ikona</code> (sam slug, bez ukośnika; ikona opcjonalna, np. <code>mi-groups</code>). Usługi w zakładce to opublikowane podstrony tej strony; opis usługi to jej opis meta.</p>
+                        @error('services_tabs') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <label class="flex items-start gap-3 text-sm text-ink">
+                        <input type="hidden" name="courses_registration_enabled" value="0">
+                        <input type="checkbox" name="courses_registration_enabled" value="1" class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked($settings->coursesRegistrationEnabled())>
+                        <span><span class="font-bold">Zapisy online na szkolenia</span> <span class="block text-ink">Po wyłączeniu strona szkolenia pokazuje zamiast formularza zachętę do kontaktu, a wysłanie zgłoszenia jest zablokowane.</span></span>
+                    </label>
+
+                    <div class="space-y-3">
+                        <p class="text-sm font-bold">Przycisk w nagłówku <span class="font-normal text-ink">(tylko FEER IS; zastępuje „Materiały edukacyjne”)</span></p>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label for="is_cta_label" class="mb-1 block text-sm font-bold">Napis przycisku</label>
+                                <input type="text" id="is_cta_label" name="is_cta_label" maxlength="60" placeholder="np. Zapisz się na szkolenie"
+                                    value="{{ old('is_cta_label', $settings->is_cta_label) }}"
+                                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            </div>
+                            <div>
+                                <label for="is_cta_url" class="mb-1 block text-sm font-bold">Adres przycisku</label>
+                                <input type="text" id="is_cta_url" name="is_cta_url" maxlength="255" placeholder="/formularz/zapisy"
+                                    value="{{ old('is_cta_url', $settings->is_cta_url) }}"
+                                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            </div>
+                        </div>
+                        <p class="text-xs text-ink">Puste pola oznaczają brak przycisku w nagłówku.</p>
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="services_all_label" class="mb-1 block text-sm font-bold">Przycisk pod siatką usług</label>
+                            <input type="text" id="services_all_label" name="services_all_label" maxlength="80" placeholder="Zobacz wszystkie usługi"
+                                value="{{ old('services_all_label', $settings->services_all_label) }}"
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        </div>
+                        <div>
+                            <label for="services_all_url" class="mb-1 block text-sm font-bold">Adres przycisku</label>
+                            <input type="text" id="services_all_url" name="services_all_url" maxlength="255" placeholder="/dzialania"
+                                value="{{ old('services_all_url', $settings->services_all_url) }}"
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Ustawienia szablonu Gmina / urząd --}}
+                <div x-show="tpl === 'municipality'" x-cloak class="p-5 space-y-5 rounded-md bg-gray-50">
+                    <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Gmina / urząd</h3>
+                    <p class="text-xs text-muted">Pola widoczne tylko przy tym szablonie. Zapisane wartości zostają w bazie, gdy przełączysz szablon na inny.</p>
+
+                    <div>
+                        <label for="municipality_shortcuts_slug" class="mb-1 block text-sm font-bold">
+                            Slug strony „Na skróty" (typ: siatka kafelków)
+                        </label>
+                        <input type="text" id="municipality_shortcuts_slug" name="municipality_shortcuts_slug"
+                            value="{{ old('municipality_shortcuts_slug', $settings->municipality_shortcuts_slug) }}"
+                            placeholder="np. na-skroty"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">
+                            Utwórz stronę o typie „Siatka kafelków" (podstrony → nowa → typ: Siatka kafelków),
+                            wpisz jej slug (bez ukośnika).
+                        </p>
+                        @error('municipality_shortcuts_slug')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="municipality_carousel_title" class="mb-1 block text-sm font-bold">
+                            Tytuł sekcji „Polecamy"
+                        </label>
+                        <input type="text" id="municipality_carousel_title" name="municipality_carousel_title"
+                            value="{{ old('municipality_carousel_title', $settings->municipality_carousel_title) }}"
+                            placeholder="Polecamy"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    </div>
+
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="municipality_weather_lat" class="mb-1 block text-sm font-bold">
+                                Pogoda — szerokość geograficzna (lat)
+                            </label>
+                            <input type="number" id="municipality_weather_lat" name="municipality_weather_lat"
+                                step="0.000001" min="-90" max="90"
+                                value="{{ old('municipality_weather_lat', $settings->municipality_weather_lat) }}"
+                                placeholder="np. 53.136985"
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            <p class="mt-1 text-xs text-muted">Pozostaw puste, by ukryć pogodę.</p>
+                        </div>
+                        <div>
+                            <label for="municipality_weather_lon" class="mb-1 block text-sm font-bold">
+                                Pogoda — długość geograficzna (lon)
+                            </label>
+                            <input type="number" id="municipality_weather_lon" name="municipality_weather_lon"
+                                step="0.000001" min="-180" max="180"
+                                value="{{ old('municipality_weather_lon', $settings->municipality_weather_lon) }}"
+                                placeholder="np. 17.057556"
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="flex items-center gap-2 text-sm font-medium">
+                            <input type="checkbox" name="municipality_show_google_translate" value="1"
+                                {{ old('municipality_show_google_translate', $settings->municipality_show_google_translate) ? 'checked' : '' }}
+                                class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            Pokaż przycisk Google Translate w pasku górnym
+                        </label>
+                        <p class="ml-6 mt-1 text-xs text-muted">
+                            Wymaga połączenia z serwerami Google. Narzędzie ładuje się po kliknięciu przycisku.
+                        </p>
+                    </div>
                 </div>
             </div>
 
         </div>
 
-        <div x-show="tab === 'login'" x-cloak class="space-y-6" x-data="{ msEnabled: {{ old('microsoft_login_enabled', $settings->microsoft_login_enabled) ? 'true' : 'false' }} }">
-            <div>
-                <h2 class="text-base font-bold text-ink">Logowanie przez Microsoft 365</h2>
-                <p class="mt-1 text-xs text-muted">
-                    Pozwala zalogować się do panelu kontem Microsoft 365 (Laravel Socialite). Dostęp otrzymują wyłącznie
-                    użytkownicy już istniejący w zakładce „Użytkownicy" (dopasowanie po adresie e-mail). Aplikację rejestruje się
-                    w <span class="font-medium">Microsoft Entra ID → App registrations</span>, a jako Redirect URI podaj:
-                </p>
-                <code class="mt-2 block break-all rounded bg-gray-50 px-3 py-2 text-xs text-ink">{{ url('/auth/microsoft/callback') }}</code>
-            </div>
-
-            <label class="flex items-center gap-2 text-sm font-medium">
-                <input type="checkbox" name="microsoft_login_enabled" value="1" x-model="msEnabled"
-                    {{ old('microsoft_login_enabled', $settings->microsoft_login_enabled) ? 'checked' : '' }}
-                    class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                Włącz logowanie przez Microsoft 365
-            </label>
-
-            <div x-show="msEnabled" x-cloak class="space-y-4">
+        <div x-show="tab === 'login'" x-cloak class="space-y-6" x-data="{ msEnabled: {{ old('microsoft_login_enabled', $settings->microsoft_login_enabled) ? 'true' : 'false' }} }" data-cards="login" data-cards-label="Karty sekcji Logowanie">
+            <div class="space-y-6" data-card="microsoft" data-card-label="Microsoft 365" data-card-icon="fa-brands fa-microsoft">
                 <div>
-                    <label class="flex items-center gap-2 text-sm font-medium">
-                        <input type="checkbox" name="microsoft_only_login" value="1"
-                            {{ old('microsoft_only_login', $settings->microsoft_only_login) ? 'checked' : '' }}
-                            class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        Wyłącz lokalne logowanie hasłem (tylko Microsoft 365)
-                    </label>
-                    <p class="ml-6 mt-1 text-xs text-muted">
-                        Formularz e-mail + hasło zostaje ukryty. Konta z włączoną flagą „Dostęp awaryjny" nadal mogą się zalogować hasłem przez adres awaryjny poniżej.
+                    <h2 class="text-base font-bold text-ink">Logowanie przez Microsoft 365</h2>
+                    <p class="mt-1 text-xs text-muted">
+                        Pozwala zalogować się do panelu kontem Microsoft 365 (Laravel Socialite). Dostęp otrzymują wyłącznie
+                        użytkownicy już istniejący w zakładce „Użytkownicy" (dopasowanie po adresie e-mail). Aplikację rejestruje się
+                        w <span class="font-medium">Microsoft Entra ID → App registrations</span>, a jako Redirect URI podaj:
+                    </p>
+                    <code class="mt-2 block break-all rounded bg-gray-50 px-3 py-2 text-xs text-ink">{{ url('/auth/microsoft/callback') }}</code>
+                </div>
+
+                <label class="flex items-center gap-2 text-sm font-medium">
+                    <input type="checkbox" name="microsoft_login_enabled" value="1" x-model="msEnabled"
+                        {{ old('microsoft_login_enabled', $settings->microsoft_login_enabled) ? 'checked' : '' }}
+                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                    Włącz logowanie przez Microsoft 365
+                </label>
+
+                <div x-show="msEnabled" x-cloak class="space-y-4">
+                    <div>
+                        <label class="flex items-center gap-2 text-sm font-medium">
+                            <input type="checkbox" name="microsoft_only_login" value="1"
+                                {{ old('microsoft_only_login', $settings->microsoft_only_login) ? 'checked' : '' }}
+                                class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                            Wyłącz lokalne logowanie hasłem (tylko Microsoft 365)
+                        </label>
+                        <p class="ml-6 mt-1 text-xs text-muted">
+                            Formularz e-mail + hasło zostaje ukryty. Konta z włączoną flagą „Dostęp awaryjny" nadal mogą się zalogować hasłem przez adres awaryjny poniżej.
+                        </p>
+                    </div>
+
+                    <div class="p-4 rounded-md bg-gray-50">
+                        <p class="mb-2 text-sm font-bold text-ink">Adres dostępu awaryjnego</p>
+                        @if ($settings->emergency_login_token)
+                            <code class="block break-all rounded bg-white px-3 py-2 text-xs text-ink ring-1 ring-gray-200">{{ url('/'.$settings->emergency_login_token) }}</code>
+                            <p class="mt-1.5 text-xs text-muted">Skopiuj i przechowaj w bezpiecznym miejscu. Po wygenerowaniu nowego stary przestaje działać natychmiast.</p>
+                        @else
+                            <p class="text-xs text-muted italic">Brak — wygeneruj adres, aby aktywować furtkę awaryjną.</p>
+                        @endif
+                        <button type="submit" form="emergency-token-form"
+                            onclick="return confirm('Wygenerować nowy adres? Stary przestanie działać natychmiast.')"
+                            class="mt-3 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-ink bg-white hover:bg-brand-light">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            {{ $settings->emergency_login_token ? 'Wygeneruj nowy adres' : 'Wygeneruj adres' }}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-5" x-show="msEnabled" x-cloak>
+                    <div>
+                        <label for="microsoft_client_id" class="mb-1 block text-sm font-bold">Client ID</label>
+                        <input type="text" id="microsoft_client_id" name="microsoft_client_id" autocomplete="off"
+                            value="{{ old('microsoft_client_id', $settings->microsoft_client_id) }}"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Application (client) ID z Microsoft Entra ID.</p>
+                        @error('microsoft_client_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="microsoft_client_secret" class="mb-1 block text-sm font-bold">Client Secret</label>
+                        <input type="password" id="microsoft_client_secret" name="microsoft_client_secret" autocomplete="new-password"
+                            placeholder="{{ $settings->microsoft_client_secret ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Wartość sekretu (nie „Secret ID"). Przechowywana w bazie w postaci zaszyfrowanej.</p>
+                        @error('microsoft_client_secret') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="microsoft_tenant_id" class="mb-1 block text-sm font-bold">Tenant ID</label>
+                        <input type="text" id="microsoft_tenant_id" name="microsoft_tenant_id" autocomplete="off"
+                            value="{{ old('microsoft_tenant_id', $settings->microsoft_tenant_id) }}"
+                            placeholder="common"
+                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Directory (tenant) ID fundacji zawęża logowanie do jej domeny. Puste = „common" (dowolne konto Microsoft).</p>
+                        @error('microsoft_tenant_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <p class="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                        Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
                     </p>
                 </div>
-
-                <div class="p-4 rounded-md bg-gray-50">
-                    <p class="mb-2 text-sm font-bold text-ink">Adres dostępu awaryjnego</p>
-                    @if ($settings->emergency_login_token)
-                        <code class="block break-all rounded bg-white px-3 py-2 text-xs text-ink ring-1 ring-gray-200">{{ url('/'.$settings->emergency_login_token) }}</code>
-                        <p class="mt-1.5 text-xs text-muted">Skopiuj i przechowaj w bezpiecznym miejscu. Po wygenerowaniu nowego stary przestaje działać natychmiast.</p>
-                    @else
-                        <p class="text-xs text-muted italic">Brak — wygeneruj adres, aby aktywować furtkę awaryjną.</p>
-                    @endif
-                    <button type="submit" form="emergency-token-form"
-                        onclick="return confirm('Wygenerować nowy adres? Stary przestanie działać natychmiast.')"
-                        class="mt-3 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-ink bg-white hover:bg-brand-light">
-                        <i class="fa-solid fa-rotate-right"></i>
-                        {{ $settings->emergency_login_token ? 'Wygeneruj nowy adres' : 'Wygeneruj adres' }}
-                    </button>
-                </div>
-            </div>
-
-            <div class="space-y-5" x-show="msEnabled" x-cloak>
-                <div>
-                    <label for="microsoft_client_id" class="mb-1 block text-sm font-bold">Client ID</label>
-                    <input type="text" id="microsoft_client_id" name="microsoft_client_id" autocomplete="off"
-                        value="{{ old('microsoft_client_id', $settings->microsoft_client_id) }}"
-                        class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                    <p class="mt-1 text-xs text-muted">Application (client) ID z Microsoft Entra ID.</p>
-                    @error('microsoft_client_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="microsoft_client_secret" class="mb-1 block text-sm font-bold">Client Secret</label>
-                    <input type="password" id="microsoft_client_secret" name="microsoft_client_secret" autocomplete="new-password"
-                        placeholder="{{ $settings->microsoft_client_secret ? '•••••••• (zapisany — zostaw puste, aby nie zmieniać)' : '' }}"
-                        class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                    <p class="mt-1 text-xs text-muted">Wartość sekretu (nie „Secret ID"). Przechowywana w bazie w postaci zaszyfrowanej.</p>
-                    @error('microsoft_client_secret') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <div>
-                    <label for="microsoft_tenant_id" class="mb-1 block text-sm font-bold">Tenant ID</label>
-                    <input type="text" id="microsoft_tenant_id" name="microsoft_tenant_id" autocomplete="off"
-                        value="{{ old('microsoft_tenant_id', $settings->microsoft_tenant_id) }}"
-                        placeholder="common"
-                        class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                    <p class="mt-1 text-xs text-muted">Directory (tenant) ID fundacji zawęża logowanie do jej domeny. Puste = „common" (dowolne konto Microsoft).</p>
-                    @error('microsoft_tenant_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-
-                <p class="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                    Pozostawione puste pola dziedziczą wartości z pliku <code>.env</code>, jeśli tam je ustawiono.
-                </p>
             </div>
 
             {{-- ===================== Logowanie przez Google ===================== --}}
-            <div class="border-t border-gray-200 pt-6" x-data="{ googleEnabled: {{ old('google_login_enabled', $settings->google_login_enabled) ? 'true' : 'false' }} }">
+            <div class="border-t border-gray-200 pt-6" x-data="{ googleEnabled: {{ old('google_login_enabled', $settings->google_login_enabled) ? 'true' : 'false' }} }" data-card="google" data-card-label="Google" data-card-icon="fa-brands fa-google">
                 <h2 class="text-base font-bold text-ink">Logowanie przez Google</h2>
                 <p class="mt-1 text-xs text-muted">
                     Alternatywne logowanie do panelu kontem Google (Laravel Socialite). Dostęp otrzymują wyłącznie
@@ -2979,7 +2999,7 @@
             </div>
 
             {{-- ===================== Klucze dostępu (passkeys) ===================== --}}
-            <div class="border-t border-gray-200 pt-6">
+            <div class="border-t border-gray-200 pt-6" data-card="klucze" data-card-label="Klucze dostępu" data-card-icon="fa-key">
                 <h2 class="text-base font-bold text-ink">Klucze dostępu (passkey, YubiKey)</h2>
                 <p class="mt-1 text-xs text-muted">
                     Logowanie bez hasła kluczem sprzętowym (YubiKey i inne klucze FIDO2), odciskiem palca, Windows Hello albo telefonem.
@@ -2995,7 +3015,7 @@
             </div>
 
             {{-- ===================== SSO (OpenID Connect) ===================== --}}
-            <div class="border-t border-gray-200 pt-6" x-data="{ ssoEnabled: {{ old('sso_enabled', $settings->sso_enabled ?? false) ? 'true' : 'false' }} }">
+            <div class="border-t border-gray-200 pt-6" x-data="{ ssoEnabled: {{ old('sso_enabled', $settings->sso_enabled ?? false) ? 'true' : 'false' }} }" data-card="sso" data-card-label="SSO (OpenID Connect)" data-card-icon="fa-right-to-bracket">
                 <h2 class="text-base font-bold text-ink">Logowanie SSO (OpenID Connect)</h2>
                 <p class="mt-1 text-xs text-muted">
                     Dla organizacji z własnym dostawcą tożsamości: Keycloak, Okta, Microsoft Entra ID, Google Workspace, Authentik i inne zgodne z OpenID Connect.
@@ -3053,7 +3073,7 @@
             </div>
 
             {{-- ===================== Strefa wewnętrzna (współpracownicy) ===================== --}}
-            <div class="border-t border-gray-200 pt-6" x-data="{ memberEnabled: {{ old('member_login_enabled', $settings->member_login_enabled) ? 'true' : 'false' }} }">
+            <div class="border-t border-gray-200 pt-6" x-data="{ memberEnabled: {{ old('member_login_enabled', $settings->member_login_enabled) ? 'true' : 'false' }} }" data-card="strefa" data-card-label="Strefa współpracownika" data-card-icon="fa-users">
                 <h2 class="text-base font-bold text-ink">Logowanie do stron wewnętrznych (strefa współpracownika)</h2>
                 <p class="mt-1 text-xs text-muted">
                     Osobne logowanie przez Microsoft 365 dla stron wewnętrznych — niezależne od kont panelu (osobny guard i tabela).
@@ -3101,7 +3121,7 @@
                         } catch (e) { this.res = { level: 'error', message: 'Brak połączenia z serwerem.' }; }
                         finally { this.busy = false; }
                     },
-                }">
+                }" data-card="cleantalk" data-card-label="Antyspam CleanTalk" data-card-icon="fa-shield-virus">
                 <h2 class="text-base font-bold text-ink"><i class="fa-solid fa-shield-virus mr-1 text-brand-dark" aria-hidden="true"></i> Ochrona antyspamowa CleanTalk</h2>
                 <p class="mt-1 text-xs text-muted">
                     Dodatkowa warstwa ochrony formularzy (moduł Formularze oraz formularz kontaktowy) obok lokalnego zadania antyspamowego: skrypt analizuje zachowanie odwiedzającego,
@@ -3144,7 +3164,7 @@
             </div>
 
             {{-- ===================== 2FA panelu + YubiKey ===================== --}}
-            <div class="border-t border-gray-200 pt-6">
+            <div class="border-t border-gray-200 pt-6" data-card="2fa" data-card-label="Dwuetapowe (2FA)" data-card-icon="fa-mobile-screen">
                 <h2 class="text-base font-bold text-ink">Uwierzytelnianie dwuetapowe (2FA) panelu</h2>
                 <p class="mt-1 text-xs text-muted">
                     Dotyczy logowania hasłem. Użytkownicy konfigurują TOTP i klucze YubiKey na swoim profilu. Logowanie przez
@@ -3180,7 +3200,7 @@
             </div>
 
             {{-- ===================== Przelewy24 (moduł Sklep) ===================== --}}
-            <div class="border-t border-gray-200 pt-6">
+            <div class="border-t border-gray-200 pt-6" data-card="przelewy24" data-card-label="Przelewy24" data-card-icon="fa-credit-card">
                 <h2 class="text-base font-bold text-ink">Przelewy24 (Sklep)</h2>
                 <p class="mt-1 text-xs text-muted">
                     Dane z panelu sprzedawcy <a href="https://www.przelewy24.pl/" target="_blank" rel="noopener" class="text-brand-dark underline">Przelewy24</a>
@@ -3239,7 +3259,7 @@
             </div>
 
             {{-- ===================== Adres URL panelu ===================== --}}
-            <div class="border-t border-gray-200 pt-6">
+            <div class="border-t border-gray-200 pt-6" data-card="adres-panelu" data-card-label="Adres panelu" data-card-icon="fa-link">
                 <h2 class="text-base font-bold text-ink">Adres panelu administracyjnego</h2>
                 <p class="mt-1 text-xs text-muted">
                     Zmiana segmentu URL otwierającego panel (domyślnie <code>/admin</code>). Utrudnia automatyczne
@@ -3436,7 +3456,7 @@
 
         </div>
 
-        <div x-show="tab === 'mail'" x-cloak class="space-y-6" x-data="{ transport: '{{ old('mail_transport', $settings->mail_transport ?: 'default') }}' }">
+        <div x-show="tab === 'mail'" x-cloak class="space-y-6" x-data="{ transport: '{{ old('mail_transport', $settings->mail_transport ?: 'default') }}' }" data-cards="mail" data-cards-label="Karty sekcji Poczta">
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <h2 class="text-base font-bold text-ink">Wysyłka poczty</h2>
@@ -3512,7 +3532,7 @@
                         }
                         this.applied = true;
                     },
-                 }">
+                 }" data-card="autokonfigurator" data-card-label="Autokonfigurator" data-card-icon="fa-wand-magic-sparkles">
                 <div>
                     <h3 class="text-sm font-bold text-ink"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-brand-dark" aria-hidden="true"></i> Autokonfigurator poczty</h3>
                     <p class="mt-1 text-xs text-muted">Wpisz adres skrzynki, z której ma wychodzić poczta. Rozpoznamy dostawcę (Microsoft 365, Google, OVH, home.pl i inne) i uzupełnimy ustawienia. Hasła i sekrety wpisujesz samodzielnie.</p>
@@ -3566,81 +3586,83 @@
                 </div>
             </div>
 
-            <div>
-                <label for="mail_transport" class="mb-1 block text-sm font-bold">Tryb wysyłki</label>
-                <select id="mail_transport" name="mail_transport" x-model="transport"
-                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    @foreach (\App\Models\SiteSetting::MAIL_TRANSPORTS as $value => $label)
-                        <option value="{{ $value }}" {{ old('mail_transport', $settings->mail_transport ?: 'default') === $value ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
-                @error('mail_transport') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                <p class="mt-2 text-xs text-muted" x-show="transport === 'sendmail'" x-cloak>
-                    Poczta wysyłana wbudowanym mechanizmem PHP (sendmail) — bez konfiguracji SMTP. Działa, jeśli serwer/hosting ma skonfigurowaną lokalną wysyłkę poczty.
-                </p>
-                <p class="mt-2 text-xs text-muted" x-show="transport === 'msgraph'" x-cloak>
-                    Cała poczta serwisu (kontakt, formularze, newsletter, powiadomienia) wychodzi przez Microsoft Graph ze skrzynki wskazanej poniżej.
-                    Bez kompletu danych Graph wysyłka wraca do ustawień z <code>.env</code>.
-                </p>
-            </div>
-
-            <div class="grid gap-5 sm:grid-cols-2">
+            <div class="space-y-6" data-card="wysylka" data-card-label="Sposób wysyłki" data-card-icon="fa-paper-plane">
                 <div>
-                    <label for="mail_from_address" class="mb-1 block text-sm font-bold">Adres nadawcy</label>
-                    <input type="email" id="mail_from_address" name="mail_from_address" value="{{ old('mail_from_address', $settings->mail_from_address) }}"
-                        placeholder="np. kontakt@feer.org.pl"
+                    <label for="mail_transport" class="mb-1 block text-sm font-bold">Tryb wysyłki</label>
+                    <select id="mail_transport" name="mail_transport" x-model="transport"
                         class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    <p class="mt-1 text-xs text-muted">Puste = wartość z <code>.env</code>.</p>
-                    @error('mail_from_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        @foreach (\App\Models\SiteSetting::MAIL_TRANSPORTS as $value => $label)
+                            <option value="{{ $value }}" {{ old('mail_transport', $settings->mail_transport ?: 'default') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    @error('mail_transport') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    <p class="mt-2 text-xs text-muted" x-show="transport === 'sendmail'" x-cloak>
+                        Poczta wysyłana wbudowanym mechanizmem PHP (sendmail) — bez konfiguracji SMTP. Działa, jeśli serwer/hosting ma skonfigurowaną lokalną wysyłkę poczty.
+                    </p>
+                    <p class="mt-2 text-xs text-muted" x-show="transport === 'msgraph'" x-cloak>
+                        Cała poczta serwisu (kontakt, formularze, newsletter, powiadomienia) wychodzi przez Microsoft Graph ze skrzynki wskazanej poniżej.
+                        Bez kompletu danych Graph wysyłka wraca do ustawień z <code>.env</code>.
+                    </p>
                 </div>
-                <div>
-                    <label for="mail_from_name" class="mb-1 block text-sm font-bold">Nazwa nadawcy</label>
-                    <input type="text" id="mail_from_name" name="mail_from_name" value="{{ old('mail_from_name', $settings->mail_from_name) }}"
-                        placeholder="{{ $settings->site_name }}"
-                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    @error('mail_from_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                </div>
-            </div>
 
-            <div class="space-y-5 p-4 rounded-md bg-gray-50" x-show="transport === 'smtp'" x-cloak>
-                <p class="text-sm font-bold text-ink">Ustawienia serwera SMTP</p>
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div>
-                        <label for="mail_host" class="mb-1 block text-sm font-bold">Host</label>
-                        <input type="text" id="mail_host" name="mail_host" value="{{ old('mail_host', $settings->mail_host) }}"
-                            placeholder="np. smtp.example.com"
-                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                        @error('mail_host') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <label for="mail_from_address" class="mb-1 block text-sm font-bold">Adres nadawcy</label>
+                        <input type="email" id="mail_from_address" name="mail_from_address" value="{{ old('mail_from_address', $settings->mail_from_address) }}"
+                            placeholder="np. kontakt@feer.org.pl"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        <p class="mt-1 text-xs text-muted">Puste = wartość z <code>.env</code>.</p>
+                        @error('mail_from_address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label for="mail_port" class="mb-1 block text-sm font-bold">Port</label>
-                        <input type="number" id="mail_port" name="mail_port" value="{{ old('mail_port', $settings->mail_port) }}"
-                            placeholder="587" min="1" max="65535"
-                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                        @error('mail_port') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        <label for="mail_from_name" class="mb-1 block text-sm font-bold">Nazwa nadawcy</label>
+                        <input type="text" id="mail_from_name" name="mail_from_name" value="{{ old('mail_from_name', $settings->mail_from_name) }}"
+                            placeholder="{{ $settings->site_name }}"
+                            class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                        @error('mail_from_name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
-                    <div>
-                        <label for="mail_username" class="mb-1 block text-sm font-bold">Użytkownik</label>
-                        <input type="text" id="mail_username" name="mail_username" autocomplete="off" value="{{ old('mail_username', $settings->mail_username) }}"
-                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                        @error('mail_username') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="mail_password" class="mb-1 block text-sm font-bold">Hasło</label>
-                        <input type="password" id="mail_password" name="mail_password" autocomplete="new-password"
-                            placeholder="{{ $settings->mail_password ? '•••••••• (zapisane — zostaw puste, aby nie zmieniać)' : '' }}"
-                            class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
-                        <p class="mt-1 text-xs text-muted">Przechowywane w bazie w postaci zaszyfrowanej.</p>
-                        @error('mail_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label for="mail_encryption" class="mb-1 block text-sm font-bold">Szyfrowanie</label>
-                        <select id="mail_encryption" name="mail_encryption" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                            @foreach (\App\Models\SiteSetting::MAIL_ENCRYPTIONS as $value => $label)
-                                <option value="{{ $value }}" {{ old('mail_encryption', (string) $settings->mail_encryption) === (string) $value ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                        @error('mail_encryption') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="space-y-5 p-4 rounded-md bg-gray-50" x-show="transport === 'smtp'" x-cloak>
+                    <p class="text-sm font-bold text-ink">Ustawienia serwera SMTP</p>
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="mail_host" class="mb-1 block text-sm font-bold">Host</label>
+                            <input type="text" id="mail_host" name="mail_host" value="{{ old('mail_host', $settings->mail_host) }}"
+                                placeholder="np. smtp.example.com"
+                                class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                            @error('mail_host') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="mail_port" class="mb-1 block text-sm font-bold">Port</label>
+                            <input type="number" id="mail_port" name="mail_port" value="{{ old('mail_port', $settings->mail_port) }}"
+                                placeholder="587" min="1" max="65535"
+                                class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                            @error('mail_port') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="mail_username" class="mb-1 block text-sm font-bold">Użytkownik</label>
+                            <input type="text" id="mail_username" name="mail_username" autocomplete="off" value="{{ old('mail_username', $settings->mail_username) }}"
+                                class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                            @error('mail_username') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="mail_password" class="mb-1 block text-sm font-bold">Hasło</label>
+                            <input type="password" id="mail_password" name="mail_password" autocomplete="new-password"
+                                placeholder="{{ $settings->mail_password ? '•••••••• (zapisane — zostaw puste, aby nie zmieniać)' : '' }}"
+                                class="w-full rounded border-gray-500 font-mono text-sm focus:border-brand-dark focus:ring-brand-dark">
+                            <p class="mt-1 text-xs text-muted">Przechowywane w bazie w postaci zaszyfrowanej.</p>
+                            @error('mail_password') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="mail_encryption" class="mb-1 block text-sm font-bold">Szyfrowanie</label>
+                            <select id="mail_encryption" name="mail_encryption" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                                @foreach (\App\Models\SiteSetting::MAIL_ENCRYPTIONS as $value => $label)
+                                    <option value="{{ $value }}" {{ old('mail_encryption', (string) $settings->mail_encryption) === (string) $value ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('mail_encryption') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3651,7 +3673,7 @@
                 $graphInheritsSso = blank($settings->msgraph_client_id) && blank(config('mail.mailers.msgraph.client_id')) && filled($graphCfg['client_id']);
             @endphp
             <div class="space-y-5 rounded-lg border p-4 {{ $graphReady ? 'border-green-200' : 'border-gray-200' }}"
-                 :class="transport === 'msgraph' ? 'ring-2 ring-brand/30' : ''">
+                 :class="transport === 'msgraph' ? 'ring-2 ring-brand/30' : ''" data-card="graph" data-card-label="Microsoft Graph" data-card-icon="fa-brands fa-microsoft">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <p class="text-sm font-bold text-ink">
@@ -3778,7 +3800,7 @@
                 <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz zmiany</button>
             <p class="text-sm text-ink" aria-live="polite">
                 <span x-show="dirty" x-cloak class="font-bold"><i class="fa-solid fa-circle-exclamation mr-1" aria-hidden="true"></i>Masz niezapisane zmiany.</span>
-                <span x-show="! dirty">Zapisujesz tylko tę sekcję — pozostałe zostają bez zmian.</span>
+                <span x-show="! dirty">Zapisujesz całą tę sekcję (wszystkie jej karty) — pozostałe sekcje zostają bez zmian.</span>
             </p>
             <nav class="ml-auto flex flex-wrap gap-x-4 gap-y-1 text-sm" aria-label="Sąsiednie sekcje ustawień">
                 @if ($settingsPrev)
@@ -3830,6 +3852,8 @@
     </div>
     </div>
 
+    @include('admin.partials.section-cards')
+
     <script>
         (function () {
             // Zapis jednej sekcji: dołączamy nazwy pól z widocznej zakładki (_section_fields[]),
@@ -3842,6 +3866,8 @@
                 const container = Array.from(form.querySelectorAll('[x-show]'))
                     .find(function (node) { return node.getAttribute('x-show').trim() === "tab === '" + tab + "'"; });
                 if (!container) return;
+                const cardInput = form.querySelector('input[name="_redirect_card"]');
+                if (cardInput && window.adminSectionCards) cardInput.value = window.adminSectionCards.current(container);
                 const names = new Set();
                 container.querySelectorAll('[name]').forEach(function (el) {
                     if (el.form === form && el.name && !el.disabled) names.add(el.name);
@@ -3898,11 +3924,16 @@
                 if (container && window.Alpine) {
                     window.Alpine.$data(container.node).tab = container.tab;
                 }
+                // Pole może leżeć w karcie, która jest akurat ukryta.
+                if (window.adminSectionCards) window.adminSectionCards.open(element);
 
                 return element;
             }
 
             document.querySelectorAll('[data-settings-error-field]').forEach(function (button) {
+                // Karta z błędnym polem dostaje znacznik (ikona i tekst dla czytnika ekranu).
+                const field = fieldElement(button.dataset.settingsErrorField);
+                if (field && window.adminSectionCards) window.adminSectionCards.markError(field);
                 button.addEventListener('click', function () {
                     const element = openTabOf(button.dataset.settingsErrorField);
                     if (element) focusWhenVisible(element, 10);

@@ -69,7 +69,7 @@ class MourningModeTest extends TestCase
         $admin = \App\Models\User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'maintenance']))->assertOk()
-            ->assertSee('Stan witryny teraz')->assertSee('Dostępność witryny')->assertSee('Komunikaty i wygląd')
+            ->assertSee('Stan witryny teraz')->assertSee('Przerwa techniczna')->assertSee('Strona „dopiero tworzymy”')->assertSee('Ramka z komunikatem')
             ->assertSee('Żałoba narodowa')->assertSee('name="mourning_from"', false)->assertSee('name="maintenance_mode"', false)
             ->assertSee('name="under_construction"', false)->assertSee('name="notice_enabled"', false)->assertSee('name="site_url"', false);
     }
