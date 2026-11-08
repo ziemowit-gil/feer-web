@@ -258,6 +258,26 @@ class SiteSetting extends Model implements HasMedia
     ];
 
     /**
+     * Krótkie nazwy i jednozdaniowe opisy szablonów — do kart wyboru w panelu (łatwiej je odróżnić niż po długich
+     * etykietach z SITE_TEMPLATES). [nazwa, opis, kolor akcentu].
+     */
+    public const SITE_TEMPLATE_BRIEF = [
+        'default'      => ['Klasyczny', 'Prosty układ NGO: belka, treść, stopka. Neutralny i spokojny.', '#475569'],
+        'ngo'          => ['NGO rozbudowany', 'Hero, trzy aktualności, działania, wydarzenia i karuzela.', '#0f766e'],
+        'ngo_mix'      => ['NGO mieszany', 'Klasyczna belka i stopka, ale bogata strona główna ze szkoleniami.', '#0e7490'],
+        'ngo_3'        => ['NGO 3', 'Hero, skróty, statystyki i newsletter — nowocześniejszy NGO.', '#1d4ed8'],
+        'feer'         => ['FEER', 'Szablon Fundacji FEER wg brand booka: Montserrat, płasko, ciemny pasek.', '#0b5fff'],
+        'municipality' => ['Gmina / urząd', 'Formalny układ urzędu: skróty, aktualności, pasek ułatwień.', '#7c2d12'],
+        'federation'   => ['Federacja', 'Wielobarwny i nowoczesny, dla federacji organizacji.', '#7e22ce'],
+        'wrzos'        => ['Wrzos', 'Czerwono-biały, pasek dostępności, siatka wartości.', '#b91c1c'],
+        'test2'        => ['Urząd — białe menu', 'Biały nagłówek, menu z kreskami, slider z kaflami skrótów.', '#334155'],
+        'test3'        => ['Portal miejski', 'Kolorowe belki kategorii, slider, aktualności z filtrem, galeria.', '#c2410c'],
+        'elearning'    => ['eLearning', 'Granatowy nagłówek, kursy w kategoriach, eksperci, FAQ.', '#1e3a8a'],
+        'podcasts'     => ['Podcasty', 'Ciemny nagłówek, najnowszy odcinek z odtwarzaczem, siatka odcinków.', '#111827'],
+        'vm'           => ['VM — Vis Maior', 'Slider z kartą, blok powitalny, sekcja Wiedza, newsletter.', '#15803d'],
+    ];
+
+    /**
      * Warianty motywu FEER (podmodel szablonu `feer`): nagłówek, stopka i podstrony zostają FEER, zmienia się układ
      * strony głównej. Wariant działa tylko przy szablonie `feer`.
      */

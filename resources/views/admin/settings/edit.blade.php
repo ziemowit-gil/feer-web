@@ -2503,23 +2503,40 @@
                 </select>
             </div>
 
-            <div>
-                <label for="podcasts_template" class="mb-1 block text-sm font-bold">Wygląd podstrony „Podcasty”</label>
-                <select id="podcasts_template" name="podcasts_template" aria-describedby="podcasts_template_help"
-                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
-                    <option value="">Jak cała witryna (aktywny szablon)</option>
-                    @foreach (\App\Models\SiteSetting::SITE_TEMPLATES as $value => $label)
-                        @php $ptLocked = ! \App\Support\Edition::allowsTemplate($value) && ($settings->podcasts_template ?? '') !== $value; @endphp
-                        <option value="{{ $value }}" @disabled($ptLocked) {{ old('podcasts_template', $settings->podcasts_template ?? '') === $value ? 'selected' : '' }}>
-                            {{ $label }}{{ $ptLocked ? ' — wersja płatna' : '' }}
-                        </option>
-                    @endforeach
-                </select>
-                <p id="podcasts_template_help" class="mt-1 text-xs text-muted">
-                    Dedykowany wygląd (nagłówek, stopka, układ listy i odcinków) tylko dla strony <span class="font-bold">/podcasty</span>
-                    i podstron odcinków. Reszta witryny zostaje w aktywnym szablonie. Np. „Podcasty” — ciemny nagłówek z odtwarzaczem.
+            <fieldset aria-describedby="podcasts_template_help">
+                <legend class="mb-1 block text-sm font-bold">Wygląd podstrony „Podcasty”</legend>
+                <p id="podcasts_template_help" class="mb-3 text-xs text-muted">
+                    Dedykowany wygląd (nagłówek, stopka, układ listy i odcinków) tylko dla <span class="font-bold">/podcasty</span> i podstron odcinków.
+                    Reszta witryny zostaje w aktywnym szablonie. „Podgląd” otwiera podstronę w danym szablonie bez zapisywania (tylko dla administratora).
                 </p>
-            </div>
+                @php $ptCur = old('podcasts_template', $settings->podcasts_template ?? ''); @endphp
+                <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    <label class="flex cursor-pointer gap-3 rounded-md border-2 p-3 {{ $ptCur === '' ? 'border-brand-dark bg-gray-50' : 'border-gray-300' }}">
+                        <input type="radio" name="podcasts_template" value="" class="mt-1" {{ $ptCur === '' ? 'checked' : '' }}>
+                        <span class="min-w-0">
+                            <span class="block text-sm font-bold text-ink">Jak cała witryna</span>
+                            <span class="block text-xs text-muted">Podcasty w aktywnym szablonie witryny (<span class="font-bold">{{ \App\Models\SiteSetting::SITE_TEMPLATE_BRIEF[$settings->site_template ?? 'default'][0] ?? 'Klasyczny' }}</span>).</span>
+                        </span>
+                    </label>
+                    @foreach (\App\Models\SiteSetting::SITE_TEMPLATE_BRIEF as $value => [$ptName, $ptDesc, $ptColor])
+                        @php $ptLocked = ! \App\Support\Edition::allowsTemplate($value) && $ptCur !== $value; @endphp
+                        <label class="flex gap-3 rounded-md border-2 p-3 {{ $ptLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer' }} {{ $ptCur === $value ? 'border-brand-dark bg-gray-50' : 'border-gray-300' }}">
+                            <input type="radio" name="podcasts_template" value="{{ $value }}" class="mt-1" @disabled($ptLocked) {{ $ptCur === $value ? 'checked' : '' }}>
+                            <span class="min-w-0">
+                                <span class="flex items-center gap-2">
+                                    <span class="inline-block h-3 w-3 flex-none rounded-full" style="background: {{ $ptColor }}" aria-hidden="true"></span>
+                                    <span class="text-sm font-bold text-ink">{{ $ptName }}</span>
+                                    @if ($ptLocked)<span class="text-xs text-muted">— wersja płatna</span>@endif
+                                </span>
+                                <span class="block text-xs text-muted">{{ $ptDesc }}</span>
+                                @unless ($ptLocked)
+                                    <a href="{{ url('/podcasty') }}?szablon={{ $value }}" target="_blank" rel="noopener" class="mt-1 inline-block text-xs font-bold underline">Podgląd<span class="sr-only"> szablonu {{ $ptName }} (otwiera się w nowej karcie)</span></a>
+                                @endunless
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+            </fieldset>
 
             {{-- Opis szablonów, które nie mają własnych pól --}}
             <div x-show="tpl === 'default'" x-cloak class="p-5 rounded-md bg-gray-50">

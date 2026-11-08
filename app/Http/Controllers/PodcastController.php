@@ -17,6 +17,11 @@ class PodcastController extends Controller
     {
         $site = \App\Models\SiteSetting::current();
         $override = (string) ($site->podcasts_template ?? '');
+        // Podgląd z panelu (karty wyboru): ?szablon=… działa tylko dla zalogowanego administratora i niczego nie zapisuje.
+        $preview = (string) request()->query('szablon', '');
+        if ($preview !== '' && request()->user()?->isAdmin() && isset(\App\Models\SiteSetting::SITE_TEMPLATES[$preview])) {
+            $override = $preview;
+        }
         if ($override !== '' && isset(\App\Models\SiteSetting::SITE_TEMPLATES[$override]) && \App\Support\Edition::allowsTemplate($override)) {
             $site->setAttribute('site_template', $override);
         }
