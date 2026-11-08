@@ -45,8 +45,8 @@
 
     {{-- Przerwa techniczna --}}
     <section aria-labelledby="svc-maintenance-h" class="rounded-lg border border-gray-200 p-5"
-             data-card="przerwa" data-card-label="Przerwa techniczna" data-card-icon="fa-screwdriver-wrench">
-        <h2 id="svc-maintenance-h" class="text-base font-bold text-ink">Przerwa techniczna (tryb konserwacji)</h2>
+             data-card="przerwa" data-card-label="Przerwa techniczna">
+        <h2 id="svc-maintenance-h" class="text-base font-bold text-ink" data-card-title>Przerwa techniczna (tryb konserwacji)</h2>
         <p class="mt-1 text-xs text-muted">Zwykli użytkownicy zobaczą komunikat o przerwie (HTTP 503) zamiast witryny. Zalogowani administratorzy mają dalej dostęp do panelu i strony, aby móc wyłączyć tryb. Przerwa techniczna ma pierwszeństwo przed stroną „dopiero tworzymy”.</p>
         <label class="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm">
             <input type="checkbox" name="maintenance_mode" value="1" x-model="maintenance" @checked(old('maintenance_mode', $settings->maintenance_mode)) class="{{ $svcCheck }}">
@@ -69,8 +69,8 @@
 
     {{-- Strona „dopiero tworzymy” --}}
     <section aria-labelledby="svc-building-h" class="rounded-lg border border-gray-200 p-5"
-             data-card="w-budowie" data-card-label="Dopiero tworzymy" data-card-icon="fa-person-digging">
-        <h2 id="svc-building-h" class="text-base font-bold text-ink">Strona „dopiero tworzymy”</h2>
+             data-card="w-budowie" data-card-label="Dopiero tworzymy">
+        <h2 id="svc-building-h" class="text-base font-bold text-ink" data-card-title>Strona „dopiero tworzymy”</h2>
         <p class="mt-1 text-xs text-muted">Krótka strona informacyjna, że witryna jest w budowie, zamiast witryny. Zalogowani użytkownicy panelu widzą witrynę normalnie. Nowe sub-witryny startują z włączoną stroną.</p>
         <label class="mt-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm">
             <input type="checkbox" name="under_construction" value="1" x-model="building" @checked(old('under_construction', $settings->under_construction)) class="{{ $svcCheck }}">
@@ -89,8 +89,8 @@
 
     {{-- Ramka z komunikatem --}}
     <section aria-labelledby="svc-notice-h" class="rounded-lg border border-gray-200 p-5"
-             data-card="komunikat" data-card-label="Komunikat" data-card-icon="fa-bullhorn">
-        <h2 id="svc-notice-h" class="text-base font-bold text-ink">Ramka z komunikatem</h2>
+             data-card="komunikat" data-card-label="Komunikat">
+        <h2 id="svc-notice-h" class="text-base font-bold text-ink" data-card-title>Ramka z komunikatem</h2>
         <p class="mt-1 text-xs text-muted">Krótka, wyróżniona informacja na stronie głównej i/lub w Kontakcie (np. zmiana godzin pracy, przerwa urlopowa).</p>
         <label class="mt-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm">
             <input type="checkbox" name="notice_enabled" value="1" x-model="notice" @checked(old('notice_enabled', $settings->notice_enabled)) class="{{ $svcCheck }}">
@@ -131,8 +131,8 @@
 
     {{-- Żałoba narodowa --}}
     <section aria-labelledby="svc-mourning-h" class="rounded-lg border border-gray-200 p-5"
-             data-card="zaloba" data-card-label="Żałoba narodowa" data-card-icon="fa-ribbon">
-        <h2 id="svc-mourning-h" class="text-base font-bold text-ink">Żałoba narodowa</h2>
+             data-card="zaloba" data-card-label="Żałoba narodowa">
+        <h2 id="svc-mourning-h" class="text-base font-bold text-ink" data-card-title>Żałoba narodowa</h2>
         <p class="mt-1 text-xs text-muted">Cała witryna publiczna wyświetla się odwiedzającym w odcieniach szarości (czerń i biel). Panel administracyjny zostaje kolorowy, a zalogowany administrator widzi także samą witrynę w kolorach (żeby mógł ją edytować); żałobę widzą wszyscy pozostali.</p>
         <label class="mt-4 flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm">
             <input type="checkbox" name="mourning_mode" value="1" x-model="mourning" @checked(old('mourning_mode', $settings->mourning_mode)) class="{{ $svcCheck }}">
@@ -161,8 +161,8 @@
 
     {{-- Adres techniczny --}}
     <section aria-labelledby="svc-url-h" class="rounded-lg border border-gray-200 p-5"
-             data-card="adres" data-card-label="Adres techniczny" data-card-icon="fa-link">
-        <h2 id="svc-url-h" class="text-base font-bold text-ink">Adres techniczny</h2>
+             data-card="adres" data-card-label="Adres techniczny">
+        <h2 id="svc-url-h" class="text-base font-bold text-ink" data-card-title>Adres techniczny</h2>
         <label for="site_url" class="mb-1 mt-3 block text-sm font-bold">Główny adres strony (Site URL)</label>
         <input type="url" id="site_url" name="site_url" value="{{ old('site_url', $settings->site_url) }}" placeholder="{{ config('app.url') }}" class="{{ $svcInput }} font-mono text-sm">
         <p class="mt-1 text-xs text-muted">Adres używany do budowania linków bezwzględnych (mapa strony, e-maile, powiadomienia, adres powrotny logowania Microsoft). Puste = wartość <code>APP_URL</code> z pliku <code>.env</code>. Zmieniaj tylko, gdy domena serwisu jest inna niż wykrywana automatycznie.</p>

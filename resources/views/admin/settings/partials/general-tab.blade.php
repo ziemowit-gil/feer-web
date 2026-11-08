@@ -5,8 +5,8 @@
 --}}
 <div class="space-y-6" data-cards="general" data-cards-label="Karty sekcji Ogólne">
     <section aria-labelledby="gen-identity-h" class="rounded-lg border border-gray-200 p-5"
-             data-card="tozsamosc" data-card-label="Tożsamość strony" data-card-icon="fa-id-card">
-        <h2 id="gen-identity-h" class="text-base font-bold text-ink">Tożsamość strony</h2>
+             data-card="tozsamosc" data-card-label="Tożsamość strony">
+        <h2 id="gen-identity-h" class="text-base font-bold text-ink" data-card-title>Tożsamość strony</h2>
         <p class="mt-1 text-xs text-muted">Nazwa i podtytuł widoczne w nagłówku, w tytułach kart przeglądarki i w komunikatach serwisu.</p>
         <div class="mt-4 space-y-5">
         <div>
@@ -38,8 +38,8 @@
     </section>
 
     <section aria-labelledby="gen-logo-h" class="rounded-lg border border-gray-200 p-5"
-             data-card="logo" data-card-label="Logo" data-card-icon="fa-image">
-        <h2 id="gen-logo-h" class="text-base font-bold text-ink">Logo</h2>
+             data-card="logo" data-card-label="Logo">
+        <h2 id="gen-logo-h" class="text-base font-bold text-ink" data-card-title>Logo</h2>
         <p class="mt-1 text-xs text-muted">Znaczek w nagłówku strony. Opis alternatywny czytają czytniki ekranu (WCAG).</p>
         <div class="mt-4 space-y-5">
         <div>
@@ -77,8 +77,8 @@
     </section>
 
     <section aria-labelledby="gen-editing-h" class="rounded-lg border border-gray-200 p-5"
-             data-card="edycja" data-card-label="Edycja i integracje" data-card-icon="fa-pen-to-square">
-        <h2 id="gen-editing-h" class="text-base font-bold text-ink">Edycja treści i integracje</h2>
+             data-card="edycja" data-card-label="Edycja i integracje">
+        <h2 id="gen-editing-h" class="text-base font-bold text-ink" data-card-title>Edycja treści i integracje</h2>
         <p class="mt-1 text-xs text-muted">Domyślny edytor treści oraz klucz do wyszukiwania zdjęć w module Multimedia.</p>
         <div class="mt-4 space-y-5">
         <div>
@@ -103,8 +103,8 @@
     </section>
 
     <section aria-labelledby="gen-cookies-h" class="rounded-lg border border-gray-200 p-5"
-             data-card="cookies" data-card-label="Pliki cookies" data-card-icon="fa-cookie-bite">
-        <h2 id="gen-cookies-h" class="text-base font-bold text-ink">Pliki cookies</h2>
+             data-card="cookies" data-card-label="Pliki cookies">
+        <h2 id="gen-cookies-h" class="text-base font-bold text-ink" data-card-title>Pliki cookies</h2>
         <p class="mt-1 text-xs text-muted">Baner zgody, jego tekst i rejestr decyzji odwiedzających.</p>
         <div class="mt-4 space-y-5">
         <div class="space-y-3 p-4 rounded-md bg-gray-50">
@@ -138,8 +138,8 @@
     </section>
 
     <section aria-labelledby="gen-footer-h" class="rounded-lg border border-gray-200 p-5"
-             data-card="stopka" data-card-label="Stopka" data-card-icon="fa-grip-lines">
-        <h2 id="gen-footer-h" class="text-base font-bold text-ink">Stopka</h2>
+             data-card="stopka" data-card-label="Stopka">
+        <h2 id="gen-footer-h" class="text-base font-bold text-ink" data-card-title>Stopka</h2>
         <p class="mt-1 text-xs text-muted">Tekst, stałe linki i ikony w stopce strony{{ ($settings->site_template ?? 'default') === 'feer' ? '' : ' (szablon FEER)' }}. Własne linki stopki dodajesz w <a href="{{ route('admin.pozycje-menu.index', ['location' => 'footer']) }}" class="font-bold text-brand-dark underline">Menu nawigacji → Stopka</a>, profile społecznościowe w zakładce Social, a metkę w Treści → Metryczka.</p>
         @php
             $fo = old('footer_options', $settings->footerOptions());

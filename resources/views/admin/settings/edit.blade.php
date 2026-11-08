@@ -565,7 +565,7 @@
         </div>
 
         <div x-show="tab === 'colors'" x-cloak class="space-y-6" data-cards="colors" data-cards-label="Karty sekcji Kolory">
-            <div class="space-y-6" data-card="marka" data-card-label="Kolory marki" data-card-icon="fa-palette">
+            <div class="space-y-6" data-card="marka" data-card-label="Kolory marki">
                 @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'menu_highlight_color'))
                 <div class="rounded-md bg-gray-50 p-4">
                     <label for="menu_highlight_color" class="mb-1 block text-sm font-bold">Kolor wyróżnienia pozycji menu</label>
@@ -668,7 +668,7 @@
                 </div>
             </div>
 
-            <div class="space-y-6" data-card="submarki" data-card-label="Submarki" data-card-icon="fa-tags">
+            <div class="space-y-6" data-card="submarki" data-card-label="Submarki">
                 <div class="border-t border-gray-100 pt-5">
                     <label for="ngo_color_text" class="mb-1 block text-sm font-bold">Kolor submarki „NGO" <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <div class="flex flex-wrap items-center gap-3">
@@ -1480,7 +1480,7 @@
         </div>
 
         <div x-show="tab === 'social'" x-cloak class="space-y-6" data-cards="social" data-cards-label="Karty sekcji Media i BIP">
-            <div data-card="media" data-card-label="Media społecznościowe" data-card-icon="fa-share-nodes">
+            <div data-card="media" data-card-label="Media społecznościowe">
                 <p class="mb-4 text-xs text-muted">Wypełnione linki pojawią się w górnym pasku i stopce. Puste pola zostają ukryte, zamiast prowadzić donikąd.</p>
 
                 <div class="mb-5 flex flex-wrap gap-4">
@@ -1551,7 +1551,7 @@
                 </div>
             </div>
 
-            <div x-data="{ bipMode: '{{ old('bip_mode', $settings->bip_mode ?? 'internal') }}' }" data-card="bip" data-card-label="BIP" data-card-icon="fa-landmark">
+            <div x-data="{ bipMode: '{{ old('bip_mode', $settings->bip_mode ?? 'internal') }}' }" data-card="bip" data-card-label="BIP">
                 {{-- Tryb BIP --}}
                 <fieldset class="mb-4">
                     <legend class="mb-2 text-sm font-bold">Tryb BIP</legend>
@@ -1652,9 +1652,9 @@
 
         <div x-show="tab === 'content'" x-cloak class="space-y-6" data-cards="content" data-cards-label="Karty sekcji Treści">
             @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'ai_enabled'))
-            <fieldset class="space-y-4 rounded-md bg-gray-50 p-5" data-card="asystent-ai" data-card-label="Asystent AI" data-card-icon="fa-wand-magic-sparkles">
+            <fieldset class="space-y-4 rounded-md bg-gray-50 p-5" data-card="asystent-ai" data-card-label="Asystent AI">
                 <legend class="sr-only">Asystent AI</legend>
-                <p class="text-sm font-bold"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-brand-dark" aria-hidden="true"></i>Asystent AI przy pisaniu tekstów (Claude)</p>
+                <p class="text-sm font-bold" data-card-title><i class="fa-solid fa-wand-magic-sparkles mr-1 text-brand-dark" aria-hidden="true"></i>Asystent AI przy pisaniu tekstów (Claude)</p>
                 <p class="text-xs text-muted">Przycisk „Asystent AI” przy edytorze treści: poprawa języka, prosty język, tekst łatwy do czytania (ETR), skracanie, rozwijanie, propozycje tytułu, zajawki i opisu SEO. Wynik zawsze najpierw widzisz w podglądzie. Tekst, na którym pracuje asystent, jest wysyłany do firmy Anthropic (USA) — nie używaj go do danych osobowych i poufnych.</p>
                 <input type="hidden" name="ai_enabled" value="0">
                 <label class="flex cursor-pointer items-center gap-2 text-sm">
@@ -1686,8 +1686,8 @@
                 $metkaMode = old('metka_mode', $settings->metka_mode ?? 'off');
                 $metkaTypes = (array) old('metka_types', $settings->metka_types ?? []);
             @endphp
-            <fieldset x-data="{ mode: @js($metkaMode) }" class="space-y-4" data-card="metryczka" data-card-label="Metryczka" data-card-icon="fa-circle-info">
-                <legend class="mb-1 text-sm font-bold">Metryczka stron („Pokaż metkę”)</legend>
+            <fieldset x-data="{ mode: @js($metkaMode) }" class="space-y-4" data-card="metryczka" data-card-label="Metryczka">
+                <legend class="mb-1 text-sm font-bold" data-card-title>Metryczka stron („Pokaż metkę”)</legend>
                 <p class="text-xs text-muted">Rozwijana metryczka pod treścią strony: autor, osoba publikująca, podmiot publikujący, data publikacji i aktualizacji. W edycji strony (sekcja „Metryczka”) można ją włączyć lub wyłączyć dla pojedynczej strony.</p>
                 <div class="flex flex-col gap-2">
                     <label class="flex cursor-pointer items-center gap-2 text-sm"><input type="radio" name="metka_mode" value="off" x-model="mode" @checked($metkaMode === 'off') class="text-brand-dark focus:ring-brand-dark"> Wyłączona (tylko strony, na których ją włączysz)</label>
@@ -1730,7 +1730,7 @@
             </fieldset>
             @endif
 
-            <div class="space-y-6" data-card="dzialania" data-card-label="Działania" data-card-icon="fa-diagram-project">
+            <div class="space-y-6" data-card="dzialania" data-card-label="Działania">
                 <div>
                     <label for="editor-projects_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie działań <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('projects.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/projekty</a> i na stronach kategorii.</p>
@@ -1838,7 +1838,7 @@
                 </fieldset>
             </div>
 
-            <div class="space-y-6" data-card="materialy" data-card-label="Materiały" data-card-icon="fa-folder-open">
+            <div class="space-y-6" data-card="materialy" data-card-label="Materiały">
                 <div class="border-t border-gray-100 pt-6">
                     <label for="editor-materials_intro" class="mb-1 block text-sm font-bold">Tekst wprowadzający na stronie materiałów <span class="font-normal text-muted">(opcjonalnie)</span></label>
                     <p class="mb-2 text-xs text-muted">Wyświetlany pod nagłówkiem na stronie <a href="{{ route('materials.index') }}" target="_blank" rel="noopener" class="text-brand-dark underline">/materialy</a>.</p>
@@ -1853,7 +1853,7 @@
                 </div>
             </div>
 
-            <div class="space-y-6" data-card="aktualnosci" data-card-label="Aktualności" data-card-icon="fa-newspaper">
+            <div class="space-y-6" data-card="aktualnosci" data-card-label="Aktualności">
                 <div class="border-t border-gray-100 pt-6">
                     <p class="mb-1 text-sm font-bold">Domyślne zdjęcie newsa <span class="font-normal text-muted">(opcjonalnie)</span></p>
                     @if ($settings->newsDefaultImageUrl())
@@ -1901,7 +1901,7 @@
                 </div>
             </div>
 
-            <div class="border-t border-gray-100 pt-6" data-card="wolontariat" data-card-label="Wolontariat" data-card-icon="fa-hand-holding-heart">
+            <div class="border-t border-gray-100 pt-6" data-card="wolontariat" data-card-label="Wolontariat">
                 <p class="mb-3 text-sm font-bold">Układ listy ofert wolontariatu</p>
                 <div class="flex gap-6">
                     <label class="flex cursor-pointer items-center gap-2">
@@ -1985,7 +1985,7 @@
                     get enabledCount() { return this.toggleKeys.filter((k) => this.enabled[k]).length; },
                     plural(n) { const t = n % 10, h = n % 100; return n === 1 ? 'pozycja' : (t >= 2 && t <= 4 && (h < 12 || h > 14) ? 'pozycje' : 'pozycji'); },
                 }" data-cards="modules" data-cards-label="Karty sekcji Moduły">
-                <div data-card="moduly" data-card-label="Moduły" data-card-icon="fa-puzzle-piece">
+                <div data-card="moduly" data-card-label="Moduły">
                     <p class="mb-4 text-sm text-muted">Wyłącz moduł, aby ukryć go z panelu i strony publicznej. Adresy powiązane z wyłączonym modułem przestaną działać (błąd 404), dopóki nie zostanie ponownie włączony. Zmiany przełączników zapisuje przycisk „Zapisz” na dole strony.</p>
 
                     {{-- Pasek narzędzi: wyszukiwarka, licznik, filtr stanu --}}
@@ -2090,9 +2090,9 @@
                 {{-- Typy treści i układy: opcje do ukrycia w listach wyboru (blocked_options).
                      Żądanie niesie DOSTĘPNE wartości (allowed_options[grupa][]); znacznik
                      blocked_options_form mówi kontrolerowi, że sekcja była w formularzu. --}}
-                <section class="mt-10" aria-labelledby="content-options-heading" data-card="typy-tresci" data-card-label="Typy treści i układy" data-card-icon="fa-shapes">
+                <section class="mt-10" aria-labelledby="content-options-heading" data-card="typy-tresci" data-card-label="Typy treści i układy">
                     <input type="hidden" name="blocked_options_form" value="1">
-                    <h2 id="content-options-heading" class="mb-1 text-lg font-bold text-ink">Typy treści i układy</h2>
+                    <h2 id="content-options-heading" class="mb-1 text-lg font-bold text-ink" data-card-title>Typy treści i układy</h2>
                     <p class="mb-6 text-sm text-muted">Ukryta opcja znika z list wyboru przy tworzeniu i edycji. Treści, które już jej używają, działają dalej i zachowują swój wybór. W każdej grupie musi zostać co najmniej jedna dostępna opcja.</p>
 
                     @foreach ($optionGroups as $group => $options)
@@ -2162,7 +2162,7 @@
                     'substack' => 'Wpisy z Substack',
                 ];
             @endphp
-            <div class="mb-6" data-card="uklad" data-card-label="Układ strony głównej" data-card-icon="fa-table-list">
+            <div class="mb-6" data-card="uklad" data-card-label="Układ strony głównej">
                 <div class="mb-4 flex items-start gap-3 p-3 rounded-md bg-gray-50">
                     <input type="hidden" name="home_search_enabled" value="0">
                     <input type="checkbox" id="home_search_enabled" name="home_search_enabled" value="1" @checked(old('home_search_enabled', $settings->home_search_enabled ?? false)) class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
@@ -2210,9 +2210,9 @@
 
 
             {{-- Slider hero --}}
-            <div class="rounded-md bg-gray-50" data-card="slider" data-card-label="Slider hero" data-card-icon="fa-images">
-                <h2 class="px-5 py-3 text-sm font-bold text-ink">Slider hero</h2>
-                <div class="border-t border-gray-200 p-5">
+            <div class="rounded-md bg-gray-50 p-5" data-card="slider" data-card-label="Slider hero">
+                <h2 class="mb-3 text-sm font-bold text-ink" data-card-title>Slider hero</h2>
+                <div>
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="checkbox" name="hero_mission_slide" value="1"
                         {{ old('hero_mission_slide', $settings->hero_mission_slide ?? false) ? 'checked' : '' }}
@@ -2233,8 +2233,8 @@
             @if ($settings->site_template === 'federation')
                 {{-- Nagłówek i wstęp hero — tylko szablon "federation". Te same pola można
                      edytować też bezpośrednio na stronie głównej (edycja "na żywo"). --}}
-                <div class="mt-6 p-5 rounded-md bg-gray-50" data-card="hero-tekst" data-card-label="Hero: nagłówek i wstęp" data-card-icon="fa-heading">
-                    <p class="mb-3 text-sm font-bold text-ink">Nagłówek i wstęp hero (strona główna)</p>
+                <div class="mt-6 p-5 rounded-md bg-gray-50" data-card="hero-tekst" data-card-label="Hero: nagłówek i wstęp">
+                    <p class="mb-3 text-sm font-bold text-ink" data-card-title>Nagłówek i wstęp hero (strona główna)</p>
                     <label class="mb-3 block">
                         <span class="mb-1 block text-xs font-bold text-muted">Nagłówek</span>
                         <input type="text" name="federation_hero_heading"
@@ -2252,8 +2252,8 @@
 
                 {{-- Kafelki hero — tylko szablon "federation" --}}
                 @php $heroTiles = array_values((array) old('federation_hero_tiles', $settings->federationHeroTiles())); @endphp
-                <div class="mt-6 p-5 rounded-md bg-gray-50" data-hero-tiles data-card="hero-kafelki" data-card-label="Kafelki hero" data-card-icon="fa-table-cells">
-                    <p class="mb-1 text-sm font-bold text-ink">Kafelki bloku hero (strona główna)</p>
+                <div class="mt-6 p-5 rounded-md bg-gray-50" data-hero-tiles data-card="hero-kafelki" data-card-label="Kafelki hero">
+                    <p class="mb-1 text-sm font-bold text-ink" data-card-title>Kafelki bloku hero (strona główna)</p>
                     <p class="mb-3 text-xs text-muted">
                         Mozaika kolorowych kafelków obok tekstu „O nas". Każdy kafelek to albo duża liczba (np. rok
                         powstania), albo ikona + tytuł. „Szeroki" rozciąga kafelek na całą szerokość mozaiki.
@@ -2318,8 +2318,8 @@
 
                 {{-- Kafelki "Dlaczego warto?" (Dołącz do nas) — tylko szablon "federation" --}}
                 @php $joinBenefits = array_values((array) old('federation_join_benefits', $settings->federationJoinBenefits())); @endphp
-                <div class="mt-6 p-5 rounded-md bg-gray-50" data-join-benefits data-card="dlaczego-warto" data-card-label="Dlaczego warto?" data-card-icon="fa-circle-question">
-                    <p class="mb-1 text-sm font-bold text-ink">Kafelki „Dlaczego warto?" (strona „Dołącz do nas")</p>
+                <div class="mt-6 p-5 rounded-md bg-gray-50" data-join-benefits data-card="dlaczego-warto" data-card-label="Dlaczego warto?">
+                    <p class="mb-1 text-sm font-bold text-ink" data-card-title>Kafelki „Dlaczego warto?" (strona „Dołącz do nas")</p>
                     <p class="mb-3 text-xs text-muted">Cztery (albo więcej) powody, dla których warto dołączyć do federacji — ikona, tytuł i krótki opis.</p>
                     <div data-join-benefits-rows class="space-y-3">
                         @foreach ($joinBenefits as $i => $benefit)
@@ -2361,8 +2361,8 @@
             @if ($settings->site_template === 'ngo_3')
                 {{-- Pasek statystyk (strona główna, szablon "ngo_3") --}}
                 @php $ngo3Stats = array_values((array) old('ngo_3_stats', $settings->ngo3Stats())); @endphp
-                <div class="mt-6 p-5 rounded-md bg-gray-50" data-ngo3-stats data-card="statystyki" data-card-label="Pasek statystyk" data-card-icon="fa-chart-simple">
-                    <p class="mb-1 text-sm font-bold text-ink">Pasek statystyk (strona główna)</p>
+                <div class="mt-6 p-5 rounded-md bg-gray-50" data-ngo3-stats data-card="statystyki" data-card-label="Pasek statystyk">
+                    <p class="mb-1 text-sm font-bold text-ink" data-card-title>Pasek statystyk (strona główna)</p>
                     <p class="mb-3 text-xs text-muted">Liczby, którymi organizacja się chwali — np. lata działania, liczba działań, wolontariuszy.</p>
                     <div data-ngo3-stats-rows class="space-y-3">
                         @foreach ($ngo3Stats as $i => $stat)
@@ -2402,9 +2402,9 @@
             @endif
 
             {{-- Sekcja skrótów —- styl tła --}}
-            <div class="rounded-md bg-gray-50" data-card="ankieta" data-card-label="Ankieta i szybkie akcje" data-card-icon="fa-square-poll-vertical">
-                <h2 class="px-5 py-3 text-sm font-bold text-ink">Ankieta i szybkie akcje</h2>
-                <div class="border-t border-gray-200 p-5">
+            <div class="rounded-md bg-gray-50 p-5" data-card="ankieta" data-card-label="Ankieta i szybkie akcje">
+                <h2 class="mb-3 text-sm font-bold text-ink" data-card-title>Ankieta i szybkie akcje</h2>
+                <div>
                 <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3">
                     <input type="hidden" name="quick_actions_panel_negative" value="0">
                     <input type="checkbox" name="quick_actions_panel_negative" value="1"
@@ -2416,9 +2416,9 @@
             </div>
 
             {{-- Kolor sekcji „Szkolenia i wydarzenia" na stronie głównej --}}
-            <div class="rounded-md bg-gray-50" data-card="wydarzenia" data-card-label="Szkolenia i wydarzenia" data-card-icon="fa-calendar-days">
-                <h2 class="px-5 py-3 text-sm font-bold text-ink">Szkolenia i wydarzenia</h2>
-                <div class="border-t border-gray-200 p-5">
+            <div class="rounded-md bg-gray-50 p-5" data-card="wydarzenia" data-card-label="Szkolenia i wydarzenia">
+                <h2 class="mb-3 text-sm font-bold text-ink" data-card-title>Szkolenia i wydarzenia</h2>
+                <div>
                 <label for="events_home_color_text" class="mb-1 block text-sm font-bold">Kolor sekcji „Szkolenia i wydarzenia"</label>
                 <p class="mb-2 text-xs text-muted">Akcent bloku wydarzeń na stronie głównej. Zostaw pusty, aby użyć koloru marki. Zbyt jasny kolor zostanie przyciemniony dla kontrastu (WCAG).</p>
                 <div class="flex items-center gap-2">
@@ -2435,9 +2435,9 @@
             </div>
 
             {{-- Pasek informacyjny na górze strony głównej --}}
-            <div class="rounded-md bg-gray-50" data-card="pasek" data-card-label="Pasek informacyjny" data-card-icon="fa-bars-staggered">
-                <h2 class="px-5 py-3 text-sm font-bold text-ink">Pasek informacyjny</h2>
-                <div class="space-y-4 border-t border-gray-200 p-5">
+            <div class="rounded-md bg-gray-50 p-5" data-card="pasek" data-card-label="Pasek informacyjny">
+                <h2 class="mb-3 text-sm font-bold text-ink" data-card-title>Pasek informacyjny</h2>
+                <div class="space-y-4">
                 <div>
                     <p class="text-sm font-bold text-ink">Pasek informacyjny na stronie głównej</p>
                     <p class="mt-0.5 text-xs text-muted">Wyróżniony pasek z tekstem i opcjonalnym linkiem, pokazywany na samej górze strony głównej — np. ważny komunikat lub zaproszenie na wydarzenie. Zostaw tekst pusty, aby ukryć pasek.</p>
@@ -2494,9 +2494,9 @@
         <div x-show="tab === 'template'" x-cloak class="space-y-6"
             x-data="{ tpl: @js(old('site_template', $settings->site_template ?? 'default')) }" data-cards="template" data-cards-label="Karty sekcji Szablon strony">
 
-            <div class="space-y-6" data-card="szablon" data-card-label="Szablon" data-card-icon="fa-swatchbook">
+            <div class="space-y-6" data-card="szablon" data-card-label="Szablon">
                 <div>
-                    <h2 class="text-base font-bold text-ink">Szablon strony</h2>
+                    <h2 class="text-base font-bold text-ink" data-card-title>Szablon strony</h2>
                     <p class="mt-1 text-xs text-muted">
                         Szablon określa wygląd serwisu: układ nagłówka, stopki oraz strony głównej.
                         Zmiana szablonu nie usuwa żadnych treści.
@@ -2519,7 +2519,7 @@
                 </div>
             </div>
 
-            <fieldset aria-describedby="podcasts_template_help" data-card="podcasty" data-card-label="Podcasty" data-card-icon="fa-podcast">
+            <fieldset aria-describedby="podcasts_template_help" data-card="podcasty" data-card-label="Podcasty">
                 <legend class="mb-1 block text-sm font-bold">Wygląd podstrony „Podcasty”</legend>
                 <p id="podcasts_template_help" class="mb-3 text-xs text-muted">
                     Dedykowany wygląd (nagłówek, stopka, układ listy i odcinków) tylko dla <span class="font-bold">/podcasty</span> i podstron odcinków.
@@ -2554,7 +2554,7 @@
                 </div>
             </fieldset>
 
-            <div class="space-y-6" data-card="opcje-szablonu" data-card-label="Opcje szablonu" data-card-icon="fa-sliders">
+            <div class="space-y-6" data-card="opcje-szablonu" data-card-label="Opcje szablonu">
                 {{-- Opis szablonów, które nie mają własnych pól --}}
                 <div x-show="tpl === 'default'" x-cloak class="p-5 rounded-md bg-gray-50">
                     <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Domyślny (klasyczny)</h3>
@@ -2874,9 +2874,9 @@
         </div>
 
         <div x-show="tab === 'login'" x-cloak class="space-y-6" x-data="{ msEnabled: {{ old('microsoft_login_enabled', $settings->microsoft_login_enabled) ? 'true' : 'false' }} }" data-cards="login" data-cards-label="Karty sekcji Logowanie">
-            <div class="space-y-6" data-card="microsoft" data-card-label="Microsoft 365" data-card-icon="fa-brands fa-microsoft">
+            <div class="space-y-6" data-card="microsoft" data-card-label="Microsoft 365">
                 <div>
-                    <h2 class="text-base font-bold text-ink">Logowanie przez Microsoft 365</h2>
+                    <h2 class="text-base font-bold text-ink" data-card-title>Logowanie przez Microsoft 365</h2>
                     <p class="mt-1 text-xs text-muted">
                         Pozwala zalogować się do panelu kontem Microsoft 365 (Laravel Socialite). Dostęp otrzymują wyłącznie
                         użytkownicy już istniejący w zakładce „Użytkownicy" (dopasowanie po adresie e-mail). Aplikację rejestruje się
@@ -2958,8 +2958,8 @@
             </div>
 
             {{-- ===================== Logowanie przez Google ===================== --}}
-            <div class="border-t border-gray-200 pt-6" x-data="{ googleEnabled: {{ old('google_login_enabled', $settings->google_login_enabled) ? 'true' : 'false' }} }" data-card="google" data-card-label="Google" data-card-icon="fa-brands fa-google">
-                <h2 class="text-base font-bold text-ink">Logowanie przez Google</h2>
+            <div class="border-t border-gray-200 pt-6" x-data="{ googleEnabled: {{ old('google_login_enabled', $settings->google_login_enabled) ? 'true' : 'false' }} }" data-card="google" data-card-label="Google">
+                <h2 class="text-base font-bold text-ink" data-card-title>Logowanie przez Google</h2>
                 <p class="mt-1 text-xs text-muted">
                     Alternatywne logowanie do panelu kontem Google (Laravel Socialite). Dostęp otrzymują wyłącznie
                     użytkownicy już istniejący w zakładce „Użytkownicy" (dopasowanie po adresie e-mail). Aplikację rejestruje się w
@@ -2999,8 +2999,8 @@
             </div>
 
             {{-- ===================== Klucze dostępu (passkeys) ===================== --}}
-            <div class="border-t border-gray-200 pt-6" data-card="klucze" data-card-label="Klucze dostępu" data-card-icon="fa-key">
-                <h2 class="text-base font-bold text-ink">Klucze dostępu (passkey, YubiKey)</h2>
+            <div class="border-t border-gray-200 pt-6" data-card="klucze" data-card-label="Klucze dostępu">
+                <h2 class="text-base font-bold text-ink" data-card-title>Klucze dostępu (passkey, YubiKey)</h2>
                 <p class="mt-1 text-xs text-muted">
                     Logowanie bez hasła kluczem sprzętowym (YubiKey i inne klucze FIDO2), odciskiem palca, Windows Hello albo telefonem.
                     Każdy użytkownik dodaje swoje klucze w profilu (Profil → Klucze dostępu). Klucz zastępuje hasło i drugi składnik naraz.
@@ -3015,8 +3015,8 @@
             </div>
 
             {{-- ===================== SSO (OpenID Connect) ===================== --}}
-            <div class="border-t border-gray-200 pt-6" x-data="{ ssoEnabled: {{ old('sso_enabled', $settings->sso_enabled ?? false) ? 'true' : 'false' }} }" data-card="sso" data-card-label="SSO (OpenID Connect)" data-card-icon="fa-right-to-bracket">
-                <h2 class="text-base font-bold text-ink">Logowanie SSO (OpenID Connect)</h2>
+            <div class="border-t border-gray-200 pt-6" x-data="{ ssoEnabled: {{ old('sso_enabled', $settings->sso_enabled ?? false) ? 'true' : 'false' }} }" data-card="sso" data-card-label="SSO (OpenID Connect)">
+                <h2 class="text-base font-bold text-ink" data-card-title>Logowanie SSO (OpenID Connect)</h2>
                 <p class="mt-1 text-xs text-muted">
                     Dla organizacji z własnym dostawcą tożsamości: Keycloak, Okta, Microsoft Entra ID, Google Workspace, Authentik i inne zgodne z OpenID Connect.
                     Dostęp mają wyłącznie konta istniejące w „Użytkownicy” (dopasowanie po e-mailu przy pierwszym logowaniu). U dostawcy zarejestruj aplikację z adresem powrotu:
@@ -3073,8 +3073,8 @@
             </div>
 
             {{-- ===================== Strefa wewnętrzna (współpracownicy) ===================== --}}
-            <div class="border-t border-gray-200 pt-6" x-data="{ memberEnabled: {{ old('member_login_enabled', $settings->member_login_enabled) ? 'true' : 'false' }} }" data-card="strefa" data-card-label="Strefa współpracownika" data-card-icon="fa-users">
-                <h2 class="text-base font-bold text-ink">Logowanie do stron wewnętrznych (strefa współpracownika)</h2>
+            <div class="border-t border-gray-200 pt-6" x-data="{ memberEnabled: {{ old('member_login_enabled', $settings->member_login_enabled) ? 'true' : 'false' }} }" data-card="strefa" data-card-label="Strefa współpracownika">
+                <h2 class="text-base font-bold text-ink" data-card-title>Logowanie do stron wewnętrznych (strefa współpracownika)</h2>
                 <p class="mt-1 text-xs text-muted">
                     Osobne logowanie przez Microsoft 365 dla stron wewnętrznych — niezależne od kont panelu (osobny guard i tabela).
                     Konto współpracownika jest zakładane automatycznie przy pierwszym logowaniu. Reużywa tej samej aplikacji Azure co
@@ -3121,8 +3121,8 @@
                         } catch (e) { this.res = { level: 'error', message: 'Brak połączenia z serwerem.' }; }
                         finally { this.busy = false; }
                     },
-                }" data-card="cleantalk" data-card-label="Antyspam CleanTalk" data-card-icon="fa-shield-virus">
-                <h2 class="text-base font-bold text-ink"><i class="fa-solid fa-shield-virus mr-1 text-brand-dark" aria-hidden="true"></i> Ochrona antyspamowa CleanTalk</h2>
+                }" data-card="cleantalk" data-card-label="Antyspam CleanTalk">
+                <h2 class="text-base font-bold text-ink" data-card-title><i class="fa-solid fa-shield-virus mr-1 text-brand-dark" aria-hidden="true"></i> Ochrona antyspamowa CleanTalk</h2>
                 <p class="mt-1 text-xs text-muted">
                     Dodatkowa warstwa ochrony formularzy (moduł Formularze oraz formularz kontaktowy) obok lokalnego zadania antyspamowego: skrypt analizuje zachowanie odwiedzającego,
                     a usługa <a href="https://cleantalk.org" target="_blank" rel="noopener" class="text-brand-dark underline">CleanTalk<span class="sr-only"> (otwiera się w nowej karcie)</span></a> ocenia treść zgłoszenia.
@@ -3164,8 +3164,8 @@
             </div>
 
             {{-- ===================== 2FA panelu + YubiKey ===================== --}}
-            <div class="border-t border-gray-200 pt-6" data-card="2fa" data-card-label="Dwuetapowe (2FA)" data-card-icon="fa-mobile-screen">
-                <h2 class="text-base font-bold text-ink">Uwierzytelnianie dwuetapowe (2FA) panelu</h2>
+            <div class="border-t border-gray-200 pt-6" data-card="2fa" data-card-label="Dwuetapowe (2FA)">
+                <h2 class="text-base font-bold text-ink" data-card-title>Uwierzytelnianie dwuetapowe (2FA) panelu</h2>
                 <p class="mt-1 text-xs text-muted">
                     Dotyczy logowania hasłem. Użytkownicy konfigurują TOTP i klucze YubiKey na swoim profilu. Logowanie przez
                     Microsoft 365 pomija ten krok (MS ma własne MFA).
@@ -3200,8 +3200,8 @@
             </div>
 
             {{-- ===================== Przelewy24 (moduł Sklep) ===================== --}}
-            <div class="border-t border-gray-200 pt-6" data-card="przelewy24" data-card-label="Przelewy24" data-card-icon="fa-credit-card">
-                <h2 class="text-base font-bold text-ink">Przelewy24 (Sklep)</h2>
+            <div class="border-t border-gray-200 pt-6" data-card="przelewy24" data-card-label="Przelewy24">
+                <h2 class="text-base font-bold text-ink" data-card-title>Przelewy24 (Sklep)</h2>
                 <p class="mt-1 text-xs text-muted">
                     Dane z panelu sprzedawcy <a href="https://www.przelewy24.pl/" target="_blank" rel="noopener" class="text-brand-dark underline">Przelewy24</a>
                     (dla testów użyj konta <a href="https://sandbox.przelewy24.pl/" target="_blank" rel="noopener" class="text-brand-dark underline">sandbox.przelewy24.pl</a>).
@@ -3259,8 +3259,8 @@
             </div>
 
             {{-- ===================== Adres URL panelu ===================== --}}
-            <div class="border-t border-gray-200 pt-6" data-card="adres-panelu" data-card-label="Adres panelu" data-card-icon="fa-link">
-                <h2 class="text-base font-bold text-ink">Adres panelu administracyjnego</h2>
+            <div class="border-t border-gray-200 pt-6" data-card="adres-panelu" data-card-label="Adres panelu">
+                <h2 class="text-base font-bold text-ink" data-card-title>Adres panelu administracyjnego</h2>
                 <p class="mt-1 text-xs text-muted">
                     Zmiana segmentu URL otwierającego panel (domyślnie <code>/admin</code>). Utrudnia automatyczne
                     skanowanie — nie zastępuje silnego hasła ani 2FA.
@@ -3532,9 +3532,9 @@
                         }
                         this.applied = true;
                     },
-                 }" data-card="autokonfigurator" data-card-label="Autokonfigurator" data-card-icon="fa-wand-magic-sparkles">
+                 }" data-card="autokonfigurator" data-card-label="Autokonfigurator">
                 <div>
-                    <h3 class="text-sm font-bold text-ink"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-brand-dark" aria-hidden="true"></i> Autokonfigurator poczty</h3>
+                    <h3 class="text-sm font-bold text-ink" data-card-title><i class="fa-solid fa-wand-magic-sparkles mr-1 text-brand-dark" aria-hidden="true"></i> Autokonfigurator poczty</h3>
                     <p class="mt-1 text-xs text-muted">Wpisz adres skrzynki, z której ma wychodzić poczta. Rozpoznamy dostawcę (Microsoft 365, Google, OVH, home.pl i inne) i uzupełnimy ustawienia. Hasła i sekrety wpisujesz samodzielnie.</p>
                 </div>
                 <div class="flex flex-wrap items-end gap-3">
@@ -3586,7 +3586,7 @@
                 </div>
             </div>
 
-            <div class="space-y-6" data-card="wysylka" data-card-label="Sposób wysyłki" data-card-icon="fa-paper-plane">
+            <div class="space-y-6" data-card="wysylka" data-card-label="Sposób wysyłki">
                 <div>
                     <label for="mail_transport" class="mb-1 block text-sm font-bold">Tryb wysyłki</label>
                     <select id="mail_transport" name="mail_transport" x-model="transport"
@@ -3673,7 +3673,7 @@
                 $graphInheritsSso = blank($settings->msgraph_client_id) && blank(config('mail.mailers.msgraph.client_id')) && filled($graphCfg['client_id']);
             @endphp
             <div class="space-y-5 rounded-lg border p-4 {{ $graphReady ? 'border-green-200' : 'border-gray-200' }}"
-                 :class="transport === 'msgraph' ? 'ring-2 ring-brand/30' : ''" data-card="graph" data-card-label="Microsoft Graph" data-card-icon="fa-brands fa-microsoft">
+                 :class="transport === 'msgraph' ? 'ring-2 ring-brand/30' : ''" data-card="graph" data-card-label="Microsoft Graph">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <p class="text-sm font-bold text-ink">

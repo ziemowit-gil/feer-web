@@ -59,6 +59,14 @@ class SettingsSectionCardsTest extends TestCase
         $this->assertStringContainsString('window.adminSectionCards', $html);
         $this->assertStringContainsString('name="_redirect_card"', $html);
         $this->assertStringContainsString('Zapisujesz całą tę sekcję (wszystkie jej karty)', $html);
+
+        // Wygląd „pivot”: nagłówek każdej karty Serwisu oznaczony (przy kartach ukryty wizualnie, zostaje dla czytnika), bez ikon.
+        foreach (['svc-maintenance-h', 'svc-building-h', 'svc-notice-h', 'svc-mourning-h', 'svc-url-h'] as $id) {
+            $this->assertMatchesRegularExpression('/<h2 id="'.$id.'"[^>]*data-card-title>/', $html, $id);
+        }
+        $this->assertStringNotContainsString('data-card-title>Stan witryny teraz', $html);
+        $this->assertStringNotContainsString('data-card-icon', $html);
+        $this->assertStringContainsString('.sc-on [data-card-title]', $html);
     }
 
     public function test_dlugie_sekcje_maja_karty_z_unikalnymi_slugami(): void
