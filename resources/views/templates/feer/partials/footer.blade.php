@@ -47,7 +47,7 @@
     <x-banner-zone name="footer" />
 
     <div class="relative bg-ink text-white">
-        <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 text-sm lg:flex-row lg:items-center lg:justify-between lg:gap-10" style="padding-top: 1rem; padding-bottom: 1rem">
+        <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 text-sm lg:flex-row lg:items-center lg:justify-between lg:gap-10" style="padding-top: 1.75rem; padding-bottom: 1.5rem; row-gap: 1.25rem; column-gap: 2.5rem">
 
             {{-- Marka --}}
             <div class="flex min-w-0 items-center gap-3 lg:max-w-sm lg:flex-none">
@@ -68,8 +68,8 @@
             </div>
 
             {{-- Linki --}}
-            <nav aria-label="Linki stopki" class="lg:min-w-0 lg:flex-1" style="font-size: 1rem; line-height: 1.5rem">
-                <ul class="flex flex-wrap lg:justify-center" style="column-gap: 1.75rem; row-gap: .25rem" role="list">
+            <nav aria-label="Linki stopki" class="lg:min-w-0 lg:flex-1" style="font-size: 1rem; line-height: 1.6rem">
+                <ul class="flex flex-wrap lg:justify-center" style="column-gap: 2.5rem; row-gap: .75rem" role="list">
                     @foreach ($footerNavItems as $item)
                         <li><a href="{{ site_href($item->url) }}" class="{{ $footLink }}">{{ $item->label }}</a></li>
                     @endforeach
@@ -83,7 +83,7 @@
 
             {{-- Social — jeden rząd (bez łamania ikon); na wąskich ekranach zawija się dopiero przy braku miejsca. --}}
             <div style="flex: none">
-                <ul class="social-row flex items-center gap-2" style="flex-wrap: wrap" role="list" aria-label="Media społecznościowe i skróty">
+                <ul class="social-row flex items-center" style="flex-wrap: wrap; gap: .75rem" role="list" aria-label="Media społecznościowe i skróty">
                     @foreach ($footerSocials as [$sUrl, $sIcon, $sLabel])
                         @if (filled($sUrl))
                             <li>
@@ -116,7 +116,7 @@
 
         {{-- Skróty administratora (panel, edycja stopki) — osobny, cienki rząd zamiast nakładania się na treść. --}}
         @if ($fo['show_admin_link'] || auth()->user()?->isAdmin())
-            <div class="mx-auto flex max-w-6xl items-center justify-end gap-4 px-4 text-xs" style="padding-bottom: .5rem">
+            <div class="mx-auto flex max-w-6xl items-center justify-end gap-4 px-4 text-xs" style="padding-bottom: 1rem; column-gap: 1.25rem">
                 @if (auth()->user()?->isAdmin())
                     <a href="{{ route('admin.ustawienia.edit', ['tab' => 'general']) }}#gen-footer-h" class="rounded-sm font-bold text-white underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" data-footer-edit>
                         <i class="fa-solid fa-pen mr-1" aria-hidden="true"></i>Edytuj stopkę
