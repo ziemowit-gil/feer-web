@@ -9,12 +9,28 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PodcastController extends Controller
 {
+    /**
+     * Dedykowany wygląd podstrony Podcasty (Ustawienia → Szablon → „Wygląd podstrony Podcasty”): na czas tego żądania
+     * szablon witryny jest podmieniany w pamięci (bez zapisu), więc nagłówek, stopka i układ są z wybranego szablonu.
+     */
+    private function applyLook(): string
+    {
+        $site = \App\Models\SiteSetting::current();
+        $override = (string) ($site->podcasts_template ?? '');
+        if ($override !== '' && isset(\App\Models\SiteSetting::SITE_TEMPLATES[$override]) && \App\Support\Edition::allowsTemplate($override)) {
+            $site->setAttribute('site_template', $override);
+        }
+
+        return (string) ($site->site_template ?? 'default');
+    }
+
     public function index()
     {
+        $template = $this->applyLook();
         $podcasts = Podcast::published()->latest('published_at')->paginate(12);
 
         // Szablon FEER ma własny układ listy odcinków.
-        $view = \App\Models\SiteSetting::current()->site_template === 'feer' ? 'podcasts.index-feer' : 'podcasts.index';
+        $view = $template === 'feer' ? 'podcasts.index-feer' : 'podcasts.index';
         // Które odcinki bieżący użytkownik może odtworzyć (szablon FEER ma odtwarzacz od razu na liście).
         $playable = $podcasts->getCollection()->filter(fn ($p) => $this->canAccess(request()->user(), $p))->pluck('id')->all();
 
@@ -24,10 +40,11 @@ class PodcastController extends Controller
     public function show(Podcast $podcast)
     {
         abort_unless($podcast->is_published, 404);
+        $template = $this->applyLook();
 
         $canPlay = $this->canAccess(request()->user(), $podcast);
 
-        $view = \App\Models\SiteSetting::current()->site_template === 'feer' ? 'podcasts.show-feer' : 'podcasts.show';
+        $view = $template === 'feer' ? 'podcasts.show-feer' : 'podcasts.show';
         $more = Podcast::published()->whereKeyNot($podcast->id)->latest('published_at')->limit(4)->get();
 
         return view($view, compact('podcast', 'canPlay', 'more'));

@@ -419,6 +419,8 @@ class SiteSettingController extends Controller
                     }
                 },
             ],
+            // Dedykowany wygląd podstrony Podcasty (pusty = jak cała witryna).
+            'podcasts_template'                => ['nullable', Rule::in(array_keys(SiteSetting::SITE_TEMPLATES))],
             'is_cta_label'                     => ['nullable', 'string', 'max:60'],
             'is_cta_url'                       => ['nullable', 'string', 'max:255'],
             'parent_link_label'                => ['nullable', 'string', 'max:80'],

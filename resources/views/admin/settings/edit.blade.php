@@ -2503,6 +2503,24 @@
                 </select>
             </div>
 
+            <div>
+                <label for="podcasts_template" class="mb-1 block text-sm font-bold">Wygląd podstrony „Podcasty”</label>
+                <select id="podcasts_template" name="podcasts_template" aria-describedby="podcasts_template_help"
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    <option value="">Jak cała witryna (aktywny szablon)</option>
+                    @foreach (\App\Models\SiteSetting::SITE_TEMPLATES as $value => $label)
+                        @php $ptLocked = ! \App\Support\Edition::allowsTemplate($value) && ($settings->podcasts_template ?? '') !== $value; @endphp
+                        <option value="{{ $value }}" @disabled($ptLocked) {{ old('podcasts_template', $settings->podcasts_template ?? '') === $value ? 'selected' : '' }}>
+                            {{ $label }}{{ $ptLocked ? ' — wersja płatna' : '' }}
+                        </option>
+                    @endforeach
+                </select>
+                <p id="podcasts_template_help" class="mt-1 text-xs text-muted">
+                    Dedykowany wygląd (nagłówek, stopka, układ listy i odcinków) tylko dla strony <span class="font-bold">/podcasty</span>
+                    i podstron odcinków. Reszta witryny zostaje w aktywnym szablonie. Np. „Podcasty” — ciemny nagłówek z odtwarzaczem.
+                </p>
+            </div>
+
             {{-- Opis szablonów, które nie mają własnych pól --}}
             <div x-show="tpl === 'default'" x-cloak class="p-5 rounded-md bg-gray-50">
                 <h3 class="text-sm font-bold text-ink">Ustawienia szablonu: Domyślny (klasyczny)</h3>
