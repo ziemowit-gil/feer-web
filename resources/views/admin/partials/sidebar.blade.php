@@ -13,7 +13,7 @@
 --}}
 @php
     $authUser   = auth()->user();
-    $menu       = \App\Support\AdminMenu::for($authUser);
+    $menu       = $adminMenu ?? \App\Support\AdminMenu::for($authUser);
     // Ikona bieżącej pozycji menu — przy tytule strony w nagłówku (motyw Joomla, admin/layout).
     $__pageIcon = 'fa-gauge';
     foreach ($menu as $__g) {
@@ -29,8 +29,6 @@
         : collect();
     $initial    = mb_strtoupper(mb_substr($authUser?->name ?: $authUser?->email, 0, 1));
     $roleLabel  = \App\Models\User::ROLES[$authUser?->role] ?? 'Edytor';
-    // Styl panelu „Metro”: grupy menu jako kafle (nav-tiles); pozostałe style — nagłówki grup (wysuwane albo rozwijane).
-    $navTiles   = ($authUser?->adminScheme() ?? null) === 'metro';
 @endphp
 
 {{-- Tło szuflady na mobile --}}
@@ -39,7 +37,7 @@
      class="fixed inset-0 z-30 bg-ink/50 lg:hidden" aria-hidden="true"></div>
 
 <aside id="admin-sidebar"
-       class="admin-sidebar nav-style-{{ auth()->user()?->adminNavStyle() ?? \App\Models\User::DEFAULT_ADMIN_NAV_STYLE }}{{ $navTiles ? ' nav-has-tiles' : '' }} fixed inset-y-0 left-0 z-40 flex flex-col border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
+       class="admin-sidebar nav-style-{{ auth()->user()?->adminNavStyle() ?? \App\Models\User::DEFAULT_ADMIN_NAV_STYLE }} fixed inset-y-0 left-0 z-40 flex flex-col border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
        :class="{ 'is-collapsed': $store.adminNav.collapsed, 'is-open': $store.adminNav.mobileOpen }"
        @keydown.escape.window="$store.adminNav.close()"
        aria-label="Panel administracyjny">
@@ -102,31 +100,7 @@
             {{-- Pop-up obok przycisku: nad paskiem bocznym, nie rozpycha menu; w zwężonej szynie wysuwa się w prawo od ikony. --}}
             <div id="nav-site-list" x-show="open" x-cloak x-ref="siteList" role="dialog" aria-label="Wybierz witrynę"
                  class="nav-site-list absolute left-2 right-2 top-full z-50 mt-1 rounded-lg border border-gray-200 bg-white p-2 shadow-xl">
-                <p class="px-2 pb-1 text-[10px] font-bold uppercase tracking-wide text-muted">Witryny</p>
-                <ul class="space-y-0.5" role="list">
-                    @foreach ($adminSites as $adminSite)
-                        @php $isCurrent = $adminSite->is($siteSettings); @endphp
-                        <li>
-                            <form method="POST" action="{{ route('admin.witryny.przelacz', $adminSite) }}">
-                                @csrf
-                                <button type="submit" @if ($isCurrent) aria-current="true" @endif
-                                        class="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none {{ $isCurrent ? 'bg-brand-light font-bold text-brand-dark' : 'text-ink' }} {{ $adminSite->parent_site_id ? 'pl-6' : '' }}">
-                                    <i class="fa-solid {{ $adminSite->parent_site_id ? 'fa-sitemap' : 'fa-house' }} w-4 text-center text-[0.7rem] {{ $isCurrent ? 'text-brand-dark' : 'text-gray-500' }}" aria-hidden="true"></i>
-                                    <span class="min-w-0 flex-1 truncate">{{ $adminSite->site_name }}</span>
-                                    @if ($isCurrent)<i class="fa-solid fa-check text-xs" aria-hidden="true"></i><span class="sr-only">(bieżąca)</span>@endif
-                                </button>
-                            </form>
-                        </li>
-                    @endforeach
-                </ul>
-                <div class="mt-1 flex flex-wrap gap-x-3 border-t border-gray-100 px-2 pt-1 text-sm">
-                    <a href="{{ route('admin.wybor-witryny') }}" class="inline-flex min-h-11 items-center font-bold text-brand-dark hover:underline">Ekran wyboru</a>
-                    <a href="{{ route('admin.witryny.index') }}" class="inline-flex min-h-11 items-center font-bold text-brand-dark hover:underline">Zarządzaj subwitrynami</a>
-                    @if (Route::has('admin.witryny.nazwa'))
-                        <a href="{{ route('admin.witryny.nazwa', $siteSettings) }}" class="inline-flex min-h-11 items-center font-bold text-brand-dark hover:underline">Zmień nazwę i adres<span class="sr-only"> tej witryny</span></a>
-                    @endif
-                    <a href="{{ route('admin.witryny.ustawienia') }}" class="inline-flex min-h-11 items-center font-bold text-brand-dark hover:underline">Przenieś ustawienia</a>
-                </div>
+                @include('admin.partials.site-switch-list')
             </div>
         </div>
         <style>
@@ -165,7 +139,7 @@
         /* Szeroki ekran, styl „wysuwane” (Mój profil → Menu panelu): grupy wysuwane w prawo zamiast akordeonu (navItem.flyIn);
            strzałka wskazuje w prawo. Styl „rozwijane” zostawia akordeon jak na telefonie. */
         @media (min-width: 1024px) {
-            .admin-sidebar.nav-style-flyout:not(.nav-has-tiles) .tm-panel { display: none !important; }
+            .admin-sidebar.nav-style-flyout .tm-panel { display: none !important; }
             .admin-sidebar.nav-style-flyout .tm-chevron { transform: rotate(-90deg) !important; }
             .nav-flyout a { min-height: 2.5rem; font-size: .9375rem !important; }
             .nav-flyout--wide { width: min(48rem, calc(100vw - 20rem)); }
@@ -184,22 +158,7 @@
          Wpisanie frazy zastępuje akordeon płaską listą wyników (z nazwą grupy). Enter otwiera
          pierwszy wynik, Escape czyści pole. Ukryta w zwiniętej szynie ikon. --}}
     @php
-        $menuEntries = [];
-        $currentEntry = null; // bieżąca strona w menu (do „Ostatnio otwarte” i „Przypnij tę stronę”)
-        foreach ($menu as $g) {
-            foreach ($g['blocks'] as $b) {
-                foreach ($b['items'] as $it) {
-                    $entry = ['label' => $it['label'], 'url' => $it['url'], 'path' => $g['label'] . ($b['heading'] ? ' › ' . $b['heading'] : ''), 'icon' => $it['icon']];
-                    $menuEntries[] = $entry;
-                    if ($it['active'] && $it['children'] === [] && ! $currentEntry && $g['key'] !== 'start') { $currentEntry = $entry; }
-                    foreach ($it['children'] as $ch) {
-                        $childEntry = ['label' => $ch['label'], 'url' => $ch['url'], 'path' => $g['label'] . ' › ' . $it['label'], 'icon' => $ch['icon'] ?: $it['icon']];
-                        $menuEntries[] = $childEntry;
-                        if ($ch['active'] && $g['key'] !== 'start') { $currentEntry = $childEntry; }
-                    }
-                }
-            }
-        }
+        ['entries' => $menuEntries, 'current' => $currentEntry] = \App\Support\AdminMenu::entries($menu); // bieżąca strona: „Ostatnio otwarte” i „Dodaj do ulubionych”
         $quickKey = 'admin-nav-quick:' . ($authUser?->id ?? 0) . ':' . ($siteSettings->id ?? 0);
     @endphp
     <div class="nav-search flex-none border-b border-gray-200 px-3 py-1.5"
@@ -217,7 +176,7 @@
             go() { const r = this.results[0]; if (r) window.location.href = r.url; },
             focusFirst() { this.$root.querySelector('#admin-menu-results a')?.focus(); },
          }"
-         @keydown.window="if ($event.key === '/' && ! $event.ctrlKey && ! $event.metaKey && ! $event.altKey && ! /^(input|textarea|select)$/i.test($event.target.tagName) && ! $event.target.isContentEditable) { $event.preventDefault(); if ($store.adminNav.collapsed) { $store.adminNav.toggleCollapsed(); } $nextTick(() => $refs.search.focus()); }">
+         @keydown.window="if ($event.key === '/' && ! $store.adminNav.topActive() && ! $event.ctrlKey && ! $event.metaKey && ! $event.altKey && ! /^(input|textarea|select)$/i.test($event.target.tagName) && ! $event.target.isContentEditable) { $event.preventDefault(); if ($store.adminNav.collapsed) { $store.adminNav.toggleCollapsed(); } $nextTick(() => $refs.search.focus()); }">
         <label for="admin-menu-search" class="sr-only">Szukaj w menu panelu</label>
         <div class="relative">
             <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400" aria-hidden="true"></i>
@@ -329,38 +288,6 @@
         });
     </script>
 
-    {{-- ── Styl Metro: grupy jako kafle (2 w rzędzie, jak ekran Start Metro UI), pod nimi pozycje otwartej grupy.
-         Najpierw wszystkie kafle, potem panele — kolejność fokusu zgadza się z tym, co widać. Jedna grupa naraz (navAccordion);
-         grupa z bieżącą stroną otwiera się od razu. Wybór „Wysuwane / Rozwijane” z profilu tu nie działa. W zwężonej szynie
-         kafle stoją w kolumnie (same ikony), a kliknięcie rozwija menu i otwiera grupę. --}}
-    @if ($navTiles)
-    <nav class="nav-scroll nav-tiles flex-1 overflow-y-auto overscroll-contain text-sm" aria-label="Menu panelu" x-show="! $store.adminNav.searching"
-         x-data="navAccordion(@js(collect($menu)->firstWhere('active', true)['key'] ?? ''), @js($menu[0]['key'] ?? ''))">
-        <ul class="nav-tile-grid" role="list">
-            @foreach ($menu as $group)
-                <li class="tm-group {{ $group['active'] ? 'is-active' : '' }}">
-                    <button type="button" class="nav-tile{{ $group['active'] ? ' is-open is-current' : '' }}{{ ($group['premium'] ?? false) ? ' tm-premium' : '' }}"
-                            @click="toggle(@js($group['key']))" :class="{ 'is-open': openKey === @js($group['key']) }"
-                            aria-expanded="{{ $group['active'] ? 'true' : 'false' }}" :aria-expanded="(openKey === @js($group['key'])).toString()" aria-controls="tm-panel-{{ $group['key'] }}"
-                            title="{{ $group['label'] }}{{ ($group['premium'] ?? false) ? ' — moduł premium' : '' }}">
-                        <i class="nav-tile-icon fa-solid {{ $group['icon'] }}" aria-hidden="true"></i>
-                        <span class="nav-tile-label nav-label">{{ $group['label'] }}@if ($group['premium'] ?? false)<span class="sr-only"> (moduł premium)</span>@endif @if ($group['active'])<span class="sr-only"> (tu jesteś)</span>@endif</span>
-                        @if ($group['badge'])
-                            <span class="nav-tile-badge" aria-label="{{ $group['badge'] }} do obsłużenia">{{ $group['badge'] > 99 ? '99+' : $group['badge'] }}</span>
-                        @endif
-                    </button>
-                </li>
-            @endforeach
-        </ul>
-        @foreach ($menu as $group)
-            <div id="tm-panel-{{ $group['key'] }}" class="tm-panel nav-tile-panel" data-nav-key="{{ $group['key'] }}" x-show="openKey === @js($group['key'])"
-                 role="region" aria-labelledby="tm-title-{{ $group['key'] }}" @if (! $group['active']) style="display:none" @endif>
-                <p class="nav-tile-panel-title" id="tm-title-{{ $group['key'] }}">{{ $group['label'] }}</p>
-                @include('admin.partials.sidebar-items', ['group' => $group])
-            </div>
-        @endforeach
-    </nav>
-    @else
     <nav class="nav-scroll flex-1 overflow-y-auto overscroll-contain px-2 py-2 text-sm" aria-label="Menu panelu" x-show="! $store.adminNav.searching"
          x-data="navAccordion(@js(collect($menu)->firstWhere('active', true)['key'] ?? ''), @js($menu[0]['key'] ?? ''))">
         <ul class="space-y-0.5" role="list">
@@ -422,7 +349,6 @@
             @endforeach
         </ul>
     </nav>
-    @endif
 
     {{-- ── Użytkownik ────────────────────────────────────────────── --}}
     <div class="nav-user relative flex-none border-t border-gray-200 p-2" x-data="{ open: false }">
@@ -441,39 +367,7 @@
         <div id="nav-user-menu" x-show="open" x-cloak @click.outside="open = false" @keydown.escape.stop="open = false"
              class="absolute bottom-full left-2 z-50 mb-1 w-64 overflow-hidden rounded-md border border-gray-200 bg-white py-1 text-sm shadow-xl"
              role="menu" aria-label="Menu użytkownika">
-            <div class="border-b border-gray-100 px-3 py-2">
-                <p class="truncate font-semibold text-ink">{{ $authUser?->name ?: $authUser?->email }}</p>
-                <p class="truncate text-xs text-muted">{{ $authUser?->email }}</p>
-                <span class="mt-1 inline-block text-[11px] font-bold uppercase tracking-wide {{ $authUser?->isAdmin() ? 'text-brand-dark' : 'text-muted' }}">{{ $roleLabel }}</span>
-            </div>
-            <a href="{{ route('profile.edit') }}" role="menuitem" class="flex items-center gap-3 px-3 py-2 text-ink hover:bg-gray-50 hover:text-brand-dark">
-                <i class="fa-solid fa-key w-4 text-center text-gray-400" aria-hidden="true"></i> Profil i hasło
-            </a>
-            <a href="{{ route('profile.edit') }}#powiadomienia" role="menuitem" class="flex items-center gap-3 px-3 py-2 text-ink hover:bg-gray-50 hover:text-brand-dark">
-                <i class="fa-solid fa-bell w-4 text-center text-gray-400" aria-hidden="true"></i> Powiadomienia
-            </a>
-            @if ($authUser?->isAdmin())
-                <a href="{{ route('admin.dokumentacja') }}" target="_blank" rel="noopener" role="menuitem" class="flex items-center gap-3 px-3 py-2 text-ink hover:bg-gray-50 hover:text-brand-dark">
-                    <i class="fa-solid fa-book w-4 text-center text-gray-400" aria-hidden="true"></i> Dokumentacja
-                    <i class="fa-solid fa-arrow-up-right-from-square ml-auto text-[0.65rem] text-gray-300" aria-hidden="true"></i>
-                    <span class="sr-only">(otwiera się w nowej karcie)</span>
-                </a>
-            @endif
-            <a href="{{ route('admin.o-cms') }}" role="menuitem" class="flex items-center gap-3 px-3 py-2 text-ink hover:bg-gray-50 hover:text-brand-dark">
-                <i class="fa-solid fa-circle-info w-4 text-center text-gray-400" aria-hidden="true"></i> O weCMS
-            </a>
-            <a href="{{ admin_site_home() }}" role="menuitem" class="flex items-center gap-3 border-t border-gray-100 px-3 py-2 text-ink hover:bg-gray-50 hover:text-brand-dark">
-                <i class="fa-solid fa-arrow-left w-4 text-center text-gray-400" aria-hidden="true"></i> Wróć do strony
-            </a>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" role="menuitem" class="flex w-full items-center gap-3 px-3 py-2 text-left text-ink hover:bg-gray-50 hover:text-brand-dark">
-                    <i class="fa-solid fa-right-from-bracket w-4 text-center text-gray-400" aria-hidden="true"></i> Wyloguj
-                </button>
-            </form>
-            <p class="border-t border-gray-100 px-3 py-2 text-[11px] text-muted">
-                Napędzane przez <a href="{{ route('admin.o-cms') }}" class="font-bold hover:text-ink">weCMS</a> · <a href="mailto:ziemowit.gil@gmail.com" class="hover:text-ink">Ziemowit Gil</a>
-            </p>
+            @include('admin.partials.user-menu-items')
         </div>
     </div>
     {{-- Grupa otwarta ostatnio (gdy żadna nie jest aktywna) — otwierana od razu, bez skoku po starcie Alpine. --}}

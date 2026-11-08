@@ -60,7 +60,7 @@ class AdminMetroStyleTest extends TestCase
         $html = $this->actingAs($this->metroAdmin())->get(route('admin.podstrony.index'))->assertOk()->getContent();
 
         // Wspólny markup z motywem Joomla (klasa admin-joomla zostaje), plus klasa stylu Metro i jego arkusz.
-        $this->assertStringContainsString('<body data-scheme="metro" class="admin-joomla admin-metro flex', $html);
+        $this->assertStringContainsString('<body data-scheme="metro" class="admin-joomla admin-metro nav-top flex', $html);
         $this->assertStringContainsString('body.admin-metro {', $html);
         $this->assertStringContainsString('--m-radius: 0;', $html);
         $this->assertStringContainsString('family=Montserrat:wght@300;400;600;700', $html);
@@ -72,37 +72,46 @@ class AdminMetroStyleTest extends TestCase
         // Ruch wyłączony przy prefers-reduced-motion i czytelne tryby kontrastu.
         $this->assertStringContainsString('@media (prefers-reduced-motion: reduce)', $html);
         $this->assertStringContainsString('html.contrast-bw .admin-metro', $html);
-        // Menu boczne: w Metro grupy jako kafle (bez wysuwanych paneli); klasa stylu menu z profilu zostaje.
-        $this->assertStringContainsString('admin-sidebar nav-style-flyout nav-has-tiles', $html);
-        $this->assertStringNotContainsString('x-show="fly && $store.adminNav.flyout()"', $html);
+        // Menu: w Metro na szerokim ekranie u góry (mega menu), pasek boczny zostaje jako szuflada na telefon.
+        $this->assertStringContainsString('admin-metro nav-top flex', $html);
+        $this->assertStringContainsString('<nav id="mt-nav" class="mt-nav" aria-label="Menu panelu"', $html);
+        $this->assertStringContainsString('id="admin-sidebar"', $html);
     }
 
-    public function test_menu_boczne_metro_to_kafle_grup_a_pod_nimi_pozycje_otwartej_grupy(): void
+    public function test_metro_ma_gorne_mega_menu_z_kaflami_pozycji(): void
     {
         $html = $this->actingAs($this->metroAdmin())->get(route('admin.ustawienia.edit', ['tab' => 'maintenance']))->assertOk()->getContent();
-        $nav = substr($html, strpos($html, '<nav class="nav-scroll nav-tiles'));
+        $nav = substr($html, strpos($html, '<nav id="mt-nav"'));
         $nav = substr($nav, 0, strpos($nav, '</nav>'));
 
-        // Najpierw siatka kafli, potem panele grup — kolejność fokusu zgodna z tym, co widać.
-        $this->assertStringContainsString('<ul class="nav-tile-grid" role="list">', $nav);
-        $tiles = substr_count($nav, '<button type="button" class="nav-tile');
-        $this->assertGreaterThanOrEqual(4, $tiles);
-        $this->assertSame($tiles, substr_count($nav, 'class="tm-panel nav-tile-panel"'));
-        $this->assertLessThan(strpos($nav, 'class="tm-panel nav-tile-panel"'), strrpos($nav, '<button type="button" class="nav-tile'));
+        // Grupy w pasku jako przyciski „disclosure”, panel każdej grupy zaraz za jej przyciskiem (kolejność fokusu = wzrok).
+        $groups = preg_match_all('/class="mt-group[ "]/', $nav);
+        $this->assertGreaterThanOrEqual(4, $groups);
+        $this->assertSame($groups, substr_count($nav, 'class="mt-mega"'));
+        $this->assertMatchesRegularExpression('/id="mt-btn-(\w+)"[^>]*aria-controls="mt-panel-\1">.*?<div id="mt-panel-\1" class="mt-mega"/s', $nav);
+        $this->assertStringContainsString('@keydown.escape="close(true)"', $nav);
 
-        // Grupa z bieżącą stroną (Ustawienia → Serwis): kafel otwarty, „tu jesteś” dla czytnika, panel widoczny od razu.
-        $this->assertMatchesRegularExpression('/class="nav-tile is-open is-current[^"]*"[^>]*aria-expanded="true"/', $nav);
+        // Bieżąca grupa (Ustawienia) i pozycja (Serwis): kreska pod grupą + „tu jesteś”, kafel w akcencie z aria-current.
+        $this->assertSame(1, substr_count($nav, 'class="mt-group is-current'));
         $this->assertStringContainsString('<span class="sr-only"> (tu jesteś)</span>', $nav);
-        $this->assertSame(1, substr_count($nav, 'is-current'));
-        $this->assertStringContainsString('role="region" aria-labelledby="tm-title-', $nav);
-        $this->assertStringContainsString('aria-current="page"', $nav);
+        $this->assertMatchesRegularExpression('/class="mt-tile is-current[^"]*"\s+aria-current="page"/', $nav);
+        $this->assertGreaterThan(10, substr_count($nav, 'class="mt-tile'));
+        $this->assertStringContainsString('class="mt-block-title"', $nav);
 
-        // Style kafli w arkuszu Metro (2 w rzędzie, otwarta grupa w akcencie) i panele nie są chowane przez styl „wysuwane”.
-        $this->assertStringContainsString('.admin-metro .nav-tile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))', $html);
-        $this->assertStringContainsString('.admin-metro .nav-tile.is-open { background: var(--m-accent); color: var(--m-accent-fg)', $html);
-        $this->assertStringContainsString('.admin-sidebar.nav-style-flyout:not(.nav-has-tiles) .tm-panel { display: none !important; }', $html);
+        // Skróty (szukaj w menu, ulubione, ostatnio otwarte), konto; bez powtórzonych id względem menu bocznego.
+        $this->assertStringContainsString('id="mt-search"', $nav);
+        $this->assertStringContainsString('x-data="navQuick(', $nav);
+        $this->assertStringContainsString('id="mt-panel-konto"', $nav);
+        $this->assertStringContainsString('Profil i hasło', $nav);
+        preg_match_all('/\sid="([A-Za-z][\w:.-]*)"/', $html, $ids);
+        $this->assertSame([], array_keys(array_filter(array_count_values($ids[1]), fn ($n) => $n > 1)), 'powtórzone id');
 
-        // Profil mówi, że wybór „Wysuwane / Rozwijane” nie działa przy kaflach.
+        // Style: na szerokim ekranie pasek boczny znika, menu przyklejone, kafle po dwa w bloku.
+        $this->assertStringContainsString('body.nav-top .admin-sidebar { display: none !important; }', $html);
+        $this->assertStringContainsString('.admin-metro .mt-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))', $html);
+        $this->assertStringContainsString("topActive() { return this.topNav && window.matchMedia('(min-width: 1024px)').matches; }", $html);
+
+        // Profil mówi, że wybór „Wysuwane / Rozwijane” nie działa przy Metro.
         $this->actingAs($this->metroAdmin())->get(route('profile.edit'))->assertOk()->assertSee('data-nav-tiles-note', false);
     }
 
@@ -112,7 +121,8 @@ class AdminMetroStyleTest extends TestCase
         $html = $this->actingAs($admin)->get(route('admin.podstrony.index'))->assertOk()->getContent();
 
         $this->assertStringContainsString('class="admin-sidebar nav-style-flyout fixed', $html);
-        $this->assertStringNotContainsString('<ul class="nav-tile-grid"', $html);
+        $this->assertStringNotContainsString('<nav id="mt-nav"', $html);
+        $this->assertStringNotContainsString(' nav-top ', $html);
         $this->assertStringContainsString('x-show="fly && $store.adminNav.flyout()"', $html);
         $this->actingAs($admin)->get(route('profile.edit'))->assertOk()->assertDontSee('data-nav-tiles-note', false);
     }
@@ -172,7 +182,7 @@ class AdminMetroStyleTest extends TestCase
         // Lista, formularz i ustawienia: ten sam layout, więc wystarczy, że renderuje się bez błędu i z klasą stylu.
         $html = $this->actingAs($this->metroAdmin())->get(route($route))->assertOk()->getContent();
 
-        $this->assertStringContainsString('<body data-scheme="metro" class="admin-joomla admin-metro flex', $html, $route);
+        $this->assertStringContainsString('<body data-scheme="metro" class="admin-joomla admin-metro nav-top flex', $html, $route);
         $this->assertStringContainsString('id="admin-sidebar"', $html, $route);
         $this->assertStringContainsString('<h1 class="j-title', $html, $route);
     }

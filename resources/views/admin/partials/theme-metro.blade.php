@@ -106,41 +106,93 @@
     .admin-metro .nav-flyout a[aria-current="page"] > i { color: inherit; }
     .admin-metro .nav-flyout a[aria-current="page"]:hover { background: var(--m-accent-hover); }
 
-    /* ── Menu boczne jako kafle grup (admin/partials/sidebar, $navTiles): jak ekran Start Metro UI 5 (tiles-grid, odstęp),
-       2 kafle w rzędzie na szarym pasku. Kafel biały (ikona u góry, nazwa u dołu, licznik w rogu); otwarta grupa — pełny akcent;
-       grupa z bieżącą stroną, gdy otwarta jest inna — gruba kreska akcentu u dołu (i „tu jesteś” dla czytnika). Pod kaflami
-       tytuł i pozycje otwartej grupy jak w NavView: wiersze na całą szerokość, bieżąca z paskiem akcentu po lewej. ── */
-    .admin-metro .nav-tiles { padding: .75rem; }
-    .admin-metro .nav-tile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .375rem; margin: 0 0 1rem; padding: 0; list-style: none; }
-    .admin-metro .nav-tile-grid > .tm-group { display: flex; min-width: 0; margin: 0; padding: 0; border: 0; }
-    .admin-metro .nav-tile { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: space-between; gap: .625rem; min-width: 0; min-height: 4.75rem;
-        padding: .625rem .75rem; border: 0; background: var(--m-surface); color: var(--m-ink); text-align: left; cursor: pointer; transition: background-color .15s, transform .1s; }
-    .admin-metro .nav-tile:hover { background: var(--m-hover); }
-    .admin-metro .nav-tile:active { transform: scale(.97); }
-    .admin-metro .nav-tile:focus-visible { z-index: 1; outline: 3px solid var(--m-focus); outline-offset: 2px; }
-    .admin-metro .nav-tile-icon { font-size: 1.25rem; line-height: 1; color: var(--m-accent-ink); }
-    .admin-metro .nav-tile-label { font-size: .875rem; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
-    .admin-metro .nav-tile-badge { position: absolute; top: .5rem; right: .5rem; display: inline-flex; min-width: 1.5rem; height: 1.5rem; align-items: center; justify-content: center;
-        padding: 0 .375rem; background: var(--m-accent); color: var(--m-accent-fg); font-size: .75rem; font-weight: 700; line-height: 1; }
-    .admin-metro .nav-tile.is-current { box-shadow: inset 0 -4px 0 var(--m-accent); }
-    .admin-metro .nav-tile.tm-premium { box-shadow: inset 0 0 0 2px var(--m-accent); }
-    .admin-metro .nav-tile.is-current.tm-premium { box-shadow: inset 0 0 0 2px var(--m-accent), inset 0 -4px 0 var(--m-accent); }
-    .admin-metro .nav-tile.is-open { background: var(--m-accent); color: var(--m-accent-fg); box-shadow: none; }
-    .admin-metro .nav-tile.is-open:hover { background: var(--m-accent-hover); }
-    .admin-metro .nav-tile.is-open.tm-premium { box-shadow: inset 0 0 0 2px var(--m-accent-fg); }
-    .admin-metro .nav-tile.is-open .nav-tile-icon { color: inherit; }
-    .admin-metro .nav-tile.is-open .nav-tile-badge { background: var(--m-accent-fg); color: var(--m-accent); }
-    .admin-metro .nav-tile-panel { margin: 0; padding: 0 0 .5rem; border-left: 0; }
-    .admin-metro .nav-tile-panel-title { margin: 0 0 .25rem; padding: 0 .5rem; color: var(--m-ink); font-family: var(--m-font-heading); font-size: 1.25rem; font-weight: 300; line-height: 1.3; }
-    .admin-metro .nav-tile-panel .tm-sub { margin: .75rem .5rem .25rem; }
-    .admin-metro .nav-tile-panel [aria-current="page"]::before { display: none; }
+    /* ── Górne menu (admin/partials/topnav-metro, body.nav-top): ciemny pasek aplikacji z grupami, pod nim mega menu na całą
+       szerokość z kaflami pozycji (jak ekran Start Metro UI 5: tiles-grid, odstęp, ikona u góry, nazwa u dołu, licznik w rogu).
+       Na szerokim ekranie pasek boczny znika (zostaje szuflada na telefonie), a nagłówek strony nie przykleja się — przyklejone
+       jest tylko menu. Kontrast: biały na #1d1d1a ≈ 17:1, akcent z parą kolorów z AdminMetro, fokus biały na pasku. ── */
+    .mt-nav { display: none; }
     @media (min-width: 1024px) {
-        /* Zwężona szyna: kafle w jednej kolumnie, same ikony (nazwa zostaje dla czytnika); kliknięcie rozwija menu i grupę. */
-        .admin-metro .admin-sidebar.is-collapsed .nav-tiles { padding: .5rem; }
-        .admin-metro .admin-sidebar.is-collapsed .nav-tile-grid { grid-template-columns: minmax(0, 1fr); }
-        .admin-metro .admin-sidebar.is-collapsed .nav-tile { min-height: 2.75rem; align-items: center; justify-content: center; padding: .5rem; }
-        .admin-metro .admin-sidebar.is-collapsed .nav-tile-badge { top: .125rem; right: .125rem; min-width: 1.125rem; height: 1.125rem; padding: 0 .25rem; font-size: .625rem; }
+        body.nav-top .admin-sidebar { display: none !important; }
+        body.nav-top .j-topbar { position: static; }
+        .admin-metro .mt-nav { position: sticky; top: 0; z-index: 30; display: block; background: var(--m-ink); color: #fff; }
     }
+    .admin-metro .mt-bar { display: flex; flex-wrap: wrap; align-items: stretch; min-height: 3.5rem; padding: 0 .5rem; }
+    .admin-metro .mt-brand { display: flex; flex: none; align-items: center; gap: .625rem; padding: 0 1rem 0 .5rem; color: #fff; text-decoration: none; }
+    .admin-metro .mt-brand:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
+    .admin-metro .mt-brand-logo { width: 2rem; height: 2rem; flex: none; object-fit: contain; background: #fff; }
+    .admin-metro .mt-brand-initial { display: inline-flex; align-items: center; justify-content: center; background: var(--m-accent); color: var(--m-accent-fg); font-weight: 700; }
+    .admin-metro .mt-brand-name { font-size: 1.125rem; white-space: nowrap; }
+    .admin-metro .mt-groups { display: flex; flex: 1 1 auto; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; }
+    .admin-metro .mt-tools { display: flex; flex: none; align-items: stretch; margin-left: auto; }
+    .admin-metro .mt-rel { position: relative; }
+    .admin-metro :is(.mt-group, .mt-tool) { display: inline-flex; align-items: center; gap: .5rem; min-height: 3.5rem; height: 100%; padding: 0 .875rem; border: 0;
+        background: none; color: #fff; font-size: .9375rem; font-weight: 600; line-height: 1.2; white-space: nowrap; cursor: pointer; }
+    .admin-metro :is(.mt-group, .mt-tool):hover { background: #34342f; }
+    .admin-metro :is(.mt-group, .mt-tool):focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
+    .admin-metro .mt-group.is-current { box-shadow: inset 0 -4px 0 #fff; }
+    .admin-metro .mt-group.tm-premium { box-shadow: inset 0 0 0 2px #9ca3af; }
+    .admin-metro .mt-group.is-current.tm-premium { box-shadow: inset 0 0 0 2px #9ca3af, inset 0 -4px 0 #fff; }
+    .admin-metro :is(.mt-group, .mt-tool).is-open { background: var(--m-accent); color: var(--m-accent-fg); }
+    .admin-metro :is(.mt-group, .mt-tool).is-open:hover { background: var(--m-accent-hover); }
+    .admin-metro .mt-chev { font-size: .625rem; transition: transform .15s; }
+    .admin-metro .is-open > .mt-chev { transform: rotate(180deg); }
+    .admin-metro .mt-badge { display: inline-flex; min-width: 1.375rem; height: 1.375rem; align-items: center; justify-content: center; padding: 0 .375rem; background: #fff; color: var(--m-ink); font-size: .75rem; font-weight: 700; }
+    .admin-metro .is-open > .mt-badge { background: var(--m-accent-fg); color: var(--m-accent); }
+    .admin-metro .mt-site-name { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; }
+    .admin-metro .mt-avatar { display: inline-flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; background: #fff; color: var(--m-ink); font-weight: 700; }
+
+    /* Mega menu grupy: panel pod paskiem na całą szerokość, bloki w kolumnach, w bloku kafle po dwa. */
+    .admin-metro .mt-mega { position: absolute; top: 100%; left: 0; right: 0; max-height: calc(100vh - 3.5rem); overflow-y: auto; background: var(--m-bg); color: var(--m-ink); border-bottom: 1px solid var(--m-line-strong); }
+    .admin-metro .mt-mega-inner { padding: 1.25rem 1.5rem 1.75rem; }
+    .admin-metro .mt-mega-title { margin: 0 0 1rem; color: var(--m-ink); font-family: var(--m-font-heading); font-size: 1.75rem; font-weight: 300; line-height: 1.2; }
+    .admin-metro .mt-blocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); gap: 1.5rem 2rem; align-items: start; }
+    .admin-metro .mt-block-title { margin: 0 0 .5rem; color: var(--m-muted); font-size: .8125rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .admin-metro .mt-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .375rem; margin: 0; padding: 0; list-style: none; }
+    .admin-metro .mt-cell { display: flex; min-width: 0; flex-direction: column; }
+    .admin-metro .mt-tile { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: space-between; gap: .625rem; min-height: 5rem; padding: .625rem .75rem;
+        background: var(--m-surface); color: var(--m-ink); text-decoration: none; transition: background-color .15s, transform .1s; }
+    .admin-metro .mt-tile:hover { background: var(--m-head); }
+    .admin-metro .mt-tile:active { transform: scale(.98); }
+    .admin-metro .mt-tile:focus-visible { z-index: 1; outline: 3px solid var(--m-focus); outline-offset: 2px; }
+    .admin-metro .mt-tile-icon { font-size: 1.25rem; line-height: 1; color: var(--m-accent-ink); }
+    .admin-metro .mt-tile-label { padding-right: 1.75rem; font-size: .875rem; font-weight: 600; line-height: 1.25; overflow-wrap: break-word; }
+    .admin-metro .mt-tile-badge { position: absolute; top: .5rem; right: .5rem; display: inline-flex; min-width: 1.5rem; height: 1.5rem; align-items: center; justify-content: center; padding: 0 .375rem;
+        background: var(--m-accent); color: var(--m-accent-fg); font-size: .75rem; font-weight: 700; }
+    .admin-metro .mt-tile-badge.is-muted { background: #e5e7eb; color: var(--m-ink); }
+    .admin-metro .mt-tile.tm-premium { box-shadow: inset 0 0 0 2px var(--m-accent); }
+    .admin-metro .mt-tile.is-current { background: var(--m-accent); color: var(--m-accent-fg); }
+    .admin-metro .mt-tile.is-current:hover { background: var(--m-accent-hover); }
+    .admin-metro .mt-tile.is-current .mt-tile-icon { color: inherit; }
+    .admin-metro .mt-tile.is-current .mt-tile-badge { background: var(--m-accent-fg); color: var(--m-accent); }
+    .admin-metro .mt-children { margin: 2px 0 0; padding: 0; list-style: none; background: var(--m-surface); }
+    .admin-metro .mt-children a { display: flex; align-items: center; min-height: 2.25rem; padding: .25rem .75rem; color: var(--m-ink); font-size: .8125rem; text-decoration: none; }
+    .admin-metro .mt-children a:hover { background: var(--m-hover); }
+    .admin-metro .mt-children a:focus-visible { outline: 3px solid var(--m-focus); outline-offset: -3px; }
+    .admin-metro .mt-children a.is-current { font-weight: 700; box-shadow: inset 4px 0 0 var(--m-accent); }
+
+    /* Rozwijane okienka paska (Skróty, witryna, konto): przy prawej krawędzi, białe z wyraźną ramką. */
+    .admin-metro .mt-drop { position: absolute; top: 100%; right: 0; z-index: 31; width: min(24rem, calc(100vw - 1rem)); max-height: calc(100vh - 4rem); overflow-y: auto;
+        padding: .75rem; background: var(--m-surface); color: var(--m-ink); border: 1px solid var(--m-line-strong); }
+    .admin-metro .mt-drop--menu { padding: .25rem 0; }
+    .admin-metro .mt-drop-title { display: block; margin: .5rem 0 .25rem; color: var(--m-muted); font-size: .8125rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .admin-metro .mt-drop-title:first-child { margin-top: 0; }
+    .admin-metro .mt-kbd { margin-left: .25rem; padding: 0 .375rem; background: var(--m-head); color: var(--m-ink); font-family: ui-monospace, monospace; letter-spacing: 0; text-transform: none; }
+    .admin-metro .mt-search { width: 100%; min-height: 2.75rem; margin-bottom: .5rem; padding: .5rem .75rem; border: 2px solid var(--m-line-strong); background: #fff; color: var(--m-ink); }
+    .admin-metro .mt-search:focus { border-color: var(--m-accent); outline: none; box-shadow: 0 0 0 2px var(--m-accent); }
+    .admin-metro .mt-list { margin: 0; padding: 0; list-style: none; }
+    .admin-metro .mt-list a { display: flex; min-height: 2.5rem; flex-wrap: wrap; align-items: center; gap: 0 .5rem; padding: .25rem .5rem; color: var(--m-ink); text-decoration: none; }
+    .admin-metro .mt-list a:hover { background: var(--m-hover); }
+    .admin-metro .mt-list a:focus-visible, .admin-metro :is(.mt-unpin, .mt-pin):focus-visible { outline: 3px solid var(--m-focus); outline-offset: -3px; }
+    .admin-metro .mt-list a > i { color: var(--m-muted); font-size: .75rem; }
+    .admin-metro .mt-list-label { font-weight: 600; }
+    .admin-metro .mt-list-path { flex-basis: 100%; color: var(--m-muted); font-size: .75rem; }
+    .admin-metro .mt-list-row { display: flex; align-items: center; }
+    .admin-metro .mt-list-row > a { flex: 1 1 auto; min-width: 0; }
+    .admin-metro .mt-unpin { display: inline-flex; width: 2.5rem; height: 2.5rem; flex: none; align-items: center; justify-content: center; border: 0; background: none; color: var(--m-muted); cursor: pointer; }
+    .admin-metro .mt-unpin:hover { background: var(--m-hover); color: var(--m-ink); }
+    .admin-metro .mt-pin { display: flex; width: 100%; min-height: 2.75rem; align-items: center; gap: .5rem; margin-top: .5rem; padding: .25rem .5rem; border: 0; background: var(--m-head); color: var(--m-ink); font-weight: 600; text-align: left; cursor: pointer; }
+    .admin-metro .mt-pin:hover { background: var(--m-side-hover); }
+    .admin-metro .mt-empty { padding: .5rem; color: var(--m-muted); font-size: .875rem; }
 
     /* ── Treść: białe pola na szarym tle, komunikaty jako pełne paski ───────────────────────── */
     .admin-metro #main :is(div, section, article, aside, details, form, fieldset, ul, ol):is(.rounded, .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl).bg-white { border: 0; box-shadow: none; }
@@ -211,16 +263,17 @@
     /* ── Dostępność: ruch wyłączony przy prefers-reduced-motion, tryby kontrastu, wymuszone kolory ── */
     @media (prefers-reduced-motion: reduce) {
         .admin-metro *, .admin-metro *::before, .admin-metro *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
-        a.metro-tile:active, .admin-metro .nav-tile:active { transform: none; }
+        a.metro-tile:active, .admin-metro .mt-tile:active { transform: none; }
     }
     html.contrast-bw .admin-metro :is(.metro-tile, .metro-btn, .metro-tile-badge) { background: #000 !important; color: #ff0 !important; outline: 2px solid #ff0; }
     html.contrast-bw .admin-metro .metro-tile-badge { background: #ff0 !important; color: #000 !important; }
-    html.contrast-bw .admin-metro .nav-tile { background: #000 !important; color: #ff0 !important; box-shadow: inset 0 0 0 2px #ff0 !important; }
-    html.contrast-bw .admin-metro .nav-tile.is-open { background: #ff0 !important; color: #000 !important; }
-    html.contrast-bw .admin-metro .nav-tile :is(.nav-tile-icon, .nav-tile-badge) { color: inherit !important; }
+    html.contrast-bw .admin-metro :is(.mt-nav, .mt-group, .mt-tool, .mt-tile, .mt-mega) { background: #000 !important; color: #ff0 !important; }
+    html.contrast-bw .admin-metro :is(.mt-group, .mt-tool, .mt-tile).is-open, html.contrast-bw .admin-metro .mt-tile.is-current { background: #ff0 !important; color: #000 !important; }
+    html.contrast-bw .admin-metro .mt-tile { box-shadow: inset 0 0 0 2px #ff0 !important; }
+    html.contrast-bw .admin-metro .mt-tile :is(.mt-tile-icon, .mt-tile-badge) { color: inherit !important; }
     @media (forced-colors: active) {
-        .metro-tile, .metro-btn, .admin-metro .nav-tile { border: 2px solid CanvasText; }
-        .admin-metro .nav-tile.is-open { border: 4px solid Highlight; }
+        .metro-tile, .metro-btn, .admin-metro .mt-tile { border: 2px solid CanvasText; }
+        .admin-metro :is(.mt-group, .mt-tool).is-open, .admin-metro .mt-tile.is-current { outline: 3px solid Highlight; outline-offset: -3px; }
         .admin-metro .tm-group.is-active > .tm-head, .admin-metro .nav-flyout a[aria-current="page"] { border: 2px solid Highlight; }
     }
 </style>

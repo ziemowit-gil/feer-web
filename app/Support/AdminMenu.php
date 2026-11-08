@@ -114,6 +114,39 @@ final class AdminMenu
     }
 
     /**
+     * Płaska lista pozycji i podpozycji menu (do wyszukiwarki w menu) oraz bieżąca strona (do „Ostatnio otwarte”
+     * i „Dodaj do ulubionych”) — wspólne dla menu bocznego i górnego mega menu (styl Metro).
+     *
+     * @param  array<int, array<string, mixed>>  $menu  wynik self::for()
+     * @return array{entries: array<int, array{label: string, url: string, path: string, icon: string}>, current: array<string, string>|null}
+     */
+    public static function entries(array $menu): array
+    {
+        $entries = [];
+        $current = null;
+        foreach ($menu as $g) {
+            foreach ($g['blocks'] as $b) {
+                foreach ($b['items'] as $it) {
+                    $entry = ['label' => $it['label'], 'url' => $it['url'], 'path' => $g['label'].($b['heading'] ? ' › '.$b['heading'] : ''), 'icon' => $it['icon']];
+                    $entries[] = $entry;
+                    if ($it['active'] && $it['children'] === [] && ! $current && $g['key'] !== 'start') {
+                        $current = $entry;
+                    }
+                    foreach ($it['children'] as $ch) {
+                        $childEntry = ['label' => $ch['label'], 'url' => $ch['url'], 'path' => $g['label'].' › '.$it['label'], 'icon' => $ch['icon'] ?: $it['icon']];
+                        $entries[] = $childEntry;
+                        if ($ch['active'] && $g['key'] !== 'start') {
+                            $current = $childEntry;
+                        }
+                    }
+                }
+            }
+        }
+
+        return ['entries' => $entries, 'current' => $current];
+    }
+
+    /**
      * Klucze pozycji dostępnych dla użytkownika, których główny układ nigdzie nie umieszcza — takie pozycje nie
      * pokazałyby się w menu wcale (tak zniknęły „Portale”, „Jakość tekstów” i „Serwer MCP”). Pilnuje tego test.
      *

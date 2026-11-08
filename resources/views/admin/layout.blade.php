@@ -35,6 +35,9 @@
                 // „accordion” — rozwijane w pasku. Zwężona szyna zawsze wysuwa (brak miejsca), telefon zawsze rozwija.
                 style: @js(auth()->user()?->adminNavStyle() ?? \App\Models\User::DEFAULT_ADMIN_NAV_STYLE),
                 flyout() { return this.collapsed || (this.style === 'flyout' && window.matchMedia('(min-width: 1024px)').matches); },
+                // Styl panelu „Metro”: na szerokim ekranie menu jest u góry (admin/partials/topnav-metro), pasek boczny tylko na telefonie.
+                topNav: @js((auth()->user()?->adminScheme() ?? null) === 'metro' && ! request()->boolean('osadzony')),
+                topActive() { return this.topNav && window.matchMedia('(min-width: 1024px)').matches; },
                 open()  { this.mobileOpen = true;  setTimeout(() => document.querySelector('#admin-sidebar [aria-label="Zamknij menu"]')?.focus(), 50); },
                 close() { if (this.mobileOpen) { this.mobileOpen = false; document.querySelector('[aria-controls="admin-sidebar"]')?.focus(); } },
             });
@@ -135,13 +138,15 @@
         @include('admin.partials.theme-metro')
     @endif
 </head>
-<body data-scheme="{{ $adminScheme }}" class="admin-joomla{{ $adminScheme === 'metro' ? ' admin-metro' : '' }} flex min-h-screen text-ink antialiased" data-admin-pickers x-data :class="{ 'overflow-hidden lg:overflow-auto': $store.adminNav.mobileOpen }">
+<body data-scheme="{{ $adminScheme }}" class="admin-joomla{{ $adminScheme === 'metro' ? ' admin-metro' : '' }}{{ $adminScheme === 'metro' && ! request()->boolean('osadzony') ? ' nav-top' : '' }} flex min-h-screen text-ink antialiased" data-admin-pickers x-data :class="{ 'overflow-hidden lg:overflow-auto': $store.adminNav.mobileOpen }">
 
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-brand-dark focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-brand-dark">Przejdź do treści</a>
 
     {{-- ?osadzony=1 — formularz osadzony w edytorze blokowym (okno „Ustawienia aktualności”): bez menu i nagłówka panelu. --}}
     @php $adminEmbedded = request()->boolean('osadzony'); @endphp
     @unless ($adminEmbedded)
+    {{-- Menu liczone raz: menu boczne (w Metro tylko na telefonie) i górne mega menu Metro (szeroki ekran). --}}
+    @php $adminMenu = \App\Support\AdminMenu::for(auth()->user()); @endphp
     @include('admin.partials.sidebar')
     @endunless
 
@@ -155,6 +160,9 @@
     @endphp
 
     <div class="flex min-w-0 flex-1 flex-col">
+        @if ($adminScheme === 'metro' && ! $adminEmbedded)
+            @include('admin.partials.topnav-metro')
+        @endif
         @unless ($adminEmbedded)
         <header class="j-topbar sticky top-0 z-20 flex h-16 items-center justify-between gap-4 px-4 sm:px-6">
             <div class="flex min-w-0 flex-1 items-center gap-3">

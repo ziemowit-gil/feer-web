@@ -24,7 +24,7 @@
 
     <p class="text-sm text-muted">Na telefonie menu zawsze się rozwija, a w zwężonym pasku zawsze wysuwa. Dotyczy tylko Twojego konta.</p>
     @if (auth()->user()->adminScheme() === 'metro')
-        <p class="text-sm text-ink" data-nav-tiles-note>Masz styl panelu „Metro”: grupy menu są kaflami, a pozycje otwartej grupy widać pod nimi — ten wybór zacznie działać po zmianie stylu panelu.</p>
+        <p class="text-sm text-ink" data-nav-tiles-note>Masz styl panelu „Metro”: na szerokim ekranie menu jest u góry (grupy w pasku, pozycje jako kafle w rozwijanym panelu), a na telefonie w szufladzie — ten wybór zacznie działać po zmianie stylu panelu.</p>
     @endif
 
     <button type="submit"
