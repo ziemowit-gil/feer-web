@@ -16,8 +16,9 @@
         [$siteSettings->youtube_url, 'bi bi-youtube', 'YouTube'],
     ];
     $fo = $siteSettings->footerOptions(); // Ustawienia → Ogólne → Stopka
-    $footLink = 'rounded-sm py-1 text-base font-semibold underline-offset-4 decoration-2 hover:underline focus-visible:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink';
+    $footLink = 'rounded-sm font-semibold underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink';
 @endphp
+<style>@media (min-width: 1024px) { .social-row { flex-wrap: nowrap !important; } }</style>
 
 <footer>
     @if ($partners->isNotEmpty())
@@ -67,8 +68,8 @@
             </div>
 
             {{-- Linki --}}
-            <nav aria-label="Linki stopki" class="lg:min-w-0 lg:flex-1">
-                <ul class="flex flex-wrap gap-x-7 gap-y-1 lg:justify-center" role="list">
+            <nav aria-label="Linki stopki" class="lg:min-w-0 lg:flex-1" style="font-size: 1rem; line-height: 1.5rem">
+                <ul class="flex flex-wrap lg:justify-center" style="column-gap: 1.75rem; row-gap: .25rem" role="list">
                     @foreach ($footerNavItems as $item)
                         <li><a href="{{ site_href($item->url) }}" class="{{ $footLink }}">{{ $item->label }}</a></li>
                     @endforeach
@@ -81,8 +82,8 @@
             </nav>
 
             {{-- Social — jeden rząd (bez łamania ikon); na wąskich ekranach zawija się dopiero przy braku miejsca. --}}
-            <div class="lg:flex-none">
-                <ul class="flex flex-wrap items-center gap-2 lg:flex-nowrap" role="list" aria-label="Media społecznościowe i skróty">
+            <div style="flex: none">
+                <ul class="social-row flex items-center gap-2" style="flex-wrap: wrap" role="list" aria-label="Media społecznościowe i skróty">
                     @foreach ($footerSocials as [$sUrl, $sIcon, $sLabel])
                         @if (filled($sUrl))
                             <li>
