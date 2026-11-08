@@ -106,6 +106,42 @@
     .admin-metro .nav-flyout a[aria-current="page"] > i { color: inherit; }
     .admin-metro .nav-flyout a[aria-current="page"]:hover { background: var(--m-accent-hover); }
 
+    /* ── Menu boczne jako kafle grup (admin/partials/sidebar, $navTiles): jak ekran Start Metro UI 5 (tiles-grid, odstęp),
+       2 kafle w rzędzie na szarym pasku. Kafel biały (ikona u góry, nazwa u dołu, licznik w rogu); otwarta grupa — pełny akcent;
+       grupa z bieżącą stroną, gdy otwarta jest inna — gruba kreska akcentu u dołu (i „tu jesteś” dla czytnika). Pod kaflami
+       tytuł i pozycje otwartej grupy jak w NavView: wiersze na całą szerokość, bieżąca z paskiem akcentu po lewej. ── */
+    .admin-metro .nav-tiles { padding: .75rem; }
+    .admin-metro .nav-tile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .375rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+    .admin-metro .nav-tile-grid > .tm-group { display: flex; min-width: 0; margin: 0; padding: 0; border: 0; }
+    .admin-metro .nav-tile { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: space-between; gap: .625rem; min-width: 0; min-height: 4.75rem;
+        padding: .625rem .75rem; border: 0; background: var(--m-surface); color: var(--m-ink); text-align: left; cursor: pointer; transition: background-color .15s, transform .1s; }
+    .admin-metro .nav-tile:hover { background: var(--m-hover); }
+    .admin-metro .nav-tile:active { transform: scale(.97); }
+    .admin-metro .nav-tile:focus-visible { z-index: 1; outline: 3px solid var(--m-focus); outline-offset: 2px; }
+    .admin-metro .nav-tile-icon { font-size: 1.25rem; line-height: 1; color: var(--m-accent-ink); }
+    .admin-metro .nav-tile-label { font-size: .875rem; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+    .admin-metro .nav-tile-badge { position: absolute; top: .5rem; right: .5rem; display: inline-flex; min-width: 1.5rem; height: 1.5rem; align-items: center; justify-content: center;
+        padding: 0 .375rem; background: var(--m-accent); color: var(--m-accent-fg); font-size: .75rem; font-weight: 700; line-height: 1; }
+    .admin-metro .nav-tile.is-current { box-shadow: inset 0 -4px 0 var(--m-accent); }
+    .admin-metro .nav-tile.tm-premium { box-shadow: inset 0 0 0 2px var(--m-accent); }
+    .admin-metro .nav-tile.is-current.tm-premium { box-shadow: inset 0 0 0 2px var(--m-accent), inset 0 -4px 0 var(--m-accent); }
+    .admin-metro .nav-tile.is-open { background: var(--m-accent); color: var(--m-accent-fg); box-shadow: none; }
+    .admin-metro .nav-tile.is-open:hover { background: var(--m-accent-hover); }
+    .admin-metro .nav-tile.is-open.tm-premium { box-shadow: inset 0 0 0 2px var(--m-accent-fg); }
+    .admin-metro .nav-tile.is-open .nav-tile-icon { color: inherit; }
+    .admin-metro .nav-tile.is-open .nav-tile-badge { background: var(--m-accent-fg); color: var(--m-accent); }
+    .admin-metro .nav-tile-panel { margin: 0; padding: 0 0 .5rem; border-left: 0; }
+    .admin-metro .nav-tile-panel-title { margin: 0 0 .25rem; padding: 0 .5rem; color: var(--m-ink); font-family: var(--m-font-heading); font-size: 1.25rem; font-weight: 300; line-height: 1.3; }
+    .admin-metro .nav-tile-panel .tm-sub { margin: .75rem .5rem .25rem; }
+    .admin-metro .nav-tile-panel [aria-current="page"]::before { display: none; }
+    @media (min-width: 1024px) {
+        /* Zwężona szyna: kafle w jednej kolumnie, same ikony (nazwa zostaje dla czytnika); kliknięcie rozwija menu i grupę. */
+        .admin-metro .admin-sidebar.is-collapsed .nav-tiles { padding: .5rem; }
+        .admin-metro .admin-sidebar.is-collapsed .nav-tile-grid { grid-template-columns: minmax(0, 1fr); }
+        .admin-metro .admin-sidebar.is-collapsed .nav-tile { min-height: 2.75rem; align-items: center; justify-content: center; padding: .5rem; }
+        .admin-metro .admin-sidebar.is-collapsed .nav-tile-badge { top: .125rem; right: .125rem; min-width: 1.125rem; height: 1.125rem; padding: 0 .25rem; font-size: .625rem; }
+    }
+
     /* ── Treść: białe pola na szarym tle, komunikaty jako pełne paski ───────────────────────── */
     .admin-metro #main :is(div, section, article, aside, details, form, fieldset, ul, ol):is(.rounded, .rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl).bg-white { border: 0; box-shadow: none; }
     .admin-metro .j-panel-head { background: var(--m-surface); border-bottom: 0; color: var(--m-ink); font-family: var(--m-font-heading); font-weight: 600; font-size: 1.125rem; }
@@ -175,12 +211,16 @@
     /* ── Dostępność: ruch wyłączony przy prefers-reduced-motion, tryby kontrastu, wymuszone kolory ── */
     @media (prefers-reduced-motion: reduce) {
         .admin-metro *, .admin-metro *::before, .admin-metro *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
-        a.metro-tile:active { transform: none; }
+        a.metro-tile:active, .admin-metro .nav-tile:active { transform: none; }
     }
     html.contrast-bw .admin-metro :is(.metro-tile, .metro-btn, .metro-tile-badge) { background: #000 !important; color: #ff0 !important; outline: 2px solid #ff0; }
     html.contrast-bw .admin-metro .metro-tile-badge { background: #ff0 !important; color: #000 !important; }
+    html.contrast-bw .admin-metro .nav-tile { background: #000 !important; color: #ff0 !important; box-shadow: inset 0 0 0 2px #ff0 !important; }
+    html.contrast-bw .admin-metro .nav-tile.is-open { background: #ff0 !important; color: #000 !important; }
+    html.contrast-bw .admin-metro .nav-tile :is(.nav-tile-icon, .nav-tile-badge) { color: inherit !important; }
     @media (forced-colors: active) {
-        .metro-tile, .metro-btn { border: 2px solid CanvasText; }
+        .metro-tile, .metro-btn, .admin-metro .nav-tile { border: 2px solid CanvasText; }
+        .admin-metro .nav-tile.is-open { border: 4px solid Highlight; }
         .admin-metro .tm-group.is-active > .tm-head, .admin-metro .nav-flyout a[aria-current="page"] { border: 2px solid Highlight; }
     }
 </style>

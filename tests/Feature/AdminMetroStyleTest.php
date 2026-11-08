@@ -72,9 +72,49 @@ class AdminMetroStyleTest extends TestCase
         // Ruch wyłączony przy prefers-reduced-motion i czytelne tryby kontrastu.
         $this->assertStringContainsString('@media (prefers-reduced-motion: reduce)', $html);
         $this->assertStringContainsString('html.contrast-bw .admin-metro', $html);
-        // Funkcje menu i selektora witryny bez zmian (ten sam markup).
-        $this->assertStringContainsString('admin-sidebar nav-style-flyout', $html);
+        // Menu boczne: w Metro grupy jako kafle (bez wysuwanych paneli); klasa stylu menu z profilu zostaje.
+        $this->assertStringContainsString('admin-sidebar nav-style-flyout nav-has-tiles', $html);
+        $this->assertStringNotContainsString('x-show="fly && $store.adminNav.flyout()"', $html);
+    }
+
+    public function test_menu_boczne_metro_to_kafle_grup_a_pod_nimi_pozycje_otwartej_grupy(): void
+    {
+        $html = $this->actingAs($this->metroAdmin())->get(route('admin.ustawienia.edit', ['tab' => 'maintenance']))->assertOk()->getContent();
+        $nav = substr($html, strpos($html, '<nav class="nav-scroll nav-tiles'));
+        $nav = substr($nav, 0, strpos($nav, '</nav>'));
+
+        // Najpierw siatka kafli, potem panele grup — kolejność fokusu zgodna z tym, co widać.
+        $this->assertStringContainsString('<ul class="nav-tile-grid" role="list">', $nav);
+        $tiles = substr_count($nav, '<button type="button" class="nav-tile');
+        $this->assertGreaterThanOrEqual(4, $tiles);
+        $this->assertSame($tiles, substr_count($nav, 'class="tm-panel nav-tile-panel"'));
+        $this->assertLessThan(strpos($nav, 'class="tm-panel nav-tile-panel"'), strrpos($nav, '<button type="button" class="nav-tile'));
+
+        // Grupa z bieżącą stroną (Ustawienia → Serwis): kafel otwarty, „tu jesteś” dla czytnika, panel widoczny od razu.
+        $this->assertMatchesRegularExpression('/class="nav-tile is-open is-current[^"]*"[^>]*aria-expanded="true"/', $nav);
+        $this->assertStringContainsString('<span class="sr-only"> (tu jesteś)</span>', $nav);
+        $this->assertSame(1, substr_count($nav, 'is-current'));
+        $this->assertStringContainsString('role="region" aria-labelledby="tm-title-', $nav);
+        $this->assertStringContainsString('aria-current="page"', $nav);
+
+        // Style kafli w arkuszu Metro (2 w rzędzie, otwarta grupa w akcencie) i panele nie są chowane przez styl „wysuwane”.
+        $this->assertStringContainsString('.admin-metro .nav-tile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))', $html);
+        $this->assertStringContainsString('.admin-metro .nav-tile.is-open { background: var(--m-accent); color: var(--m-accent-fg)', $html);
+        $this->assertStringContainsString('.admin-sidebar.nav-style-flyout:not(.nav-has-tiles) .tm-panel { display: none !important; }', $html);
+
+        // Profil mówi, że wybór „Wysuwane / Rozwijane” nie działa przy kaflach.
+        $this->actingAs($this->metroAdmin())->get(route('profile.edit'))->assertOk()->assertSee('data-nav-tiles-note', false);
+    }
+
+    public function test_inne_style_panelu_maja_dawne_menu_z_naglowkami_grup(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $html = $this->actingAs($admin)->get(route('admin.podstrony.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('class="admin-sidebar nav-style-flyout fixed', $html);
+        $this->assertStringNotContainsString('<ul class="nav-tile-grid"', $html);
         $this->assertStringContainsString('x-show="fly && $store.adminNav.flyout()"', $html);
+        $this->actingAs($admin)->get(route('profile.edit'))->assertOk()->assertDontSee('data-nav-tiles-note', false);
     }
 
     public function test_pulpit_metro_to_kafle_na_dzis_i_utworz_zamiast_klasycznego_ukladu(): void

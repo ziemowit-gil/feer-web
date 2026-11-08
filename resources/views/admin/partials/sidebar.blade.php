@@ -29,6 +29,8 @@
         : collect();
     $initial    = mb_strtoupper(mb_substr($authUser?->name ?: $authUser?->email, 0, 1));
     $roleLabel  = \App\Models\User::ROLES[$authUser?->role] ?? 'Edytor';
+    // Styl panelu „Metro”: grupy menu jako kafle (nav-tiles); pozostałe style — nagłówki grup (wysuwane albo rozwijane).
+    $navTiles   = ($authUser?->adminScheme() ?? null) === 'metro';
 @endphp
 
 {{-- Tło szuflady na mobile --}}
@@ -37,7 +39,7 @@
      class="fixed inset-0 z-30 bg-ink/50 lg:hidden" aria-hidden="true"></div>
 
 <aside id="admin-sidebar"
-       class="admin-sidebar nav-style-{{ auth()->user()?->adminNavStyle() ?? \App\Models\User::DEFAULT_ADMIN_NAV_STYLE }} fixed inset-y-0 left-0 z-40 flex flex-col border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
+       class="admin-sidebar nav-style-{{ auth()->user()?->adminNavStyle() ?? \App\Models\User::DEFAULT_ADMIN_NAV_STYLE }}{{ $navTiles ? ' nav-has-tiles' : '' }} fixed inset-y-0 left-0 z-40 flex flex-col border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
        :class="{ 'is-collapsed': $store.adminNav.collapsed, 'is-open': $store.adminNav.mobileOpen }"
        @keydown.escape.window="$store.adminNav.close()"
        aria-label="Panel administracyjny">
@@ -163,7 +165,7 @@
         /* Szeroki ekran, styl „wysuwane” (Mój profil → Menu panelu): grupy wysuwane w prawo zamiast akordeonu (navItem.flyIn);
            strzałka wskazuje w prawo. Styl „rozwijane” zostawia akordeon jak na telefonie. */
         @media (min-width: 1024px) {
-            .admin-sidebar.nav-style-flyout .tm-panel { display: none !important; }
+            .admin-sidebar.nav-style-flyout:not(.nav-has-tiles) .tm-panel { display: none !important; }
             .admin-sidebar.nav-style-flyout .tm-chevron { transform: rotate(-90deg) !important; }
             .nav-flyout a { min-height: 2.5rem; font-size: .9375rem !important; }
             .nav-flyout--wide { width: min(48rem, calc(100vw - 20rem)); }
@@ -327,6 +329,38 @@
         });
     </script>
 
+    {{-- ── Styl Metro: grupy jako kafle (2 w rzędzie, jak ekran Start Metro UI), pod nimi pozycje otwartej grupy.
+         Najpierw wszystkie kafle, potem panele — kolejność fokusu zgadza się z tym, co widać. Jedna grupa naraz (navAccordion);
+         grupa z bieżącą stroną otwiera się od razu. Wybór „Wysuwane / Rozwijane” z profilu tu nie działa. W zwężonej szynie
+         kafle stoją w kolumnie (same ikony), a kliknięcie rozwija menu i otwiera grupę. --}}
+    @if ($navTiles)
+    <nav class="nav-scroll nav-tiles flex-1 overflow-y-auto overscroll-contain text-sm" aria-label="Menu panelu" x-show="! $store.adminNav.searching"
+         x-data="navAccordion(@js(collect($menu)->firstWhere('active', true)['key'] ?? ''), @js($menu[0]['key'] ?? ''))">
+        <ul class="nav-tile-grid" role="list">
+            @foreach ($menu as $group)
+                <li class="tm-group {{ $group['active'] ? 'is-active' : '' }}">
+                    <button type="button" class="nav-tile{{ $group['active'] ? ' is-open is-current' : '' }}{{ ($group['premium'] ?? false) ? ' tm-premium' : '' }}"
+                            @click="toggle(@js($group['key']))" :class="{ 'is-open': openKey === @js($group['key']) }"
+                            aria-expanded="{{ $group['active'] ? 'true' : 'false' }}" :aria-expanded="(openKey === @js($group['key'])).toString()" aria-controls="tm-panel-{{ $group['key'] }}"
+                            title="{{ $group['label'] }}{{ ($group['premium'] ?? false) ? ' — moduł premium' : '' }}">
+                        <i class="nav-tile-icon fa-solid {{ $group['icon'] }}" aria-hidden="true"></i>
+                        <span class="nav-tile-label nav-label">{{ $group['label'] }}@if ($group['premium'] ?? false)<span class="sr-only"> (moduł premium)</span>@endif @if ($group['active'])<span class="sr-only"> (tu jesteś)</span>@endif</span>
+                        @if ($group['badge'])
+                            <span class="nav-tile-badge" aria-label="{{ $group['badge'] }} do obsłużenia">{{ $group['badge'] > 99 ? '99+' : $group['badge'] }}</span>
+                        @endif
+                    </button>
+                </li>
+            @endforeach
+        </ul>
+        @foreach ($menu as $group)
+            <div id="tm-panel-{{ $group['key'] }}" class="tm-panel nav-tile-panel" data-nav-key="{{ $group['key'] }}" x-show="openKey === @js($group['key'])"
+                 role="region" aria-labelledby="tm-title-{{ $group['key'] }}" @if (! $group['active']) style="display:none" @endif>
+                <p class="nav-tile-panel-title" id="tm-title-{{ $group['key'] }}">{{ $group['label'] }}</p>
+                @include('admin.partials.sidebar-items', ['group' => $group])
+            </div>
+        @endforeach
+    </nav>
+    @else
     <nav class="nav-scroll flex-1 overflow-y-auto overscroll-contain px-2 py-2 text-sm" aria-label="Menu panelu" x-show="! $store.adminNav.searching"
          x-data="navAccordion(@js(collect($menu)->firstWhere('active', true)['key'] ?? ''), @js($menu[0]['key'] ?? ''))">
         <ul class="space-y-0.5" role="list">
@@ -352,53 +386,7 @@
 
                     {{-- Lista pozycji grupy --}}
                     <div id="{{ $gid }}" class="tm-panel" data-nav-key="{{ $group['key'] }}" x-show="openKey === @js($group['key'])" @if (! $group['active']) style="display:none" @endif>
-                        @foreach ($group['blocks'] as $block)
-                            @if ($block['heading'])<p class="tm-sub" id="tm-sub-{{ $group['key'] }}-{{ $loop->index }}">{{ $block['heading'] }}</p>@endif
-                            <ul class="space-y-0.5" role="list" @if ($block['heading']) aria-labelledby="tm-sub-{{ $group['key'] }}-{{ $loop->index }}" @endif>
-                                @foreach ($block['items'] as $item)
-                                    @php $hasChildren = $item['children'] !== []; $childrenId = 'nav-children-' . $item['key']; @endphp
-                                    <li x-data="{ open: {{ $hasChildren && $item['active'] ? 'true' : 'false' }} }">
-                                        <div class="relative flex items-center gap-2 rounded-lg px-2 {{ ($item['premium'] ?? false) ? 'tm-premium-item' : '' }} {{ $item['active'] ? 'bg-brand-light text-brand-dark' : 'text-ink hover:bg-gray-100 hover:text-ink' }}" style="min-height: 2rem" @if ($item['premium'] ?? false) title="Moduł premium" @endif>
-                                            <a href="{{ $item['url'] }}" class="flex min-w-0 flex-1 items-center gap-2.5 py-1 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-1 rounded"
-                                               @if ($item['active'] && ! $hasChildren) aria-current="page" @endif>
-                                                <i class="fa-solid {{ $item['icon'] }} w-4 flex-none text-center text-[0.8rem] {{ $item['active'] ? 'text-brand-dark' : 'text-gray-400' }}" aria-hidden="true"></i>
-                                                <span class="min-w-0 flex-1 truncate">{{ $item['label'] }}</span>
-                                            </a>
-                                            @if ($item['badge'])
-                                                <span class="inline-flex h-5 min-w-5 flex-none items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-none {{ $item['badge_tone'] === 'muted' ? 'bg-gray-200 text-gray-700' : 'bg-brand-dark text-white' }}"
-                                                      aria-label="{{ $item['badge'] }} do obsłużenia">{{ $item['badge'] > 99 ? '99+' : $item['badge'] }}</span>
-                                            @endif
-                                            @if ($hasChildren)
-                                                <button type="button" @click.stop="open = ! open" :aria-expanded="open.toString()" aria-controls="{{ $childrenId }}"
-                                                        class="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded text-gray-400 hover:bg-white/60 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                                    <span class="sr-only">Pokaż podpozycje: {{ $item['label'] }}</span>
-                                                    <i class="fa-solid fa-chevron-down text-[0.55rem] transition-transform duration-200" :class="{ 'rotate-180': open }" aria-hidden="true"></i>
-                                                </button>
-                                            @endif
-                                        </div>
-                                        @if ($hasChildren)
-                                            <ul id="{{ $childrenId }}" class="ml-4 mt-0.5 space-y-0.5 border-l border-gray-200 pl-2.5" role="list" x-show="open" @unless ($item['active']) style="display:none" @endunless>
-                                                @php $prevGroup = null; @endphp
-                                                @foreach ($item['children'] as $child)
-                                                    @if (($child['group'] ?? null) && $child['group'] !== $prevGroup)
-                                                        <li class="tm-sub" role="presentation" style="margin: .5rem .5rem .125rem">{{ $child['group'] }}</li>
-                                                        @php $prevGroup = $child['group']; @endphp
-                                                    @endif
-                                                    <li>
-                                                        <a href="{{ $child['url'] }}"
-                                                           class="flex items-center gap-2 rounded-md px-2 py-1 text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark {{ $child['active'] ? 'bg-brand-light font-semibold text-brand-dark' : 'text-muted hover:bg-gray-100 hover:text-ink' }}"
-                                                           @if ($child['active']) aria-current="page" @endif>
-                                                            @if ($child['icon'])<i class="fa-solid {{ $child['icon'] }} text-[0.7rem]" aria-hidden="true"></i>@endif
-                                                            <span class="truncate">{{ $child['label'] }}</span>
-                                                        </a>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        @endif
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endforeach
+                        @include('admin.partials.sidebar-items', ['group' => $group])
                     </div>
 
                     {{-- Panel grupy wysuwany w prawo (szeroki ekran i zwężona szyna): prawdziwe, osiągalne klawiaturą linki --}}
@@ -434,6 +422,7 @@
             @endforeach
         </ul>
     </nav>
+    @endif
 
     {{-- ── Użytkownik ────────────────────────────────────────────── --}}
     <div class="nav-user relative flex-none border-t border-gray-200 p-2" x-data="{ open: false }">

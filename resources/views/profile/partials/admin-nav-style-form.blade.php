@@ -23,6 +23,9 @@
     @error('admin_nav_style') <p class="text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
 
     <p class="text-sm text-muted">Na telefonie menu zawsze się rozwija, a w zwężonym pasku zawsze wysuwa. Dotyczy tylko Twojego konta.</p>
+    @if (auth()->user()->adminScheme() === 'metro')
+        <p class="text-sm text-ink" data-nav-tiles-note>Masz styl panelu „Metro”: grupy menu są kaflami, a pozycje otwartej grupy widać pod nimi — ten wybór zacznie działać po zmianie stylu panelu.</p>
+    @endif
 
     <button type="submit"
         class="rounded-lg bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
