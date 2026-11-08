@@ -16,7 +16,7 @@
         [$siteSettings->youtube_url, 'bi bi-youtube', 'YouTube'],
     ];
     $fo = $siteSettings->footerOptions(); // Ustawienia → Ogólne → Stopka
-    $footLink = 'rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink';
+    $footLink = 'rounded-sm py-1 text-base font-semibold underline-offset-4 decoration-2 hover:underline focus-visible:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink';
 @endphp
 
 <footer>
@@ -46,7 +46,7 @@
     <x-banner-zone name="footer" />
 
     <div class="relative bg-ink text-white">
-        <div class="mx-auto flex max-w-6xl flex-col gap-5 px-4 text-sm lg:flex-row lg:items-center lg:justify-between lg:gap-10" style="padding-top: 1.75rem; padding-bottom: 1.5rem">
+        <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 text-sm lg:flex-row lg:items-center lg:justify-between lg:gap-10" style="padding-top: 1rem; padding-bottom: 1rem">
 
             {{-- Marka --}}
             <div class="flex min-w-0 items-center gap-3 lg:max-w-sm lg:flex-none">
@@ -68,7 +68,7 @@
 
             {{-- Linki --}}
             <nav aria-label="Linki stopki" class="lg:min-w-0 lg:flex-1">
-                <ul class="flex flex-wrap gap-x-6 gap-y-2 lg:justify-center" role="list">
+                <ul class="flex flex-wrap gap-x-7 gap-y-1 lg:justify-center" role="list">
                     @foreach ($footerNavItems as $item)
                         <li><a href="{{ site_href($item->url) }}" class="{{ $footLink }}">{{ $item->label }}</a></li>
                     @endforeach
@@ -115,7 +115,7 @@
 
         {{-- Skróty administratora (panel, edycja stopki) — osobny, cienki rząd zamiast nakładania się na treść. --}}
         @if ($fo['show_admin_link'] || auth()->user()?->isAdmin())
-            <div class="mx-auto flex max-w-6xl items-center justify-end gap-4 px-4 text-xs" style="padding-bottom: .75rem">
+            <div class="mx-auto flex max-w-6xl items-center justify-end gap-4 px-4 text-xs" style="padding-bottom: .5rem">
                 @if (auth()->user()?->isAdmin())
                     <a href="{{ route('admin.ustawienia.edit', ['tab' => 'general']) }}#gen-footer-h" class="rounded-sm font-bold text-white underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white" data-footer-edit>
                         <i class="fa-solid fa-pen mr-1" aria-hidden="true"></i>Edytuj stopkę
