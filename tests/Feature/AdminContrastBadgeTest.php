@@ -18,6 +18,6 @@ class AdminContrastBadgeTest extends TestCase
         $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()
             ->assertSee('id="a11y-mode-badge"', false)->assertSee('role="status"', false)
             ->assertSee('Włączona skala szarości')->assertSee('id="a11y-mode-badge-off"', false)
-            ->assertSee("localStorage.setItem('a11y-contrast-mode', '')", false);
+            ->assertSee("localStorage.setItem('admin:a11y-contrast-mode', '')", false);
     }
 }

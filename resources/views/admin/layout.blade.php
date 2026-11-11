@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="pl">
+{{-- data-a11y-scope: ustawienia dostępności panelu (rozmiar tekstu, rozstrzał liter, kontrast…) są osobne od ustawień strony. --}}
+<html lang="pl" data-a11y-scope="admin">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -350,9 +351,14 @@
 
         <main id="main" class="{{ $adminEmbedded ? 'p-3 sm:p-4' : 'p-4 sm:p-6' }}" tabindex="-1">
             @if (session('status'))
-                <div role="status" aria-live="polite" class="mb-4 flex items-start gap-2 rounded-md bg-brand-light px-4 py-3 text-sm font-bold text-ink">
+                {{-- Komunikat po akcji: zostaje, aż się go zamknie (bez znikania po czasie, WCAG 2.2.1); po zamknięciu fokus wraca do treści. --}}
+                <div role="status" aria-live="polite" x-data="{ shown: true }" x-show="shown" class="admin-flash mb-4 flex items-start gap-2 rounded-md bg-brand-light px-4 py-3 text-sm font-bold text-ink">
                     <i class="fa-solid fa-circle-check mt-0.5 text-brand-dark" aria-hidden="true"></i>
-                    <span>{{ session('status') }}</span>
+                    <span style="flex:1 1 auto">{{ session('status') }}</span>
+                    <button type="button" class="admin-flash-close" @click="shown = false; $nextTick(() => document.getElementById('main')?.focus())" aria-label="Zamknij komunikat" title="Zamknij komunikat"
+                            style="display:inline-flex;align-items:center;justify-content:center;flex:none;width:2rem;height:2rem;margin:-.375rem -.5rem -.375rem 0;border:0;border-radius:.25rem;background:transparent;color:inherit;cursor:pointer">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
                 </div>
             @endif
             @if (session('slug_redirect'))

@@ -722,6 +722,15 @@ if (document.body.dataset.adminPickers !== undefined) {
 
 Alpine.start();
 
+// Ustawienia dostępności panelu są osobne od ustawień strony: panel ma <html data-a11y-scope="admin"> i zapisuje je pod
+// kluczami z przedrostkiem „admin:”. Bez tego np. rozstrzał liter włączony na stronie rozstrzeliwał też cały panel.
+const A11Y_PREFIX = document.documentElement.dataset.a11yScope === 'admin' ? 'admin:' : '';
+const a11yStore = {
+    get: (key) => { try { return localStorage.getItem(A11Y_PREFIX + key); } catch (e) { return null; } },
+    set: (key, value) => { try { localStorage.setItem(A11Y_PREFIX + key, value); } catch (e) { /* tryb prywatny */ } },
+    remove: (key) => { try { localStorage.removeItem(A11Y_PREFIX + key); } catch (e) { /* tryb prywatny */ } },
+};
+
 // Pasek dostępności: kontrast i rozmiar czcionki
 const FONT_STEP = 10;
 const FONT_MIN = 80;
@@ -729,12 +738,12 @@ const FONT_MAX = 150;
 
 function applyFontSize(size) {
     document.documentElement.style.setProperty('--a11y-font-size', `${size}%`);
-    localStorage.setItem('a11y-font-size', String(size));
+    a11yStore.set('a11y-font-size', String(size));
 }
 
 document.querySelectorAll('[data-a11y-font]').forEach((button) => {
     button.addEventListener('click', () => {
-        const current = parseInt(localStorage.getItem('a11y-font-size') || '100', 10);
+        const current = parseInt(a11yStore.get('a11y-font-size') || '100', 10);
         const action = button.dataset.a11yFont;
 
         if (action === 'up') {
@@ -747,7 +756,7 @@ document.querySelectorAll('[data-a11y-font]').forEach((button) => {
     });
 });
 
-const storedFontSize = localStorage.getItem('a11y-font-size');
+const storedFontSize = a11yStore.get('a11y-font-size');
 if (storedFontSize) {
     applyFontSize(parseInt(storedFontSize, 10));
 }
@@ -759,7 +768,7 @@ const LS_LABELS = ['Normalny', 'Szeroki', 'Bardzo szeroki'];
 function applyLetterSpacing(mode) {
     LS_MODES.forEach((cls) => { if (cls) document.documentElement.classList.remove(cls); });
     if (mode) document.documentElement.classList.add(mode);
-    localStorage.setItem('a11y-ls', mode || '');
+    a11yStore.set('a11y-ls', mode || '');
     document.querySelectorAll('[data-a11y-ls]').forEach((btn) => {
         const idx = LS_MODES.indexOf(mode);
         const next = LS_MODES[(idx + 1) % LS_MODES.length];
@@ -768,12 +777,12 @@ function applyLetterSpacing(mode) {
     });
 }
 
-const storedLs = localStorage.getItem('a11y-ls') || '';
+const storedLs = a11yStore.get('a11y-ls') || '';
 if (storedLs) applyLetterSpacing(storedLs);
 
 document.querySelectorAll('[data-a11y-ls]').forEach((btn) => {
     btn.addEventListener('click', () => {
-        const current = localStorage.getItem('a11y-ls') || '';
+        const current = a11yStore.get('a11y-ls') || '';
         const idx = LS_MODES.indexOf(current);
         applyLetterSpacing(LS_MODES[(idx + 1) % LS_MODES.length]);
     });
@@ -782,13 +791,13 @@ document.querySelectorAll('[data-a11y-ls]').forEach((btn) => {
 // Czcionka bezszeryfowa (systemowa — czytelność dla dyslektyków)
 function applySansFont(active) {
     document.documentElement.classList.toggle('a11y-sans', active);
-    localStorage.setItem('a11y-sans', active ? '1' : '0');
+    a11yStore.set('a11y-sans', active ? '1' : '0');
     document.querySelectorAll('[data-a11y-sans]').forEach((btn) => {
         btn.setAttribute('aria-pressed', String(active));
     });
 }
 
-const storedSans = localStorage.getItem('a11y-sans') === '1';
+const storedSans = a11yStore.get('a11y-sans') === '1';
 if (storedSans) applySansFont(true);
 
 document.querySelectorAll('[data-a11y-sans]').forEach((btn) => {
@@ -804,7 +813,7 @@ const LH_LABELS = ['Normalne', 'Zwiększone', 'Bardzo zwiększone'];
 function applyLineHeight(mode) {
     LH_MODES.forEach((cls) => { if (cls) document.documentElement.classList.remove(cls); });
     if (mode) document.documentElement.classList.add(mode);
-    localStorage.setItem('a11y-lh', mode || '');
+    a11yStore.set('a11y-lh', mode || '');
     document.querySelectorAll('[data-a11y-lh]').forEach((btn) => {
         const idx = LH_MODES.indexOf(mode);
         const next = LH_MODES[(idx + 1) % LH_MODES.length];
@@ -813,12 +822,12 @@ function applyLineHeight(mode) {
     });
 }
 
-const storedLh = localStorage.getItem('a11y-lh') || '';
+const storedLh = a11yStore.get('a11y-lh') || '';
 if (storedLh) applyLineHeight(storedLh);
 
 document.querySelectorAll('[data-a11y-lh]').forEach((btn) => {
     btn.addEventListener('click', () => {
-        const current = localStorage.getItem('a11y-lh') || '';
+        const current = a11yStore.get('a11y-lh') || '';
         const idx = LH_MODES.indexOf(current);
         applyLineHeight(LH_MODES[(idx + 1) % LH_MODES.length]);
     });
@@ -827,13 +836,13 @@ document.querySelectorAll('[data-a11y-lh]').forEach((btn) => {
 // Podkreślenie linków (niezależne od koloru — pomaga przy achromatopsji/dysleksji)
 function applyUnderlineLinks(active) {
     document.documentElement.classList.toggle('a11y-underline-links', active);
-    localStorage.setItem('a11y-underline-links', active ? '1' : '0');
+    a11yStore.set('a11y-underline-links', active ? '1' : '0');
     document.querySelectorAll('[data-a11y-underline-links]').forEach((btn) => {
         btn.setAttribute('aria-pressed', String(active));
     });
 }
 
-const storedUnderline = localStorage.getItem('a11y-underline-links') === '1';
+const storedUnderline = a11yStore.get('a11y-underline-links') === '1';
 if (storedUnderline) applyUnderlineLinks(true);
 
 document.querySelectorAll('[data-a11y-underline-links]').forEach((btn) => {
@@ -845,13 +854,13 @@ document.querySelectorAll('[data-a11y-underline-links]').forEach((btn) => {
 // Wyraźny wskaźnik fokusu (gruby, kontrastowy outline na aktywnym elemencie)
 function applyFocusIndicator(active) {
     document.documentElement.classList.toggle('a11y-focus', active);
-    localStorage.setItem('a11y-focus', active ? '1' : '0');
+    a11yStore.set('a11y-focus', active ? '1' : '0');
     document.querySelectorAll('[data-a11y-focus]').forEach((btn) => {
         btn.setAttribute('aria-pressed', String(active));
     });
 }
 
-const storedFocus = localStorage.getItem('a11y-focus') === '1';
+const storedFocus = a11yStore.get('a11y-focus') === '1';
 if (storedFocus) applyFocusIndicator(true);
 
 document.querySelectorAll('[data-a11y-focus]').forEach((btn) => {
@@ -866,7 +875,7 @@ const CONTRAST_CLASSES = ['contrast', 'contrast-bw', 'contrast-gray'];
 function applyContrastMode(mode) {
     CONTRAST_CLASSES.forEach((cls) => document.documentElement.classList.remove(cls));
     if (mode) document.documentElement.classList.add(mode);
-    localStorage.setItem('a11y-contrast-mode', mode || '');
+    a11yStore.set('a11y-contrast-mode', mode || '');
 
     document.querySelectorAll('[data-a11y-contrast]').forEach((btn) => {
         const btnMode = btn.dataset.a11yContrast || 'contrast';
@@ -875,21 +884,21 @@ function applyContrastMode(mode) {
 }
 
 // Migracja ze starego klucza binarnego
-const legacyContrast = localStorage.getItem('a11y-contrast');
+const legacyContrast = a11yStore.get('a11y-contrast');
 if (legacyContrast === '1') {
-    localStorage.setItem('a11y-contrast-mode', 'contrast');
-    localStorage.removeItem('a11y-contrast');
+    a11yStore.set('a11y-contrast-mode', 'contrast');
+    a11yStore.remove('a11y-contrast');
 } else if (legacyContrast === '0') {
-    localStorage.removeItem('a11y-contrast');
+    a11yStore.remove('a11y-contrast');
 }
 
-const savedContrastMode = localStorage.getItem('a11y-contrast-mode') || '';
+const savedContrastMode = a11yStore.get('a11y-contrast-mode') || '';
 if (savedContrastMode) applyContrastMode(savedContrastMode);
 
 document.querySelectorAll('[data-a11y-contrast]').forEach((btn) => {
     btn.addEventListener('click', () => {
         const btnMode = btn.dataset.a11yContrast || 'contrast';
-        const current = localStorage.getItem('a11y-contrast-mode') || '';
+        const current = a11yStore.get('a11y-contrast-mode') || '';
         applyContrastMode(current === btnMode ? '' : btnMode);
     });
 });
@@ -898,7 +907,7 @@ document.querySelectorAll('[data-a11y-contrast]').forEach((btn) => {
 // (CSS), a zdarzenie `a11y-animations-changed` pozwala też wstrzymać karuzelę hero.
 const animationsButton = document.querySelector('[data-a11y-animations]');
 if (animationsButton) {
-    if (localStorage.getItem('a11y-animations') === '1') {
+    if (a11yStore.get('a11y-animations') === '1') {
         document.documentElement.classList.add('no-animations');
         animationsButton.setAttribute('aria-pressed', 'true');
     }
@@ -906,7 +915,7 @@ if (animationsButton) {
     animationsButton.addEventListener('click', () => {
         const isDisabled = document.documentElement.classList.toggle('no-animations');
         animationsButton.setAttribute('aria-pressed', String(isDisabled));
-        localStorage.setItem('a11y-animations', isDisabled ? '1' : '0');
+        a11yStore.set('a11y-animations', isDisabled ? '1' : '0');
         window.dispatchEvent(new CustomEvent('a11y-animations-changed', { detail: { disabled: isDisabled } }));
     });
 }
@@ -936,7 +945,7 @@ if (heroSlider) {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     // Auto-advance stays off when the OS asks for reduced motion OR the user
     // turned animations off in the accessibility bar.
-    const motionDisabled = prefersReducedMotion || localStorage.getItem('a11y-animations') === '1';
+    const motionDisabled = prefersReducedMotion || a11yStore.get('a11y-animations') === '1';
 
     let activeIndex = 0;
     let timer;

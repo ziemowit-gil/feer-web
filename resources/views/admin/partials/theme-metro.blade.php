@@ -138,7 +138,15 @@
     .admin-metro .is-open > .mt-chev { transform: rotate(180deg); }
     .admin-metro .mt-badge { display: inline-flex; min-width: 1.375rem; height: 1.375rem; align-items: center; justify-content: center; padding: 0 .375rem; background: #fff; color: var(--m-ink); font-size: .75rem; font-weight: 700; }
     .admin-metro .is-open > .mt-badge { background: var(--m-accent-fg); color: var(--m-accent); }
-    .admin-metro .mt-site-name { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; }
+    /* Aktualna witryna zaraz za logo: oddzielona kreską, mały napis „Witryna” nad nazwą (biały na #1d1d1a ≈ 17:1, napis
+       pomocniczy #d4d4d4 ≈ 12:1); długa nazwa ucina się wielokropkiem, pełna jest w title i w liście witryn. */
+    .admin-metro .mt-site-slot { display: flex; flex: none; align-items: stretch; border-left: 1px solid rgba(255, 255, 255, .28); }
+    .admin-metro .mt-site { min-width: 0; }
+    .admin-metro .mt-site--static { display: inline-flex; align-items: center; gap: .5rem; min-height: 3.5rem; margin: 0; padding: 0 .875rem; color: #fff; font-size: .875rem; font-weight: 600; }
+    .admin-metro .mt-site-label { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.15; text-align: left; }
+    .admin-metro .mt-site-kicker { color: #d4d4d4; font-size: .6875rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+    .admin-metro .is-open .mt-site-kicker { color: inherit; }
+    .admin-metro .mt-site-name { max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9375rem; font-weight: 700; }
     .admin-metro .mt-avatar { display: inline-flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; background: #fff; color: var(--m-ink); font-weight: 700; }
 
     /* Mega menu grupy: panel pod paskiem na całą szerokość, bloki w kolumnach, w bloku kafle po dwa. */
@@ -174,6 +182,7 @@
     .admin-metro .mt-drop { position: absolute; top: 100%; right: 0; z-index: 31; width: min(24rem, calc(100vw - 1rem)); max-height: calc(100vh - 4rem); overflow-y: auto;
         padding: .75rem; background: var(--m-surface); color: var(--m-ink); border: 1px solid var(--m-line-strong); }
     .admin-metro .mt-drop--menu { padding: .25rem 0; }
+    .admin-metro .mt-drop--left { right: auto; left: 0; }
     .admin-metro .mt-drop-title { display: block; margin: .5rem 0 .25rem; color: var(--m-muted); font-size: .8125rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
     .admin-metro .mt-drop-title:first-child { margin-top: 0; }
     .admin-metro .mt-kbd { margin-left: .25rem; padding: 0 .375rem; background: var(--m-head); color: var(--m-ink); font-family: ui-monospace, monospace; letter-spacing: 0; text-transform: none; }
@@ -199,9 +208,14 @@
     .admin-metro .j-panel-head { background: var(--m-surface); border-bottom: 0; color: var(--m-ink); font-family: var(--m-font-heading); font-weight: 600; font-size: 1.125rem; }
     .admin-metro .j-panel-head::before { display: none; }
     .admin-metro #main > :is([role="status"], [role="alert"]) { min-height: 3rem; align-items: center; padding: .75rem 1rem; font-weight: 600; }
-    .admin-metro #main > [role="status"].bg-brand-light { background: var(--m-accent); color: var(--m-accent-fg); }
+    /* Komunikat po akcji (np. „Pracujesz teraz na witrynie…”): spokojnie — jasne tło z kreską akcentu, jak informacja, a nie
+       pełny pas koloru; ikona i przycisk zamknięcia w kolorze tekstu. Kontrast: tekst --m-ink na --m-surface jak w treści. */
+    .admin-metro #main > [role="status"].bg-brand-light { background: var(--m-surface); color: var(--m-ink); box-shadow: inset 6px 0 0 var(--m-accent); padding-left: 1.5rem; }
+    .admin-metro #main > [role="status"].bg-brand-light i { color: var(--m-ink); }
+    .admin-metro #main > [role="status"] .admin-flash-close:hover { background: var(--m-head, #e4e4e4); }
+    .admin-metro #main > [role="status"] .admin-flash-close:focus-visible { outline: 3px solid var(--m-ink); outline-offset: 1px; }
     .admin-metro #main > [role="alert"] { background: var(--m-danger); color: #fff; }
-    .admin-metro #main > :is([role="alert"], [role="status"].bg-brand-light) * { color: inherit; }
+    .admin-metro #main > [role="alert"] * { color: inherit; }
     .admin-metro #main > [role="status"].bg-gray-100 { background: var(--m-surface); color: var(--m-ink); box-shadow: inset 6px 0 0 var(--m-accent); padding-left: 1.5rem; }
     .admin-metro #main > [role="status"].bg-gray-100 i { color: var(--m-ink); }
 

@@ -23,7 +23,7 @@
         }
         document.getElementById('a11y-mode-badge-off').addEventListener('click', function () {
             Object.keys(modes).forEach(function (c) { document.documentElement.classList.remove(c); });
-            try { localStorage.setItem('a11y-contrast-mode', ''); } catch (e) {}
+            try { localStorage.setItem('admin:a11y-contrast-mode', ''); } catch (e) {} // klucz panelu (resources/js/app.js, a11yStore)
             document.querySelectorAll('[data-a11y-contrast]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
             sync();
         });

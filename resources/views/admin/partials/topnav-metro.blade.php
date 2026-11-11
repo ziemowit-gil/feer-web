@@ -32,6 +32,27 @@
             <span class="mt-brand-name"><span style="font-family:'Pacifico',cursive">We</span><span style="font-family:'Pacifico',cursive;font-weight:300">CMS</span><span class="sr-only"> — pulpit</span></span>
         </a>
 
+        {{-- Aktualna witryna: zawsze widoczna zaraz za logo. Administrator przy kilku witrynach przełącza ją stąd (lista
+             z admin/partials/site-switch-list), pozostali widzą samą nazwę. --}}
+        <div class="mt-site-slot{{ $adminSites->count() > 1 ? ' mt-rel' : '' }}">
+            @if ($adminSites->count() > 1)
+                <button type="button" id="mt-btn-witryna" class="mt-tool mt-site" :class="{ 'is-open': open === 'witryna' }" @click="toggle('witryna')"
+                        aria-expanded="false" :aria-expanded="(open === 'witryna').toString()" aria-controls="mt-panel-witryna" title="Aktualna witryna: {{ $siteSettings->site_name }} — zmień witrynę">
+                    <i class="fa-solid {{ $siteSettings->parent_site_id ? 'fa-sitemap' : 'fa-house' }}" aria-hidden="true"></i>
+                    <span class="mt-site-label"><span class="mt-site-kicker">Witryna</span><span class="mt-site-name">{{ $siteSettings->site_name }}</span></span>
+                    <i class="fa-solid fa-chevron-down mt-chev" aria-hidden="true"></i>
+                </button>
+                <div id="mt-panel-witryna" class="mt-drop mt-drop--left" x-show="open === 'witryna'" x-cloak role="region" aria-label="Wybierz witrynę">
+                    @include('admin.partials.site-switch-list')
+                </div>
+            @else
+                <p class="mt-site mt-site--static" title="Aktualna witryna: {{ $siteSettings->site_name }}">
+                    <i class="fa-solid {{ $siteSettings->parent_site_id ? 'fa-sitemap' : 'fa-house' }}" aria-hidden="true"></i>
+                    <span class="mt-site-label"><span class="mt-site-kicker">Witryna</span><span class="mt-site-name">{{ $siteSettings->site_name }}</span></span>
+                </p>
+            @endif
+        </div>
+
         <ul class="mt-groups" role="list">
             @foreach ($tnMenu as $group)
                 @php $tnKey = $group['key']; @endphp
@@ -143,20 +164,6 @@
                     <p class="sr-only" role="status" aria-live="polite" x-text="status"></p>
                 </div>
             </div>
-
-            @if ($adminSites->count() > 1)
-                <div class="mt-item mt-rel">
-                    <button type="button" id="mt-btn-witryna" class="mt-tool mt-site" :class="{ 'is-open': open === 'witryna' }" @click="toggle('witryna')"
-                            aria-expanded="false" :aria-expanded="(open === 'witryna').toString()" aria-controls="mt-panel-witryna" title="Witryna: {{ $siteSettings->site_name }}">
-                        <i class="fa-solid {{ $siteSettings->parent_site_id ? 'fa-sitemap' : 'fa-house' }}" aria-hidden="true"></i>
-                        <span class="mt-site-name"><span class="sr-only">Witryna: </span>{{ $siteSettings->site_name }}</span>
-                        <i class="fa-solid fa-chevron-down mt-chev" aria-hidden="true"></i>
-                    </button>
-                    <div id="mt-panel-witryna" class="mt-drop" x-show="open === 'witryna'" x-cloak role="region" aria-label="Wybierz witrynę">
-                        @include('admin.partials.site-switch-list')
-                    </div>
-                </div>
-            @endif
 
             <div class="mt-item mt-rel">
                 <button type="button" id="mt-btn-konto" class="mt-tool mt-user" :class="{ 'is-open': open === 'konto' }" @click="toggle('konto')"
