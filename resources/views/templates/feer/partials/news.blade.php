@@ -5,7 +5,6 @@
         <div class="mb-8 flex items-end justify-between gap-4">
             <h2 id="ngo-news-heading" class="text-2xl font-bold text-ink md:text-3xl">Aktualności</h2>
             <div class="flex shrink-0 flex-wrap items-center justify-end gap-x-5 gap-y-1">
-                @include('partials.admin-manage-link', ['route' => 'admin.newsy.index', 'label' => 'Zarządzaj aktualnościami'])
                 <a href="{{ site_route('news.index') }}" class="shrink-0 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"
                    aria-label="Zobacz wszystkie aktualności">Wszystkie aktualności →</a>
             </div>

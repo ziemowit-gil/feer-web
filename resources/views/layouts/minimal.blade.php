@@ -30,6 +30,8 @@
         Przejdź do treści
     </a>
 
+    @include('partials.site-admin-bar')
+
     @if (! empty($preview))
         @include('partials.preview-bar')
     @endif
@@ -38,7 +40,6 @@
         @yield('content')
     </main>
 
-    @include('partials.admin-bar')
     @stack('scripts')
 </body>
 </html>

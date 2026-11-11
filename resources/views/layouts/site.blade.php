@@ -112,6 +112,9 @@
         Przejdź do treści
     </a>
 
+    {{-- Zalogowana redakcja: pasek panelu (jak w panelu w stylu Metro) na samej górze strony. --}}
+    @include('partials.site-admin-bar')
+
     @if (! empty($preview))
         @include('partials.preview-bar')
     @endif
@@ -212,7 +215,6 @@
 
     @include('partials.lightbox')
     @include('partials.cookie-banner')
-    @include('partials.admin-bar')
 
     {{-- Baner zgody na powiadomienia push (ukryty domyślnie, pokazywany przez JS). --}}
     <div id="push-prompt"

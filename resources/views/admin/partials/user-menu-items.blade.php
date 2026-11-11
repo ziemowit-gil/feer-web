@@ -1,5 +1,5 @@
 {{-- Pozycje menu konta (profil, powiadomienia, dokumentacja, O weCMS, powrót do strony, wylogowanie) — w menu bocznym
-     i w górnym menu stylu Metro. Zmienne: $authUser, $roleLabel. --}}
+     i w górnym menu stylu Metro (w panelu i na stronie publicznej — tam bez „Wróć do strony”). Zmienne: $authUser, $roleLabel. --}}
 <div class="border-b border-gray-100 px-3 py-2">
     <p class="truncate font-semibold text-ink">{{ $authUser?->name ?: $authUser?->email }}</p>
     <p class="truncate text-xs text-muted">{{ $authUser?->email }}</p>
@@ -21,9 +21,11 @@
 <a href="{{ route('admin.o-cms') }}" role="menuitem" class="flex items-center gap-3 px-3 py-2 text-ink hover:bg-gray-50 hover:text-brand-dark">
     <i class="fa-solid fa-circle-info w-4 text-center text-gray-400" aria-hidden="true"></i> O weCMS
 </a>
+@unless ($tnPublic ?? false)
 <a href="{{ admin_site_home() }}" role="menuitem" class="flex items-center gap-3 border-t border-gray-100 px-3 py-2 text-ink hover:bg-gray-50 hover:text-brand-dark">
     <i class="fa-solid fa-arrow-left w-4 text-center text-gray-400" aria-hidden="true"></i> Wróć do strony
 </a>
+@endunless
 <form method="POST" action="{{ route('logout') }}">
     @csrf
     <button type="submit" role="menuitem" class="flex w-full items-center gap-3 px-3 py-2 text-left text-ink hover:bg-gray-50 hover:text-brand-dark">

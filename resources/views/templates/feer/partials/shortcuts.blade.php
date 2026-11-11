@@ -36,11 +36,6 @@
           <div class="min-w-0">
             <div class="mb-6 flex items-end justify-between gap-4">
                 <h2 id="feer-shortcuts-heading" class="text-2xl font-bold text-ink md:text-3xl">Na skróty</h2>
-                @if (auth()->check() && auth()->user()->isAdmin())
-                    <a href="{{ route('admin.szybkie-akcje.index') }}" class="shrink-0 inline-flex min-h-9 items-center gap-1.5 text-sm font-bold text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                        <i class="fa-solid fa-gear" aria-hidden="true"></i>Zarządzaj skrótami
-                    </a>
-                @endif
             </div>
 
             <nav aria-label="Na skróty">
@@ -90,11 +85,6 @@
               <div id="ankieta" class="min-w-0">
                   <div class="mb-6 flex items-end justify-between gap-4">
                       <h2 id="feer-poll-heading" class="text-2xl font-bold text-ink md:text-3xl">Ankieta</h2>
-                      @if (auth()->check() && auth()->user()->isAdmin())
-                          <a href="{{ route('admin.ankiety.edit', $poll) }}" class="shrink-0 inline-flex min-h-9 items-center gap-1.5 text-sm font-bold text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                              <i class="fa-solid fa-gear" aria-hidden="true"></i>Zarządzaj sidebarem<span class="sr-only"> (ankieta)</span>
-                          </a>
-                      @endif
                   </div>
                   <form action="{{ route('polls.vote', $poll) }}" method="POST" class="rounded-md {{ $panelWhite ? 'bg-gray-50' : 'bg-white' }} p-6">
                       @csrf

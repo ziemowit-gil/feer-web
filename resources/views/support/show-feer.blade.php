@@ -33,17 +33,15 @@
     @endphp
 
     {{-- ══ Nagłówek: zachęta + miejsce na zdjęcie (z prawej); zbiórka pod tekstem ══ --}}
-    @php $heroPhoto = $siteSettings->supportHeroPhotoUrl(); $isAdminView = auth()->check() && auth()->user()->isAdmin(); @endphp
+    @php $heroPhoto = $siteSettings->supportHeroPhotoUrl(); @endphp
     <style>
         .sp-hero { display: grid; gap: 2.5rem; align-items: center; max-width: 72rem; margin: 0 auto; padding: 3rem 1rem; }
         @media (min-width: 1024px) { .sp-hero.has-photo { grid-template-columns: minmax(0, 1fr) 26rem; } }
         .sp-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; }
-        .sp-photo-empty { display: flex; aspect-ratio: 4 / 3; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; padding: 1.5rem; border-radius: .5rem; background: #e8f0ff; color: #1d1d1a; text-align: center; font-size: .9rem; }
-        .sp-photo-empty i { font-size: 2rem; color: var(--color-brand-dark); }
         .sp-fund { margin-top: 2rem; padding: 1.5rem; border-radius: .5rem; background: #fff; }
     </style>
     <section id="wesprzyj-hero" class="bg-gray-50">
-        <div class="sp-hero {{ ($heroPhoto || $isAdminView) ? 'has-photo' : '' }}">
+        <div class="sp-hero {{ $heroPhoto ? 'has-photo' : '' }}">
             <div class="min-w-0">
                 <p class="mb-3 text-xs font-bold uppercase tracking-widest text-brand-dark">{{ $siteSettings->supportText('support_hero_badge') }}</p>
                 <h1 class="max-w-2xl text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">{{ $siteSettings->supportText('support_hero_title') }}</h1>
@@ -78,13 +76,6 @@
 
             @if ($heroPhoto)
                 <img src="{{ $heroPhoto }}" alt="" class="sp-photo">
-            @elseif ($isAdminView)
-                {{-- Tylko dla administratora: puste miejsce na zdjęcie z odnośnikiem do ustawień. --}}
-                <a href="{{ route('admin.ustawienia.edit', ['tab' => 'support']) }}" class="sp-photo-empty focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
-                    <i class="fa-regular fa-image" aria-hidden="true"></i>
-                    <span class="font-bold">Miejsce na zdjęcie</span>
-                    <span>Dodaj zdjęcie w Ustawienia → Wsparcie („Zdjęcie nagłówka”). Widzisz to pole tylko jako administrator.</span>
-                </a>
             @endif
         </div>
     </section>

@@ -2,9 +2,13 @@
     Pasek edytora układu strony głównej.
     Renderowany wyłącznie wewnątrz x-data="homepageEditor(...)" — ma dostęp do
     stanu Alpine: editMode, saving, saveSuccess, error, collapsed, toggleBar().
-    Widoczny tylko dla administratorów (warunek w home.blade.php).
+    Widoczny tylko dla administratorów (warunek w home.blade.php), i to dopiero w trybie edycji — włącza go
+    „Edytuj → Zmień kolejność sekcji” na pasku panelu u góry strony (zdarzenie site-admin-layout, partials/site-admin-bar).
 --}}
 <div
+    data-layout-edit
+    x-show="editMode || saving || saveSuccess || !! error" x-cloak
+    @site-admin-layout.window="collapsed = false; if (! editMode) toggleEdit()"
     class="fixed inset-x-0 top-0 z-[9999] border-b border-gray-200 bg-white shadow-[0_4px_16px_rgba(0,0,0,.08)] print:hidden"
     role="region"
     aria-label="Panel edytora strony głównej"

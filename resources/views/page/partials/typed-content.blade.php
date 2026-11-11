@@ -1665,21 +1665,6 @@
         @include('partials.attachments-list', ['attachments' => $page->attachments])
     </section>
     @elseif ($page->isAboutPerson())
-    @auth
-    @if (auth()->user()->isAdmin() || auth()->user()->user_group_id)
-    <div class="border-b border-amber-300 bg-amber-50 px-4 py-3">
-        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-            <p class="flex items-center gap-2 text-sm font-bold text-amber-800">
-                <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Panel administracyjny
-            </p>
-            <a href="{{ route('admin.podstrony.edit', $page) }}"
-                class="inline-flex items-center gap-2 rounded bg-amber-700 px-4 py-1.5 text-sm font-bold text-white hover:bg-amber-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-700">
-                <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj stronę osoby
-            </a>
-        </div>
-    </div>
-    @endif
-    @endauth
 
     @php
         $pSocial        = array_filter($page->person_social ?? []);

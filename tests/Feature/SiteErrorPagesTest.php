@@ -74,6 +74,10 @@ class SiteErrorPagesTest extends TestCase
         // Kontener testowy trzyma witrynę z poprzedniego żądania; w produkcji każde żądanie startuje od zera.
         app()->forgetInstance(SiteSetting::CURRENT_SITE_BINDING);
 
-        $this->get('http://localhost/nie-ma/takiej')->assertNotFound()->assertDontSee('Szkolenia XYZ');
+        // Pasek panelu u góry strony (partials/site-admin-bar) ma listę wszystkich witryn — sprawdzamy samą stronę.
+        $html = $this->get('http://localhost/nie-ma/takiej')->assertNotFound()->getContent();
+        $page = preg_replace('~<div class="admin-metro site-admin-bar".*?</nav>\s*</div>~s', '', $html);
+        $this->assertNotSame($html, $page, 'pasek panelu jest na stronie 404');
+        $this->assertStringNotContainsString('Szkolenia XYZ', $page);
     }
 }

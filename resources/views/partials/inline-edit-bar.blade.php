@@ -4,12 +4,14 @@
     Alpine: editMode, dirty, saving, saveSuccess, error, hasRichFields,
     toggleEdit(), saveAll(), exitEdit().
 
-    Poza edycją jest tylko lewitujący przycisk „Edytuj" w prawym dolnym rogu (nad
-    przyciskiem dostępności), żeby nie zajmować miejsca w układzie strony. Dopiero
-    w trybie edycji pasek staje się wyraźny i przypięty u góry — potrzebuje wtedy przycisku „Zapisz"
-    i miejsca na pasek narzędzi edytora (#inline-editor-toolbar).
+    Poza edycją pasek jest schowany: edycję włącza „Edytuj → Edytuj na stronie” na pasku panelu u góry strony
+    (partials/site-admin-bar wysyła zdarzenie site-admin-edit; pozycja jest tam tylko, gdy na stronie jest
+    element z data-inline-edit). W trybie edycji pasek jest wyraźny i przypięty u góry — z „Zapisz”, „Zakończ edycję”
+    i miejscem na pasek narzędzi edytora (#inline-editor-toolbar). Po zakończeniu przez chwilę widać „Zapisano.”.
 --}}
-<div role="region" aria-label="Pasek wizualnej edycji treści"
+<div role="region" aria-label="Pasek wizualnej edycji treści" data-inline-edit
+    x-show="editMode || saving || saveSuccess || !! error" x-cloak
+    @site-admin-edit.window="if (! editMode) toggleEdit()"
     class="z-[9999] print:hidden"
     :class="editMode
         ? 'sticky top-0 border-b border-gray-200 bg-white shadow-[0_4px_16px_rgba(0,0,0,.08)]'
@@ -49,31 +51,8 @@
                 </button>
             </template>
 
-            {{-- Edytor blokowy (styl Gutenberga) — strony, działania i aktualności. --}}
-            @php
-                $blockEditorUrl = null;
-                $blockEditorUser = auth('web')->user();
-                if (! \App\Models\SiteSetting::current()->isModuleEnabled('block_editor')) {
-                    // Edytor blokowy wyłączony w Ustawienia → Moduły.
-                } elseif (isset($page) && $page instanceof \App\Models\Page && $page->exists && $blockEditorUser?->canAccessModule('pages')) {
-                    $blockEditorUrl = route('admin.podstrony.bloki.edit', $page);
-                    $blockEditorNoun = 'tę stronę';
-                } elseif (isset($project) && $project instanceof \App\Models\Project && $project->exists && $blockEditorUser?->canAccessModule('projects')) {
-                    $blockEditorUrl = route('admin.edytor-blokowy.edit', ['project', $project->id]);
-                    $blockEditorNoun = 'opis tego działania';
-                } elseif (isset($news) && $news instanceof \App\Models\News && $news->exists && $blockEditorUser?->canAccessModule('news')) {
-                    $blockEditorUrl = route('admin.edytor-blokowy.edit', ['news', $news->id]);
-                    $blockEditorNoun = 'tę aktualność';
-                }
-            @endphp
-            @if ($blockEditorUrl)
-                <a x-show="!editMode" href="{{ $blockEditorUrl }}"
-                    class="inline-flex min-h-12 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-bold text-ink shadow-[0_6px_20px_rgba(0,0,0,.18)] ring-1 ring-gray-300 transition hover:-translate-y-0.5 hover:bg-brand-light hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-                    <i class="fa-solid fa-cubes mr-1" aria-hidden="true"></i>Bloki<span class="sr-only"> — edytuj {{ $blockEditorNoun }} w edytorze blokowym</span>
-                </a>
-            @endif
 
-            <button type="button" @click="toggleEdit()" :aria-pressed="editMode.toString()"
+            <button type="button" x-show="editMode" @click="toggleEdit()" :aria-pressed="editMode.toString()"
                 class="inline-flex items-center gap-1.5 rounded-md font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
                 :class="editMode
                     ? 'min-h-10 rounded-lg border border-gray-300 bg-white px-4 text-sm text-ink hover:bg-gray-50'

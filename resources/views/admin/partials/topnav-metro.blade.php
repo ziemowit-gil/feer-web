@@ -6,10 +6,14 @@
     Po prawej: Skróty (szukaj w menu — klawisz „/”, ulubione, ostatnio otwarte) i konto. Wzorzec „disclosure”: przycisk z aria-expanded, panel zaraz za nim w kodzie
     (kolejność fokusu = wzrok), Escape zamyka i wraca do przycisku, kliknięcie obok zamyka. Grupa z bieżącą stroną ma
     białą kreskę u dołu i „tu jesteś” dla czytnika, bieżąca pozycja — kafel w kolorze akcentu i aria-current.
-    Style: admin/partials/theme-metro (klasy mt-*). Dołączany w admin/layout tylko dla schematu „metro”.
+    Style: admin/partials/metro-bar-css (klasy mt-*). Dołączany w admin/layout dla schematu „metro” i na stronie publicznej
+    dla zalogowanej redakcji (partials/site-admin-bar, $tnPublic = true): tam dochodzi okienko „Edytuj” ($tnEdit — edycja
+    bieżącej strony, aktualności, działania, listy, strony głównej, stopki), a „Wróć do strony” w menu konta znika.
 --}}
 @php
     $tnUser = auth()->user();
+    $tnPublic = $tnPublic ?? false;
+    $tnEdit = $tnEdit ?? [];
     $tnMenu = $adminMenu ?? \App\Support\AdminMenu::for($tnUser);
     ['entries' => $tnEntries, 'current' => $tnCurrent] = \App\Support\AdminMenu::entries($tnMenu);
     $tnQuickKey = 'admin-nav-quick:'.($tnUser?->id ?? 0).':'.($siteSettings->id ?? 0);
@@ -21,7 +25,7 @@
 @endphp
 <nav id="mt-nav" class="mt-nav" aria-label="Menu panelu" x-data="megaNav()"
      @keydown.escape="close(true)" @click.outside="close(false)"
-     @keydown.window="if ($event.key === '/' && $store.adminNav.topActive() && ! $event.ctrlKey && ! $event.metaKey && ! $event.altKey && ! /^(input|textarea|select)$/i.test($event.target.tagName) && ! $event.target.isContentEditable) { $event.preventDefault(); open = 'skroty'; $nextTick(() => document.getElementById('mt-search')?.focus()); }">
+     @keydown.window="if ($event.key === '/' && (! $store.adminNav || $store.adminNav.topActive()) && ! $event.ctrlKey && ! $event.metaKey && ! $event.altKey && ! /^(input|textarea|select)$/i.test($event.target.tagName) && ! $event.target.isContentEditable) { $event.preventDefault(); open = 'skroty'; $nextTick(() => document.getElementById('mt-search')?.focus()); }">
     <div class="mt-bar">
         <a href="{{ route('admin.dashboard') }}" class="mt-brand" title="Pulpit">
             @if ($siteSettings->logoUrl())
@@ -123,11 +127,42 @@
         </ul>
 
         <div class="mt-tools">
+            {{-- Edytuj (tylko strona publiczna): edycja tego, co widać — na stronie (wysyła zdarzenie do edytora na stronie,
+                 pozycja widoczna tylko, gdy taki edytor jest), w edytorze blokowym, w panelu; listy, strona główna, stopka. --}}
+            @if ($tnEdit !== [])
+                <div class="mt-item mt-rel" x-data="{ inline: false, layout: false }"
+                     x-init="inline = !! document.querySelector('[data-inline-edit]'); layout = !! document.querySelector('[data-layout-edit]')">
+                    <button type="button" id="mt-btn-edytuj" class="mt-tool" :class="{ 'is-open': open === 'edytuj' }" @click="toggle('edytuj')"
+                            aria-expanded="false" :aria-expanded="(open === 'edytuj').toString()" aria-controls="mt-panel-edytuj">
+                        <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i><span class="mt-tool-text">Edytuj</span>
+                        <i class="fa-solid fa-chevron-down mt-chev" aria-hidden="true"></i>
+                    </button>
+                    <div id="mt-panel-edytuj" class="mt-drop" x-show="open === 'edytuj'" x-cloak role="region" aria-labelledby="mt-btn-edytuj">
+                        @foreach ($tnEdit as $tnSection)
+                            <p class="mt-drop-title" id="mt-edit-h-{{ $loop->index }}">{{ $tnSection['title'] }}</p>
+                            <ul class="mt-list" role="list" aria-labelledby="mt-edit-h-{{ $loop->index }}">
+                                @foreach ($tnSection['items'] as $tnIt)
+                                    @if (isset($tnIt['event']))
+                                        <li x-show="{{ $tnIt['event'] === 'site-admin-layout' ? 'layout' : 'inline' }}" x-cloak>
+                                            <button type="button" class="mt-list-btn" @click="close(false); $dispatch(@js($tnIt['event']))">
+                                                <i class="fa-solid {{ $tnIt['icon'] }}" aria-hidden="true"></i> <span>{{ $tnIt['label'] }}</span>
+                                            </button>
+                                        </li>
+                                    @else
+                                        <li><a href="{{ $tnIt['url'] }}" @foreach ($tnIt['attrs'] ?? [] as $tnAttr) {{ $tnAttr }} @endforeach><i class="fa-solid {{ $tnIt['icon'] }}" aria-hidden="true"></i> <span>{{ $tnIt['label'] }}</span></a></li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             {{-- Skróty: szukaj w menu, ulubione, ostatnio otwarte (te same dane w localStorage co w menu bocznym). --}}
             <div class="mt-item mt-rel" x-data="navQuick(@js($tnQuickKey), @js($tnCurrent))">
                 <button type="button" id="mt-btn-skroty" class="mt-tool" :class="{ 'is-open': open === 'skroty' }" @click="toggle('skroty'); if (open === 'skroty') $nextTick(() => document.getElementById('mt-search')?.focus())"
                         aria-expanded="false" :aria-expanded="(open === 'skroty').toString()" aria-controls="mt-panel-skroty">
-                    <i class="fa-solid fa-star" aria-hidden="true"></i><span>Skróty</span>
+                    <i class="fa-solid fa-star" aria-hidden="true"></i><span class="mt-tool-text">Skróty</span>
                 </button>
                 <div id="mt-panel-skroty" class="mt-drop" x-show="open === 'skroty'" x-cloak role="region" aria-labelledby="mt-btn-skroty"
                      x-data="{

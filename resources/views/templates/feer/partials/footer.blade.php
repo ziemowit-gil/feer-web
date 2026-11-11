@@ -110,13 +110,6 @@
                         </a>
                     </li>
                     @endif
-                    @if (auth()->user()?->isAdmin())
-                    <li>
-                        <a href="{{ route('admin.ustawienia.edit', ['tab' => 'general']) }}#gen-footer-h" title="Edytuj stopkę" data-footer-edit class="flex h-9 w-9 items-center justify-center rounded-md text-white transition hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
-                            <i class="fa-solid fa-pen" aria-hidden="true"></i><span class="sr-only">Edytuj stopkę</span>
-                        </a>
-                    </li>
-                    @endif
                     @if ($fo['show_admin_link'])
                     <li>
                         <a href="{{ route('admin.dashboard') }}" title="Panel administracyjny" aria-label="Panel administracyjny" class="flex h-9 w-9 items-center justify-center rounded-md text-white transition hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink">

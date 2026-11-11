@@ -34,9 +34,6 @@
                 @if ($fo['staff_link'] && $fo['staff_url'] !== '')
                     <li><a href="{{ str_starts_with($fo['staff_url'], 'http') ? $fo['staff_url'] : url($fo['staff_url']) }}">{{ $fo['staff_label'] }}</a></li>
                 @endif
-                @if (auth()->user()?->isAdmin())
-                    <li><a href="{{ route('admin.ustawienia.edit', ['tab' => 'general']) }}#gen-footer-h" data-footer-edit>Edytuj stopkę</a></li>
-                @endif
                 @if ($fo['show_admin_link'])
                     <li><a href="{{ route('admin.dashboard') }}">Panel administracyjny</a></li>
                 @endif

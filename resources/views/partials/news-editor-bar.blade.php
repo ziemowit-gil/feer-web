@@ -2,9 +2,13 @@
     Pasek szybkiej edycji aktualności na froncie.
     Renderowany wyłącznie wewnątrz x-data="newsInlineEditor(...)" — ma dostęp do
     stanu Alpine: editMode, form, saving, saveSuccess, error, collapsed, toggleBar().
-    Widoczność (czy w ogóle jest w DOM) kontrolowana w news/show.blade.php.
+    Widoczność (czy w ogóle jest w DOM) kontrolowana w news/show.blade.php. Poza edycją pasek jest schowany — edycję
+    włącza „Edytuj → Edytuj na stronie” na pasku panelu u góry strony (zdarzenie site-admin-edit, partials/site-admin-bar).
 --}}
 <div
+    data-inline-edit
+    x-show="editMode || saving || saveSuccess || !! error" x-cloak
+    @site-admin-edit.window="collapsed = false; if (! editMode) toggleEdit()"
     class="fixed inset-x-0 top-0 z-[9999] border-b border-gray-200 bg-white shadow-[0_4px_16px_rgba(0,0,0,.08)] print:hidden"
     role="region"
     aria-label="Panel szybkiej edycji aktualności"

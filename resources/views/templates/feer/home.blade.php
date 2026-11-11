@@ -49,11 +49,4 @@
     @include('templates.feer.partials.bands-slot', ['slot' => 'end'])
 
 
-    {{-- Administrator: lewitujący przycisk do edycji strony głównej (Ustawienia → Strona główna), jak „Edytuj" na podstronach. --}}
-    @if (auth()->check() && auth()->user()->isAdmin())
-        <a href="{{ route('admin.ustawienia.edit', ['tab' => 'homepage']) }}"
-           class="fixed bottom-24 right-4 z-[9999] inline-flex min-h-12 items-center gap-2 rounded-full bg-ink px-5 text-sm font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,.28)] transition hover:-translate-y-0.5 hover:bg-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 print:hidden">
-            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>Edytuj<span class="sr-only"> stronę główną</span>
-        </a>
-    @endif
 @endsection

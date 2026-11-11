@@ -20,7 +20,6 @@
         <div class="mx-auto max-w-6xl px-4 pb-6 pt-8 md:pb-8 md:pt-10">
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <h1 class="text-2xl font-bold leading-tight text-ink md:text-3xl">Działania</h1>
-                @include('partials.admin-manage-link', ['route' => 'admin.projekty.index', 'label' => 'Zarządzaj działaniami'])
             </div>
             <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
             @if ($siteSettings->projects_intro)
@@ -38,8 +37,7 @@
                 @php
                     // Dowolne bloki pod menu kategorii (edytor blokowy, Ustawienia: link „Dodaj bloki pod menu”).
                     $sidebarBlocks = \App\Models\ListingSection::html('projects_sidebar');
-                    // Route::has — po pushu serwer może mieć stary cache tras bez tej trasy (do czasu ./deploy.sh).
-                    $canEditSidebar = auth()->check() && auth()->user()->isAdmin() && $siteSettings->isModuleEnabled('block_editor') && \Illuminate\Support\Facades\Route::has('admin.edytor-blokowy.listing');
+                    // Edycja bloków: „Edytuj → Dodaj/Edytuj bloki pod menu kategorii” na pasku panelu (partials/site-admin-bar).
                 @endphp
                 <div class="min-w-0 space-y-8 lg:self-start {{ $sidebarBlocks ? '' : 'lg:sticky lg:top-6' }}">
                 <nav aria-label="Kategorie działań">
@@ -62,11 +60,6 @@
 
                 @if ($sidebarBlocks)
                     <div class="prose prose-sm max-w-none text-ink" data-listing-blocks="projects_sidebar">@shortcodes($sidebarBlocks)</div>
-                @endif
-                @if ($canEditSidebar)
-                    <a href="{{ route('admin.edytor-blokowy.listing', 'projects_sidebar') }}" class="inline-flex min-h-9 items-center gap-1.5 text-sm font-bold text-ink underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-                        <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>{{ $sidebarBlocks ? 'Edytuj bloki pod menu' : 'Dodaj bloki pod menu' }}
-                    </a>
                 @endif
                 </div>
 

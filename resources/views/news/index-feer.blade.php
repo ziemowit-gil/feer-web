@@ -24,7 +24,6 @@
         <div class="mx-auto max-w-6xl px-4 py-12 md:py-16">
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">Aktualności</h1>
-                @include('partials.admin-manage-link', ['route' => 'admin.newsy.index', 'label' => 'Zarządzaj aktualnościami'])
             </div>
             @if ($activeCategory)
                 <p class="mt-3 text-lg text-ink">Kategoria: <strong>{{ $activeCategory->name }}</strong></p>
