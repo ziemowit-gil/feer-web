@@ -115,6 +115,8 @@
         body.nav-top .admin-sidebar { display: none !important; }
         body.nav-top .j-topbar { position: static; }
         .admin-metro .mt-nav { position: sticky; top: 0; z-index: 30; display: block; background: var(--m-ink); color: #fff; }
+        /* Pasek „Edytujesz: …” nad treścią jest wtedy w górnym menu (ikona za logo); na telefonie zostaje. */
+        body.nav-top .admin-site-bar { display: none; }
     }
     .admin-metro .mt-bar { display: flex; flex-wrap: wrap; align-items: stretch; min-height: 3.5rem; padding: 0 .5rem; }
     .admin-metro .mt-brand { display: flex; flex: none; align-items: center; gap: .625rem; padding: 0 1rem 0 .5rem; color: #fff; text-decoration: none; }
@@ -138,15 +140,19 @@
     .admin-metro .is-open > .mt-chev { transform: rotate(180deg); }
     .admin-metro .mt-badge { display: inline-flex; min-width: 1.375rem; height: 1.375rem; align-items: center; justify-content: center; padding: 0 .375rem; background: #fff; color: var(--m-ink); font-size: .75rem; font-weight: 700; }
     .admin-metro .is-open > .mt-badge { background: var(--m-accent-fg); color: var(--m-accent); }
-    /* Aktualna witryna zaraz za logo: oddzielona kreską, mały napis „Witryna” nad nazwą (biały na #1d1d1a ≈ 17:1, napis
-       pomocniczy #d4d4d4 ≈ 12:1); długa nazwa ucina się wielokropkiem, pełna jest w title i w liście witryn. */
+    /* Edytowana witryna: ikona zaraz za logo, oddzielona kreską. Podpowiedź pod ikoną — biała z ciemnym tekstem
+       (≈ 17:1), bez przerwy między ikoną a podpowiedzią, więc da się na nią najechać. Witryna w sieci: ikona #ea8f00
+       na #1d1d1a ≈ 6,9:1; na otwartym przycisku ikona w kolorze tekstu przycisku. */
     .admin-metro .mt-site-slot { display: flex; flex: none; align-items: stretch; border-left: 1px solid rgba(255, 255, 255, .28); }
-    .admin-metro .mt-site { min-width: 0; }
-    .admin-metro .mt-site--static { display: inline-flex; align-items: center; gap: .5rem; min-height: 3.5rem; margin: 0; padding: 0 .875rem; color: #fff; font-size: .875rem; font-weight: 600; }
-    .admin-metro .mt-site-label { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.15; text-align: left; }
-    .admin-metro .mt-site-kicker { color: #d4d4d4; font-size: .6875rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-    .admin-metro .is-open .mt-site-kicker { color: inherit; }
-    .admin-metro .mt-site-name { max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9375rem; font-weight: 700; }
+    .admin-metro .mt-site-icon { font-size: 1.0625rem; }
+    .admin-metro .mt-site.is-sub .mt-site-icon { color: #ea8f00; }
+    .admin-metro .mt-site.is-open .mt-site-icon { color: inherit; }
+    .admin-metro .mt-tip { position: absolute; top: 100%; left: 0; z-index: 32; width: max-content; max-width: min(22rem, calc(100vw - 1rem)); padding: .5rem .75rem;
+        background: var(--m-surface); color: var(--m-ink); border: 1px solid var(--m-line-strong); box-shadow: 0 6px 18px rgba(0, 0, 0, .25); font-size: .875rem; line-height: 1.35; }
+    .admin-metro .mt-site-now { display: flex; align-items: flex-start; gap: .625rem; margin: 0 0 .5rem; color: var(--m-ink); font-size: .9375rem; line-height: 1.3; }
+    .admin-metro .mt-site-now i { margin-top: .2rem; color: var(--m-accent-ink); }
+    .admin-metro .mt-site-kind { display: block; color: var(--m-muted); font-size: .8125rem; }
+    .admin-metro .mt-site-switch { padding-top: .5rem; border-top: 1px solid var(--m-line); }
     .admin-metro .mt-avatar { display: inline-flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; background: #fff; color: var(--m-ink); font-weight: 700; }
 
     /* Mega menu grupy: panel pod paskiem na całą szerokość, bloki w kolumnach, w bloku kafle po dwa. */
@@ -285,6 +291,8 @@
     html.contrast-bw .admin-metro :is(.mt-group, .mt-tool, .mt-tile).is-open, html.contrast-bw .admin-metro .mt-tile.is-current { background: #ff0 !important; color: #000 !important; }
     html.contrast-bw .admin-metro .mt-tile { box-shadow: inset 0 0 0 2px #ff0 !important; }
     html.contrast-bw .admin-metro .mt-tile :is(.mt-tile-icon, .mt-tile-badge) { color: inherit !important; }
+    html.contrast-bw .admin-metro .mt-site-icon { color: inherit !important; }
+    html.contrast-bw .admin-metro .mt-tip { background: #000 !important; color: #ff0 !important; border: 2px solid #ff0; }
     @media (forced-colors: active) {
         .metro-tile, .metro-btn, .admin-metro .mt-tile { border: 2px solid CanvasText; }
         .admin-metro :is(.mt-group, .mt-tool).is-open, .admin-metro .mt-tile.is-current { outline: 3px solid Highlight; outline-offset: -3px; }

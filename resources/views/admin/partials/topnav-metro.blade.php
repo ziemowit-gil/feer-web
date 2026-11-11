@@ -2,8 +2,8 @@
     Górne menu panelu w stylu „Metro” (szeroki ekran ≥ 1024 px; na telefonie zostaje szuflada z menu bocznego).
     Ciemny pasek aplikacji z grupami menu (App\Support\AdminMenu) — kliknięcie grupy otwiera pod paskiem mega menu na całą
     szerokość: tytuł grupy i bloki (WYGLĄD, STAN WITRYNY…) w kolumnach, pozycje jako kafle jak na ekranie Start Metro UI,
-    podpozycje listą pod kaflem. Po prawej: Skróty (szukaj w menu — klawisz „/”, ulubione, ostatnio otwarte), witryna
-    (sieć witryn, tylko admin) i konto. Wzorzec „disclosure”: przycisk z aria-expanded, panel zaraz za nim w kodzie
+    podpozycje listą pod kaflem. Za logo ikona edytowanej witryny (podpowiedź i okienko; przełączanie witryn dla admina).
+    Po prawej: Skróty (szukaj w menu — klawisz „/”, ulubione, ostatnio otwarte) i konto. Wzorzec „disclosure”: przycisk z aria-expanded, panel zaraz za nim w kodzie
     (kolejność fokusu = wzrok), Escape zamyka i wraca do przycisku, kliknięcie obok zamyka. Grupa z bieżącą stroną ma
     białą kreskę u dołu i „tu jesteś” dla czytnika, bieżąca pozycja — kafel w kolorze akcentu i aria-current.
     Style: admin/partials/theme-metro (klasy mt-*). Dołączany w admin/layout tylko dla schematu „metro”.
@@ -32,25 +32,41 @@
             <span class="mt-brand-name"><span style="font-family:'Pacifico',cursive">We</span><span style="font-family:'Pacifico',cursive;font-weight:300">CMS</span><span class="sr-only"> — pulpit</span></span>
         </a>
 
-        {{-- Aktualna witryna: zawsze widoczna zaraz za logo. Administrator przy kilku witrynach przełącza ją stąd (lista
-             z admin/partials/site-switch-list), pozostali widzą samą nazwę. --}}
-        <div class="mt-site-slot{{ $adminSites->count() > 1 ? ' mt-rel' : '' }}">
-            @if ($adminSites->count() > 1)
-                <button type="button" id="mt-btn-witryna" class="mt-tool mt-site" :class="{ 'is-open': open === 'witryna' }" @click="toggle('witryna')"
-                        aria-expanded="false" :aria-expanded="(open === 'witryna').toString()" aria-controls="mt-panel-witryna" title="Aktualna witryna: {{ $siteSettings->site_name }} — zmień witrynę">
-                    <i class="fa-solid {{ $siteSettings->parent_site_id ? 'fa-sitemap' : 'fa-house' }}" aria-hidden="true"></i>
-                    <span class="mt-site-label"><span class="mt-site-kicker">Witryna</span><span class="mt-site-name">{{ $siteSettings->site_name }}</span></span>
-                    <i class="fa-solid fa-chevron-down mt-chev" aria-hidden="true"></i>
-                </button>
-                <div id="mt-panel-witryna" class="mt-drop mt-drop--left" x-show="open === 'witryna'" x-cloak role="region" aria-label="Wybierz witrynę">
-                    @include('admin.partials.site-switch-list')
-                </div>
-            @else
-                <p class="mt-site mt-site--static" title="Aktualna witryna: {{ $siteSettings->site_name }}">
-                    <i class="fa-solid {{ $siteSettings->parent_site_id ? 'fa-sitemap' : 'fa-house' }}" aria-hidden="true"></i>
-                    <span class="mt-site-label"><span class="mt-site-kicker">Witryna</span><span class="mt-site-name">{{ $siteSettings->site_name }}</span></span>
+        {{-- Edytowana witryna: ikona zaraz za logo (dawny pasek „Edytujesz: …” nad treścią). Po najechaniu albo fokusie
+             podpowiedź „Edytujesz: nazwa (witryna główna / w sieci)” — zostaje, gdy najedziesz na nią myszą, Esc ją chowa
+             (WCAG 1.4.13). Kliknięcie otwiera okienko z nazwą i rodzajem witryny, a administratorowi przy kilku witrynach
+             także z listą do przełączania (admin/partials/site-switch-list). Witryna w sieci ma ikonę sieci w kolorze
+             pomarańczowym, żeby od razu było widać, że to nie witryna główna. --}}
+        @php
+            $tnSiteIsSub = (bool) $siteSettings->parent_site_id;
+            $tnSiteKind = $tnSiteIsSub ? 'witryna w sieci' : 'witryna główna';
+            $tnSiteName = $siteSettings->site_name ?: ($siteSettings->slug ?: 'Witryna '.$siteSettings->id);
+        @endphp
+        <div class="mt-site-slot mt-rel" x-data="{ tip: false, tipTimer: null }"
+             @mouseenter="clearTimeout(tipTimer); tip = true" @mouseleave="tipTimer = setTimeout(() => tip = false, 200)"
+             @focusin="tip = true" @focusout="tip = false" @keydown.escape="tip = false">
+            <button type="button" id="mt-btn-witryna" class="mt-tool mt-site{{ $tnSiteIsSub ? ' is-sub' : '' }}" :class="{ 'is-open': open === 'witryna' }"
+                    @click="tip = false; toggle('witryna')" aria-expanded="false" :aria-expanded="(open === 'witryna').toString()"
+                    aria-controls="mt-panel-witryna" aria-describedby="mt-tip-witryna">
+                <i class="fa-solid {{ $tnSiteIsSub ? 'fa-sitemap' : 'fa-house' }} mt-site-icon" aria-hidden="true"></i>
+                <span class="sr-only">Edytowana witryna</span>
+                <i class="fa-solid fa-chevron-down mt-chev" aria-hidden="true"></i>
+            </button>
+            <div id="mt-tip-witryna" class="mt-tip" role="tooltip" x-show="tip && open !== 'witryna'" x-cloak>
+                Edytujesz: <strong>{{ $tnSiteName }}</strong> ({{ $tnSiteKind }})
+            </div>
+            <div id="mt-panel-witryna" class="mt-drop mt-drop--left" x-show="open === 'witryna'" x-cloak role="region" aria-labelledby="mt-site-now-h">
+                <p class="mt-drop-title" id="mt-site-now-h">Edytujesz</p>
+                <p class="mt-site-now">
+                    <i class="fa-solid {{ $tnSiteIsSub ? 'fa-sitemap' : 'fa-house' }}" aria-hidden="true"></i>
+                    <span><strong>{{ $tnSiteName }}</strong><span class="mt-site-kind">{{ $tnSiteKind }}</span></span>
                 </p>
-            @endif
+                @if ($adminSites->count() > 1)
+                    <div class="mt-site-switch">
+                        @include('admin.partials.site-switch-list')
+                    </div>
+                @endif
+            </div>
         </div>
 
         <ul class="mt-groups" role="list">

@@ -1,13 +1,14 @@
 {{-- Pasek „którą witrynę edytujesz”: widoczny dla administratora sieci, gdy jest więcej niż jedna witryna. Bez paska jest ekran
      wyboru witryny i pulpit (nazwa witryny jest w nagłówku pulpitu, a wybór w menu bocznym); na pozostałych stronach ostrzega,
-     że edytujesz witrynę w sieci. --}}
+     że edytujesz witrynę w sieci. W stylu Metro na szerokim ekranie pasek jest schowany — to samo pokazuje ikona za logo
+     w górnym menu (admin/partials/topnav-metro). --}}
 @if ((new \App\Http\Middleware\EnsureCanManageSites)->allows(auth()->user()) && \App\Http\Controllers\Admin\SiteChooserController::sites()->count() > 1 && ! request()->routeIs('admin.wybor-witryny', 'admin.dashboard'))
     @php
         $barSite = \App\Models\SiteSetting::current();
         $barIsSub = (bool) $barSite->parent_site_id;
         $barName = $barSite->site_name ?: ($barSite->slug ?: 'Witryna '.$barSite->id);
     @endphp
-    <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md px-4 py-3 text-sm {{ $barIsSub ? 'bg-ink text-white' : 'bg-gray-100 text-ink' }}" role="status">
+    <div class="admin-site-bar mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md px-4 py-3 text-sm {{ $barIsSub ? 'bg-ink text-white' : 'bg-gray-100 text-ink' }}" role="status">
         <span class="flex items-center gap-2">
             <i class="fa-solid {{ $barIsSub ? 'fa-sitemap' : 'fa-house' }}" aria-hidden="true"></i>
             <span>Edytujesz: <strong>{{ $barName }}</strong> <span class="{{ $barIsSub ? 'text-white' : 'text-ink' }}">({{ $barIsSub ? 'witryna w sieci' : 'witryna główna' }})</span></span>

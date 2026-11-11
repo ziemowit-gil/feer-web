@@ -58,28 +58,34 @@ class AdminPanelA11yScopeTest extends TestCase
             ->assertDontSee('[role="status"].bg-brand-light { background: var(--m-accent)', false);
     }
 
-    public function test_metro_pokazuje_aktualna_witryne_zaraz_za_logo(): void
+    public function test_metro_pokazuje_edytowana_witryne_ikona_za_logo_z_podpowiedzia_i_okienkiem(): void
     {
         $main = SiteSetting::current();
         $sub = SiteSetting::query()->forceCreate(['site_name' => 'test', 'slug' => 'osrodek', 'parent_site_id' => $main->id]);
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'admin_scheme' => 'metro']);
 
         $html = $this->actingAs($admin)->withSession(['admin_active_site_id' => $sub->id, 'admin_site_chosen' => true])
-            ->get(route('admin.dashboard'))->assertOk()->getContent();
+            ->get(route('admin.podstrony.index'))->assertOk()->getContent();
 
-        // Przełącznik witryny stoi za logo, przed grupami menu, i pokazuje nazwę aktualnej witryny.
-        $this->assertMatchesRegularExpression('~class="mt-brand".*?id="mt-btn-witryna".*?<span class="mt-site-kicker">Witryna</span><span class="mt-site-name">test</span>.*?class="mt-groups"~s', $html);
-        $this->assertStringContainsString('class="mt-drop mt-drop--left"', $html);
+        // Ikona witryny stoi za logo, przed grupami menu; podpowiedź i okienko z nazwą i rodzajem witryny.
+        $this->assertMatchesRegularExpression('~class="mt-brand".*?id="mt-btn-witryna" class="mt-tool mt-site is-sub".*?aria-describedby="mt-tip-witryna".*?class="mt-groups"~s', $html);
+        $this->assertMatchesRegularExpression('~<div id="mt-tip-witryna" class="mt-tip" role="tooltip"[^>]*>\s*Edytujesz: <strong>test</strong> \(witryna w sieci\)~', $html);
+        $this->assertStringContainsString('@keydown.escape="tip = false"', $html);
+        $this->assertMatchesRegularExpression('~id="mt-panel-witryna".*?<strong>test</strong><span class="mt-site-kind">witryna w sieci</span>.*?admin/witryny~s', $html);
         $this->assertSame(1, substr_count($html, 'id="mt-btn-witryna"'));
+        // Pasek nad treścią zostaje w kodzie (telefon), a na szerokim ekranie Metro go chowa.
+        $this->assertStringContainsString('class="admin-site-bar ', $html);
+        $this->assertStringContainsString('body.nav-top .admin-site-bar { display: none; }', $html);
     }
 
-    public function test_metro_przy_jednej_witrynie_pokazuje_sama_nazwe(): void
+    public function test_metro_przy_jednej_witrynie_ikona_bez_listy_witryn(): void
     {
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'admin_scheme' => 'metro']);
 
-        $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()
-            ->assertSee('class="mt-site mt-site--static"', false)
-            ->assertSee('<span class="mt-site-name">'.e(SiteSetting::current()->site_name).'</span>', false)
-            ->assertDontSee('id="mt-btn-witryna"', false);
+        $html = $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('id="mt-btn-witryna" class="mt-tool mt-site"', $html);
+        $this->assertStringContainsString('<strong>'.e(SiteSetting::current()->site_name).'</strong> (witryna główna)', $html);
+        $this->assertStringNotContainsString('class="mt-site-switch"', $html);
     }
 }
