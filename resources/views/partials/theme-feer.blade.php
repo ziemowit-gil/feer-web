@@ -103,7 +103,7 @@
        zostawiać żółtego tekstu na jasnym lub niebieskim tle. Wszystko dostaje czarne tło, żółty tekst i żółte obramowania. */
     html.contrast-bw body :is(span, a, i, summary, details, time, small, figure, figcaption, dd, dt, blockquote, table, thead, tbody, tr, td, th):not(img) { background-color: #000 !important; background-image: none !important; color: #ff0 !important; border-color: #ff0 !important; box-shadow: none !important; }
     html.contrast-bw body .site-topbar-feer a, html.contrast-bw body .site-topbar-feer > div:first-child > button, html.contrast-bw body .site-topbar-feer > div:first-child > button[aria-expanded="true"],
-    html.contrast-bw body .site-topbar-feer > div:first-child > button:hover { background: #000 !important; color: #ff0 !important; border-color: #ff0 !important; }
+    html.contrast-bw body .site-topbar-feer > div:first-child > button:hover, html.contrast-bw body .site-topbar-feer .topbar-pill, html.contrast-bw body .site-topbar-feer .site-search-panel button { background: #000 !important; color: #ff0 !important; border-color: #ff0 !important; }
     html.contrast-bw body .site-topbar-feer form[role="search"] { border-color: #ff0; }
     html.contrast-bw body .feer-card, html.contrast-bw body a.feer-card { border: 2px solid #ff0 !important; }
     html.contrast-bw body a[class*="bg-"], html.contrast-bw body button[class*="bg-"] { border: 2px solid #ff0 !important; }
@@ -179,10 +179,19 @@
     /* Pasek górny (dostępność, konto, wyszukiwarka, BIP, social): jeden smukły, ciemny rząd — biały tekst na #1D1D1A (16,9:1). */
     .site-topbar-feer > div:first-child { padding-top: .125rem; padding-bottom: .125rem; }
     .site-topbar-feer > div:first-child a,
-    .site-topbar-feer > div:first-child > button { color: #fff !important; }
-    .site-topbar-feer > div:first-child > button { border-color: #fff !important; background: transparent !important; border-radius: .375rem !important; }
+    .site-topbar-feer > div:first-child > button,
+    .site-topbar-feer .topbar-pill { color: #fff !important; }
+    .site-topbar-feer > div:first-child > button,
+    .site-topbar-feer .topbar-pill { border-color: #fff !important; background: transparent !important; border-radius: .375rem !important; }
     .site-topbar-feer > div:first-child > button:hover,
-    .site-topbar-feer > div:first-child > button[aria-expanded="true"] { background: #fff !important; color: var(--color-brand-3) !important; }
+    .site-topbar-feer > div:first-child > button[aria-expanded="true"],
+    .site-topbar-feer .topbar-pill:hover,
+    .site-topbar-feer .topbar-pill[aria-expanded="true"] { background: #fff !important; color: var(--color-brand-3) !important; }
+    /* Rozwinięta wyszukiwarka pod ciemnym paskiem: białe pole i biały przycisk z ciemnym tekstem (16,9:1), obrys fokusu biały. */
+    .site-topbar-feer .site-search-panel input { border-color: #fff; }
+    .site-topbar-feer .site-search-panel button[type="submit"] { background: #fff; color: #1d1d1a; }
+    .site-topbar-feer .site-search-panel button[type="submit"]:hover { background: var(--color-brand-light); }
+    .site-topbar-feer .site-search-panel :is(input, button):focus-visible { --tw-ring-color: #fff; --tw-ring-offset-color: #1d1d1a; }
     .site-topbar-feer > div:first-child a:hover { text-decoration: underline; }
     .site-topbar-feer form[role="search"] { border-color: #fff; }
 

@@ -7,8 +7,9 @@
     użytkownika przetrwał przejście na kolejną stronę.
 
     WCAG: wszystkie cele dotyku mają ≥ 36×36 px (2.5.8), linki zewnętrzne
-    zapowiadają nową kartę (3.2.5 / G201), wyszukiwarka ma etykietę
-    i landmark `search`, Escape zamyka panel i oddaje fokus przyciskowi.
+    zapowiadają nową kartę (3.2.5 / G201), wyszukiwarka to przycisk z lupą
+    rozwijający pole pod paskiem (etykieta, landmark `search`), Escape zamyka
+    panel albo wyszukiwarkę i oddaje fokus przyciskowi.
 --}}
 @php
     $feerBar = ($siteSettings->site_template ?? 'default') === 'feer';
@@ -28,9 +29,9 @@
 @endphp
 
 <div class="site-topbar border-b {{ $feerBar ? 'site-topbar-feer border-ink bg-ink' : 'border-gray-200 bg-gray-50' }}"
-     x-data="{ open: (function () { try { return localStorage.getItem('a11y-panel-open') === '1' } catch (e) { return false } })() }"
+     x-data="{ open: (function () { try { return localStorage.getItem('a11y-panel-open') === '1' } catch (e) { return false } })(), search: false }"
      x-effect="(() => { try { localStorage.setItem('a11y-panel-open', open ? '1' : '0') } catch (e) {} })()"
-     @keydown.escape.window="if (open) { open = false; $refs.a11yToggle.focus() }"
+     @keydown.escape.window="if (open) { open = false; $refs.a11yToggle.focus() } else if (search) { search = false; $refs.searchToggle.focus() }"
      @a11y-open.window="open = true; $nextTick(() => $refs.a11yToggle.focus())">
 
     <div class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-1.5 sm:gap-4">
@@ -72,23 +73,18 @@
 
         <div class="ml-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-3">
 
-            {{-- Wyszukiwarka (gdy nie przeniesiona do paska menu) --}}
+            {{-- Wyszukiwarka (gdy nie przeniesiona do paska menu): przycisk z lupą rozwija pole pod paskiem (disclosure:
+                 aria-expanded, fokus od razu w polu, Esc zamyka i wraca na przycisk). Bez JS pole jest widoczne (x-cloak + noscript). --}}
             @unless ($searchInNav)
-                <form action="{{ route('search') }}" method="GET" role="search" aria-label="Wyszukiwarka serwisu"
-                      class="hidden items-center overflow-hidden rounded-md border border-gray-300 bg-white transition focus-within:border-brand focus-within:ring-2 focus-within:ring-brand sm:flex">
-                    <label for="site-search" class="sr-only">Wyszukaj w serwisie</label>
-                    <input id="site-search" type="search" name="q" value="{{ request('q') }}"
-                           placeholder="Szukaj w serwisie" autocomplete="off"
-                           class="min-h-9 w-40 border-0 bg-transparent px-3 text-sm text-ink placeholder:text-gray-600 focus:outline-none focus:ring-0 md:w-48">
-                    <button type="submit"
-                            class="flex h-9 w-9 flex-none items-center justify-center text-ink transition hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
-                            aria-label="Szukaj">
-                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                    </button>
-                </form>
-                <a href="{{ route('search') }}" class="{{ $topLink }} min-w-9 justify-center sm:hidden" aria-label="Wyszukaj w serwisie">
+                <button type="button" x-ref="searchToggle" data-topbar-search
+                        @click="search = ! search; if (search) { open = false; $nextTick(() => $refs.searchInput.focus()) }"
+                        aria-expanded="false" :aria-expanded="search.toString()" aria-controls="site-search-panel"
+                        class="topbar-pill inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
+                        :class="search ? 'border-brand bg-brand text-white hover:bg-brand-dark' : 'border-gray-300 bg-white text-ink hover:border-brand hover:text-brand'">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                </a>
+                    <span class="hidden sm:inline">Szukaj</span>
+                    <span class="sr-only sm:hidden">Szukaj w serwisie</span>
+                </button>
             @endunless
 
             {{-- BIP --}}
@@ -116,6 +112,20 @@
             @endif
         </div>
     </div>
+
+    @unless ($searchInNav)
+        <div id="site-search-panel" class="site-search-panel border-t {{ $feerBar ? 'border-gray-600' : 'border-gray-200' }}" x-show="search" x-cloak>
+            <form action="{{ route('search') }}" method="GET" role="search" aria-label="Wyszukiwarka serwisu" class="mx-auto flex max-w-6xl flex-wrap gap-2 px-4 py-3">
+                <label for="site-search" class="sr-only">Wyszukaj w serwisie</label>
+                <input id="site-search" x-ref="searchInput" type="search" name="q" value="{{ request('q') }}"
+                       placeholder="Szukaj w serwisie" autocomplete="off"
+                       class="min-h-11 min-w-0 flex-1 rounded-md border-2 border-ink bg-white px-3 text-base text-ink placeholder:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-5 text-sm font-bold text-white transition hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>Szukaj
+                </button>
+            </form>
+        </div>
+    @endunless
 
     @include('partials.a11y-panel')
 </div>

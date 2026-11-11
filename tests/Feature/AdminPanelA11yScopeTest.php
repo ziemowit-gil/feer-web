@@ -88,4 +88,15 @@ class AdminPanelA11yScopeTest extends TestCase
         $this->assertStringContainsString('<strong>'.e(SiteSetting::current()->site_name).'</strong> (witryna główna)', $html);
         $this->assertStringNotContainsString('class="mt-site-switch"', $html);
     }
+
+    public function test_wyrazny_fokus_jest_czerwony_i_ciagly(): void
+    {
+        $css = file_get_contents(resource_path('css/app.css'));
+        preg_match('~html\.a11y-focus \*:focus-visible \{(.*?)\}~s', $css, $m);
+
+        $this->assertNotEmpty($m, 'reguła wyraźnego fokusu');
+        $this->assertStringContainsString('outline: 3px solid #e60023 !important;', $m[1]);
+        $this->assertStringContainsString('outline-style: solid !important;', $m[1]);
+        $this->assertStringNotContainsString('dashed', $m[1]);
+    }
 }

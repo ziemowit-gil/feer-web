@@ -213,7 +213,10 @@ class FeerTemplateTest extends TestCase
         $this->assertStringContainsString('whitespace-nowrap', $bar);
         $this->assertStringContainsString('xl:inline-flex', $bar);
         $this->assertLessThan(strpos($bar, 'Nr konta:'), strpos($bar, 'Wesprzyj naszą działalność'));
-        $this->assertStringContainsString('placeholder="Szukaj w serwisie"', $bar);
+        // Wyszukiwarka to przycisk z lupą, który rozwija pole pod paskiem.
+        $this->assertMatchesRegularExpression('~<button type="button" x-ref="searchToggle" data-topbar-search.*?aria-controls="site-search-panel"~s', $bar);
+        $this->assertStringContainsString('fa-magnifying-glass', $bar);
+        $this->assertMatchesRegularExpression('~<div id="site-search-panel"[^>]*x-show="search" x-cloak>.*?placeholder="Szukaj w serwisie"~s', $html);
         $this->assertStringNotContainsString('bg-brand-light/50', $html);
     }
 

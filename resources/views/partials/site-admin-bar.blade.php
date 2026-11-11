@@ -81,6 +81,8 @@
            (nie dziedziczy rozmiaru i kroju z szablonu). */
         .site-admin-bar .mt-nav { position: relative; z-index: 60; display: block; background: var(--m-ink); color: #fff; font-size: 1rem; line-height: 1.5; text-align: left; }
         .site-admin-bar .mt-nav :is(ul, p) { margin: 0; }
+        /* Kreska pod paskiem: oddziela go od ciemnych pasków szablonu (np. pasek górny FEER), żeby nie zlewały się w jeden. */
+        .site-admin-bar .mt-nav { box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .28); }
         .site-admin-bar .mt-nav a { text-decoration: none; }
         @media (min-width: 1024px) { .site-admin-bar .mt-nav { position: relative; z-index: 60; } }
         @media (max-width: 1023.98px) {
