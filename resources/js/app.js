@@ -852,16 +852,20 @@ document.querySelectorAll('[data-a11y-underline-links]').forEach((btn) => {
 });
 
 // Wyraźny wskaźnik fokusu (gruby, kontrastowy outline na aktywnym elemencie)
-function applyFocusIndicator(active) {
+function applyFocusIndicator(active, persist = true) {
     document.documentElement.classList.toggle('a11y-focus', active);
-    a11yStore.set('a11y-focus', active ? '1' : '0');
+    if (persist) a11yStore.set('a11y-focus', active ? '1' : '0');
     document.querySelectorAll('[data-a11y-focus]').forEach((btn) => {
         btn.setAttribute('aria-pressed', String(active));
     });
 }
 
-const storedFocus = a11yStore.get('a11y-focus') === '1';
-if (storedFocus) applyFocusIndicator(true);
+// Na stronie wyraźny fokus jest domyślnie włączony — wyłącza go dopiero przycisk „Wyraźny fokus” (zapamiętane „0”).
+// W panelu (bez tego przycisku) tylko wtedy, gdy ktoś go wcześniej włączył.
+const FOCUS_DEFAULT = A11Y_PREFIX === '';
+const storedFocusValue = a11yStore.get('a11y-focus');
+const storedFocus = storedFocusValue === null ? FOCUS_DEFAULT : storedFocusValue === '1';
+applyFocusIndicator(storedFocus, false);
 
 document.querySelectorAll('[data-a11y-focus]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -928,6 +932,8 @@ document.querySelectorAll('[data-a11y-reset]').forEach((btn) => {
         applyLineHeight('');
         applySansFont(false);
         applyUnderlineLinks(false);
+        a11yStore.remove('a11y-focus');
+        applyFocusIndicator(FOCUS_DEFAULT, false);
         applyContrastMode('');
         if (document.documentElement.classList.contains('no-animations')) {
             animationsButton?.click();

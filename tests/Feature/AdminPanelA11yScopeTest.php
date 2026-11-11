@@ -99,4 +99,15 @@ class AdminPanelA11yScopeTest extends TestCase
         $this->assertStringContainsString('outline-style: solid !important;', $m[1]);
         $this->assertStringNotContainsString('dashed', $m[1]);
     }
+
+    public function test_wyrazny_fokus_jest_domyslnie_wlaczony_na_stronie(): void
+    {
+        $js = file_get_contents(resource_path('js/app.js'));
+
+        // Strona: włączony, dopóki ktoś go nie wyłączy (zapamiętane „0”); panel: tylko po włączeniu. Reset wraca do domyślnego.
+        $this->assertStringContainsString("const FOCUS_DEFAULT = A11Y_PREFIX === '';", $js);
+        $this->assertStringContainsString("const storedFocus = storedFocusValue === null ? FOCUS_DEFAULT : storedFocusValue === '1';", $js);
+        $this->assertStringContainsString('applyFocusIndicator(storedFocus, false);', $js);
+        $this->assertStringContainsString('applyFocusIndicator(FOCUS_DEFAULT, false);', $js);
+    }
 }
