@@ -480,7 +480,7 @@
                 </details>
                 @include('admin.pages.partials.metka')
                 @include('admin.pages.partials.attachments-visibility')
-                @if ($siteSettings->themeVariant() === 'feer_is')
+                @if ($siteSettings->themeVariant() === 'feer_is' || $siteSettings->site_template === 'bu2')
                     @include('admin.pages.partials.service-icon')
                 @endif
                 <details class="pe-section rounded-md bg-white" data-pe-section="dostep" data-pe-toggles>

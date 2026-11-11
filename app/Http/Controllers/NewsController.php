@@ -83,8 +83,8 @@ class NewsController extends Controller
             $related = collect();
         }
 
-        // Szablon FEER ma własny widok wpisu (nagłówek z zajawką, narzędzia artykułu z boku).
-        $view = $isFeer ? 'news.show-feer' : 'news.show';
+        // Szablon FEER ma własny widok wpisu (nagłówek z zajawką, narzędzia artykułu z boku); „bu2” — jak podstrona.
+        $view = $isFeer ? 'news.show-feer' : (SiteSetting::current()->site_template === 'bu2' ? 'templates.bu2.news-show' : 'news.show');
 
         return view($view, compact('news', 'brandColor', 'preview', 'related', 'categoryNews'));
     }

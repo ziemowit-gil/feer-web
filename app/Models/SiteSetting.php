@@ -255,6 +255,7 @@ class SiteSetting extends Model implements HasMedia
         'elearning'    => 'eLearning (platforma kursów — granatowy nagłówek, hero, kursy w kategoriach, liczby, dla kogo, eksperci, partnerzy, FAQ)',
         'podcasts'     => 'Podcasty (ciemny nagłówek, najnowszy odcinek z odtwarzaczem, siatka odcinków, partnerzy)',
         'vm'           => 'VM — fundacja (slider z kartą, blok powitalny, Wiedza, newsletter; styl Vis Maior)',
+        'bu2'          => 'BU2 — jednostka uczelni (biały nagłówek z mega menu, menu boczne z drzewa menu, slider z panelem, aktualności, kontakt)',
     ];
 
     /**
@@ -275,6 +276,7 @@ class SiteSetting extends Model implements HasMedia
         'elearning'    => ['eLearning', 'Granatowy nagłówek, kursy w kategoriach, eksperci, FAQ.', '#1e3a8a'],
         'podcasts'     => ['Podcasty', 'Ciemny nagłówek, najnowszy odcinek z odtwarzaczem, siatka odcinków.', '#111827'],
         'vm'           => ['VM — Vis Maior', 'Slider z kartą, blok powitalny, sekcja Wiedza, newsletter.', '#15803d'],
+        'bu2'          => ['BU2', 'Uczelniany: mega menu, menu boczne, zakładki i kafle podstron, slider z panelem.', '#00488e'],
     ];
 
     /**

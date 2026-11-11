@@ -288,6 +288,20 @@ class HomeController extends Controller
         return view('templates.podcasts.home', ['latest' => $list->first(), 'episodes' => $list->slice(1)->values(), 'partners' => $partners]);
     }
 
+    /**
+     * Strona główna szablonu „bu2”: slider (slajdy strony głównej, gdy moduł „hero” jest włączony), karuzela dziewięciu
+     * najnowszych aktualności i sekcja „Kontakt” z danymi z ustawień. Sekcje bez danych się nie pokazują.
+     */
+    private function bu2Home(SiteSetting $settings, Collection $slides)
+    {
+        $newsItems = $settings->isModuleEnabled('news')
+            ? News::published()->forCurrentSite()->orderByDesc('published_at')->limit(9)->get()
+            : collect();
+        $slides = $settings->isModuleEnabled('hero') ? $slides->values() : collect();
+
+        return view('templates.bu2.home', compact('slides', 'newsItems'));
+    }
+
     /** Renderuje stronę główną w szablonie "wrzos" (siatka aktualności 4×2, blok "Kim jesteśmy?", karty wartości). */
     private function wrzosHome(SiteSetting $settings, Collection $partners)
     {
@@ -462,6 +476,9 @@ class HomeController extends Controller
         }
         if ($template === 'podcasts') {
             return $this->podcastsHome($settings, $slides, $partners);
+        }
+        if ($template === 'bu2') {
+            return $this->bu2Home($settings, $slides);
         }
         if ($template === 'wrzos') {
             return $this->wrzosHome($settings, $partners);

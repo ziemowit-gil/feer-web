@@ -69,5 +69,5 @@ return [
 
     // Szablony witryny dostępne tylko w wersji płatnej (klucze SiteSetting::SITE_TEMPLATES).
     // Witryna, która już ma taki szablon, dalej z nim działa — blokowany jest tylko wybór.
-    'paid_templates' => ['municipality', 'federation', 'wrzos', 'vm', 'ngo_mix', 'ngo_3', 'feer', 'test2', 'test3', 'elearning', 'podcasts'],
+    'paid_templates' => ['municipality', 'federation', 'wrzos', 'vm', 'ngo_mix', 'ngo_3', 'feer', 'test2', 'test3', 'elearning', 'podcasts', 'bu2'],
 ];

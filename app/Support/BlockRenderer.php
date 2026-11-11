@@ -396,9 +396,11 @@ class BlockRenderer
                 $ext = strtoupper(pathinfo(parse_url($a['url'], PHP_URL_PATH) ?: '', PATHINFO_EXTENSION));
                 $label = $a['label'] !== '' ? $a['label'] : basename(parse_url($a['url'], PHP_URL_PATH) ?: $a['url']);
                 $desc = $a['description'] !== '' ? '<span class="content-file-desc">'.e($a['description']).'</span>' : '';
+                // Rodzaj i rozmiar pliku w nazwie linku (np. „Regulamin (PDF, 690,5 KB)”) — rozmiar tylko dla plików z naszej biblioteki.
+                $meta = implode(', ', array_filter([$ext, self::localFileSize($a['url'])]));
 
                 return '<p class="content-file"><a href="'.e($a['url']).'" download>'.e($label)
-                    .($ext !== '' ? ' <span class="content-file-meta">('.e($ext).')</span>' : '').'</a>'.$desc.'</p>';
+                    .($meta !== '' ? ' <span class="content-file-meta">('.e($meta).')</span>' : '').'</a>'.$desc.'</p>';
 
             case 'banner':
                 return $this->renderBanner($a);
@@ -470,6 +472,49 @@ class BlockRenderer
         }
 
         return $html.'</tbody></table>';
+    }
+
+    /**
+     * Rozmiar pliku z naszej biblioteki (adres /storage/… albo plik w public/) w zapisie „690,5 KB”; dla adresów
+     * zewnętrznych i brakujących plików null. Liczony przy zapisie treści (bloki zamieniają się wtedy w HTML).
+     */
+    public static function localFileSize(string $url): ?string
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        if ($host !== null && $host !== parse_url(url('/'), PHP_URL_HOST)) {
+            return null;
+        }
+        $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
+        if ($path === '' || str_contains($path, '..')) {
+            return null;
+        }
+        $path = rawurldecode($path);
+        $candidates = str_starts_with($path, 'storage/')
+            ? [storage_path('app/public/'.substr($path, strlen('storage/'))), public_path($path)]
+            : [public_path($path)];
+        foreach ($candidates as $file) {
+            if (is_file($file) && ($bytes = @filesize($file)) !== false) {
+                return self::humanSize($bytes);
+            }
+        }
+
+        return null;
+    }
+
+    private static function humanSize(int $bytes): string
+    {
+        if ($bytes < 1024) {
+            return $bytes.' B';
+        }
+        $units = ['KB', 'MB', 'GB'];
+        $value = $bytes / 1024;
+        $i = 0;
+        while ($value >= 1024 && $i < count($units) - 1) {
+            $value /= 1024;
+            $i++;
+        }
+
+        return str_replace('.', ',', (string) round($value, 1)).' '.$units[$i];
     }
 
     /** Adres YouTube / Vimeo → adres osadzenia (YouTube w trybie bez ciasteczek). */

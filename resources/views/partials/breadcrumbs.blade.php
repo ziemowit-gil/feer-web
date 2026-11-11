@@ -4,7 +4,9 @@
     $isFeer = ($siteSettings->site_template ?? 'default') === 'feer';
 @endphp
 
-@if ($isFeer)
+@if (($siteSettings->site_template ?? 'default') === 'bu2')
+    @include('templates.bu2.partials.breadcrumbs', ['items' => $items])
+@elseif ($isFeer)
 {{-- FEER: bez szarego paska — okruszki w szerokości treści, niebieskie szewrony, bieżąca strona jako kafelek. Kontrast: ink/muted na bieli ≥ 7:1. --}}
 <nav aria-label="Ścieżka nawigacyjna" class="mx-auto max-w-6xl px-4 pt-5">
     <ol class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">

@@ -29,6 +29,18 @@ class ProjectController extends Controller
             return view('templates.federation.projects-index', compact('categories', 'hasArchive'));
         }
 
+        // Szablon „bu2”: jedna lista „Projekty” w dwóch grupach — realizowane (w trakcie, planowane) i zrealizowane.
+        if (SiteSetting::current()->site_template === 'bu2') {
+            $all = Project::forCurrentSite()->where('is_published', true)->whereNull('parent_id')
+                ->orderBy('order')->orderBy('title')->get(['id', 'site_id', 'title', 'slug', 'status', 'is_completed', 'order']);
+            [$completedProjects, $currentProjects] = $all->partition(fn (Project $p) => $p->is_completed || $p->status === 'completed');
+
+            return view('templates.bu2.projects-index', [
+                'currentProjects' => $currentProjects->values(),
+                'completedProjects' => $completedProjects->values(),
+            ]);
+        }
+
         // Opcja „Nawigacja kafelkowa” (Ustawienia → Treści): działania jako duże kolorowe kafelki — w każdym szablonie.
         if (SiteSetting::current()->projects_layout === 'tiles') {
             return view('projects.index-tiles', compact('categories', 'hasArchive'));

@@ -106,6 +106,12 @@ class PageController extends Controller
             return response()->view('templates.federation.cooperation', $data);
         }
 
+        // Szablon witryny „bu2”: każda strona w jednym układzie (menu boczne z Menu nawigacji + treść); warianty
+        // page_template (szeroka, hero, landing…) w tym szablonie się nie stosują.
+        if (SiteSetting::current()->site_template === 'bu2') {
+            return response()->view('templates.bu2.page', $data);
+        }
+
         // Szablon „Strona działu": aktualności (opcjonalnie z jednej kategorii) do sekcji pod sliderem.
         if ($page->page_template === 'section' && $page->usesStandardLayout()) {
             $data['sectionPosts'] = $this->sectionPosts($page);

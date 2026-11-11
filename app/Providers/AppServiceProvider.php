@@ -134,7 +134,7 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        View::composer(['partials.footer', 'templates.municipality.partials.footer', 'templates.ngo.partials.footer', 'templates.wrzos.partials.footer', 'templates.vm.partials.footer', 'templates.test2.partials.footer', 'templates.test3.partials.footer', 'templates.elearning.partials.footer', 'templates.podcasts.partials.footer'], function ($view) {
+        View::composer(['partials.footer', 'templates.municipality.partials.footer', 'templates.ngo.partials.footer', 'templates.wrzos.partials.footer', 'templates.vm.partials.footer', 'templates.test2.partials.footer', 'templates.test3.partials.footer', 'templates.elearning.partials.footer', 'templates.podcasts.partials.footer', 'templates.bu2.partials.footer'], function ($view) {
             $siteSettings = SiteSetting::current();
 
             $view->with(

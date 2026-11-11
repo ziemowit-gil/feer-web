@@ -4,11 +4,11 @@
 --}}
 @php
     $serviceIcon = (string) old('layout_data.icon', ($page->layout_data ?? [])['icon'] ?? '');
-    $suggested = ['description', 'groups', 'school', 'work', 'health_and_safety', 'gavel', 'accessibility_new', 'volunteer_activism', 'support_agent', 'home', 'family_restroom', 'payments', 'mail', 'call', 'event', 'menu_book', 'computer', 'translate', 'hearing', 'visibility', 'psychology', 'directions_bus'];
+    $suggested = ['description', 'groups', 'school', 'work', 'health_and_safety', 'gavel', 'accessibility_new', 'volunteer_activism', 'support_agent', 'home', 'family_restroom', 'payments', 'mail', 'call', 'event', 'menu_book', 'computer', 'translate', 'hearing', 'visibility', 'psychology', 'directions_bus', 'lan', 'map', 'router', 'dns', 'cloud', 'security', 'wifi', 'video_call'];
 @endphp
 <details class="pe-section rounded-md bg-white" data-pe-section="ikona-uslugi">
     <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden">
-        <span>Ikona w siatce usług (FEER IS)</span>
+        <span>{{ $siteSettings->site_template === 'bu2' ? 'Ikona strony (kafle podstron BU2)' : 'Ikona w siatce usług (FEER IS)' }}</span>
         <i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i>
     </summary>
     <div class="border-t border-gray-100 px-6 pb-6 pt-5">
@@ -21,6 +21,6 @@
         <datalist id="service-icon-suggestions">
             @foreach ($suggested as $name)<option value="mi-{{ $name }}">@endforeach
         </datalist>
-        <p id="service-icon-help" class="mt-2 text-sm text-ink">Ikona pokazuje się obok tytułu tej strony, gdy jest ona usługą w zakładce portalu. Wpisz nazwę z Material Symbols z prefiksem <code>mi-</code> (np. <code>mi-groups</code>) albo z Font Awesome (<code>fa-solid fa-users</code>). Puste pole to ikona dokumentu.</p>
+        <p id="service-icon-help" class="mt-2 text-sm text-ink">{{ $siteSettings->site_template === 'bu2' ? 'Ikona pokazuje się w kafelku tej strony na stronie nadrzędnej (lista podstron).' : 'Ikona pokazuje się obok tytułu tej strony, gdy jest ona usługą w zakładce portalu.' }} Wpisz nazwę z Material Symbols z prefiksem <code>mi-</code> (np. <code>mi-groups</code>) albo z Font Awesome (<code>fa-solid fa-users</code>). Puste pole to ikona dokumentu.</p>
     </div>
 </details>

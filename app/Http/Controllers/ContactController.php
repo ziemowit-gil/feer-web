@@ -51,7 +51,8 @@ class ContactController extends Controller
     public function render(?\App\Models\Page $page = null)
     {
         $settings = SiteSetting::current();
-        $view = match ($settings->contactLayoutValue()) {
+        // Szablon „bu2” ma jeden układ kontaktu (menu boczne, dane teleadresowe, treść strony, formularz).
+        $view = $settings->site_template === 'bu2' ? 'templates.bu2.contact' : match ($settings->contactLayoutValue()) {
             'split' => 'contact.show-split',
             'card'  => 'contact.show-card',
             'tabs'  => 'contact.show-tabs',
