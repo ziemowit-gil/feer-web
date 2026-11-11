@@ -94,7 +94,7 @@
                                         @if ($block['heading'])<p class="mt-block-title" id="{{ $tnBlockId }}">{{ $block['heading'] }}</p>@endif
                                         <ul class="mt-tiles" role="list" @if ($block['heading']) aria-labelledby="{{ $tnBlockId }}" @endif>
                                             @foreach ($block['items'] as $item)
-                                                <li class="mt-cell">
+                                                <li class="mt-cell{{ $item['children'] !== [] ? ' has-children' : '' }}">
                                                     <a href="{{ $item['url'] }}" class="mt-tile{{ $item['active'] ? ' is-current' : '' }}{{ ($item['premium'] ?? false) ? ' tm-premium' : '' }}"
                                                        @if ($item['active'] && $item['children'] === []) aria-current="page" @endif>
                                                         <i class="mt-tile-icon fa-solid {{ $item['icon'] }}" aria-hidden="true"></i>

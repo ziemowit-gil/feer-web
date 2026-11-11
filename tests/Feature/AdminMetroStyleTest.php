@@ -109,6 +109,11 @@ class AdminMetroStyleTest extends TestCase
         // Style: na szerokim ekranie pasek boczny znika, menu przyklejone, kafle po dwa w bloku.
         $this->assertStringContainsString('body.nav-top .admin-sidebar { display: none !important; }', $html);
         $this->assertStringContainsString('.admin-metro .mt-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))', $html);
+        // Kafle równe: jedna wysokość, a pozycja z podpozycjami zajmuje cały rząd (kafel + lista obok), nie rozciąga sąsiadów.
+        $this->assertStringContainsString('min-height: 5.5rem; padding: .625rem .75rem;', $html);
+        $this->assertStringContainsString('.admin-metro .mt-cell.has-children { grid-column: 1 / -1;', $html);
+        $this->assertStringContainsString('.admin-metro .mt-cell.has-children > .mt-tile { align-self: start; }', $html);
+        $this->assertStringContainsString('class="mt-cell has-children"', $nav);
         $this->assertStringContainsString("topActive() { return this.topNav && window.matchMedia('(min-width: 1024px)').matches; }", $html);
 
         // Profil mówi, że wybór „Wysuwane / Rozwijane” nie działa przy Metro.

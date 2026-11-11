@@ -155,7 +155,9 @@
     .admin-metro .mt-site-switch { padding-top: .5rem; border-top: 1px solid var(--m-line); }
     .admin-metro .mt-avatar { display: inline-flex; width: 2rem; height: 2rem; align-items: center; justify-content: center; background: #fff; color: var(--m-ink); font-weight: 700; }
 
-    /* Mega menu grupy: panel pod paskiem na całą szerokość, bloki w kolumnach, w bloku kafle po dwa. */
+    /* Mega menu grupy: panel pod paskiem na całą szerokość, bloki w kolumnach, w bloku kafle po dwa — wszystkie tej samej
+       wysokości (mieszczą nazwę w dwóch wierszach). Pozycja z podpozycjami zajmuje cały rząd bloku: kafel w lewej kolumnie,
+       lista podpozycji obok w prawej, więc nie rozciąga sąsiednich kafli i siatka zostaje równa. Kolejność jak w menu. */
     .admin-metro .mt-mega { position: absolute; top: 100%; left: 0; right: 0; max-height: calc(100vh - 3.5rem); overflow-y: auto; background: var(--m-bg); color: var(--m-ink); border-bottom: 1px solid var(--m-line-strong); }
     .admin-metro .mt-mega-inner { padding: 1.25rem 1.5rem 1.75rem; }
     .admin-metro .mt-mega-title { margin: 0 0 1rem; color: var(--m-ink); font-family: var(--m-font-heading); font-size: 1.75rem; font-weight: 300; line-height: 1.2; }
@@ -163,7 +165,9 @@
     .admin-metro .mt-block-title { margin: 0 0 .5rem; color: var(--m-muted); font-size: .8125rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
     .admin-metro .mt-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .375rem; margin: 0; padding: 0; list-style: none; }
     .admin-metro .mt-cell { display: flex; min-width: 0; flex-direction: column; }
-    .admin-metro .mt-tile { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: space-between; gap: .625rem; min-height: 5rem; padding: .625rem .75rem;
+    .admin-metro .mt-cell.has-children { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .375rem; }
+    .admin-metro .mt-cell.has-children > .mt-tile { align-self: start; }
+    .admin-metro .mt-tile { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: space-between; gap: .5rem; min-height: 5.5rem; padding: .625rem .75rem;
         background: var(--m-surface); color: var(--m-ink); text-decoration: none; transition: background-color .15s, transform .1s; }
     .admin-metro .mt-tile:hover { background: var(--m-head); }
     .admin-metro .mt-tile:active { transform: scale(.98); }
@@ -178,8 +182,8 @@
     .admin-metro .mt-tile.is-current:hover { background: var(--m-accent-hover); }
     .admin-metro .mt-tile.is-current .mt-tile-icon { color: inherit; }
     .admin-metro .mt-tile.is-current .mt-tile-badge { background: var(--m-accent-fg); color: var(--m-accent); }
-    .admin-metro .mt-children { margin: 2px 0 0; padding: 0; list-style: none; background: var(--m-surface); }
-    .admin-metro .mt-children a { display: flex; align-items: center; min-height: 2.25rem; padding: .25rem .75rem; color: var(--m-ink); font-size: .8125rem; text-decoration: none; }
+    .admin-metro .mt-children { display: flex; flex-direction: column; justify-content: center; min-height: 5.5rem; margin: 0; padding: .125rem 0; list-style: none; background: var(--m-surface); }
+    .admin-metro .mt-children a { display: flex; align-items: center; min-height: 1.75rem; padding: .125rem .75rem; color: var(--m-ink); font-size: .8125rem; text-decoration: none; }
     .admin-metro .mt-children a:hover { background: var(--m-hover); }
     .admin-metro .mt-children a:focus-visible { outline: 3px solid var(--m-focus); outline-offset: -3px; }
     .admin-metro .mt-children a.is-current { font-weight: 700; box-shadow: inset 4px 0 0 var(--m-accent); }
