@@ -739,6 +739,17 @@ const FONT_MAX = 150;
 function applyFontSize(size) {
     document.documentElement.style.setProperty('--a11y-font-size', `${size}%`);
     a11yStore.set('a11y-font-size', String(size));
+    syncFontUi(size);
+}
+
+// Pasek: bieżący rozmiar na środkowym przycisku (klik = domyślny), A−/A+ wyszarzone na granicach.
+function syncFontUi(size) {
+    document.querySelectorAll('[data-a11y-font-value]').forEach((el) => { el.textContent = `${size}%`; });
+    document.querySelectorAll('[data-a11y-font="reset"]').forEach((btn) => {
+        if (btn.querySelector('[data-a11y-font-value]')) btn.setAttribute('aria-label', `Rozmiar tekstu ${size}% — przywróć domyślny`);
+    });
+    document.querySelectorAll('[data-a11y-font="up"]').forEach((btn) => btn.setAttribute('aria-disabled', String(size >= FONT_MAX)));
+    document.querySelectorAll('[data-a11y-font="down"]').forEach((btn) => btn.setAttribute('aria-disabled', String(size <= FONT_MIN)));
 }
 
 document.querySelectorAll('[data-a11y-font]').forEach((button) => {
@@ -759,6 +770,8 @@ document.querySelectorAll('[data-a11y-font]').forEach((button) => {
 const storedFontSize = a11yStore.get('a11y-font-size');
 if (storedFontSize) {
     applyFontSize(parseInt(storedFontSize, 10));
+} else {
+    syncFontUi(100);
 }
 
 // Rozstrzał liter: '' | 'a11y-ls-1' | 'a11y-ls-2'
@@ -772,8 +785,9 @@ function applyLetterSpacing(mode) {
     document.querySelectorAll('[data-a11y-ls]').forEach((btn) => {
         const idx = LS_MODES.indexOf(mode);
         const next = LS_MODES[(idx + 1) % LS_MODES.length];
-        btn.setAttribute('aria-label', 'Rozstrzał liter: ' + (LS_LABELS[idx] || 'Normalny') + ' → kliknij: ' + LS_LABELS[(idx + 1) % LS_MODES.length]);
+        btn.setAttribute('aria-label', (btn.dataset.a11yName || 'Rozstrzał liter') + ': ' + (LS_LABELS[idx] || 'Normalny') + ' → kliknij: ' + LS_LABELS[(idx + 1) % LS_MODES.length]);
         btn.setAttribute('aria-pressed', String(!!mode));
+        btn.dataset.level = String(Math.max(0, idx));
     });
 }
 
@@ -817,8 +831,9 @@ function applyLineHeight(mode) {
     document.querySelectorAll('[data-a11y-lh]').forEach((btn) => {
         const idx = LH_MODES.indexOf(mode);
         const next = LH_MODES[(idx + 1) % LH_MODES.length];
-        btn.setAttribute('aria-label', 'Odstępy między wierszami: ' + (LH_LABELS[idx] || 'Normalne') + ' → kliknij: ' + LH_LABELS[(idx + 1) % LH_MODES.length]);
+        btn.setAttribute('aria-label', (btn.dataset.a11yName || 'Odstępy między wierszami') + ': ' + (LH_LABELS[idx] || 'Normalne') + ' → kliknij: ' + LH_LABELS[(idx + 1) % LH_MODES.length]);
         btn.setAttribute('aria-pressed', String(!!mode));
+        btn.dataset.level = String(Math.max(0, idx));
     });
 }
 

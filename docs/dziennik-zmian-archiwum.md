@@ -2,6 +2,8 @@
 
 Kopia pełnych wpisów wycofanych z `CLAUDE.md` (2026-11-07), najnowsze na górze. Źródłowy dziennik jest też w Obsidianie.
 
+- 2026-11-08: metryczka („Pokaż metkę”) zawsze przy stopce zamiast pod treścią w `<main>`: w szablonie FEER w ciemnej stopce (`templates/feer/partials/footer`, `page-metka` z `onDark`), w pozostałych pasek `page-metka-bar` tuż nad stopką; `layouts/site` liczy `$footerMetka`. Kiedy metka się pokazuje — bez zmian (Ustawienia → Treści → Metryczka / strona). Test w `PageMetkaTest`. Wdrożenie: `./deploy.sh`.
+
 - 2026-11-08: panel strony w „Strony” (drzewo) odchudzony: na widoku tylko adres, „W menu” i ostatnia zmiana; strona nadrzędna, pozycja z przyciskami, nawigacja po podstronach, publikacja i osoby w zwijanym „Więcej o stronie”; „Przenieś w drzewie” i karta „W menu nawigacji” zwinięte (nagłówek karty pokazuje, gdzie strona jest w menu; otwiera się z „zmień/dodaj”, po akcji menu i przy błędzie). `admin/pages/tree`, `partials/page-menu`. Wdrożenie: `./deploy.sh`.
 
 - 2026-11-08: fix książka telefoniczna nie pokazywała osób: (1) dawny typ strony „Książka telefoniczna” bez własnych osób pokazuje osoby z modułu (`page/partials/typed/phone-book`); (2) zmiana typu w edytorze z „Książki telefonicznej” na „Kontakt — książka” przenosi osoby ze strony do tabeli modułu i zostawia ich kopię w stronie (hook `Page::updating` w `ContactServiceProvider`, `LegacyPagesConverter::keepContactsOnTypeChange`) — wcześniej formularz nowego typu je gubił (historia zmian nie zapisuje `type_data`, więc strony przełączone przed tą poprawką trzeba uzupełnić osobami w module); (3) wyszukiwarka: same cyfry od 2 (np. „12”), znaki typu „\” i przecinki nie psują wyniku, kilka słów naraz. Testy w `ContactModuleTest`. Wdrożenie: `./deploy.sh`.

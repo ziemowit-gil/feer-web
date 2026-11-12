@@ -12,6 +12,7 @@
         --bu2-line: #e5e5e5; --bu2-soft: #f9f9f9; --bu2-soft-2: #f2f2f2; --bu2-panel: #f7f7f7; --bu2-under: #b2c8dd; }
     .bu2, .bu2 input, .bu2 button, .bu2 select, .bu2 textarea { font-family: Montserrat, Arial, sans-serif; }
     .bu2-wrap { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+    #a11y-panel { --a11y-bar-w: 1200px; }
     .bu2 a:focus-visible, .bu2 button:focus-visible, .bu2 summary:focus-visible, .bu2 input:focus-visible { outline: 3px solid var(--bu2-blue); outline-offset: 2px; }
     .bu2 .bu2-on-blue:focus-visible, .bu2-on-blue a:focus-visible, .bu2-on-blue button:focus-visible { outline-color: #fff; }
     .bu2 [x-cloak] { display: none !important; }
