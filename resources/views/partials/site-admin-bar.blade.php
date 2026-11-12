@@ -64,6 +64,60 @@
         if (request()->routeIs('support.show') && $sabAdmin) {
             $sabHere[] = ['label' => 'Ustawienia strony „Wesprzyj nas”', 'url' => route('admin.ustawienia.edit', ['tab' => 'support']), 'icon' => 'fa-hand-holding-heart'];
         }
+
+        // Strony modułów i strony specjalne (deklaracja dostępności, kontakt, wydarzenia, praca…): edycja tego, co widać,
+        // i lista w panelu. [trasy strony, moduł (null = tylko administrator), napis, trasa panelu, parametr trasy z modelem, ikona].
+        // Pozycja pojawia się, gdy trasa panelu istnieje, a osoba ma dostęp do modułu (panel i tak sprawdza uprawnienia).
+        $sabRoute = request()->route();
+        $sabSpecial = [
+            [['accessibility.show'], null, 'Edytuj deklarację dostępności', 'admin.ustawienia.edit', ['tab' => 'accessibility'], 'fa-universal-access'],
+            [['accessibility.show'], null, 'Zgłoszenia barier', 'admin.zgloszenia-barier.index', [], 'fa-inbox'],
+            [['exclusions.index'], 'pages', 'Strony (wyłączenia treści)', 'admin.podstrony.index', [], 'fa-sitemap'],
+            [['contact.show', 'contact.section'], 'contact', 'Ustawienia kontaktu', 'admin.kontakt.index', [], 'fa-address-card'],
+            [['contact.show', 'contact.section'], null, 'Dane kontaktowe organizacji', 'admin.ustawienia.edit', ['tab' => 'contact'], 'fa-location-dot'],
+            [['phonebook.show'], 'phone_book', 'Zarządzaj książką telefoniczną', 'admin.ksiazka-telefoniczna.index', [], 'fa-phone'],
+            [['join-us.index'], null, 'Ustawienia strony „Dołącz do nas”', 'admin.ustawienia.edit', ['tab' => 'join'], 'fa-user-plus'],
+            [['events.show'], 'events', 'Edytuj to wydarzenie', 'admin.wydarzenia.edit', 'event', 'fa-pen-to-square'],
+            [['events.index', 'events.show'], 'events', 'Zarządzaj wydarzeniami', 'admin.wydarzenia.index', [], 'fa-calendar-days'],
+            [['courses.show'], 'courses', 'Edytuj te zajęcia', 'admin.kursy.edit', 'course', 'fa-pen-to-square'],
+            [['courses.index', 'courses.show'], 'courses', 'Zarządzaj zajęciami', 'admin.kursy.index', [], 'fa-chalkboard-user'],
+            [['praca.show'], 'jobs', 'Edytuj tę ofertę pracy', 'admin.praca.edit', 'offer', 'fa-pen-to-square'],
+            [['praca.index', 'praca.show'], 'jobs', 'Zarządzaj ofertami pracy', 'admin.praca.index', [], 'fa-briefcase'],
+            [['volunteer.show'], 'volunteering', 'Edytuj to ogłoszenie', 'admin.wolontariat.edit', 'ad', 'fa-pen-to-square'],
+            [['volunteer.index', 'volunteer.show'], 'volunteering', 'Zarządzaj wolontariatem', 'admin.wolontariat.index', [], 'fa-hand-holding-heart'],
+            [['podcasts.show'], 'podcasts', 'Edytuj ten podcast', 'admin.podcasty.edit', 'podcast', 'fa-pen-to-square'],
+            [['podcasts.index', 'podcasts.show'], 'podcasts', 'Zarządzaj podcastami', 'admin.podcasty.index', [], 'fa-podcast'],
+            [['materials.index'], 'materials', 'Zarządzaj materiałami', 'admin.materialy-edukacyjne.index', [], 'fa-book-open'],
+            [['faq.index'], 'faq', 'Zarządzaj pytaniami (FAQ)', 'admin.faq.index', [], 'fa-circle-question'],
+            [['formularz.show'], 'forms', 'Edytuj ten formularz', 'admin.formularze.edit', 'formularz', 'fa-pen-to-square'],
+            [['lp.show'], 'landing', 'Zarządzaj stronami lądowania', 'admin.lp.index', [], 'fa-plane-arrival'],
+            [['kampanie.index', 'kampanie.show'], null, 'Zarządzaj kampaniami', 'admin.kampanie.index', [], 'fa-bullhorn'],
+            [['help-map.index'], 'help_map', 'Zarządzaj mapą pomocy', 'admin.mapa-pomocy.index', [], 'fa-map-location-dot'],
+            [['federation.organizations', 'federation.organizations.show'], null, 'Zarządzaj organizacjami', 'admin.organizacje.index', [], 'fa-people-group'],
+            [['bip', 'bip.document', 'bip.changelog', 'bip.instructions'], 'bip', 'Zarządzaj dokumentami BIP', 'admin.bip-dokumenty.index', [], 'fa-landmark'],
+            [['donation.show'], null, 'Ustawienia darowizn', 'admin.ustawienia.edit', ['tab' => 'support'], 'fa-hand-holding-dollar'],
+        ];
+        foreach ($sabSpecial as [$sabRoutes, $sabModule, $sabLabel, $sabTarget, $sabParams, $sabIcon]) {
+            if (! request()->routeIs(...$sabRoutes) || ! \Illuminate\Support\Facades\Route::has($sabTarget)) {
+                continue;
+            }
+            if ($sabModule === null ? ! $sabAdmin : ! $sabUser->canAccessModule($sabModule)) {
+                continue;
+            }
+            if (is_string($sabParams)) {
+                // Edycja oglądanego elementu: model z parametru trasy strony (np. {event}).
+                $sabModel = $sabRoute?->parameter($sabParams);
+                if (! $sabModel instanceof \Illuminate\Database\Eloquent\Model) {
+                    continue;
+                }
+                $sabParams = [$sabModel];
+            }
+            $sabUrl = rescue(fn () => route($sabTarget, $sabParams), null, false);
+            if ($sabUrl) {
+                $sabHere[] = ['label' => $sabLabel, 'url' => $sabUrl, 'icon' => $sabIcon];
+            }
+        }
+
         if ($sabHere !== []) {
             $sabEdit[] = ['title' => $sabHome ? 'Strona główna' : 'Na tej stronie', 'items' => $sabHere];
         }
