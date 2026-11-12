@@ -501,7 +501,7 @@ class SiteSetting extends Model implements HasMedia
         'vm_newsletter_text', 'vm_header_badge_alt', 'vm_footer_note',
         'infobar_show_date', 'infobar_show_nameday', 'office_show_account', 'office_show_search',
         'contact_layout', 'contact_office_address', 'contact_office_city', 'contact_office_building',
-        'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo', 'contact_options', 'footer_options',
+        'contact_office_note', 'contact_office_photo_alt', 'contact_hero_photo', 'contact_options', 'footer_options', 'header_options',
         'site_url', 'maintenance_mode', 'maintenance_message', 'under_construction', 'under_construction_message', 'mourning_mode', 'mourning_from', 'mourning_until',
         'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact',
         'phonebook_title', 'phonebook_lead', 'phonebook_layout', 'phonebook_sort', 'phonebook_hide_numbers',
@@ -772,6 +772,7 @@ class SiteSetting extends Model implements HasMedia
         'contact_schedule_enabled' => 'boolean',
         'contact_options' => 'array',
         'footer_options' => 'array',
+        'header_options' => 'array',
         'show_topbar_bip' => 'boolean',
         'show_topbar_social' => 'boolean',
         'contact_show_form' => 'boolean',
@@ -2229,6 +2230,90 @@ class SiteSetting extends Model implements HasMedia
         $out['staff_label'] = $out['staff_label'] !== '' ? mb_substr($out['staff_label'], 0, 60) : $d['staff_label'];
 
         return $out;
+    }
+
+    /**
+     * Prawa strona nagłówka FEER (Ustawienia → Nagłówek): ikony social i przycisk. Puste `social` = pierwsze pięć ustawionych
+     * profili, pusty napis/adres przycisku = „Materiały edukacyjne” i lista materiałów (jak przed tą opcją).
+     */
+    public const HEADER_DEFAULTS = [
+        'show_social' => true,
+        'social' => [],
+        'show_cta' => true,
+        'cta_label' => '',
+        'cta_url' => '',
+        'cta_icon' => 'fa-book-open',
+    ];
+
+    /** Ikony do wyboru dla przycisku w nagłówku (klasa Font Awesome => opis w panelu). */
+    public const HEADER_CTA_ICONS = [
+        'fa-book-open' => 'Książka',
+        'fa-graduation-cap' => 'Czapka absolwenta',
+        'fa-calendar-days' => 'Kalendarz',
+        'fa-hand-holding-heart' => 'Dłoń z sercem',
+        'fa-heart' => 'Serce',
+        'fa-envelope' => 'Koperta',
+        'fa-users' => 'Ludzie',
+        'fa-circle-info' => 'Informacja',
+        'fa-arrow-right' => 'Strzałka',
+    ];
+
+    /** Najwięcej ikon social w nagłówku FEER (więcej się nie mieści obok przycisku). */
+    public const HEADER_SOCIAL_MAX = 5;
+
+    /** @return array<string, mixed> */
+    public function headerOptions(): array
+    {
+        return self::normalizeHeaderOptions(is_array($raw = $this->getAttribute('header_options')) ? $raw : []);
+    }
+
+    /** @param array<string, mixed> $in @return array<string, mixed> */
+    public static function normalizeHeaderOptions(array $in): array
+    {
+        $d = self::HEADER_DEFAULTS;
+        $bool = fn (string $k) => array_key_exists($k, $in) ? filter_var($in[$k], FILTER_VALIDATE_BOOLEAN) : $d[$k];
+        $chosen = array_map('strval', array_filter((array) ($in['social'] ?? []), 'is_scalar'));
+        $social = array_slice(array_values(array_filter(array_keys(self::SOCIAL_KEYS), fn ($k) => in_array($k, $chosen, true))), 0, self::HEADER_SOCIAL_MAX);
+        $url = mb_substr(trim((string) ($in['cta_url'] ?? '')), 0, 500);
+        if ($url !== '' && preg_match('~^(https?://\S+|/(?!/)\S*)$~i', $url) !== 1) {
+            $url = '';
+        }
+        $icon = (string) ($in['cta_icon'] ?? $d['cta_icon']);
+
+        return [
+            'show_social' => $bool('show_social'),
+            'social' => $social,
+            'show_cta' => $bool('show_cta'),
+            'cta_label' => mb_substr(trim((string) ($in['cta_label'] ?? '')), 0, 60),
+            'cta_url' => $url,
+            'cta_icon' => array_key_exists($icon, self::HEADER_CTA_ICONS) ? $icon : $d['cta_icon'],
+        ];
+    }
+
+    /**
+     * Ikony social w nagłówku FEER: wybrane w Ustawienia → Nagłówek (w kolejności SOCIAL_KEYS, tylko z adresem),
+     * a bez wyboru pierwsze pięć ustawionych profili; wyłączone — brak ikon.
+     *
+     * @return array<int, array{0: string, 1: string, 2: string}>
+     */
+    public function headerSocials(): array
+    {
+        $o = $this->headerOptions();
+        if (! $o['show_social']) {
+            return [];
+        }
+        if ($o['social'] === []) {
+            return $this->socialLinks(self::HEADER_SOCIAL_MAX);
+        }
+        $links = [];
+        foreach ($o['social'] as $key) {
+            $url = trim((string) ($this->{$key.'_url'} ?? ''));
+            if ($url !== '') {
+                $links[] = [$url, self::SOCIAL_KEYS[$key]['icon'], self::SOCIAL_KEYS[$key]['label']];
+            }
+        }
+
+        return $links;
     }
 
     public function isModuleEnabled(string $module): bool

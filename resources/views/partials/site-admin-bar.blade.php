@@ -122,9 +122,10 @@
             $sabEdit[] = ['title' => $sabHome ? 'Strona główna' : 'Na tej stronie', 'items' => $sabHere];
         }
 
-        // Cała witryna: stopka jest na każdej stronie (dawny skrót „Edytuj stopkę” w stopce).
+        // Cała witryna: nagłówek (ikony social, przycisk) i stopka są na każdej stronie (dawny skrót „Edytuj stopkę” w stopce).
         if ($sabAdmin) {
             $sabEdit[] = ['title' => 'Cała witryna', 'items' => [
+                ['label' => 'Edytuj nagłówek', 'url' => route('admin.ustawienia.edit', ['tab' => 'header']).'#header-right', 'icon' => 'fa-window-maximize'],
                 ['label' => 'Edytuj stopkę', 'url' => route('admin.ustawienia.edit', ['tab' => 'general']).'#gen-footer-h', 'icon' => 'fa-table-columns', 'attrs' => ['data-footer-edit']],
             ]];
         }

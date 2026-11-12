@@ -245,8 +245,9 @@
         @include('partials.mobile-nav-toggle', ['panelId' => 'main-nav-panel', 'onBrand' => $inlineOnBrand, 'hideAt' => 'lg'])
 
         @php
-            // Przycisk po prawej w nagłówku FEER: „Materiały edukacyjne”; w wariancie FEER IS ten przycisk jest wyłączony,
-            // a zamiast niego pokazuje się edytowalny (Ustawienia → Szablon → FEER IS), o ile ma napis i adres.
+            // Przycisk po prawej w nagłówku FEER: z Ustawienia → Nagłówek (domyślnie „Materiały edukacyjne” do listy materiałów,
+            // można zmienić napis, adres i ikonę albo go wyłączyć); w wariancie FEER IS zamiast niego jest przycisk
+            // z Ustawienia → Szablon → FEER IS, o ile ma napis i adres.
             $isVariant = $siteSettings->themeVariant() === 'feer_is';
             $headerCta = null;
             if (($siteSettings->site_template ?? 'default') === 'feer') {
@@ -254,8 +255,14 @@
                     $headerCta = filled($siteSettings->is_cta_label) && filled($siteSettings->is_cta_url)
                         ? ['label' => $siteSettings->is_cta_label, 'url' => site_href($siteSettings->is_cta_url), 'icon' => 'fa-arrow-right']
                         : null;
-                } elseif ($siteSettings->isModuleEnabled('materials')) {
-                    $headerCta = ['label' => 'Materiały edukacyjne', 'url' => site_route('materials.index'), 'icon' => 'fa-book-open'];
+                } else {
+                    $hdrOpt = $siteSettings->headerOptions();
+                    $hdrCtaUrl = $hdrOpt['cta_url'] !== ''
+                        ? site_href($hdrOpt['cta_url'])
+                        : ($siteSettings->isModuleEnabled('materials') ? site_route('materials.index') : null);
+                    if ($hdrOpt['show_cta'] && $hdrCtaUrl) {
+                        $headerCta = ['label' => $hdrOpt['cta_label'] !== '' ? $hdrOpt['cta_label'] : 'Materiały edukacyjne', 'url' => $hdrCtaUrl, 'icon' => $hdrOpt['cta_icon']];
+                    }
                 }
             }
             $feerMaterials = $headerCta !== null;
@@ -263,7 +270,7 @@
             $feerTwoRows = ($siteSettings->site_template ?? 'default') === 'feer' && $headerLayout !== 'brand_bar';
         @endphp
         @if ($feerTwoRows)
-            @php $feerSocials = $siteSettings->socialLinks(5); @endphp
+            @php $feerSocials = $siteSettings->headerSocials(); @endphp
             @if ($feerMaterials || $feerSocials)
                 <div class="hidden items-center gap-3 lg:flex">
                     @if ($feerSocials)

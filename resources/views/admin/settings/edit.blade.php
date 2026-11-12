@@ -155,7 +155,7 @@
                 {{-- Szablon FEER: dedykowany nagłówek, bez wyboru układu (ukryte pole utrzymuje wymaganą wartość). --}}
                 <input type="hidden" name="header_layout" value="{{ $settings->headerLayoutValue() }}">
                 <p class="text-sm text-ink">
-                    Szablon FEER ma własny, stały nagłówek: logo, ikony social i przycisk „Materiały edukacyjne” u góry,
+                    Szablon FEER ma własny, stały nagłówek: logo, ikony social i przycisk u góry (ustawisz je niżej),
                     pod spodem menu na pełną szerokość. Aby wybrać inny układ, zmień szablon strony.
                 </p>
                 @else
@@ -196,6 +196,93 @@
                 @endif
                 </div>
             </details>
+
+            @if ($settings->hasFixedHeader())
+                {{-- Prawa strona nagłówka FEER: ikony social i przycisk (SiteSetting::headerOptions, pole JSON header_options). --}}
+                @php
+                    $ho = $settings->normalizeHeaderOptions((array) old('header_options', $settings->headerOptions()));
+                    $hoIs = $settings->themeVariant() === 'feer_is';
+                @endphp
+                <details open id="header-right" class="scroll-mt-24 rounded-md bg-gray-50" x-data="{ hoSocial: @js($ho['show_social']), hoCta: @js($ho['show_cta']), hoLabel: @js($ho['cta_label']), hoIcon: @js($ho['cta_icon']) }">
+                    <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Prawa strona nagłówka: ikony i przycisk</summary>
+                    <div class="space-y-6 border-t border-gray-200 p-5">
+                        <fieldset class="space-y-3">
+                            <legend class="text-sm font-bold text-ink">Ikony mediów społecznościowych</legend>
+                            <input type="hidden" name="header_options[show_social]" value="0">
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="header_options[show_social]" value="1" x-model="hoSocial" @checked($ho['show_social'])
+                                       class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                Pokazuj ikony w nagłówku
+                            </label>
+                            <div x-show="hoSocial" class="space-y-2">
+                                <p id="ho-social-hint" class="text-sm text-muted">
+                                    Zaznacz, które ikony pokazać (najwyżej {{ \App\Models\SiteSetting::HEADER_SOCIAL_MAX }}). Bez zaznaczenia: pierwsze {{ \App\Models\SiteSetting::HEADER_SOCIAL_MAX }} ustawionych profili.
+                                    Adresy profili zmieniasz w <a href="{{ route('admin.ustawienia.edit', ['tab' => 'social']) }}" class="font-bold text-brand-dark underline underline-offset-4">Media i BIP</a>.
+                                </p>
+                                <ul class="grid gap-2 sm:grid-cols-2" role="list" aria-describedby="ho-social-hint">
+                                    @foreach (\App\Models\SiteSetting::SOCIAL_KEYS as $hoKey => $hoMeta)
+                                        @php $hoUrl = trim((string) ($settings->{$hoKey.'_url'} ?? '')); @endphp
+                                        <li>
+                                            <label class="flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm {{ $hoUrl === '' ? 'text-muted' : 'text-ink' }}">
+                                                <input type="checkbox" name="header_options[social][]" value="{{ $hoKey }}" @checked(in_array($hoKey, $ho['social'], true)) @disabled($hoUrl === '')
+                                                       class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                                <i class="{{ $hoMeta['icon'] }}" aria-hidden="true"></i>
+                                                <span>{{ $hoMeta['label'] }}@if ($hoUrl === '') <span class="text-xs">(brak adresu)</span>@endif</span>
+                                            </label>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                @error('header_options.social') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="space-y-3">
+                            <legend class="text-sm font-bold text-ink">Przycisk obok ikon</legend>
+                            @if ($hoIs)
+                                <p class="text-sm text-ink">W wariancie FEER IS przycisk ustawiasz w <a href="{{ route('admin.ustawienia.edit', ['tab' => 'template']) }}" class="font-bold text-brand-dark underline underline-offset-4">Szablon strony → FEER IS</a>.</p>
+                            @else
+                                <input type="hidden" name="header_options[show_cta]" value="0">
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" name="header_options[show_cta]" value="1" x-model="hoCta" @checked($ho['show_cta'])
+                                           class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                    Pokazuj przycisk w nagłówku
+                                </label>
+                                <div x-show="hoCta" class="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label for="ho_cta_label" class="mb-1 block text-sm font-bold">Napis</label>
+                                        <input type="text" id="ho_cta_label" name="header_options[cta_label]" maxlength="60" value="{{ $ho['cta_label'] }}" x-model="hoLabel" placeholder="Materiały edukacyjne"
+                                               aria-describedby="ho_cta_label_hint" class="w-full rounded-md border-gray-400 text-sm">
+                                        <p id="ho_cta_label_hint" class="mt-1 text-xs text-muted">Puste: „Materiały edukacyjne”.</p>
+                                        @error('header_options.cta_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    </div>
+                                    <div>
+                                        <label for="ho_cta_url" class="mb-1 block text-sm font-bold">Adres</label>
+                                        <input type="text" id="ho_cta_url" name="header_options[cta_url]" maxlength="500" value="{{ $ho['cta_url'] }}" placeholder="/materialy"
+                                               aria-describedby="ho_cta_url_hint" class="w-full rounded-md border-gray-400 text-sm">
+                                        <p id="ho_cta_url_hint" class="mt-1 text-xs text-muted">Adres na tej stronie (np. /wsparcie) albo pełny (https://…). Puste: lista materiałów edukacyjnych (gdy moduł jest włączony).</p>
+                                        @error('header_options.cta_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    </div>
+                                    <div>
+                                        <label for="ho_cta_icon" class="mb-1 block text-sm font-bold">Ikona</label>
+                                        <select id="ho_cta_icon" name="header_options[cta_icon]" x-model="hoIcon" class="w-full rounded-md border-gray-400 text-sm">
+                                            @foreach (\App\Models\SiteSetting::HEADER_CTA_ICONS as $hoIcon => $hoIconLabel)
+                                                <option value="{{ $hoIcon }}" @selected($ho['cta_icon'] === $hoIcon)>{{ $hoIconLabel }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="flex items-end">
+                                        <p class="text-sm text-ink">Podgląd:
+                                            <span class="ml-1 inline-flex min-h-9 items-center gap-2 rounded-md bg-brand-light px-4 text-sm font-bold text-brand-dark">
+                                                <i class="fa-solid {{ $ho['cta_icon'] }}" :class="'fa-solid ' + hoIcon" aria-hidden="true"></i><span x-text="hoLabel.trim() || 'Materiały edukacyjne'">{{ $ho['cta_label'] !== '' ? $ho['cta_label'] : 'Materiały edukacyjne' }}</span>
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                            @endif
+                        </fieldset>
+                    </div>
+                </details>
+            @endif
 
             @if ($settings->site_template === 'federation')
                 {{-- Kolorowe menu — tylko szablon "federation" --}}
