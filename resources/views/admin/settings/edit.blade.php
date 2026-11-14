@@ -3131,6 +3131,7 @@
                             <li>W panelu logowania Fundacji (<code>logto-admin.feer.org.pl</code>) dodaj aplikację rodzaju „Traditional web” i wpisz w niej adres powrotu podany wyżej.</li>
                             <li>Przepisz z tej aplikacji App ID do pola „Client ID” i App secret do pola „Client Secret”, potem zapisz ustawienia.</li>
                         </ol>
+                        <p class="mt-2 text-xs text-ink">Wolisz wiersz poleceń? Na serwerze <code>php artisan sso:logto</code> pokaże, co zrobić, a <code>php artisan sso:logto --create --m2m-id=… --m2m-secret=…</code> sam założy aplikację w Logto i wpisze jej dane.</p>
                         <button type="button" class="mt-2 rounded bg-brand-dark px-3 py-1.5 text-sm font-bold text-white hover:bg-ink focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2"
                             x-on:click="
                                 document.getElementById('sso_name').value = 'logowanie jednokrotne';
