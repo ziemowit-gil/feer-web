@@ -71,4 +71,38 @@ class OidcLoginTest extends TestCase
         $this->post(route('login'), ['email' => 'ala@org.pl', 'password' => 'Haslo-123456'])->assertSessionHasErrors('email');
         $this->assertGuest();
     }
+
+    /** Logto Fundacji: issuer z /oidc, userinfo /oidc/me, przycisk „Zaloguj się przez logowanie jednokrotne”. */
+    public function test_logto_of_the_foundation_logs_in_existing_user(): void
+    {
+        SiteSetting::current()->update(['sso_name' => 'logowanie jednokrotne', 'sso_issuer' => 'https://logto.feer.org.pl/oidc', 'sso_client_id' => 'cms-app']);
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        Http::fake([
+            'logto.feer.org.pl/oidc/.well-known/openid-configuration' => Http::response([
+                'issuer' => 'https://logto.feer.org.pl/oidc', 'authorization_endpoint' => 'https://logto.feer.org.pl/oidc/auth',
+                'token_endpoint' => 'https://logto.feer.org.pl/oidc/token', 'userinfo_endpoint' => 'https://logto.feer.org.pl/oidc/me',
+            ]),
+            'logto.feer.org.pl/oidc/token' => Http::response(['access_token' => 'opaque-at', 'id_token' => '']),
+            'logto.feer.org.pl/oidc/me' => Http::response(['sub' => 'logto-u1', 'email' => 'jan@feer.org.pl', 'email_verified' => true]),
+        ]);
+        $user = User::factory()->create(['email' => 'jan@feer.org.pl', 'role' => User::ROLE_EDITOR]);
+
+        $this->get(route('login'))->assertSee('Zaloguj się przez logowanie jednokrotne');
+        $location = $this->get(route('auth.sso.redirect'))->assertRedirect()->headers->get('Location');
+        $this->assertStringStartsWith('https://logto.feer.org.pl/oidc/auth?', $location);
+        parse_str(parse_url($location, PHP_URL_QUERY), $q);
+        $this->assertSame('cms-app', $q['client_id']);
+        $this->assertSame(url('/auth/sso/callback'), $q['redirect_uri']);
+
+        $this->get(route('auth.sso.callback', ['code' => 'abc', 'state' => $q['state']]))->assertRedirect();
+        $this->assertAuthenticatedAs($user);
+        $this->assertSame('logto-u1', $user->fresh()->oidc_sub);
+    }
+
+    public function test_settings_show_logto_preset_button(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'login']))
+            ->assertOk()->assertSee('Wstaw ustawienia Logto Fundacji')->assertSee('https://logto.feer.org.pl/oidc', false);
+    }
 }

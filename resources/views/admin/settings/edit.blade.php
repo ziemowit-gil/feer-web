@@ -60,7 +60,7 @@
             'join' => 'Strona „Dołącz do nas”: teksty i kafelki z korzyściami.',
             'registry' => 'KRS, NIP, REGON i inne dane rejestrowe organizacji.',
             'modules' => 'Włączanie i wyłączanie modułów oraz typów treści.',
-            'login' => 'Logowanie do panelu: Microsoft 365, Google, konta członkowskie i dostęp awaryjny.',
+            'login' => 'Logowanie do panelu: logowanie jednokrotne (Logto i inne SSO), Microsoft 365, Google, konta członkowskie i dostęp awaryjny.',
             'mail' => 'Sposób wysyłki poczty z serwisu i test połączenia.',
             'szo' => 'Połączenie z systemem SZO: formularze, darowizny i klauzule RODO.',
             'maintenance' => 'Tryb serwisowy i narzędzia techniczne.',
@@ -3119,6 +3119,24 @@
                 </label>
 
                 <div class="mt-4 space-y-5" x-show="ssoEnabled" x-cloak>
+                    {{-- Logto Fundacji (logowanie jednokrotne, to samo konto co w SZO i chmurze plików) — gotowe ustawienia jednym przyciskiem. --}}
+                    <div class="bg-gray-50 px-4 py-3 text-sm" x-data="{ logtoDone: false }">
+                        <p class="font-bold text-ink">Logowanie jednokrotne Fundacji (Logto)</p>
+                        <p class="mt-1 text-xs text-muted">
+                            To samo konto co w SZO i chmurze plików. W panelu Logto (<code>logto-admin.feer.org.pl</code>) dodaj aplikację typu
+                            „Traditional web”, wpisz w niej adres powrotu podany wyżej, a stamtąd przepisz tutaj App ID i App secret.
+                        </p>
+                        <button type="button" class="mt-2 rounded bg-brand-dark px-3 py-1.5 text-sm font-bold text-white hover:bg-ink focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2"
+                            x-on:click="
+                                document.getElementById('sso_name').value = 'logowanie jednokrotne';
+                                document.getElementById('sso_issuer').value = 'https://logto.feer.org.pl/oidc';
+                                document.getElementById('sso_scopes').value = 'openid email profile';
+                                logtoDone = true;
+                                $nextTick(() => document.getElementById('sso_client_id').focus());">
+                            Wstaw ustawienia Logto Fundacji
+                        </button>
+                        <p class="mt-2 text-xs text-ink" role="status" x-text="logtoDone ? 'Wpisano nazwę, adres dostawcy i zakresy. Uzupełnij Client ID i Client Secret, potem zapisz.' : ''"></p>
+                    </div>
                     <div>
                         <label for="sso_name" class="mb-1 block text-sm font-bold">Nazwa dostawcy na przycisku</label>
                         <input type="text" id="sso_name" name="sso_name" maxlength="120" value="{{ old('sso_name', $settings->sso_name) }}" placeholder="np. Keycloak Fundacji"
