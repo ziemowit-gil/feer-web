@@ -103,6 +103,6 @@ class OidcLoginTest extends TestCase
     {
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
         $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'login']))
-            ->assertOk()->assertSee('Wstaw ustawienia Logto Fundacji')->assertSee('https://logto.feer.org.pl/oidc', false);
+            ->assertOk()->assertSee('Uzupełnij dane konta Fundacji')->assertSee('https://logto.feer.org.pl/oidc', false);
     }
 }

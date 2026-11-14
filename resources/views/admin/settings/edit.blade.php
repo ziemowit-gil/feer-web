@@ -3119,13 +3119,18 @@
                 </label>
 
                 <div class="mt-4 space-y-5" x-show="ssoEnabled" x-cloak>
-                    {{-- Logto Fundacji (logowanie jednokrotne, to samo konto co w SZO i chmurze plików) — gotowe ustawienia jednym przyciskiem. --}}
+                    {{-- Logto Fundacji (logowanie jednokrotne, to samo konto co w SZO i chmurze plików) — gotowe ustawienia jednym przyciskiem, opis prostym językiem. --}}
                     <div class="bg-gray-50 px-4 py-3 text-sm" x-data="{ logtoDone: false }">
-                        <p class="font-bold text-ink">Logowanie jednokrotne Fundacji (Logto)</p>
-                        <p class="mt-1 text-xs text-muted">
-                            To samo konto co w SZO i chmurze plików. W panelu Logto (<code>logto-admin.feer.org.pl</code>) dodaj aplikację typu
-                            „Traditional web”, wpisz w niej adres powrotu podany wyżej, a stamtąd przepisz tutaj App ID i App secret.
+                        <p class="font-bold text-ink">Konto Fundacji: jedno logowanie do SZO, chmury i strony</p>
+                        <p class="mt-1 text-xs text-ink">
+                            Redakcja wejdzie do panelu tym samym kontem, którym loguje się do SZO i chmury plików. Na stronie logowania pojawi się przycisk
+                            „Zaloguj się przez logowanie jednokrotne”. Wejdą tylko osoby, które mają tu konto w „Użytkownicy” na ten sam adres e-mail.
                         </p>
+                        <ol class="mt-2 list-decimal space-y-1 pl-5 text-xs text-ink">
+                            <li>Kliknij przycisk poniżej. Uzupełni nazwę na przycisku i adres serwera logowania Fundacji.</li>
+                            <li>W panelu logowania Fundacji (<code>logto-admin.feer.org.pl</code>) dodaj aplikację rodzaju „Traditional web” i wpisz w niej adres powrotu podany wyżej.</li>
+                            <li>Przepisz z tej aplikacji App ID do pola „Client ID” i App secret do pola „Client Secret”, potem zapisz ustawienia.</li>
+                        </ol>
                         <button type="button" class="mt-2 rounded bg-brand-dark px-3 py-1.5 text-sm font-bold text-white hover:bg-ink focus:outline-none focus:ring-2 focus:ring-brand-dark focus:ring-offset-2"
                             x-on:click="
                                 document.getElementById('sso_name').value = 'logowanie jednokrotne';
@@ -3133,9 +3138,9 @@
                                 document.getElementById('sso_scopes').value = 'openid email profile';
                                 logtoDone = true;
                                 $nextTick(() => document.getElementById('sso_client_id').focus());">
-                            Wstaw ustawienia Logto Fundacji
+                            Uzupełnij dane konta Fundacji
                         </button>
-                        <p class="mt-2 text-xs text-ink" role="status" x-text="logtoDone ? 'Wpisano nazwę, adres dostawcy i zakresy. Uzupełnij Client ID i Client Secret, potem zapisz.' : ''"></p>
+                        <p class="mt-2 text-xs text-ink" role="status" x-text="logtoDone ? 'Gotowe: nazwa i adres serwera są wpisane. Teraz przepisz Client ID i Client Secret z panelu logowania Fundacji i zapisz.' : ''"></p>
                     </div>
                     <div>
                         <label for="sso_name" class="mb-1 block text-sm font-bold">Nazwa dostawcy na przycisku</label>
