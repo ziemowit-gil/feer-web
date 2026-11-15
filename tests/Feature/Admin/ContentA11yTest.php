@@ -109,14 +109,14 @@ class ContentA11yTest extends TestCase
         $this->assertFalse((bool) $page->fresh()->is_published);
     }
 
-    public function test_poprawiator_w_raporcie_poprawia_jedna_tresc_i_zapisuje_wersje(): void
+    public function test_autonaprawa_w_raporcie_poprawia_jedna_tresc_i_zapisuje_wersje(): void
     {
         $page = Page::create(['title' => 'Strona z problemami', 'slug' => 'zla', 'type' => 'standard', 'is_published' => true, 'content' => self::BAD_HTML]);
         $other = Page::create(['title' => 'Druga', 'slug' => 'druga', 'type' => 'standard', 'is_published' => true, 'content' => '<h4>Zła</h4><p>x</p>']);
         $admin = $this->admin();
 
         $this->actingAs($admin)->get(route('admin.content-a11y.index'))
-            ->assertOk()->assertSee('Poprawiator')->assertSee('Popraw automatycznie')->assertSee('pogrubienia zamienione na śródtytuły (1)');
+            ->assertOk()->assertSee('Autonaprawa')->assertSee('Autonaprawa zrobi:')->assertSee('Popraw automatycznie')->assertSee('pogrubienia zamienione na śródtytuły (1)');
 
         $this->actingAs($admin)->post(route('admin.content-a11y.fix'), ['typ' => 'pages', 'id' => $page->id])
             ->assertRedirect(route('admin.content-a11y.index'))->assertSessionHas('status');
@@ -127,7 +127,7 @@ class ContentA11yTest extends TestCase
         $this->assertSame('<h4>Zła</h4><p>x</p>', $other->fresh()->content); // inna treść nietknięta
     }
 
-    public function test_poprawiator_wszystkich_tresci_i_bloki_nie_sa_zerowane(): void
+    public function test_autonaprawa_wszystkich_tresci_i_bloki_nie_sa_zerowane(): void
     {
         $blocks = [['type' => 'heading', 'attrs' => ['text' => 'Start', 'level' => 4]], ['type' => 'paragraph', 'attrs' => ['text' => 'Tekst']]];
         $page = Page::create(['title' => 'Bloki', 'slug' => 'bloki', 'type' => 'standard', 'is_published' => true,

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
  * dla całego serwisu — strony, aktualności, działania. Uzupełnia audyt opisów
  * alternatywnych i dokumentów w bibliotece plików.
  *
- * Poprawiator (fix()) poprawia automatycznie to, co nie wymaga decyzji redaktora
+ * Autonaprawa (fix()) poprawia automatycznie to, co nie wymaga decyzji redaktora
  * (ContentA11yFixer); każdy zapis zostawia wersję w historii zmian.
  *
  * Metody: check(), index(), fix().
@@ -121,7 +121,7 @@ class ContentA11yController extends Controller
     }
 
     /**
-     * Poprawiator: poprawia automatycznie jedną treść (typ + id) albo wszystkie
+     * Autonaprawa: poprawia automatycznie jedną treść (typ + id) albo wszystkie
      * z bieżącego filtra (typ, reguła). Linków i opisów obrazów nie rusza.
      */
     public function fix(Request $request, ContentA11yFixer $fixer)

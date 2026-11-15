@@ -9,10 +9,10 @@ use App\Services\Content\ContentA11yFixer;
 use Illuminate\Console\Command;
 
 /**
- * Poprawiator dostępności treści z wiersza poleceń. Domyślnie tylko pokazuje,
+ * Autonaprawa dostępności treści z wiersza poleceń. Domyślnie tylko pokazuje,
  * co poprawi; z --zastosuj zapisuje (każdy zapis = nowa wersja w historii).
  *
- *   php artisan a11y:popraw                      # podgląd dla wszystkich treści
+ *   php artisan a11y:popraw                      # podgląd dla wszystkich treści (to samo: a11y:autonaprawa)
  *   php artisan a11y:popraw --typ=news --zastosuj
  *   php artisan a11y:popraw --regula=fake_heading --regula=fake_list --zastosuj
  */
@@ -24,7 +24,10 @@ class ContentA11yFix extends Command
         {--regula=* : tylko wybrane poprawki: heading_empty, headings, fake_heading, fake_list, table_header, iframe_title (albo reguły z raportu)}
         {--zastosuj : zapisz poprawki (bez tego tylko podgląd)}';
 
-    protected $description = 'Poprawiator: automatycznie poprawia nagłówki, listy, tabele i osadzenia w treściach (strony, aktualności, działania)';
+    /** Druga nazwa polecenia, zgodna z nazwą funkcji w panelu. */
+    protected $aliases = ['a11y:autonaprawa'];
+
+    protected $description = 'Autonaprawa: automatycznie poprawia nagłówki, listy, tabele i osadzenia w treściach (strony, aktualności, działania)';
 
     private const MODELS = ['pages' => Page::class, 'news' => News::class, 'projects' => Project::class];
 

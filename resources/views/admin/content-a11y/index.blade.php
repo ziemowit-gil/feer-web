@@ -56,7 +56,7 @@
 
     @if ($totals['fixable'] > 0)
         <section class="mb-6 rounded-md bg-white p-5" aria-labelledby="a11y-fixer-h">
-            <h2 id="a11y-fixer-h" class="text-base font-bold text-ink">Poprawiator</h2>
+            <h2 id="a11y-fixer-h" class="text-base font-bold text-ink">Autonaprawa</h2>
             <p class="mt-1 max-w-3xl text-sm text-ink">
                 Poprawi automatycznie to, co nie wymaga decyzji: usunie puste nagłówki, ułoży poziomy nagłówków (H2, H3…),
                 zamieni pogrubione śródtytuły na nagłówki, akapity z myślnikami na listy, oznaczy pierwszy wiersz tabeli jako nagłówek
@@ -116,7 +116,7 @@
                     </div>
                     @if ($row['fixable'])
                         <p class="mt-2 text-sm text-ink">
-                            <span class="font-bold">Poprawiator zrobi:</span>
+                            <span class="font-bold">Autonaprawa zrobi:</span>
                             {{ collect($row['fixable'])->map(fn ($n, $k) => \App\Services\Content\ContentA11yFixer::FIXES[$k].' ('.$n.')')->implode(', ') }}.
                         </p>
                     @endif

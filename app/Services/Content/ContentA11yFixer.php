@@ -11,7 +11,7 @@ use DOMXPath;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Poprawiator dostępności treści: automatycznie poprawia to, co
+ * Autonaprawa dostępności treści: automatycznie poprawia to, co
  * ContentA11yChecker zgłasza, a da się poprawić bez decyzji redaktora.
  *
  *  - puste nagłówki — usuwa,
