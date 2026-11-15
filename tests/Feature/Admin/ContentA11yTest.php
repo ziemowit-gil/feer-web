@@ -108,4 +108,48 @@ class ContentA11yTest extends TestCase
 
         $this->assertFalse((bool) $page->fresh()->is_published);
     }
+
+    public function test_poprawiator_w_raporcie_poprawia_jedna_tresc_i_zapisuje_wersje(): void
+    {
+        $page = Page::create(['title' => 'Strona z problemami', 'slug' => 'zla', 'type' => 'standard', 'is_published' => true, 'content' => self::BAD_HTML]);
+        $other = Page::create(['title' => 'Druga', 'slug' => 'druga', 'type' => 'standard', 'is_published' => true, 'content' => '<h4>Zła</h4><p>x</p>']);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->get(route('admin.content-a11y.index'))
+            ->assertOk()->assertSee('Poprawiator')->assertSee('Popraw automatycznie')->assertSee('pogrubienia zamienione na śródtytuły (1)');
+
+        $this->actingAs($admin)->post(route('admin.content-a11y.fix'), ['typ' => 'pages', 'id' => $page->id])
+            ->assertRedirect(route('admin.content-a11y.index'))->assertSessionHas('status');
+
+        $rules = array_column(app(ContentA11yChecker::class)->check($page->fresh()->content), 'rule');
+        $this->assertSame(['link_vague', 'link_empty', 'img_alt_missing', 'table_header'], array_values(array_unique($rules))); // tabela jednowierszowa zostaje dla redakcji
+        $this->assertGreaterThanOrEqual(2, $page->revisions()->count());
+        $this->assertSame('<h4>Zła</h4><p>x</p>', $other->fresh()->content); // inna treść nietknięta
+    }
+
+    public function test_poprawiator_wszystkich_tresci_i_bloki_nie_sa_zerowane(): void
+    {
+        $blocks = [['type' => 'heading', 'attrs' => ['text' => 'Start', 'level' => 4]], ['type' => 'paragraph', 'attrs' => ['text' => 'Tekst']]];
+        $page = Page::create(['title' => 'Bloki', 'slug' => 'bloki', 'type' => 'standard', 'is_published' => true,
+            'blocks' => $blocks, 'content' => \App\Support\BlockRenderer::render($blocks)]);
+        News::create(['title' => 'Aktualność', 'slug' => 'akt', 'content' => '<p><b>Śródtytuł</b></p><p>Treść</p>', 'is_published' => true, 'published_at' => now()]);
+
+        $this->actingAs($this->admin())->post(route('admin.content-a11y.fix'))->assertSessionHas('status', fn ($s) => str_contains($s, 'Poprawiono automatycznie 2 treści'));
+
+        $page->refresh();
+        $this->assertSame(2, $page->blocks[0]['attrs']['level']);
+        $this->assertStringContainsString('<h2', $page->content);
+        $this->assertStringContainsString('<h2>Śródtytuł</h2>', News::first()->content);
+    }
+
+    public function test_polecenie_artisan_domyslnie_tylko_podglad(): void
+    {
+        $page = Page::create(['title' => 'Zła', 'slug' => 'zla', 'type' => 'standard', 'is_published' => true, 'content' => '<h4>X</h4><p>y</p>']);
+
+        $this->artisan('a11y:popraw')->expectsOutputToContain('Podgląd: 1 treści')->assertSuccessful();
+        $this->assertSame('<h4>X</h4><p>y</p>', $page->fresh()->content);
+
+        $this->artisan('a11y:popraw', ['--typ' => ['pages'], '--zastosuj' => true])->expectsOutputToContain('Poprawiono 1 treści')->assertSuccessful();
+        $this->assertSame('<h2>X</h2><p>y</p>', $page->fresh()->content);
+    }
 }
