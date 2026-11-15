@@ -290,11 +290,6 @@
                     @csrf
                     <p class="text-sm text-muted">Pola oznaczone <span class="font-bold text-red-700" aria-hidden="true">*</span><span class="sr-only">gwiazdką</span> są wymagane.</p>
 
-                    <div class="hidden" aria-hidden="true">
-                        <label for="website">Zostaw to pole puste</label>
-                        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
-                    </div>
-
                     {{-- 1. Czego dotyczy --}}
                     <fieldset>
                         <legend class="{{ $arStep }}"><span class="{{ $arNum }}" aria-hidden="true">1</span> Czego dotyczy zgłoszenie?</legend>
@@ -393,6 +388,8 @@
                             @error('rodo_consent') <p class="mt-1 text-sm font-bold text-red-700">{{ $message }}</p> @enderror
                         </div>
                     </fieldset>
+
+                    @include('partials.spam-protection', ['spamScope' => 'dostepnosc'])
 
                     <div class="flex flex-wrap items-center gap-4 pt-2">
                         <button type="submit" class="ad-btn">

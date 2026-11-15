@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Mail\AccessibilityReportMail;
 use App\Models\AccessibilityReport;
 use App\Models\SiteSetting;
+use App\Support\SpamGuard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -66,6 +68,16 @@ class AccessibilityReportController extends Controller
             'rodo_consent.accepted' => 'Aby wysłać zgłoszenie, zaznacz zgodę na przetwarzanie danych osobowych.',
             'website.prohibited' => 'Wykryto nieprawidłowe zgłoszenie.',
         ]);
+
+        // Antyspam (żeton czasu, zadanie tekstowe, analiza treści, duplikaty). Bot dostaje
+        // zwykłe potwierdzenie; człowiek przy fałszywym alarmie — czytelny komunikat.
+        if ($spam = SpamGuard::inspect($request, array_intersect_key($data, array_flip(['name', 'email', 'page_url', 'message'])), 'dostepnosc')) {
+            Log::warning('Zablokowano zgłoszenie bariery jako spam', ['powód' => $spam['reason'], 'ip' => $request->ip()]);
+
+            return $spam['silent']
+                ? redirect()->route('accessibility.show')->with('accessibility_reported', true)->withFragment('zglos-bariere')
+                : back()->withErrors(['spam' => $spam['message']])->withInput()->withFragment('zglos-bariere');
+        }
 
         // Dodatkowe informacje trafiają na początek opisu (panel i e-mail pokazują je bez zmian w bazie).
         $meta = array_filter([

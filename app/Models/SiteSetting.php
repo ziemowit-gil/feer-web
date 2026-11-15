@@ -2615,17 +2615,19 @@ class SiteSetting extends Model implements HasMedia
     }
 
     /**
-     * Nazwa mailera dla powiadomień z formularzy: „msgraph”, gdy formularze
-     * mają wysyłać przez Graph (domyślnie) i Graph jest skonfigurowany;
-     * null = mailer domyślny (ustawiony w „Tryb wysyłki”).
+     * Opis trybu, którym wychodzą powiadomienia z formularzy — ten sam co cała
+     * poczta serwisu („Tryb wysyłki” w Ustawienia → Poczta, zwykle SMTP).
+     * Formularze nie wybierają już osobno Microsoft Graph.
      */
-    public function formsMailer(): ?string
+    public function formsMailLabel(): string
     {
-        if (($this->forms_mail_via_msgraph ?? true) && $this->msGraphConfigured()) {
-            return 'msgraph';
+        $mode = $this->mail_transport ?: 'default';
+
+        if ($mode === 'default') {
+            return 'ustawienia serwera (.env): '.strtoupper((string) config('mail.default'));
         }
 
-        return null;
+        return self::MAIL_TRANSPORTS[$mode] ?? 'domyślny tryb wysyłki';
     }
 
     /**

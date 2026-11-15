@@ -3853,15 +3853,6 @@
                             <span class="block text-xs text-muted">Kopia każdej wiadomości zostaje w skrzynce nadawczej.</span>
                         </span>
                     </label>
-                    <label class="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-3">
-                        <input type="hidden" name="forms_mail_via_msgraph" value="0">
-                        <input type="checkbox" name="forms_mail_via_msgraph" value="1" @checked(old('forms_mail_via_msgraph', $settings->forms_mail_via_msgraph ?? true))
-                            class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                        <span>
-                            <span class="block text-sm font-bold">Formularze: powiadomienia przez Graph</span>
-                            <span class="block text-xs text-muted">Domyślnie włączone. Pojedynczy formularz może to nadpisać w swoich ustawieniach („Sposób wysyłki”).</span>
-                        </span>
-                    </label>
                 </div>
 
                 <div x-data="{

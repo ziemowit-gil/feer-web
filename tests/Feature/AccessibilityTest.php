@@ -98,6 +98,8 @@ class AccessibilityTest extends TestCase
             'message' => 'Przycisk „Zapisz" nie ma etykiety dla czytnika ekranu.',
             'rodo_consent' => '1',
             'website' => '',
+            \App\Support\SpamGuard::TOKEN_FIELD => \Illuminate\Support\Facades\Crypt::encryptString(json_encode(['t' => now()->subSeconds(10)->timestamp, 'a' => 8])),
+            \App\Support\SpamGuard::ANSWER_FIELD => '8',
         ])->assertRedirect(route('accessibility.show').'#zglos-bariere');
 
         $this->assertDatabaseHas('accessibility_reports', [

@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Mail\MeetingSignupMail;
 use App\Models\MeetingSignup;
 use App\Models\SiteSetting;
+use App\Support\SpamGuard;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
@@ -53,6 +55,12 @@ class MeetingSignupController extends Controller
         }
 
         $data = $validator->validated();
+
+        if ($spam = $this->spamCheck($request, $data, 'umow-sie')) {
+            return $spam['silent']
+                ? redirect()->route('booking.show')->with('booking_signed_up', true)
+                : back()->withErrors(['spam' => $spam['message']], 'booking')->withInput();
+        }
 
         $signup = MeetingSignup::create([
             'name'    => $data['name'],
@@ -106,6 +114,12 @@ class MeetingSignupController extends Controller
 
         $data = $validator->validated();
 
+        if ($spam = $this->spamCheck($request, $data, 'spotkanie')) {
+            return $spam['silent']
+                ? redirect()->route('contact.show')->with('meeting_signed_up', true)->withFragment('spotkania')
+                : back()->withErrors(['spam' => $spam['message']], 'meeting')->withInput()->withFragment('spotkania');
+        }
+
         $signup = MeetingSignup::create([
             'name'    => $data['name'],
             'email'   => $data['email'],
@@ -134,5 +148,23 @@ class MeetingSignupController extends Controller
             ->route('contact.show')
             ->with('meeting_signed_up', true)
             ->withFragment('spotkania');
+    }
+
+    /**
+     * Antyspam (żeton czasu, zadanie tekstowe, analiza treści, duplikaty).
+     * Zwraca wynik SpamGuard (null = w porządku) i zapisuje blokadę w logu.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{reason: string, silent: bool, message: string|null}|null
+     */
+    private function spamCheck(Request $request, array $data, string $scope): ?array
+    {
+        $spam = SpamGuard::inspect($request, array_intersect_key($data, array_flip(['name', 'email', 'phone', 'term', 'message'])), $scope);
+
+        if ($spam) {
+            Log::warning('Zablokowano zapis na spotkanie jako spam', ['formularz' => $scope, 'powód' => $spam['reason'], 'ip' => $request->ip()]);
+        }
+
+        return $spam;
     }
 }

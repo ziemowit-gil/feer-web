@@ -60,6 +60,8 @@ class ContactMeetingTest extends TestCase
             'message' => 'Będę z osobą towarzyszącą.',
             'rodo_consent' => '1',
             'website' => '',
+            \App\Support\SpamGuard::TOKEN_FIELD => \Illuminate\Support\Facades\Crypt::encryptString(json_encode(['t' => now()->subSeconds(10)->timestamp, 'a' => 8])),
+            \App\Support\SpamGuard::ANSWER_FIELD => '8',
         ])->assertRedirect(route('contact.show').'#spotkania');
 
         $this->assertDatabaseHas('meeting_signups', [

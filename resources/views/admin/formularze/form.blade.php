@@ -525,11 +525,6 @@
             {{-- Powiadomienia e-mail o zgłoszeniach --}}
             @php
                 $siteCfg = \App\Models\SiteSetting::current();
-                $graphReady = $siteCfg->msGraphConfigured();
-                $formMailer = old('settings.mailer', $form->settings['mailer'] ?? '');
-                $inheritedLabel = $siteCfg->formsMailer() === 'msgraph'
-                    ? 'Microsoft 365 (Graph API)'
-                    : (\App\Models\SiteSetting::MAIL_TRANSPORTS[$siteCfg->mail_transport ?? 'default'] ?? 'domyślny tryb wysyłki');
             @endphp
             <fieldset class="space-y-4 p-4 rounded-md bg-gray-50">
                 <legend class="px-1 text-sm font-bold text-ink"><i class="fa-solid fa-envelope mr-1 text-brand-dark" aria-hidden="true"></i> Powiadomienia e-mail o zgłoszeniach</legend>
@@ -570,17 +565,12 @@
                         <p id="notification_subject_help" class="mt-1 text-xs text-muted">Znaczniki: <code>{tytul}</code> — nazwa formularza, <code>{id}</code> — numer zgłoszenia.</p>
                     </div>
                     <div>
-                        <label for="form_mailer" class="mb-1 block text-sm font-bold">Sposób wysyłki</label>
-                        <select id="form_mailer" name="settings[mailer]" aria-describedby="form_mailer_help"
-                            class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus-visible:ring-2 focus-visible:ring-brand-dark">
-                            <option value="" @selected($formMailer === '')>Dziedzicz z ustawień ({{ $inheritedLabel }})</option>
-                            <option value="msgraph" @selected($formMailer === 'msgraph')>Microsoft 365 (Graph API){{ $graphReady ? '' : ' — nieskonfigurowany' }}</option>
-                            <option value="default" @selected($formMailer === 'default')>Domyślny tryb wysyłki serwisu</option>
-                        </select>
-                        <p id="form_mailer_help" class="mt-1 text-xs text-muted">
-                            Formularze domyślnie wysyłają przez Microsoft Graph, gdy jest skonfigurowany w
-                            <a href="{{ route('admin.ustawienia.edit', ['tab' => 'mail']) }}" class="text-brand-dark underline-offset-2 hover:underline">Ustawienia → Poczta</a>.
-                            @unless ($graphReady) <span class="text-amber-700">Graph nie jest jeszcze skonfigurowany — do czasu uzupełnienia danych używany jest domyślny tryb.</span> @endunless
+                        <p class="mb-1 block text-sm font-bold">Sposób wysyłki</p>
+                        <p class="text-sm text-ink">{{ $siteCfg->formsMailLabel() }}</p>
+                        <p class="mt-1 text-xs text-muted">
+                            Powiadomienia wychodzą tak jak cała poczta serwisu — ustawisz to w
+                            <a href="{{ route('admin.ustawienia.edit', ['tab' => 'mail']) }}" class="text-brand-dark underline underline-offset-2">Ustawienia → Poczta</a>
+                            (tryb „Własny serwer SMTP”).
                         </p>
                     </div>
                 </div>

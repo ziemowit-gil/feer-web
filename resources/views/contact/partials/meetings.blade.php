@@ -118,11 +118,6 @@
                             <form method="POST" action="{{ route('meeting.signup') }}" class="space-y-4">
                                 @csrf
 
-                                <div class="hidden" aria-hidden="true">
-                                    <label for="mtg-website">Zostaw to pole puste</label>
-                                    <input type="text" id="mtg-website" name="website" tabindex="-1" autocomplete="off">
-                                </div>
-
                                 <div class="grid gap-4 sm:grid-cols-2">
                                     <div>
                                         <label for="mtg-name" class="mb-1 block text-sm font-bold">Imię i nazwisko</label>
@@ -177,6 +172,8 @@
                                     </label>
                                     @error('rodo_consent', 'meeting') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 </div>
+
+                                @include('partials.spam-protection', ['spamScope' => 'spotkanie', 'spamErrorBag' => 'meeting'])
 
                                 <div class="flex items-center gap-3">
                                     <button type="submit" class="rounded bg-brand px-5 py-2 text-sm font-bold text-white hover:bg-brand-dark">Daj znać, że przyjdę</button>

@@ -195,6 +195,8 @@
                 @enderror
             </div>
 
+            @include('partials.spam-protection', ['spamScope' => 'wspolpraca'])
+
             {{-- Przycisk --}}
             <div class="flex items-center gap-4">
                 <button type="submit"

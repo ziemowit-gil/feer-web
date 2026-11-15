@@ -4,12 +4,14 @@ namespace Tests\Feature;
 
 use App\Models\FormDefinition;
 use App\Models\FormSubmission;
+use App\Mail\FormSubmissionNotification;
 use App\Models\SiteSetting;
 use App\Support\SpamGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class MsGraphMailTest extends TestCase
@@ -68,77 +70,41 @@ class MsGraphMailTest extends TestCase
         ]);
     }
 
-    public function test_formularz_domyslnie_wysyla_powiadomienie_przez_graph(): void
+    public function test_formularz_nie_wysyla_przez_graph_mimo_konfiguracji(): void
     {
         $this->configureGraph();
         $this->fakeGraph();
+        Mail::fake();
 
-        $this->submit($this->form())->assertRedirect();
+        // Dawne ustawienie formularza „mailer: msgraph” też jest pomijane.
+        $this->submit($this->form(['mailer' => 'msgraph', 'send_copy_to_submitter' => true]))->assertRedirect();
 
         $this->assertSame(1, FormSubmission::count());
-        Http::assertSent(function ($request) {
-            if (! str_contains($request->url(), '/users/powiadomienia%40feer.org.pl/sendMail')) {
-                return false;
-            }
-            $msg = $request['message'];
-
-            return $request->hasHeader('Authorization', 'Bearer tok')
-                && $msg['subject'] === 'Nowe zgłoszenie: Kontakt'
-                && $msg['body']['contentType'] === 'HTML'
-                && str_contains($msg['body']['content'], 'anna@example.com')
-                && count($msg['toRecipients']) === 2
-                && $msg['replyTo'][0]['emailAddress']['address'] === 'anna@example.com'
-                && $request['saveToSentItems'] === true;
-        });
-    }
-
-    public function test_token_jest_buforowany_miedzy_wiadomosciami(): void
-    {
-        $this->configureGraph();
-        $this->fakeGraph();
-        $form = $this->form(['send_copy_to_submitter' => true]);
-
-        $this->submit($form);
-
-        Http::assertSentCount(3); // 1 token + powiadomienie + kopia dla zgłaszającego
-    }
-
-    public function test_bez_konfiguracji_graph_formularz_uzywa_domyslnego_maila(): void
-    {
-        $this->fakeGraph();
-
-        $this->submit($this->form())->assertRedirect();
-
         Http::assertNothingSent();
-        $this->assertSame(1, FormSubmission::count());
+        Mail::assertSent(FormSubmissionNotification::class, 2); // redakcja + kopia dla zgłaszającego
     }
 
-    public function test_formularz_moze_wymusic_domyslny_tryb_mimo_skonfigurowanego_graph(): void
+    public function test_graph_wysyla_wiadomosc_i_buforuje_token(): void
     {
         $this->configureGraph();
         $this->fakeGraph();
 
-        $this->submit($this->form(['mailer' => 'default']));
+        foreach ([1, 2] as $i) {
+            Mail::mailer('msgraph')->raw('Treść '.$i, fn ($m) => $m->to('biuro@feer.org.pl')->replyTo('anna@example.com')->subject('Test '.$i));
+        }
 
-        Http::assertNothingSent();
+        Http::assertSentCount(3); // 1 token + 2 wiadomości
+        Http::assertSent(fn ($request) => str_contains($request->url(), '/users/powiadomienia%40feer.org.pl/sendMail')
+            && $request->hasHeader('Authorization', 'Bearer tok')
+            && $request['message']['subject'] === 'Test 1'
+            && $request['message']['replyTo'][0]['emailAddress']['address'] === 'anna@example.com'
+            && $request['saveToSentItems'] === true);
     }
 
-    public function test_przelacznik_ustawien_wylacza_graph_dla_formularzy(): void
+    public function test_blad_serwera_smtp_nie_psuje_potwierdzenia_zgloszenia(): void
     {
-        $this->configureGraph(['forms_mail_via_msgraph' => false]);
-        $this->fakeGraph();
-
-        $this->submit($this->form());
-
-        Http::assertNothingSent();
-    }
-
-    public function test_blad_graph_nie_psuje_potwierdzenia_zgloszenia(): void
-    {
-        $this->configureGraph();
-        Http::fake([
-            'login.microsoftonline.com/*' => Http::response(['error_description' => 'AADSTS7000215: Invalid client secret'], 401),
-        ]);
+        // Nieosiągalny serwer SMTP: wysyłka się nie uda, ale zgłoszenie zostaje zapisane.
+        config(['mail.default' => 'smtp', 'mail.mailers.smtp.host' => '127.0.0.1', 'mail.mailers.smtp.port' => 1, 'mail.mailers.smtp.timeout' => 1]);
 
         $this->submit($this->form())->assertRedirect()->assertSessionHas('success');
 
@@ -171,9 +137,9 @@ class MsGraphMailTest extends TestCase
                 ->push('', 202),
         ]);
 
-        $this->submit($this->form())->assertRedirect()->assertSessionHas('success');
+        Mail::mailer('msgraph')->raw('x', fn ($m) => $m->to('biuro@feer.org.pl')->subject('t'));
 
-        // 2 tokeny + 2 próby sendMail (pierwsza odrzucona, druga przyjęta) dla powiadomienia.
+        // 2 tokeny + 2 próby sendMail (pierwsza odrzucona, druga przyjęta).
         Http::assertSentCount(4);
     }
 

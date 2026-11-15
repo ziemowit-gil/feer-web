@@ -6,7 +6,9 @@ use App\Mail\CooperationRequestMail;
 use App\Models\CooperationRequest;
 use App\Models\Page;
 use App\Models\SiteSetting;
+use App\Support\SpamGuard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class CooperationFormController extends Controller
@@ -44,6 +46,15 @@ class CooperationFormController extends Controller
             'privacy.accepted' => 'Wymagana zgoda na przetwarzanie danych.',
         ]);
 
+        // Antyspam (żeton czasu, zadanie tekstowe, analiza treści, duplikaty).
+        if ($spam = SpamGuard::inspect($request, array_intersect_key($data, array_flip(['name', 'email', 'organization', 'sector', 'message'])), 'wspolpraca:'.$page->id)) {
+            Log::warning('Zablokowano zgłoszenie współpracy jako spam', ['strona' => $page->slug, 'powód' => $spam['reason'], 'ip' => $request->ip()]);
+
+            return $spam['silent']
+                ? redirect()->route('cooperation.form.show', $page)->with('sent', $cd['form_confirmation'] ?? 'Dziękujemy! Odezwiemy się wkrótce.')
+                : back()->withErrors(['spam' => $spam['message']])->withInput();
+        }
+
         $req = CooperationRequest::create([
             'page_id'           => $page->id,
             'name'              => $data['name'],
@@ -58,8 +69,13 @@ class CooperationFormController extends Controller
             ? $cd['form_recipient']
             : SiteSetting::current()->contact_email;
 
+        // Zgłoszenie jest już w bazie — błąd poczty nie może pokazać błędu 500.
         if (filled($recipient)) {
-            Mail::to($recipient)->send(new CooperationRequestMail($req));
+            try {
+                Mail::to($recipient)->send(new CooperationRequestMail($req));
+            } catch (\Throwable $e) {
+                report($e);
+            }
         }
 
         return redirect()

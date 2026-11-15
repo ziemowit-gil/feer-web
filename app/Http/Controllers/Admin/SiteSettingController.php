@@ -219,7 +219,6 @@ class SiteSettingController extends Controller
             'msgraph_client_secret' => ['nullable', 'string', 'max:1000'],
             'msgraph_sender' => ['nullable', 'email', 'max:255'],
             'msgraph_save_to_sent' => ['sometimes', 'boolean'],
-            'forms_mail_via_msgraph' => ['sometimes', 'boolean'],
             'ngo_color'          => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'brand_skip_contrast' => ['sometimes', 'boolean'],
             'ngo_skip_contrast'  => ['nullable', 'boolean'],
@@ -595,7 +594,6 @@ class SiteSettingController extends Controller
             unset($data['msgraph_client_secret']);
         }
         $data['msgraph_save_to_sent'] = $request->boolean('msgraph_save_to_sent');
-        $data['forms_mail_via_msgraph'] = $request->boolean('forms_mail_via_msgraph');
         $data['wide_mission_nav_hover_white'] = $request->boolean('wide_mission_nav_hover_white');
         $data['wide_mission_nav_active_white'] = $request->boolean('wide_mission_nav_active_white');
         $data['wide_mission_nav_icons_white'] = $request->boolean('wide_mission_nav_icons_white');

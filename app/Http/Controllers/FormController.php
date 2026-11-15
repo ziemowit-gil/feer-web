@@ -193,12 +193,9 @@ class FormController extends Controller
         $settings = $formularz->settings ?? [];
         $site = SiteSetting::current();
 
-        $mailerName = match ($settings['mailer'] ?? '') {
-            'msgraph' => $site->msGraphConfigured() ? 'msgraph' : null,
-            'default' => null,
-            default   => $site->formsMailer(),
-        };
-        $mailer = $mailerName ? Mail::mailer($mailerName) : Mail::mailer();
+        // Ten sam transport co cała poczta serwisu (Ustawienia → Poczta → Tryb wysyłki,
+        // zwykle SMTP). Dawne ustawienie formularza „mailer” (Graph) jest pomijane.
+        $mailer = Mail::mailer();
 
         $submitterEmail = $this->submitterEmail($formularz, $submission);
 
@@ -222,7 +219,7 @@ class FormController extends Controller
                 $mailer->to($to)->send($mail);
             } catch (\Throwable $e) {
                 Log::error('Formularz: nie udało się wysłać powiadomienia o zgłoszeniu.', [
-                    'form' => $formularz->slug, 'submission' => $submission->id, 'mailer' => $mailerName ?? 'default', 'error' => $e->getMessage(),
+                    'form' => $formularz->slug, 'submission' => $submission->id, 'mailer' => config('mail.default'), 'error' => $e->getMessage(),
                 ]);
             }
         }

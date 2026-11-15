@@ -73,11 +73,6 @@
                 <form method="POST" action="{{ route('booking.store') }}" class="space-y-5" novalidate>
                     @csrf
 
-                    <div class="hidden" aria-hidden="true">
-                        <label for="bk-website">Zostaw to pole puste</label>
-                        <input type="text" id="bk-website" name="website" tabindex="-1" autocomplete="off">
-                    </div>
-
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
                             <label for="bk-name" class="mb-1 block text-sm font-bold">
@@ -158,6 +153,8 @@
                             <p class="mt-1 text-sm text-red-600" role="alert">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    @include('partials.spam-protection', ['spamScope' => 'umow-sie', 'spamErrorBag' => 'booking'])
 
                     <p class="text-xs text-muted">
                         Administratorem Twoich danych osobowych jest {{ $siteSettings->site_name }}. Pola oznaczone gwiazdką (<span class="font-bold text-red-600">*</span>) są wymagane.

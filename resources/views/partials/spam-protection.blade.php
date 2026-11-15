@@ -10,14 +10,16 @@
     Sprawdzane po stronie serwera przez App\Support\SpamGuard.
 
     Parametry: $spamScope (unikalny sufiks id, gdy na stronie jest wiele formularzy),
-    $cleantalk (true = formularz sprawdza także CleanTalk — ładujemy jego skrypt analizy zachowania).
+    $cleantalk (true = formularz sprawdza także CleanTalk — ładujemy jego skrypt analizy zachowania),
+    $spamErrorBag (nazwany worek błędów, gdy formularz go używa, np. „meeting”; domyślnie „default”).
 --}}
 @php
     $spamScope     = $spamScope ?? 'form';
     $spamChallenge = \App\Support\SpamGuard::challenge();
     $spamAnswerId  = 'spam-answer-' . $spamScope;
     $spamHelpId    = $spamAnswerId . '-help';
-    $spamHasError  = $errors->has('spam');
+    $spamErrorBag  = $spamErrorBag ?? 'default';
+    $spamHasError  = $errors->getBag($spamErrorBag)->has('spam');
 @endphp
 
 <div class="hidden" aria-hidden="true" style="display:none!important">
@@ -56,7 +58,7 @@
         @if ($spamFlat) style="max-width: 8rem" @endif
         class="{{ $spamFlat ? 'ff-input' : 'w-24 rounded-lg border px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 ' . ($spamHasError ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white') }}">
 
-    @error('spam')
+    @error('spam', $spamErrorBag)
         <p class="flex items-center gap-1 text-sm font-medium text-red-700">
             <i class="fa-solid fa-circle-exclamation shrink-0" aria-hidden="true"></i>
             {{ $message }}

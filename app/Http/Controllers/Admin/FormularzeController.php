@@ -203,7 +203,6 @@ class FormularzeController extends Controller
             'settings.notification_email'    => 'nullable|string|max:500',
             'settings.notification_cc'       => 'nullable|string|max:500',
             'settings.notification_subject'  => 'nullable|string|max:200',
-            'settings.mailer'                => 'nullable|in:,msgraph,default',
             'settings.reply_to_submitter'    => 'nullable|boolean',
             'settings.send_copy_to_submitter' => 'nullable|boolean',
             'settings.submitter_copy_message' => 'nullable|string|max:1000',
@@ -284,10 +283,6 @@ class FormularzeController extends Controller
                 'notification_email'   => $request->input('settings.notification_email'),
                 'notification_cc'      => $request->input('settings.notification_cc'),
                 'notification_subject' => $request->input('settings.notification_subject'),
-                // Transport powiadomień: '' = dziedzicz (domyślnie Microsoft Graph,
-                // gdy skonfigurowany w Ustawienia → Poczta), 'msgraph' = wymuś Graph,
-                // 'default' = zawsze domyślny tryb wysyłki serwisu.
-                'mailer'               => in_array($request->input('settings.mailer'), ['msgraph', 'default'], true) ? $request->input('settings.mailer') : '',
                 'reply_to_submitter'   => $request->boolean('settings.reply_to_submitter'),
                 'send_copy_to_submitter' => $request->boolean('settings.send_copy_to_submitter'),
                 'submitter_copy_message' => $request->input('settings.submitter_copy_message'),

@@ -198,6 +198,8 @@
                     <span>Wyrażam zgodę na przetwarzanie moich danych osobowych w celu rozpatrzenia zgłoszenia.</span>
                 </label>
 
+                @include('partials.spam-protection', ['spamScope' => 'federacja'])
+
                 <button type="submit"
                     class="flex w-full items-center justify-center gap-2 rounded-md bg-brand px-6 py-3.5 text-sm font-extrabold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>

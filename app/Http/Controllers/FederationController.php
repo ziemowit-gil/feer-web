@@ -6,7 +6,9 @@ use App\Models\FederationMembershipApplication;
 use App\Models\Organization;
 use App\Models\Page;
 use App\Models\SiteSetting;
+use App\Support\SpamGuard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -71,6 +73,14 @@ class FederationController extends Controller
             'documents.*.max' => 'Każdy plik może mieć maksymalnie 8 MB.',
             'privacy.accepted' => 'Wymagana zgoda na przetwarzanie danych.',
         ]);
+
+        if ($spam = SpamGuard::inspect($request, array_intersect_key($data, array_flip(['organization_name', 'contact_name', 'email', 'phone', 'message'])), 'federacja')) {
+            Log::warning('Zablokowano zgłoszenie do federacji jako spam', ['powód' => $spam['reason'], 'ip' => $request->ip()]);
+
+            return $spam['silent']
+                ? redirect()->route('federation.join')->with('application_sent', 'Dziękujemy! Twoje zgłoszenie zostało przesłane — odezwiemy się wkrótce.')
+                : back()->withErrors(['spam' => $spam['message']])->withInput();
+        }
 
         $application = FederationMembershipApplication::create([
             'organization_name' => $data['organization_name'],
