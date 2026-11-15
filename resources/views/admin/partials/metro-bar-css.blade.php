@@ -9,6 +9,8 @@
     $mbBrand = \App\Support\AdminMetro::tones($mbPalette['color'])['brand'];
     $mbSurf = \App\Support\AdminMetro::SURFACES;
     $mbAccentInk = \App\Support\Color::contrast($mbPalette['dark'], $mbSurf['side_hover']) >= 4.5 ? $mbPalette['dark'] : \App\Support\AdminMetro::INK;
+    // Kafle w mega menu: jasny odcień marki (tekst ink ≥ 4,5:1 w każdym stanie), żeby panel nie zlewał się z białymi kartami strony.
+    $mbTile = \App\Support\AdminMetro::menuTile($mbPalette['color'], $mbPalette['dark']);
 @endphp
     .mt-nav {
         --m-bg: {{ $mbSurf['page'] }};
@@ -27,6 +29,9 @@
         --m-accent-active: {{ $mbBrand['active'] }};
         --m-accent-ink: {{ $mbAccentInk }};
         --m-focus: {{ \App\Support\AdminMetro::INK }};
+        --m-tile: {{ $mbTile['bg'] }};
+        --m-tile-hover: {{ $mbTile['hover'] }};
+        --m-tile-icon: {{ $mbTile['icon'] }};
         --m-font: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
         --m-font-heading: "Montserrat", "Segoe UI", system-ui, sans-serif;
         font-family: var(--m-font);
@@ -85,7 +90,10 @@
     /* Mega menu grupy: panel pod paskiem na całą szerokość, bloki w kolumnach, w bloku kafle po dwa — wszystkie tej samej
        wysokości (mieszczą nazwę w dwóch wierszach). Pozycja z podpozycjami zajmuje cały rząd bloku: kafel w lewej kolumnie,
        lista podpozycji obok w prawej, więc nie rozciąga sąsiednich kafli i siatka zostaje równa. Kolejność jak w menu. */
-    .admin-metro .mt-mega { position: absolute; top: 100%; left: 0; right: 0; max-height: calc(100vh - 3.5rem); overflow-y: auto; background: var(--m-bg); color: var(--m-ink); border-bottom: 1px solid var(--m-line-strong); }
+    /* Rozwinięty panel odcina się od strony: białe tło, kreska marki u dołu, cień i przyciemnienie strony pod panelem
+       (cień 100vmax przycięty clip-path tylko do obszaru pod paskiem, więc pasek menu zostaje jasny). */
+    .admin-metro .mt-mega { position: absolute; top: 100%; left: 0; right: 0; max-height: calc(100vh - 3.5rem); overflow-y: auto; background: #fff; color: var(--m-ink);
+        border-bottom: 4px solid var(--m-accent); box-shadow: 0 0 0 100vmax rgba(29, 29, 26, .45), 0 12px 24px rgba(0, 0, 0, .25); clip-path: inset(0 -100vmax -100vmax -100vmax); }
     .admin-metro .mt-mega-inner { padding: 1.25rem 1.5rem 1.75rem; }
     .admin-metro .mt-mega-title { margin: 0 0 1rem; color: var(--m-ink); font-family: var(--m-font-heading); font-size: 1.75rem; font-weight: 300; line-height: 1.2; }
     .admin-metro .mt-blocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); gap: 1.5rem 2rem; align-items: start; }
@@ -95,11 +103,11 @@
     .admin-metro .mt-cell.has-children { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .375rem; }
     .admin-metro .mt-cell.has-children > .mt-tile { align-self: start; }
     .admin-metro .mt-tile { position: relative; display: flex; flex: 1 1 auto; flex-direction: column; justify-content: space-between; gap: .5rem; min-height: 5.5rem; padding: .625rem .75rem;
-        background: var(--m-surface); color: var(--m-ink); text-decoration: none; transition: background-color .15s, transform .1s; }
-    .admin-metro .mt-tile:hover { background: var(--m-head); }
+        background: var(--m-tile); color: var(--m-ink); text-decoration: none; transition: background-color .15s, transform .1s; }
+    .admin-metro .mt-tile:hover { background: var(--m-tile-hover); }
     .admin-metro .mt-tile:active { transform: scale(.98); }
     .admin-metro .mt-tile:focus-visible { z-index: 1; outline: 3px solid var(--m-focus); outline-offset: 2px; }
-    .admin-metro .mt-tile-icon { font-size: 1.25rem; line-height: 1; color: var(--m-accent-ink); }
+    .admin-metro .mt-tile-icon { font-size: 1.25rem; line-height: 1; color: var(--m-tile-icon); }
     .admin-metro .mt-tile-label { padding-right: 1.75rem; font-size: .875rem; font-weight: 600; line-height: 1.25; overflow-wrap: break-word; }
     .admin-metro .mt-tile-badge { position: absolute; top: .5rem; right: .5rem; display: inline-flex; min-width: 1.5rem; height: 1.5rem; align-items: center; justify-content: center; padding: 0 .375rem;
         background: var(--m-accent); color: var(--m-accent-fg); font-size: .75rem; font-weight: 700; }
@@ -109,9 +117,9 @@
     .admin-metro .mt-tile.is-current:hover { background: var(--m-accent-hover); }
     .admin-metro .mt-tile.is-current .mt-tile-icon { color: inherit; }
     .admin-metro .mt-tile.is-current .mt-tile-badge { background: var(--m-accent-fg); color: var(--m-accent); }
-    .admin-metro .mt-children { display: flex; flex-direction: column; justify-content: center; min-height: 5.5rem; margin: 0; padding: .125rem 0; list-style: none; background: var(--m-surface); }
+    .admin-metro .mt-children { display: flex; flex-direction: column; justify-content: center; min-height: 5.5rem; margin: 0; padding: .125rem 0; list-style: none; background: var(--m-tile); }
     .admin-metro .mt-children a { display: flex; align-items: center; min-height: 1.75rem; padding: .125rem .75rem; color: var(--m-ink); font-size: .8125rem; text-decoration: none; }
-    .admin-metro .mt-children a:hover { background: var(--m-hover); }
+    .admin-metro .mt-children a:hover { background: var(--m-tile-hover); }
     .admin-metro .mt-children a:focus-visible { outline: 3px solid var(--m-focus); outline-offset: -3px; }
     .admin-metro .mt-children a.is-current { font-weight: 700; box-shadow: inset 4px 0 0 var(--m-accent); }
 

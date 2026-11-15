@@ -303,4 +303,22 @@ class AdminMetroStyleTest extends TestCase
             $this->assertStringNotContainsString('.metro-tile[data-tone="'.$removed.'"]', $html, "Ciemny ton {$removed} został usunięty");
         }
     }
+
+    public function test_rozwiniety_panel_menu_odcina_sie_od_strony_a_kafle_maja_kolor_marki_z_kontrastem(): void
+    {
+        foreach (['#1e6dff', '#ea8f00', '#ffeb3b', '#000000', '#7c3aed'] as $brand) {
+            $tile = \App\Support\AdminMetro::menuTile($brand, \App\Support\Color::darken($brand, 0.2));
+            foreach (['bg', 'hover'] as $state) {
+                $this->assertGreaterThanOrEqual(4.5, \App\Support\Color::contrast(\App\Support\AdminMetro::INK, $tile[$state]), "{$brand} {$state}");
+                $this->assertNotSame('#ffffff', $tile[$state]);
+            }
+            $this->assertGreaterThanOrEqual(3, \App\Support\Color::contrast($tile['icon'], $tile['hover']), $brand);
+        }
+        $this->assertSame('#d7e5ff', \App\Support\AdminMetro::menuTile('#1e6dff', '#1752bf')['bg']);
+
+        $css = view('admin.partials.metro-bar-css', ['siteSettings' => \App\Models\SiteSetting::current()])->render();
+        $this->assertStringContainsString('--m-tile: #', $css);
+        $this->assertMatchesRegularExpression('/\.mt-mega \{[^}]*background: #fff;[^}]*border-bottom: 4px solid var\(--m-accent\);[^}]*clip-path/s', $css);
+        $this->assertStringContainsString('.admin-metro .mt-tile:hover { background: var(--m-tile-hover); }', $css);
+    }
 }

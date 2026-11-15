@@ -36,6 +36,32 @@ final class AdminMetro
     ];
 
     /**
+     * Kafel w mega menu górnego paska: kolor marki zmieszany z bielą (18%, po najechaniu 28%) z tekstem INK (≥ 4,5:1
+     * w każdym stanie) i ikoną w ciemnym kolorze marki (gdy ma ≥ 3:1 do tła, inaczej INK). Dla FEER: #d7e5ff.
+     *
+     * @return array{bg: string, hover: string, icon: string}
+     */
+    public static function menuTile(string $brand, string $dark): array
+    {
+        $brand = Color::isValid($brand) ? $brand : '#1e6dff';
+        $tint = function (float $share) use ($brand): string {
+            $rgb = sscanf(ltrim(strlen($brand) === 4 ? '#'.$brand[1].$brand[1].$brand[2].$brand[2].$brand[3].$brand[3] : $brand, '#'), '%02x%02x%02x');
+
+            return sprintf('#%02x%02x%02x', ...array_map(fn ($c) => (int) round(255 - (255 - $c) * $share), $rgb));
+        };
+        $bg = $hover = '#ffffff';
+        foreach ([[0.18, 0.28], [0.12, 0.18], [0.06, 0.1]] as [$a, $b]) {
+            [$bg, $hover] = [$tint($a), $tint($b)];
+            if (Color::contrast(self::INK, $hover) >= 4.5) {
+                break;
+            }
+        }
+        $icon = Color::isValid($dark) && Color::contrast($dark, $hover) >= 3 ? $dark : self::INK;
+
+        return ['bg' => $bg, 'hover' => $hover, 'icon' => $icon];
+    }
+
+    /**
      * @param  string  $brandColor  kolor marki witryny (SiteSetting::brandPalette()['color'])
      * @return array<string, array{bg: string, fg: string, hover: string, active: string}>
      */
