@@ -594,6 +594,96 @@
                 </div>
 
                 {{-- Podstrony --}}
+                {{-- Treść strony (jak Page module w TYPO3): bloki z edytora blokowego w kolejności, z przesuwaniem, ukrywaniem
+                     i szybką poprawką tekstu bez otwierania pełnego edytora (PageBlocksController). --}}
+                @if (\App\Models\SiteSetting::current()->isModuleEnabled('block_editor'))
+                    @php
+                        $pageBlocks = is_array($selected->blocks) ? array_values($selected->blocks) : null;
+                        $blocksVersion = \App\Http\Controllers\Admin\PageBlocksController::version($selected);
+                        $blkBtn = 'inline-flex h-7 min-w-7 items-center justify-center gap-1 rounded px-1.5 text-xs font-bold text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent';
+                        $fieldCls = 'w-full rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark';
+                    @endphp
+                    <section class="rounded-md bg-white" id="tresc-strony" aria-labelledby="tresc-strony-h">
+                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-3 py-1.5">
+                            <h3 id="tresc-strony-h" class="text-sm font-bold text-ink">Treść strony
+                                @if ($pageBlocks !== null)<span class="font-normal text-muted">({{ count($pageBlocks) }} {{ trans_choice('blok|bloki|bloków', count($pageBlocks)) }})</span>@endif</h3>
+                            @if ($canEditSelected)
+                                <a href="{{ route('admin.podstrony.bloki.edit', $selected) }}" class="{{ $ghost }}"><i class="fa-solid fa-cubes" aria-hidden="true"></i> {{ $pageBlocks !== null ? 'Otwórz w edytorze blokowym' : 'Przełącz na edytor blokowy' }}</a>
+                            @endif
+                        </div>
+                        @if ($pageBlocks === null)
+                            @php $classicExcerpt = \Illuminate\Support\Str::limit(trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags((string) $selected->content), ENT_QUOTES | ENT_HTML5, 'UTF-8'))), 280); @endphp
+                            <p class="px-3 py-3 text-sm text-muted">
+                                @if ($classicExcerpt !== '')
+                                    <span class="mb-1 block text-xs font-semibold">Treść z edytora klasycznego:</span>
+                                    <span class="text-ink">{{ $classicExcerpt }}</span>
+                                @else
+                                    Strona nie ma jeszcze treści.
+                                @endif
+                            </p>
+                        @elseif ($pageBlocks === [])
+                            <p class="px-3 py-6 text-center text-sm text-muted">Edytor blokowy jest pusty — dodaj pierwszy blok.</p>
+                        @else
+                            <ol class="divide-y divide-gray-100" role="list">
+                                @foreach ($pageBlocks as $bi => $blk)
+                                    @php $sum = \App\Support\BlockSummary::describe($blk); $isHidden = ! empty($blk['hidden']); @endphp
+                                    <li class="px-3 py-1.5 {{ $isHidden ? 'bg-gray-50' : '' }}">
+                                        <div class="flex items-center gap-2">
+                                            <span class="w-5 flex-none text-right text-[11px] font-bold text-muted" aria-hidden="true">{{ $bi + 1 }}</span>
+                                            <i class="fa-solid {{ $sum['icon'] }} w-4 flex-none text-center text-xs text-gray-500" aria-hidden="true"></i>
+                                            <span class="min-w-0 flex-1 truncate text-sm {{ $isHidden ? 'text-muted line-through' : 'text-ink' }}">
+                                                <span class="sr-only">Blok {{ $bi + 1 }}: </span><span class="font-semibold">{{ $sum['label'] }}</span>@if ($sum['text'] !== '')<span class="text-muted"> — {{ $sum['text'] }}</span>@endif
+                                                @if ($isHidden)<span class="sr-only"> (ukryty na stronie)</span>@endif
+                                            </span>
+                                            @if ($isHidden)<span class="flex-none text-[11px] font-bold text-muted" aria-hidden="true"><i class="fa-solid fa-eye-slash"></i> ukryty</span>@endif
+                                            @if ($canEditSelected)
+                                                <div class="flex flex-none items-center" role="group" aria-label="Akcje bloku {{ $bi + 1 }}: {{ $sum['label'] }}">
+                                                    @foreach ([['gora', 'fa-arrow-up', 'Wyżej', $bi === 0], ['dol', 'fa-arrow-down', 'Niżej', $bi === count($pageBlocks) - 1]] as [$dir, $dirIcon, $dirLabel, $dirOff])
+                                                        <form method="POST" action="{{ route('admin.podstrony.blok.przesun', [$selected, $bi]) }}">
+                                                            @csrf <input type="hidden" name="v" value="{{ $blocksVersion }}"><input type="hidden" name="kierunek" value="{{ $dir }}">
+                                                            <button type="submit" class="{{ $blkBtn }}" @disabled($dirOff) title="{{ $dirLabel }}" aria-label="{{ $dirLabel }}: blok {{ $bi + 1 }} ({{ $sum['label'] }})"><i class="fa-solid {{ $dirIcon }}" aria-hidden="true"></i></button>
+                                                        </form>
+                                                    @endforeach
+                                                    <form method="POST" action="{{ route('admin.podstrony.blok.widocznosc', [$selected, $bi]) }}">
+                                                        @csrf <input type="hidden" name="v" value="{{ $blocksVersion }}">
+                                                        <button type="submit" class="{{ $blkBtn }}" title="{{ $isHidden ? 'Pokaż na stronie' : 'Ukryj na stronie' }}" aria-label="{{ $isHidden ? 'Pokaż na stronie' : 'Ukryj na stronie' }}: blok {{ $bi + 1 }} ({{ $sum['label'] }})"><i class="fa-solid {{ $isHidden ? 'fa-eye' : 'fa-eye-slash' }}" aria-hidden="true"></i></button>
+                                                    </form>
+                                                    @if ($sum['editable'])
+                                                        <button type="button" class="{{ $blkBtn }}" aria-expanded="false" aria-controls="blk-edit-{{ $bi }}" title="Popraw tekst"
+                                                            onclick="const p = document.getElementById('blk-edit-{{ $bi }}'); p.hidden = ! p.hidden; this.setAttribute('aria-expanded', String(! p.hidden)); if (! p.hidden) p.querySelector('textarea, input[type=text]').focus();">
+                                                            <i class="fa-solid fa-pen" aria-hidden="true"></i><span class="sr-only">Popraw tekst: blok {{ $bi + 1 }} ({{ $sum['label'] }})</span>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                        @if ($canEditSelected && $sum['editable'])
+                                            <form id="blk-edit-{{ $bi }}" hidden method="POST" action="{{ route('admin.podstrony.blok.zapisz', [$selected, $bi]) }}" class="mb-1 ml-11 mt-1.5 space-y-2 rounded-md bg-gray-50 p-3">
+                                                @csrf @method('PUT') <input type="hidden" name="v" value="{{ $blocksVersion }}">
+                                                @if ($blk['type'] === 'heading')
+                                                    <div class="flex flex-wrap items-end gap-2">
+                                                        <div class="min-w-48 flex-1"><label for="blk-t-{{ $bi }}" class="mb-1 block text-xs font-bold text-ink">Tekst nagłówka</label>
+                                                            <input type="text" id="blk-t-{{ $bi }}" name="tekst" required maxlength="500" value="{{ \App\Support\BlockSummary::editText($blk) }}" class="{{ $fieldCls }}"></div>
+                                                        <div><label for="blk-l-{{ $bi }}" class="mb-1 block text-xs font-bold text-ink">Poziom</label>
+                                                            <select id="blk-l-{{ $bi }}" name="poziom" class="{{ $fieldCls }}">
+                                                                @foreach ([2, 3, 4] as $lv)<option value="{{ $lv }}" @selected((int) ($blk['attrs']['level'] ?? 2) === $lv)>H{{ $lv }}</option>@endforeach
+                                                            </select></div>
+                                                    </div>
+                                                @else
+                                                    <label for="blk-t-{{ $bi }}" class="block text-xs font-bold text-ink">{{ $blk['type'] === 'list' ? 'Pozycje listy (każda w osobnym wierszu)' : 'Tekst akapitu' }}</label>
+                                                    <textarea id="blk-t-{{ $bi }}" name="tekst" required rows="{{ min(10, max(3, substr_count(\App\Support\BlockSummary::editText($blk), "\n") + 2)) }}" class="{{ $fieldCls }}">{{ \App\Support\BlockSummary::editText($blk) }}</textarea>
+                                                @endif
+                                                <p class="text-xs text-muted">Zapis tworzy nową wersję w historii. Linki i pogrubienia dodasz w edytorze blokowym.</p>
+                                                <button type="submit" class="{{ $btn }}"><i class="fa-solid fa-check" aria-hidden="true"></i> Zapisz blok</button>
+                                            </form>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ol>
+                        @endif
+                    </section>
+                @endif
+
                 {{-- Podstrony: jeden biały blok — nagłówek z liczbą i „Dodaj podstronę”, pod nim zwarta tabela. --}}
                 <div class="rounded-md bg-white">
                     <div class="flex items-center justify-between gap-2 border-b border-gray-100 px-3 py-1.5">

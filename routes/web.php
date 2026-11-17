@@ -408,6 +408,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         // Edytor blokowy (styl Gutenberga) — pełnoekranowy, na stylach frontu.
         Route::get('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'editPage'])->name('podstrony.bloki.edit');
         Route::put('podstrony/{page}/edytor-blokowy', [\App\Http\Controllers\Admin\BlockEditorController::class, 'updatePage'])->name('podstrony.bloki.update');
+        // „Treść strony” w karcie Strony Nawigator: blok wyżej/niżej, ukryj/pokaż, szybka edycja tekstu.
+        Route::post('podstrony/{page}/blok/{index}/przesun', [\App\Http\Controllers\Admin\PageBlocksController::class, 'move'])->whereNumber('index')->name('podstrony.blok.przesun');
+        Route::post('podstrony/{page}/blok/{index}/widocznosc', [\App\Http\Controllers\Admin\PageBlocksController::class, 'toggle'])->whereNumber('index')->name('podstrony.blok.widocznosc');
+        Route::put('podstrony/{page}/blok/{index}', [\App\Http\Controllers\Admin\PageBlocksController::class, 'update'])->whereNumber('index')->name('podstrony.blok.zapisz');
         Route::post('podstrony/{page}/ustawienia-na-podstrony', [AdminPageController::class, 'copySettingsToChildren'])->name('podstrony.ustawienia-na-podstrony');
         Route::post('podstrony/{page}/styl-menu-na-podstrony', [AdminPageController::class, 'copyNavStyleToChildren'])->name('podstrony.styl-na-podstrony');
         Route::post('podstrony/{page}/pliki', [AdminAttachmentController::class, 'storeForPage'])->name('podstrony.pliki.store');

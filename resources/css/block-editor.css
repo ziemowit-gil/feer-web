@@ -657,3 +657,7 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
 .be-multibar-text { flex: 1 1 10rem; font-weight: 700; }
 .be-btn--danger { color: var(--be-danger); }
 .be-btn--danger:hover { background: #fef2f2; color: var(--be-danger); }
+
+/* Blok ukryty na stronie (przełącznik „Ukryj” w karcie strony): przerywana ramka i podpis, treść bez przezroczystości. */
+.be-block.is-hidden-block { outline: 2px dashed #6b7280; outline-offset: 4px; }
+.be-hidden-note { margin: 0 0 .5rem; font-size: .8125rem; font-weight: 700; color: #374151; }

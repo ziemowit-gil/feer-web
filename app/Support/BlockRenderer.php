@@ -100,6 +100,11 @@ class BlockRenderer
                 }
             }
 
+            // Blok ukryty (karta strony → „Treść strony” → Ukryj): zostaje w blokach, ale nie trafia do HTML strony.
+            if (! empty($block['hidden'])) {
+                $normalized['hidden'] = true;
+            }
+
             $out[] = $normalized;
         }
 
@@ -243,7 +248,7 @@ class BlockRenderer
     /** @param  array<int, array<string, mixed>>  $blocks */
     private function renderList(array $blocks): string
     {
-        return implode("\n", array_filter(array_map(fn ($b) => $this->renderBlock($b), $blocks), fn ($html) => $html !== ''));
+        return implode("\n", array_filter(array_map(fn ($b) => empty($b['hidden']) ? $this->renderBlock($b) : '', $blocks), fn ($html) => $html !== ''));
     }
 
     /** @param  array<string, mixed>  $b */

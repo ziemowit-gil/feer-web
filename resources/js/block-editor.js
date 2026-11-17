@@ -286,6 +286,8 @@ function start(config) {
             const def = BLOCKS[b.type];
             const out = { id: uid(), type: b.type, attrs: { ...def.create(), ...(b.attrs || {}) } };
             if (def.container) out.inner = hydrate(b.inner);
+            // Blok ukryty w karcie strony („Treść strony” w Strony Nawigator) — flaga zostaje przy zapisie z edytora.
+            if (b.hidden) out.hidden = true;
             return out;
         });
     }
@@ -1533,6 +1535,10 @@ function start(config) {
             class: `be-block be-block--${b.type}`, 'data-id': b.id, tabindex: '-1',
             role: 'group', 'aria-label': 'Blok: ' + def.title,
         });
+        if (b.hidden) {
+            wrap.classList.add('is-hidden-block');
+            wrap.append(h('p', { class: 'be-hidden-note' }, 'Ukryty na stronie — odwiedzający go nie widzą. Pokażesz go w karcie strony (Strony Nawigator → Treść strony).'));
+        }
         wrap.append(def.edit ? def.edit(b) : editors[b.type](b));
         // Szybkie wstawianie „w miejscu”: plus pod blokiem (tylko dla myszy; z klawiatury — „/”, menu bloku
         // „Wstaw blok po” i przycisk „Dodaj blok”, więc plus nie zwiększa liczby tabulatorów).
