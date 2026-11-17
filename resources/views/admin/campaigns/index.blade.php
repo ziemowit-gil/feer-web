@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Kampanie zbiórkowe')
+@section('title', 'Zbiórki')
 
 @section('content')
     <form id="bulk-form" method="POST" action="{{ route('admin.kampanie.bulk') }}">
@@ -21,15 +21,21 @@
 
             <div class="ml-auto flex items-center gap-3">
                 <div class="flex gap-1">
-                    @foreach ([''=>'Wszystkie','published'=>'Opublikowane','draft'=>'Szkice','trashed'=>'Kosz'] as $val => $lbl)
+                    @foreach ([''=>'Wszystkie','active'=>'Aktywne','closed'=>'Zakończone','draft'=>'Szkice','trashed'=>'Kosz'] as $val => $lbl)
                         <a href="{{ route('admin.kampanie.index', $val ? ['status'=>$val] : []) }}"
                             class="rounded px-3 py-1.5 text-xs font-bold {{ $status === $val ? 'bg-brand-dark text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50' }}">
                             {{ $lbl }}
                         </a>
                     @endforeach
                 </div>
+                <a href="{{ route('admin.darowizny.index') }}" class="rounded bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-brand-light">
+                    <i class="fa-solid fa-receipt" aria-hidden="true"></i> Wpłaty
+                </a>
+                <a href="{{ route('admin.zbiorki-teksty.edit') }}" class="rounded bg-white px-4 py-2 text-sm font-bold text-ink hover:bg-brand-light">
+                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Teksty i podziękowania
+                </a>
                 <a href="{{ route('admin.kampanie.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
-                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj kampanię
+                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj zbiórkę
                 </a>
             </div>
         </div>
@@ -60,9 +66,16 @@
                             <td class="px-4 py-3">
                                 <input type="checkbox" name="ids[]" value="{{ $campaign->id }}" class="row-check rounded border-gray-500" aria-label="Zaznacz {{ $campaign->title }}">
                             </td>
-                            <td class="px-4 py-3 font-medium">{{ $campaign->title }}</td>
+                            <td class="px-4 py-3 font-medium">
+                                {{ $campaign->title }}
+                                @if ($campaign->is_featured)<span class="ml-1 text-xs text-ink"><i class="fa-solid fa-star text-brand-dark" aria-hidden="true"></i> wyróżniona</span>@endif
+                                <span class="block text-xs font-normal text-ink">{{ \App\Models\Campaign::PAYMENT_MODES[$campaign->payment_mode] ?? '' }}</span>
+                            </td>
                             <td class="px-4 py-3 text-muted">{{ number_format($campaign->goal_amount, 0, ',', ' ') }} zł</td>
-                            <td class="px-4 py-3 font-bold text-brand-dark">{{ number_format($campaign->collected_amount, 0, ',', ' ') }} zł</td>
+                            <td class="px-4 py-3 font-bold text-brand-dark">
+                                {{ number_format($campaign->collected_amount, 0, ',', ' ') }} zł
+                                <a href="{{ route('admin.darowizny.index', ['kampania' => $campaign->id]) }}" class="block text-xs font-normal text-ink underline">wpłaty: {{ $campaign->paid_donations_count }}</a>
+                            </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
                                     <div class="h-2 w-24 overflow-hidden rounded-full bg-gray-200" role="progressbar"
@@ -83,10 +96,8 @@
                             <td class="px-4 py-3">
                                 @if ($campaign->trashed())
                                     <span class="text-xs font-bold text-ink"><i class="fa-solid fa-trash-can mr-1 text-red-700" aria-hidden="true"></i>Kosz</span>
-                                @elseif ($campaign->is_published)
-                                    <span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-check mr-1 text-brand-dark" aria-hidden="true"></i>Opublikowana</span>
                                 @else
-                                    <span class="text-xs font-bold text-muted">Szkic</span>
+                                    <span class="text-xs font-bold text-ink">{{ \App\Models\Campaign::STATUSES[$campaign->status] ?? $campaign->status }}</span>
                                 @endif
                                 @if ($campaign->isGoalReached() && ! $campaign->trashed())
                                     <span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-check mr-1 text-brand-dark" aria-hidden="true"></i>Cel osiągnięty</span>

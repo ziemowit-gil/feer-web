@@ -181,8 +181,14 @@ class SzoClient
      */
     public function pushDonation(Donation $donation): bool
     {
-        if (! $this->enabled() || ! $donation->isPaid()) {
+        // Wpłaty wpisane ręcznie (przelew tradycyjny) SZO zna już z importu wyciągów.
+        if (! $this->enabled() || ! $donation->isPaid() || $donation->isManual()) {
             return false;
+        }
+
+        $purpose = (string) config('szo.donation_purpose');
+        if ($donation->campaign) {
+            $purpose = trim($purpose.' — '.$donation->campaign->title, ' —');
         }
 
         $consents = ['rodo'];
@@ -198,10 +204,13 @@ class SzoClient
                 'donation_date' => ($donation->paid_at ?? now())->toDateString(),
                 'channel'       => 'p24',
                 'bank_ref'      => $donation->p24_order_id ? (string) $donation->p24_order_id : null,
-                'purpose'       => config('szo.donation_purpose'),
+                'purpose'       => $purpose,
                 'is_anonymous'  => $donation->is_anonymous,
+                'recurring'     => $donation->isRecurring() ?: null,
                 'donor'         => array_filter([
                     'imie_nazwisko' => $donation->fullName(),
+                    'firma'         => $donation->company_name,
+                    'nip'           => $donation->nip,
                     'email'         => $donation->email,
                     'telefon'       => $donation->phone,
                 ]),
@@ -209,7 +218,8 @@ class SzoClient
                 'consents'      => $consents,
                 'meta'          => [
                     'ip'  => $donation->ip_address,
-                    'url' => route('donation.show'),
+                    'url' => $donation->campaign ? route('kampanie.show', $donation->campaign->slug) : route('donation.show'),
+                    'dedication' => $donation->dedication,
                 ],
             ], fn ($v) => $v !== null));
 

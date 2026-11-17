@@ -6,6 +6,7 @@ use App\Models\Donation;
 use App\Models\SiteSetting;
 use App\Services\DonationService;
 use App\Services\Przelewy24Client;
+use App\Support\FundraisingTexts;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ use RuntimeException;
  * online przez Przelewy24, dane do przelewu tradycyjnego, druk przelewu (PDF)
  * i lista ostatnich wpłat.
  *
- * Metody: show(), store(), thanks(), slip().
+ * Metody: show(), store(), thanks(), retry(), receipt(), slip().
  *
  * @author Ziemowit Gil <ziemowit.gil@feer.org.pl>
  */
@@ -101,7 +102,55 @@ class DonationController extends Controller
     {
         abort_unless($donation->site_id === SiteSetting::current()->id, 404);
 
-        return view('donation.thanks', compact('donation'));
+        $texts = FundraisingTexts::for($donation->campaign);
+
+        return view('fundraising.thanks', [
+            'donation' => $donation,
+            'campaign' => $donation->campaign,
+            'texts' => $texts,
+            'vars' => $texts->vars($donation),
+            'retryUrl' => route('donation.retry', $donation),
+            'refreshUrl' => route('donation.thanks', $donation),
+            'shareUrl' => route('donation.show'),
+            'canRetry' => true,
+        ]);
+    }
+
+    /** Ponowienie nieudanej płatności ogólnej (bez zbiórki). */
+    public function retry(Request $request, Donation $donation, DonationService $donations): RedirectResponse
+    {
+        abort_unless($donation->site_id === SiteSetting::current()->id && ! $donation->campaign_id, 404);
+
+        if ($donation->isPaid()) {
+            return redirect()->route('donation.thanks', $donation);
+        }
+
+        try {
+            $url = $donations->retry($donation, $request->ip());
+        } catch (RuntimeException $e) {
+            return redirect()->route('donation.show')->with('donation_error', $e->getMessage());
+        }
+
+        return redirect()->away($url);
+    }
+
+    /**
+     * Potwierdzenie darowizny (PDF) — tylko dla zaksięgowanych wpłat. Adres
+     * zawiera losowy identyfikator wpłaty (UUID), więc nie da się go zgadnąć.
+     */
+    public function receipt(Donation $donation)
+    {
+        abort_unless($donation->isPaid(), 404);
+
+        $settings = SiteSetting::current();
+        $texts = FundraisingTexts::for($donation->campaign);
+
+        return Pdf::loadView('fundraising.receipt', [
+            'siteSettings' => $settings,
+            'donation' => $donation,
+            'texts' => $texts,
+            'vars' => $texts->vars($donation),
+        ])->setPaper('a4')->download('potwierdzenie-darowizny-'.($donation->paid_at ?? now())->format('Y-m-d').'.pdf');
     }
 
     /** Wypełniony druk przelewu tradycyjnego (PDF) z danymi organizacji. */

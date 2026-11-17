@@ -5,11 +5,16 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToSite;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 /**
- * Darowizna jednorazowa wpłacana przez stronę (Przelewy24), przekazywana
- * do rejestru darowizn w SZO po potwierdzeniu płatności.
+ * Darowizna wpłacana przez stronę (Przelewy24) — ogólna na cele statutowe
+ * albo na konkretną zbiórkę (campaign_id) — lub wpisana ręcznie w panelu
+ * (source = manual, np. przelew tradycyjny). Wpłaty online po potwierdzeniu
+ * trafiają do rejestru darowizn w SZO; ręczne nie (SZO ma własny import z banku).
+ *
+ * Status „paid” odpowiada „completed” z dokumentacji operatorów płatności.
  *
  * Route key = session_id (UUID), żeby adres strony z podziękowaniem nie
  * zdradzał kolejnych numerów wpłat.
@@ -27,11 +32,22 @@ class Donation extends Model
         'refunded' => 'Zwrócona',
     ];
 
+    public const TYPES = [
+        'one_time' => 'Jednorazowa',
+        'recurring' => 'Cykliczna (co miesiąc)',
+    ];
+
+    public const SOURCES = [
+        'online' => 'Online (Przelewy24)',
+        'manual' => 'Wpisana ręcznie',
+    ];
+
     protected $fillable = [
-        'site_id', 'session_id', 'amount_grosze', 'currency', 'status',
-        'first_name', 'last_name', 'email', 'phone', 'is_anonymous',
+        'site_id', 'campaign_id', 'session_id', 'amount_grosze', 'currency', 'type', 'source', 'status',
+        'first_name', 'last_name', 'email', 'phone', 'company_name', 'nip', 'is_anonymous',
+        'dedication', 'dedication_public', 'admin_note', 'created_by',
         'consent_newsletter', 'consent_at', 'ip_address',
-        'p24_order_id', 'paid_at', 'payload',
+        'p24_order_id', 'paid_at', 'thanked_at', 'refunded_at', 'payload',
         'szo_donation_id', 'szo_contact_id', 'szo_synced_at', 'szo_error',
     ];
 
@@ -44,6 +60,9 @@ class Donation extends Model
             'consent_at' => 'datetime',
             'p24_order_id' => 'integer',
             'paid_at' => 'datetime',
+            'thanked_at' => 'datetime',
+            'refunded_at' => 'datetime',
+            'dedication_public' => 'boolean',
             'payload' => 'array',
             'szo_synced_at' => 'datetime',
         ];
@@ -54,6 +73,32 @@ class Donation extends Model
         static::creating(function (Donation $donation) {
             $donation->session_id ??= (string) Str::uuid();
         });
+    }
+
+    public function campaign(): BelongsTo
+    {
+        return $this->belongsTo(Campaign::class)->withTrashed();
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function isManual(): bool
+    {
+        return $this->source === 'manual';
+    }
+
+    public function isRecurring(): bool
+    {
+        return $this->type === 'recurring';
+    }
+
+    /** Dedykacja do pokazania publicznie (tylko gdy darczyńca na to pozwolił). */
+    public function publicDedication(): ?string
+    {
+        return $this->dedication_public && filled($this->dedication) ? $this->dedication : null;
     }
 
     public function getRouteKeyName(): string
@@ -78,6 +123,10 @@ class Donation extends Model
             return 'Wpłata anonimowa';
         }
 
+        if (blank($this->first_name) && filled($this->company_name)) {
+            return $this->company_name;
+        }
+
         return trim($this->first_name . ' ' . mb_substr($this->last_name, 0, 1) . '.');
     }
 
@@ -97,9 +146,10 @@ class Donation extends Model
         return $query->where('status', 'paid');
     }
 
-    /** Opłacone, a jeszcze nieprzyjęte przez SZO — do ponowienia wysyłki. */
+    /** Opłacone online, a jeszcze nieprzyjęte przez SZO — do ponowienia wysyłki. */
     public function scopePendingSzo(Builder $query): Builder
     {
-        return $query->where('status', 'paid')->whereNull('szo_synced_at');
+        return $query->where('status', 'paid')->whereNull('szo_synced_at')
+            ->where(fn ($q) => $q->whereNull('source')->orWhere('source', '!=', 'manual'));
     }
 }

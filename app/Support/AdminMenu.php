@@ -330,7 +330,11 @@ final class AdminMenu
                     children: [
                         $this->child('Strefy bannerów', 'admin.strefy-bannerow.index', 'admin.strefy-bannerow.*'),
                     ]),
-                $this->item('campaigns', 'Kampanie zbiórkowe', 'admin.kampanie.index', 'fa-hand-holding-heart', active: 'admin.kampanie.*'),
+                $this->item('campaigns', 'Zbiórki', 'admin.kampanie.index', 'fa-hand-holding-heart', active: ['admin.kampanie.*', 'admin.zbiorki-teksty.*'],
+                    children: [
+                        $this->child('Teksty i podziękowania', 'admin.zbiorki-teksty.edit', 'admin.zbiorki-teksty.*'),
+                    ]),
+                $this->item('donations', 'Wpłaty', 'admin.darowizny.index', 'fa-receipt', active: 'admin.darowizny.*'),
             ]) : null,
 
             // Newsletter to osobny moduł: jedna pozycja, a jego sekcje są kafelkami na pulpicie.
@@ -440,7 +444,8 @@ final class AdminMenu
                 ['Kontakt', 'content', ['contact-hub', 'phone-book']],
                 ['Formularze i ankiety', 'content', ['forms', 'polls']],
                 ['Newsletter', 'newsletter'],
-                ['Promocja i kampanie', ['content', 'marketing'], ['landing', 'campaigns', 'banners']],
+                ['Promocja i kampanie', ['content', 'marketing'], ['landing', 'banners']],
+                ['Zbiórki i darowizny', 'marketing', ['campaigns', 'donations']],
             ]),
             $this->bipEnabled() ? $this->group($byKey, 'docs', 'Dokumenty i BIP', 'fa-landmark', [
                 ['Biuletyn (BIP)', 'bipsite'],

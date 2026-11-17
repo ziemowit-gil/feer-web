@@ -524,7 +524,7 @@ class SiteSetting extends Model implements HasMedia
         'accessibility_review_method', 'accessibility_contact_name', 'accessibility_contact_email',
         'accessibility_contact_phone', 'accessibility_architectural',
         'bank_account_number', 'bank_account_tax_number',
-        'donation_amounts', 'donation_intro', 'donation_headline', 'donation_impacts', 'donation_use_note', 'donation_reports_url',
+        'donation_amounts', 'donation_intro', 'donation_headline', 'donation_impacts', 'donation_use_note', 'donation_reports_url', 'fundraising_texts',
         'support_intro', 'support_quick_transfer_url', 'support_buycoffee_url',
         'support_wplacam_url', 'support_method4_title', 'support_method4_text', 'support_method4_cta_label',
         'support_show_partners', 'support_steps_hidden', 'support_steps_title', 'support_steps_subtitle', 'support_step1_title', 'support_step1_text', 'support_step2_title', 'support_step2_text', 'support_step3_title', 'support_step3_text', 'support_testimonial_quote', 'support_testimonial_author', 'support_testimonial_role',
@@ -773,6 +773,7 @@ class SiteSetting extends Model implements HasMedia
         'contact_options' => 'array',
         'footer_options' => 'array',
         'header_options' => 'array',
+        'fundraising_texts' => 'array',
         'show_topbar_bip' => 'boolean',
         'show_topbar_social' => 'boolean',
         'contact_show_form' => 'boolean',
@@ -2125,6 +2126,10 @@ class SiteSetting extends Model implements HasMedia
         // głównej galerii strony) — kolaż „działamy" jako dowód aktywności.
         $this->addMediaCollection('support_gallery');
         $this->addMediaCollection('header_partners');
+        // Moduł zbiórek: globalne zdjęcie strony podziękowania i grafika e-maila z podziękowaniem
+        // (kampania może je nadpisać własnymi — FundraisingTexts::imageUrl()).
+        $this->addMediaCollection('fundraising_thanks_image')->singleFile();
+        $this->addMediaCollection('fundraising_thanks_email_image')->singleFile();
     }
 
     /** Zdjęcie biura (wejścia do budynku) albo null, gdy nie wgrano. */
