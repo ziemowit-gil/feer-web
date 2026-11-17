@@ -39,8 +39,10 @@ class NavItemEditorTest extends TestCase
             ->assertOk()->getContent();
 
         $this->assertStringContainsString('Struktura menu', $html);
-        $this->assertStringContainsString('role="tree"', $html);
-        $this->assertStringContainsString('role="group"', $html);
+        // Drzewo jak w Stronach Nawigatorze: zagnieżdżone listy, gałąź z przyciskiem rozwijania.
+        $this->assertStringContainsString('data-nav-root', $html);
+        $this->assertStringContainsString('class="tree-sub" data-nav-list', $html);
+        $this->assertStringContainsString('aria-controls="nav-branch-'.$a->id.'"', $html);
         $this->assertStringContainsString('id="nav-pane-heading"', $html);
         $this->assertStringContainsString('Dodaj podpozycję', $html);
         $this->assertStringContainsString('Podpozycje', $html);

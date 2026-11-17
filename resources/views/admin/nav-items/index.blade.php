@@ -41,76 +41,212 @@
         }
     @endphp
 
+    @php
+        $locLabel = \App\Models\NavItem::LOCATIONS[$location] ?? $location;
+        $tool = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
+        $toolStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem';
+        $headBtn = 'rounded p-1.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
+        $branchIds = $navItems->filter(fn ($i) => $i->allChildren->isNotEmpty())->pluck('id')->values();
+    @endphp
+
+    {{-- Stan drzewa zapamiętany w przeglądarce (jak w TYPO3): rozwinięte gałęzie — osobno dla witryny i menu.
+         Przy pierwszej wizycie wszystko rozwinięte (menu jest małe). Musi być przed drzewem — węzły czytają go w x-data. --}}
+    <script>
+        window.navTreeState = (() => {
+            const key = 'navTreeOpen:' + @js(\App\Models\SiteSetting::current()->id) + ':' + @js($location);
+            let ids, stored = null;
+            try { stored = localStorage.getItem(key); } catch (e) {}
+            try { ids = new Set(stored === null ? @js($branchIds) : JSON.parse(stored)); } catch (e) { ids = new Set(); }
+            return {
+                paused: false,
+                has: id => ids.has(id),
+                set(id, open) {
+                    if (this.paused) return;
+                    open ? ids.add(id) : ids.delete(id);
+                    try { localStorage.setItem(key, JSON.stringify([...ids])); } catch (e) {}
+                },
+            };
+        })();
+    </script>
+
     <div x-data="menuBuilder({{ Js::from($reopen) }}, {{ Js::from(route('admin.pozycje-menu.store')) }})"
         @keydown.escape.window="close()">
 
+        @push('content-tab-actions')
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;min-width:0;flex:1 1 20rem">
+                @if ($location !== 'bip')
+                    {{-- Strony i nawigacja: strony dodaje się do menu z panelu strony; tu zostaje reszta menu. --}}
+                    <p class="text-xs text-ink" data-nav-pages-hint>
+                        <i class="fa-solid fa-sitemap mr-1 text-muted" aria-hidden="true"></i>
+                        Strony dodajesz do menu w <a href="{{ route('admin.podstrony.index') }}" class="font-bold text-brand-dark underline hover:text-ink">Stronach Nawigatorze</a> (wybrana strona → „Pozycja w menu”).
+                        Tutaj ustawiasz kolejność, linki zewnętrzne, rozwijane menu i mega menu.
+                    </p>
+                @endif
+            </div>
+            <div role="group" aria-label="Akcje menu" style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem">
+                @if (in_array($location, ['main', 'footer'], true))
+                    <button type="button" class="{{ $tool }}" style="{{ $toolStyle }}"
+                        onclick="const d = document.getElementById('podglad-menu'); d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); d.querySelector('summary').focus({ preventScroll: true });">
+                        <i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd na stronie
+                    </button>
+                @endif
+                @if (Route::has('admin.pozycje-menu.eksport-xml'))
+                    <a href="{{ route('admin.pozycje-menu.eksport-xml', ['location' => $location]) }}" class="{{ $tool }}" style="{{ $toolStyle }}">
+                        <i class="fa-solid fa-file-export" aria-hidden="true"></i> Eksport XML<span class="sr-only"> — pobierz strukturę tego menu</span>
+                    </a>
+                @endif
+            </div>
+        @endpush
+
+        {{-- Główna akcja widoku po prawej w rzędzie zakładek: „Dodaj” (nowa pozycja, ze stron, z pliku XML). --}}
+        @push('content-tab-primary')
+            @include('admin.nav-items._add-menu', ['menuId' => 'nav-add-menu', 'location' => $location, 'parentId' => null, 'primary' => true])
+        @endpush
+
         @include('admin.partials.content-nav-tabs')
 
-        @if ($location !== 'bip')
-            {{-- Strony i nawigacja: strony dodaje się do menu z panelu strony; tu zostaje reszta menu. --}}
-            <p class="mb-3 rounded-md bg-white px-3 py-2 text-sm text-ink" data-nav-pages-hint>
-                <i class="fa-solid fa-sitemap mr-1 text-brand-dark" aria-hidden="true"></i>
-                Strony dodajesz do menu w <a href="{{ route('admin.podstrony.index') }}" class="font-bold text-brand-dark underline">Strony</a> (wybrana strona → „Pozycja w menu”).
-                Tutaj ustawiasz kolejność oraz linki zewnętrzne, nagłówki, menu rozwijane i mega-menu.
-            </p>
-        @endif
-
-        {{-- Wskaźnik zapisu po drag & drop (ukryty do czasu użycia) --}}
-        <div id="nav-dnd-status" role="status" aria-live="polite" class="mb-3 hidden px-3 py-2 text-sm rounded-md bg-white"></div>
-
-        {{-- Układ jak w module „Strona” TYPO3: drzewo pozycji | szczegóły wybranej pozycji. --}}
-        <style>@media (max-width: 767px) { .nav-split { grid-template-columns: 1fr !important; } }</style>
-        <div class="nav-split" style="display:grid;grid-template-columns:minmax(17rem,24rem) minmax(0,1fr);gap:1.25rem;align-items:start">
-            <nav aria-label="Struktura menu — {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}" class="rounded-md bg-white" style="min-width:0">
-                <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.5rem;padding:.875rem .875rem .5rem">
-                    <h2 class="text-sm font-bold text-ink">
-                        <i class="fa-solid fa-bars mr-1 text-brand-dark" aria-hidden="true"></i> {{ \App\Models\NavItem::LOCATIONS[$location] ?? $location }}
-                        <span class="font-normal text-muted">({{ $navItems->count() }})</span>
-                    </h2>
-                    {{-- „Dodaj” jako menu: nowa pozycja, strony z drzewa albo pozycje z pliku XML (WAI-ARIA menu button). --}}
-                    <div class="flex shrink-0 items-center gap-1.5">
-                        @if (Route::has('admin.pozycje-menu.eksport-xml'))
-                            <a href="{{ route('admin.pozycje-menu.eksport-xml', ['location' => $location]) }}"
-                                class="inline-flex shrink-0 items-center rounded-md bg-gray-100 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2"
-                                style="min-height:2.25rem;padding:.375rem .75rem;gap:.375rem">
-                                <i class="fa-solid fa-file-export" aria-hidden="true"></i> Eksport XML<span class="sr-only"> — pobierz strukturę tego menu</span>
-                            </a>
-                        @endif
-                        @include('admin.nav-items._add-menu', ['menuId' => 'nav-add-menu', 'location' => $location, 'parentId' => null, 'primary' => true])
+        {{-- Układ jak w Stronach Nawigatorze i module „Strona” TYPO3: drzewo pozycji | karta wybranej pozycji. --}}
+        <div class="nav-split" style="display:grid;grid-template-columns:minmax(16rem,21rem) minmax(0,1fr);gap:1.25rem;align-items:start">
+            <nav aria-label="Struktura menu — {{ $locLabel }}" id="nav-tree" class="min-w-0 rounded-md bg-white"
+                x-data="{
+                    q: '',
+                    issuesOnly: false,
+                    info: '',
+                    panel: '',
+                    filter() {
+                        const q = this.q.trim().toLowerCase();
+                        const only = this.issuesOnly;
+                        if (window.navTreeState) window.navTreeState.paused = !! (q || only);
+                        const items = [...this.$root.querySelectorAll('[data-nav-node]')];
+                        items.forEach(li => { li.hidden = false; });
+                        if (! q && ! only) { this.info = ''; return; }
+                        const hit = li => (! q || li.dataset.title.includes(q)) && (! only || li.dataset.issue === '1');
+                        const hits = items.filter(hit).length;
+                        this.info = hits ? 'Pasuje pozycji: ' + hits + ' z ' + items.length + '.' : 'Żadna pozycja nie pasuje.';
+                        items.forEach(li => {
+                            const sub = [...li.querySelectorAll('[data-nav-node]')].some(hit);
+                            li.hidden = ! (hit(li) || sub);
+                            if (sub && li.hasAttribute('x-data')) Alpine.$data(li).open = true;
+                        });
+                    },
+                    setAll(open) {
+                        this.$root.querySelectorAll('[data-nav-node][x-data]').forEach(li => { Alpine.$data(li).open = open; });
+                    },
+                }">
+                <div class="space-y-2 border-b border-gray-100 px-2.5 py-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="min-w-0 truncate text-sm font-bold text-ink"><span class="sr-only">Struktura menu: </span>{{ \Illuminate\Support\Str::before($locLabel, ' (') }} <span class="font-normal text-muted">({{ $navItems->count() }})</span></h2>
+                        <div class="flex flex-none items-center gap-0.5">
+                            @if ($branchIds->isNotEmpty())
+                                <button type="button" @click="setAll(true)" class="{{ $headBtn }} text-muted hover:bg-gray-100 hover:text-brand-dark" title="Rozwiń wszystko" aria-label="Rozwiń wszystkie gałęzie">
+                                    <i class="fa-solid fa-angles-down" aria-hidden="true"></i>
+                                </button>
+                                <button type="button" @click="setAll(false)" class="{{ $headBtn }} text-muted hover:bg-gray-100 hover:text-brand-dark" title="Zwiń wszystko" aria-label="Zwiń wszystkie gałęzie">
+                                    <i class="fa-solid fa-angles-up" aria-hidden="true"></i>
+                                </button>
+                            @endif
+                            <button type="button" @click="panel = panel === 'legend' ? '' : 'legend'" :aria-expanded="(panel === 'legend').toString()" aria-expanded="false" aria-controls="nav-legend" title="Legenda" aria-label="Legenda"
+                                :class="panel === 'legend' ? 'bg-brand-light text-ink' : 'text-muted hover:bg-gray-100 hover:text-brand-dark'" class="{{ $headBtn }}">
+                                <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                    @if ($navItems->isNotEmpty())
+                        <div>
+                            <label for="nav-filter" class="sr-only">Filtruj menu po etykiecie lub adresie</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted" aria-hidden="true"></i>
+                                <input type="search" id="nav-filter" x-model="q" @input="filter()" placeholder="Filtruj menu…" autocomplete="off" aria-describedby="nav-filter-status"
+                                    class="w-full rounded border-gray-500 py-1 pl-8 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                            </div>
+                            <p id="nav-filter-status" role="status" aria-live="polite" class="mt-1 text-xs text-muted" :class="info ? '' : 'sr-only'" x-text="info"></p>
+                        </div>
+                    @endif
+                    {{-- Sprawdzenie menu (jak ostrzeżenia w TYPO3): pozycje widoczne, a prowadzące do szkicu, wyłączonej strony lub 404. --}}
+                    @if ($issues)
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1 rounded bg-amber-50 px-2.5 py-1.5 text-xs text-ink" data-nav-issues>
+                            <i class="fa-solid fa-triangle-exclamation text-amber-800" aria-hidden="true"></i>
+                            <span class="min-w-0 flex-1">{{ $issues }} {{ trans_choice('pozycja prowadzi|pozycje prowadzą|pozycji prowadzi', $issues) }} do niedostępnej strony</span>
+                            <button type="button" @click="issuesOnly = ! issuesOnly; filter()" :aria-pressed="issuesOnly.toString()" aria-pressed="false"
+                                class="rounded px-1 font-bold text-brand-dark underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                <span x-text="issuesOnly ? 'Pokaż wszystkie' : 'Pokaż tylko je'">Pokaż tylko je</span>
+                            </button>
+                        </div>
+                    @endif
+                    {{-- Schowek: pozycja wycięta albo skopiowana (Ctrl+X / Ctrl+C), także z innego menu — np. z menu głównego do stopki. --}}
+                    <div id="nav-clip" hidden class="flex flex-wrap items-center gap-x-2 gap-y-1 rounded bg-gray-50 px-2.5 py-1.5 text-xs text-ink">
+                        <i class="fa-solid fa-clipboard text-muted" aria-hidden="true"></i>
+                        <span class="min-w-0 flex-1" data-clip-text></span>
+                        <button type="button" data-clip-paste-end class="rounded px-1 font-bold text-brand-dark underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Wklej na końcu tego menu</button>
+                        <button type="button" data-clip-clear class="rounded px-1 font-bold text-brand-dark underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Wyczyść</button>
+                    </div>
+                    @php
+                        $legendRow = 'flex items-center gap-2';
+                        $legendIcon = 'tree-icon relative inline-flex w-4 flex-none justify-center text-[11px] text-gray-500';
+                    @endphp
+                    <div id="nav-legend" x-show="panel === 'legend'" x-cloak class="rounded bg-gray-50 p-3 text-xs text-ink">
+                        <h3 class="mb-1.5 font-bold">Stan pozycji (znaczek na ikonie)</h3>
+                        <ul role="list" class="space-y-1">
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-file-lines" aria-hidden="true"></i></span> Bez znaczka — widoczna, link działa</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-eye-slash text-muted" aria-hidden="true"></i></span> Ukryta w menu</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-ban text-red-700" aria-hidden="true"></i></span> Moduł wyłączony albo strona wyłączona</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-link-slash text-red-700" aria-hidden="true"></i></span> Adres nie prowadzi do żadnej strony (błąd 404)</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-pen text-amber-800" aria-hidden="true"></i></span> Strona to szkic (nieopublikowana)</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-clock text-brand-dark" aria-hidden="true"></i></span> Strona opublikuje się w ustawionym terminie</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-key text-ink" aria-hidden="true"></i></span> Strona z ograniczonym dostępem</li>
+                            <li class="{{ $legendRow }}"><span class="inline-flex w-4 flex-none justify-center text-[11px] text-muted" aria-hidden="true">Aa</span> Szara etykieta — pozycji nie widać na stronie</li>
+                        </ul>
+                        <h3 class="mb-1.5 mt-3 font-bold">Rodzaje pozycji</h3>
+                        <ul role="list" class="space-y-1">
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-file-lines" aria-hidden="true"></i></span> Strona serwisu</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-folder" aria-hidden="true"></i></span> Rozwijane menu albo pozycja z podpozycjami</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-globe" aria-hidden="true"></i></span> Link zewnętrzny</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-house" aria-hidden="true"></i></span> Strona główna · <i class="fa-solid fa-hashtag" aria-hidden="true"></i> kotwica na stronie głównej</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-bullhorn" aria-hidden="true"></i></span> Przycisk (CTA)</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-table-columns" aria-hidden="true"></i></span> Nagłówek kolumny w mega menu</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }}"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i></span> Menu działań · <i class="fa-solid fa-sitemap" aria-hidden="true"></i> menu podstron (automatyczne)</li>
+                            <li class="{{ $legendRow }}"><span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm bg-brand-light text-[10px] font-bold text-brand-dark" aria-hidden="true">M</span> Strona z modułu (aktualności, materiały…)</li>
+                            <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-brand-dark"><i class="fa-solid fa-border-all" aria-hidden="true"></i></span> Mega menu · <i class="fa-solid fa-star text-amber-500" aria-hidden="true"></i> wyróżniona</li>
+                        </ul>
+                        <p class="mt-3 text-muted">Przeciągnij pozycję na górną lub dolną krawędź innej, aby zmienić kolejność, albo na środek pozycji z paska menu, aby zrobić z niej podpozycję. Z klawiatury: Alt+Shift+strzałki. Prawy przycisk myszy, „⋯” albo Shift+F10 otwiera menu akcji pozycji. Strzałki góra/dół przechodzą między pozycjami, w prawo/lewo rozwijają i zwijają gałąź. Ctrl+X / Ctrl+C wycina lub kopiuje pozycję, Ctrl+V wkleja ją za wybraną pozycją, Ctrl+Shift+V — jako jej podpozycję. Schowek działa też między menu głównym a stopką.</p>
                     </div>
                 </div>
-                <div style="padding:.5rem">
-                    @forelse ($navItems as $index => $item)
-                        @if ($loop->first)<ul role="tree" aria-label="Struktura menu" class="space-y-1">@endif
-                            @include('admin.nav-items._tree-node', ['item' => $item, 'level' => 1, 'selected' => $selected, 'location' => $location])
-                        @if ($loop->last)</ul>@endif
-                    @empty
-                        <div class="rounded-lg border border-dashed border-gray-200 py-10 text-center text-muted">
-                            <i class="fa-solid fa-bars mb-2 text-2xl text-gray-300" aria-hidden="true"></i>
-                            <p class="text-sm">Brak pozycji. Dodaj pierwszą przyciskiem powyżej.</p>
-                        </div>
-                    @endforelse
-                </div>
-                <p class="text-muted" style="font-size:.75rem;padding:.25rem .875rem .875rem">
-                    <i class="fa-solid fa-grip-vertical mr-1" aria-hidden="true"></i>
-                    Kolejność: przeciągnij pozycję albo użyj przycisków „W górę / W dół” po prawej (działają z klawiatury).
-                    @if ($location === 'main') „Menu działań” pobiera zawartość z <a href="{{ route('admin.kategorie.index') }}" class="font-bold text-brand-dark hover:underline">kategorii działań</a>.@endif
+                {{-- Instrukcja dla czytników ekranu (wizualnie zbędna); skróty muszą być dostępne bez myszy. --}}
+                <p id="nav-dnd-help" class="sr-only">
+                    Z klawiatury: Alt+Shift+strzałka w górę lub w dół zmienia kolejność, w prawo — wkłada pozycję do poprzedniej, w lewo — wysuwa ją na pasek menu.
+                    Shift+F10 lub klawisz Menu otwiera menu akcji pozycji. Strzałki góra i dół przechodzą między pozycjami, w prawo i w lewo rozwijają i zwijają gałąź, Home i End — pierwsza i ostatnia pozycja.
+                    Ctrl+X wycina, Ctrl+C kopiuje pozycję; Ctrl+V wkleja ją za pozycją z fokusem, Ctrl+Shift+V — jako jej podpozycję.
                 </p>
+                <div id="nav-dnd-status" role="status" aria-live="polite" class="sr-only"></div>
+                <div id="nav-tree-scroll" class="overflow-y-auto px-1.5 py-1.5" style="max-height:calc(100vh - 14rem)">
+                    @if ($navItems->isEmpty())
+                        <p class="px-2 py-6 text-center text-sm text-muted">Brak pozycji. Dodaj pierwszą przyciskiem „Dodaj”.</p>
+                    @else
+                        <ul role="list" data-nav-list data-nav-root aria-describedby="nav-dnd-help">
+                            @foreach ($navItems as $item)
+                                @include('admin.nav-items._tree-node', ['item' => $item, 'level' => 1, 'selected' => $selected, 'location' => $location, 'health' => $health, 'index' => $loop->index])
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+                @if ($location === 'main')
+                    <p class="border-t border-gray-100 px-2.5 py-1.5 text-[11px] text-muted">„Menu działań” pobiera zawartość z <a href="{{ route('admin.kategorie.index') }}" class="font-bold text-brand-dark hover:underline">kategorii działań</a>.</p>
+                @endif
             </nav>
 
             <section aria-labelledby="nav-pane-heading" style="min-width:0">
                 @if ($selected)
-                    @include('admin.nav-items._details', ['selected' => $selected, 'navItems' => $navItems, 'location' => $location])
+                    @include('admin.nav-items._details', ['selected' => $selected, 'navItems' => $navItems, 'location' => $location, 'health' => $health, 'history' => $history])
                 @else
                     <h2 id="nav-pane-heading" class="sr-only">Szczegóły pozycji</h2>
-                    <div class="rounded-lg border border-dashed border-gray-300 bg-white px-4 py-12 text-center text-sm text-muted">Wybierz pozycję w drzewie albo dodaj nową.</div>
+                    <div class="rounded-md bg-white px-4 py-12 text-center text-sm text-muted">Wybierz pozycję w drzewie albo dodaj nową przyciskiem „Dodaj”.</div>
                 @endif
             </section>
         </div>
 
         {{-- ── Podgląd menu na stronie: prawdziwa strona w ramce, odświeżana po zmianach ── --}}
         @if (in_array($location, ['main', 'footer'], true))
-            <details class="mt-5 rounded-md bg-white" x-data @nav-preview-refresh.window="if ($refs.frame.src) $refs.frame.src = $refs.frame.dataset.src + ($refs.frame.dataset.src.includes('?') ? '&' : '?') + 'podglad=' + Date.now()" @toggle="if ($el.open && ! $refs.frame.src) $refs.frame.src = $refs.frame.dataset.src">
+            <details id="podglad-menu" class="mt-5 rounded-md bg-white" x-data @nav-preview-refresh.window="if ($refs.frame.src) $refs.frame.src = $refs.frame.dataset.src + ($refs.frame.dataset.src.includes('?') ? '&' : '?') + 'podglad=' + Date.now()" @toggle="if ($el.open && ! $refs.frame.src) $refs.frame.src = $refs.frame.dataset.src">
                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 text-sm font-bold text-ink [&::-webkit-details-marker]:hidden">
                     <span><i class="fa-solid fa-eye mr-1.5 text-brand-dark" aria-hidden="true"></i>Podgląd menu na stronie</span>
                     <i class="fa-solid fa-chevron-down text-xs text-muted" aria-hidden="true"></i>
@@ -319,87 +455,408 @@
         </div>
     </div>
 
-    {{-- Po operacji przenoszenia przywracamy fokus na przeniesioną pozycję, aby
-         użytkownik klawiatury nie tracił swojego miejsca w drzewie. --}}
-    @if (session('focus_nav'))
-        <script>
-            (function () {
-                var row = document.getElementById('nav-item-{{ (int) session('focus_nav') }}');
-                if (!row) return;
-                var target = row.querySelector('[data-nav-first-action]');
-                if (target) {
-                    target.focus();
-                    row.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                }
-            })();
-        </script>
-    @endif
+    <style>
+        @media (max-width: 767px) { .nav-split { grid-template-columns: 1fr !important; } }
+        @media (min-width: 768px) { #nav-tree { position: sticky; top: 1rem; } }
+        /* Drzewo menu jak drzewo stron: podpozycje z linią pionową spod strzałki rodzica i łącznikiem do wiersza. */
+        #nav-tree .tree-sub { margin-left: .75rem; padding-left: .5rem; border-left: 1px solid #c4c9d2; }
+        #nav-tree .tree-sub > li { position: relative; }
+        #nav-tree .tree-sub > li::before { content: ''; position: absolute; left: -.5rem; top: .75rem; width: .375rem; border-top: 1px solid #c4c9d2; }
+        /* Ikona rodzaju z nakładką stanu w prawym dolnym rogu (jak w TYPO3): białe kółko pod znaczkiem. */
+        .tree-icon .tree-ov { position: absolute; right: -.375rem; bottom: -.25rem; font-size: .5625rem; line-height: 1; padding: 1px; border-radius: 9999px; background: #fff; }
+        #nav-tree .tree-link.is-selected .tree-ov { background: var(--m-tile, var(--color-brand-light, #e8f0ff)); }
+        /* Wybrana pozycja: jasne tło marki z kreską z lewej, tekst ink ≥ 4,5:1. */
+        #nav-tree .tree-link.is-selected { box-shadow: inset 3px 0 0 var(--m-accent, var(--color-brand-dark, #1752bf)); background: var(--m-tile, var(--color-brand-light, #e8f0ff)); }
+        /* Pozycja wycięta do schowka: przerywana ramka i kursywa (bez przezroczystości treści). */
+        #nav-tree [data-nav-node].tree-cut > [data-nav-row] > a { outline: 1px dashed #4b5563; outline-offset: -1px; font-style: italic; }
+        .admin-metro #nav-tree #nav-filter { min-height: 2.25rem; border-width: 1px; }
+        /* Przycisk „⋯” widać po najechaniu na wiersz, a na ekranach dotykowych zawsze. */
+        @media (hover: none) { #nav-tree [data-tree-menu-btn] { opacity: 1; } }
+        #nav-tree [data-nav-row].tree-ctx-on [data-tree-menu-btn] { opacity: 1; }
+        #nav-ctx:focus { outline: none; }
+        #nav-ctx [role="menuitem"]:focus-visible { outline: 2px solid var(--color-brand-dark, #1752bf); outline-offset: -2px; }
+        #nav-ctx [role="menuitem"][aria-disabled="true"] { color: #6b7280; cursor: default; }
+        #nav-ctx [role="menuitem"][aria-disabled="true"]:hover { background: transparent; }
+    </style>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js" integrity="sha512-Eezs+g9Lq4TCCq0wae01s9PuNWzHYoCMkE97e2qdkYthpI0pzC3UGB03lgEHn2XM85hDOUF6qgqqszs+iXU4Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    {{-- ═════════ Menu kontekstowe drzewa menu ═════════
+         Jedno menu dla wszystkich wierszy: prawy przycisk myszy, „⋯” albo Shift+F10 / klawisz Menu na pozycji.
+         WAI-ARIA menu: strzałki, Home/End i pierwsza litera przenoszą fokus, Escape i Tab zamykają i oddają fokus wierszowi. --}}
+    @php $ctxItem = 'flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none'; @endphp
+    <div id="nav-ctx" role="menu" aria-label="Akcje pozycji" hidden tabindex="-1"
+        class="rounded-lg border border-gray-200 bg-white py-1.5 shadow-xl"
+        style="position:fixed;z-index:60;min-width:15rem;max-width:calc(100vw - 1rem)">
+        <p data-ctx-title class="truncate px-3 pb-1.5 pt-0.5 text-xs font-bold text-muted" aria-hidden="true"></p>
+        <button type="button" role="menuitem" tabindex="-1" data-act="edit" class="{{ $ctxItem }}"><i class="fa-solid fa-pen w-4 text-center text-gray-500" aria-hidden="true"></i> Edytuj pozycję</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="view" class="{{ $ctxItem }}"><i class="fa-solid fa-eye w-4 text-center text-gray-500" aria-hidden="true"></i> Zobacz na stronie<span class="sr-only"> (nowa karta)</span></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="add" class="{{ $ctxItem }}"><i class="fa-solid fa-plus w-4 text-center text-gray-500" aria-hidden="true"></i> Dodaj podpozycję</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="page-edit" class="{{ $ctxItem }}"><i class="fa-solid fa-file-pen w-4 text-center text-gray-500" aria-hidden="true"></i> Edytuj stronę</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="page-tree" class="{{ $ctxItem }}"><i class="fa-solid fa-sitemap w-4 text-center text-gray-500" aria-hidden="true"></i> Pokaż w Stronach Nawigatorze</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="toggle" class="{{ $ctxItem }}"><i class="fa-solid fa-eye-slash w-4 text-center text-gray-500" aria-hidden="true" data-ctx-toggle-icon></i> <span data-ctx-toggle>Ukryj w menu</span></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="dup" class="{{ $ctxItem }}"><i class="fa-solid fa-clone w-4 text-center text-gray-500" aria-hidden="true"></i> Duplikuj</button>
+        <div role="separator" class="my-1 border-t border-gray-100"></div>
+        <button type="button" role="menuitem" tabindex="-1" data-act="cut" class="{{ $ctxItem }}"><i class="fa-solid fa-scissors w-4 text-center text-gray-500" aria-hidden="true"></i> Wytnij <kbd class="ml-auto text-[10px] text-muted">Ctrl+X</kbd></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="copy" class="{{ $ctxItem }}"><i class="fa-solid fa-copy w-4 text-center text-gray-500" aria-hidden="true"></i> Kopiuj <kbd class="ml-auto text-[10px] text-muted">Ctrl+C</kbd></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="copy-one" data-needs-kids class="{{ $ctxItem }}"><i class="fa-solid fa-file w-4 text-center text-gray-500" aria-hidden="true"></i> Kopiuj bez podpozycji</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="paste-after" data-paste hidden class="{{ $ctxItem }}"><i class="fa-solid fa-paste w-4 text-center text-gray-500" aria-hidden="true"></i> <span data-paste-after>Wklej za tą pozycją</span></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="paste-into" data-paste data-needs-hold hidden class="{{ $ctxItem }}"><i class="fa-solid fa-turn-down w-4 text-center text-gray-500" aria-hidden="true"></i> <span data-paste-into>Wklej jako podpozycję</span></button>
+        <div role="separator" class="my-1 border-t border-gray-100"></div>
+        <button type="button" role="menuitem" tabindex="-1" data-act="up" class="{{ $ctxItem }}"><i class="fa-solid fa-arrow-up w-4 text-center text-gray-500" aria-hidden="true"></i> Przenieś wyżej</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="down" class="{{ $ctxItem }}"><i class="fa-solid fa-arrow-down w-4 text-center text-gray-500" aria-hidden="true"></i> Przenieś niżej</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="indent" class="{{ $ctxItem }}"><i class="fa-solid fa-indent w-4 text-center text-gray-500" aria-hidden="true"></i> Zagnieźdź w poprzedniej</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="outdent" class="{{ $ctxItem }}"><i class="fa-solid fa-outdent w-4 text-center text-gray-500" aria-hidden="true"></i> Wysuń na pasek menu</button>
+        <div role="separator" class="my-1 border-t border-gray-100"></div>
+        <button type="button" role="menuitem" tabindex="-1" data-act="copy-url" class="{{ $ctxItem }}"><i class="fa-solid fa-link w-4 text-center text-gray-500" aria-hidden="true"></i> Kopiuj adres</button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="copy-id" class="{{ $ctxItem }}"><i class="fa-solid fa-hashtag w-4 text-center text-gray-500" aria-hidden="true"></i> Kopiuj ID</button>
+        <div role="separator" class="my-1 border-t border-gray-100"></div>
+        <button type="button" role="menuitem" tabindex="-1" data-act="delete" class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-red-800 hover:bg-red-50 focus-visible:outline-none"><i class="fa-solid fa-trash w-4 text-center" aria-hidden="true"></i> Usuń z menu</button>
+    </div>
+
     <script>
+        // Drzewo menu w duchu TYPO3: przeciąganie, menu kontekstowe, schowek (także między menu), klawiatura.
+        // Serwer (NavItemController::place / copy) jest źródłem prawdy: po zmianie przeładowujemy widok.
         (function () {
-            var reorderUrl = '{{ route('admin.pozycje-menu.reorder') }}';
-            var csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
-                || document.querySelector('input[name="_token"]')?.value || '';
-            var statusEl = document.getElementById('nav-dnd-status');
-            var saveTimer = null;
+            const tree = document.getElementById('nav-tree');
+            const ctx = document.getElementById('nav-ctx');
+            if (! tree || ! ctx) return;
 
-            function showStatus(msg, isError) {
-                statusEl.textContent = msg;
-                statusEl.className = 'mb-3 rounded-md px-3 py-2 text-sm font-bold '
-                    + (isError ? 'bg-red-50 text-red-800' : 'bg-brand-light text-ink');
-                statusEl.classList.remove('hidden');
-                clearTimeout(saveTimer);
-                saveTimer = setTimeout(() => statusEl.classList.add('hidden'), 3000);
-            }
-
-            function collectItems() {
-                var items = [];
-                var topList = document.querySelector('[role="tree"]');
-                if (!topList) return items;
-                topList.querySelectorAll(':scope > li[data-id]').forEach(function (li, idx) {
-                    items.push({ id: parseInt(li.dataset.id), parent_id: null, order: idx });
-                    var childList = li.querySelector(':scope > ul[role="group"]');
-                    if (childList) {
-                        childList.querySelectorAll(':scope > li[data-id]').forEach(function (child, cidx) {
-                            items.push({ id: parseInt(child.dataset.id), parent_id: parseInt(li.dataset.id), order: cidx });
-                        });
-                    }
-                });
-                return items;
-            }
-
-            function save() {
-                var items = collectItems();
-                fetch(reorderUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-                    body: JSON.stringify({ items: items }),
-                })
-                .then(function (r) { return r.json(); })
-                .then(function (data) {
-                    if (data.ok) { showStatus('Kolejność zapisana.', false); window.dispatchEvent(new CustomEvent('nav-preview-refresh')); }
-                    else showStatus('Błąd zapisu kolejności.', true);
-                })
-                .catch(function () { showStatus('Błąd sieci — kolejność niezapisana.', true); });
-            }
-
-            var sortableOpts = {
-                animation: 150,
-                handle: '.drag-handle',
-                ghostClass: 'opacity-50',
-                onEnd: save,
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content || document.querySelector('input[name="_token"]')?.value || '';
+            const status = document.getElementById('nav-dnd-status');
+            const here = @js($location);
+            const selectedId = @js($selected?->id);
+            const locLabels = @js(collect(\App\Models\NavItem::LOCATIONS)->map(fn ($l) => \Illuminate\Support\Str::before($l, ' (')));
+            const routes = {
+                index: @js(route('admin.pozycje-menu.index')),
+                place: @js(route('admin.pozycje-menu.umiesc', '__ID__')),
+                copy: @js(route('admin.pozycje-menu.kopiuj', '__ID__')),
+                toggle: @js(route('admin.pozycje-menu.aktywna', '__ID__')),
+                destroy: @js(route('admin.pozycje-menu.destroy', '__ID__')),
             };
+            const urlFor = (name, id) => routes[name].replace('__ID__', id);
+            const indexUrl = (loc, id, hash) => routes.index + '?location=' + encodeURIComponent(loc) + (id ? '&pozycja=' + id : '') + (hash || '');
 
-            document.addEventListener('DOMContentLoaded', function () {
-                var topList = document.querySelector('[role="tree"]');
-                if (topList) {
-                    new Sortable(topList, sortableOpts);
-                    topList.querySelectorAll('[role="group"]').forEach(function (ul) {
-                        new Sortable(ul, sortableOpts);
+            const rowOf = el => el.closest ? el.closest('[data-nav-row]') : null;
+            const liOf = el => el.closest('[data-nav-node]');
+            const idOf = li => parseInt(li.dataset.id, 10);
+            const parentIdOf = li => { const p = li.parentElement.closest('[data-nav-node]'); return p ? idOf(p) : null; };
+            const siblingsOf = (li, exceptId) => [...li.parentElement.children].filter(n => n.matches('[data-nav-node]') && idOf(n) !== exceptId);
+            const nodeById = id => tree.querySelector('[data-nav-node][data-id="' + id + '"]');
+            const announce = msg => { status.textContent = ''; setTimeout(() => { status.textContent = msg; }, 30); };
+
+            async function place(id, body) {
+                try {
+                    const res = await fetch(urlFor('place', id), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+                        body: JSON.stringify(Object.assign({ location: here }, body)),
                     });
+                    const json = await res.json().catch(() => ({}));
+                    if (! res.ok || ! json.ok) {
+                        const msg = json.message || 'Nie udało się przenieść pozycji.';
+                        announce(msg); alert(msg);
+                        return;
+                    }
+                    const loc = json.location || here;
+                    location.href = indexUrl(loc, loc === here ? (selectedId || id) : id);
+                } catch (e) {
+                    announce('Brak połączenia z serwerem.');
+                    alert('Brak połączenia z serwerem. Spróbuj ponownie.');
+                }
+            }
+
+            // Formularz POST/PATCH/DELETE z tokenem; data-confirm obsługuje wspólne okno potwierdzenia (app.js).
+            function submitForm(action, method, confirmText, extra) {
+                const f = document.createElement('form');
+                f.method = 'POST'; f.action = action; f.hidden = true;
+                const add = (name, value) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = name; i.value = value; f.appendChild(i); };
+                add('_token', csrf);
+                add('_method', method);
+                Object.entries(extra || {}).forEach(([k, v]) => add(k, v));
+                if (confirmText) f.dataset.confirm = confirmText;
+                document.body.appendChild(f);
+                f.requestSubmit();
+            }
+
+            async function copyText(text, what) {
+                try { await navigator.clipboard.writeText(text); announce('Skopiowano ' + what + '.'); }
+                catch (e) { window.prompt('Skopiuj ' + what + ':', text); }
+            }
+            document.querySelectorAll('[data-copy-url]').forEach(b => b.addEventListener('click', () => copyText(b.dataset.copyUrl, 'adres')));
+
+            // ── Przeciąganie: górna/dolna część wiersza = przed/za, środek pozycji z paska = do środka (podpozycja). ──
+            let dragLi = null, hoverTimer = null;
+            const clearMarks = () => tree.querySelectorAll('[data-drop]').forEach(r => {
+                r.removeAttribute('data-drop');
+                r.classList.remove('bg-brand-light', 'ring-2', 'ring-brand-dark', 'border-t-2', 'border-b-2', 'border-brand-dark');
+            });
+            function zoneOf(row, li, e) {
+                const r = row.getBoundingClientRect();
+                const y = (e.clientY - r.top) / r.height;
+                const canInside = li.dataset.canHold === '1' && dragLi.dataset.nestable === '1';
+                if (canInside && y >= 0.3 && y <= 0.7) return 'inside';
+                const zone = y < 0.5 ? 'before' : 'after';
+                // Pozycja z podpozycjami (albo rozwijane menu) nie zejdzie poziom niżej — menu ma jeden poziom zagnieżdżenia.
+                if (li.dataset.level === '2' && dragLi.dataset.nestable !== '1') return null;
+                return zone;
+            }
+            tree.addEventListener('dragstart', e => {
+                const row = rowOf(e.target);
+                if (! row) { e.preventDefault(); return; }
+                dragLi = liOf(row);
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', dragLi.dataset.id);
+                dragLi.classList.add('opacity-50');
+            });
+            tree.addEventListener('dragend', () => {
+                if (dragLi) dragLi.classList.remove('opacity-50');
+                dragLi = null; clearTimeout(hoverTimer); clearMarks();
+            });
+            tree.addEventListener('dragover', e => {
+                if (! dragLi) return;
+                const row = rowOf(e.target);
+                if (! row) return;
+                const li = liOf(row);
+                if (dragLi.contains(li)) { clearMarks(); return; }
+                const zone = zoneOf(row, li, e);
+                clearMarks();
+                if (! zone) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                row.dataset.drop = zone;
+                if (zone === 'inside') row.classList.add('bg-brand-light', 'ring-2', 'ring-brand-dark');
+                else row.classList.add(zone === 'before' ? 'border-t-2' : 'border-b-2', 'border-brand-dark');
+                clearTimeout(hoverTimer);
+                if (zone === 'inside' && li.hasAttribute('x-data') && ! Alpine.$data(li).open) {
+                    hoverTimer = setTimeout(() => { Alpine.$data(li).open = true; }, 700);
                 }
             });
+            tree.addEventListener('dragleave', e => { if (! tree.contains(e.relatedTarget)) clearMarks(); });
+            tree.addEventListener('drop', e => {
+                if (! dragLi) return;
+                e.preventDefault();
+                const row = rowOf(e.target);
+                if (! row) return;
+                const li = liOf(row);
+                if (dragLi.contains(li)) return;
+                const zone = zoneOf(row, li, e), id = idOf(dragLi);
+                clearMarks();
+                if (! zone) return;
+                if (zone === 'inside') { place(id, { parent_id: idOf(li), position: 100000 }); return; }
+                const sibs = siblingsOf(li, id);
+                place(id, { parent_id: parentIdOf(li), position: sibs.indexOf(li) + (zone === 'after' ? 1 : 0) });
+            });
+
+            // ── Schowek (Wytnij / Kopiuj / Wklej), zapamiętany dla witryny — działa także między menu głównym a stopką. ──
+            const clipBox = document.getElementById('nav-clip');
+            const clip = {
+                key: 'navTreeClip:' + @js(\App\Models\SiteSetting::current()->id),
+                get() { try { return JSON.parse(localStorage.getItem(this.key) || 'null'); } catch (e) { return null; } },
+                put(mode, li, kids) {
+                    const withKids = !! kids && li.dataset.kids === '1';
+                    try { localStorage.setItem(this.key, JSON.stringify({ mode, id: idOf(li), label: li.dataset.label, location: here, kids: withKids })); } catch (e) {}
+                    this.render();
+                    announce((mode === 'cut' ? 'Wycięto' : 'Skopiowano') + ' „' + li.dataset.label + '”' + (withKids ? ' z podpozycjami' : '') + '. Wklej ją z menu innej pozycji albo skrótem Ctrl+V.');
+                },
+                clear() { try { localStorage.removeItem(this.key); } catch (e) {} this.render(); },
+                render() {
+                    const c = this.get();
+                    tree.querySelectorAll('.tree-cut').forEach(n => n.classList.remove('tree-cut'));
+                    clipBox.hidden = ! c;
+                    if (! c) return;
+                    clipBox.querySelector('[data-clip-text]').textContent = 'W schowku: „' + c.label + '” ('
+                        + (c.mode === 'cut' ? 'wycięta' : (c.kids ? 'kopia z podpozycjami' : 'kopia'))
+                        + (c.location !== here ? ', z: ' + (locLabels[c.location] || c.location) : '') + ')';
+                    if (c.mode === 'cut' && c.location === here) nodeById(c.id)?.classList.add('tree-cut');
+                },
+            };
+            clipBox.querySelector('[data-clip-clear]').addEventListener('click', () => { clip.clear(); announce('Wyczyszczono schowek.'); });
+            clipBox.querySelector('[data-clip-paste-end]').addEventListener('click', () => paste(null, false));
+            clip.render();
+
+            // Wklejenie za pozycją (into = false), jako jej podpozycję (into = true) albo na końcu menu (target = null).
+            function paste(target, into) {
+                const c = clip.get();
+                if (! c) { announce('Schowek jest pusty.'); return; }
+                const cutLi = c.mode === 'cut' && c.location === here ? nodeById(c.id) : null;
+                if (target && (String(c.id) === target.dataset.id || (cutLi && cutLi.contains(target)))) { announce('Nie można wkleić pozycji w nią samą ani w jej podpozycję.'); return; }
+                let parentId = null, position = 100000;
+                if (target && into) parentId = idOf(target);
+                else if (target) {
+                    parentId = parentIdOf(target);
+                    const sibs = siblingsOf(target, c.location === here ? c.id : 0);
+                    position = sibs.indexOf(target) + 1;
+                }
+                if (c.mode === 'cut') { clip.clear(); place(c.id, { parent_id: parentId, position }); return; }
+                submitForm(urlFor('copy', c.id), 'POST', null, { location: here, parent_id: parentId || '', position, z_podpozycjami: c.kids ? '1' : '0' });
+            }
+
+            // ── Menu kontekstowe ──
+            const ctxItems = () => [...ctx.querySelectorAll('[role=menuitem]')].filter(b => ! b.hidden);
+            let ctxLi = null;
+
+            function openCtx(li, x, y, focusFirst) {
+                ctxLi = li;
+                const d = li.dataset, sibs = siblingsOf(li, 0), idx = sibs.indexOf(li), prev = sibs[idx - 1];
+                ctx.querySelector('[data-ctx-title]').textContent = d.label;
+                ctx.setAttribute('aria-label', 'Akcje pozycji: ' + d.label);
+                ctx.querySelector('[data-ctx-toggle]').textContent = d.active === '1' ? 'Ukryj w menu' : 'Pokaż w menu';
+                ctx.querySelector('[data-ctx-toggle-icon]').className = 'fa-solid w-4 text-center text-gray-500 ' + (d.active === '1' ? 'fa-eye-slash' : 'fa-eye');
+                ctx.querySelector('[data-act=view]').hidden = ! d.publicUrl;
+                ctx.querySelector('[data-act=copy-url]').hidden = ! d.publicUrl;
+                ctx.querySelector('[data-act=add]').hidden = d.canHold !== '1';
+                ctx.querySelector('[data-act=page-edit]').hidden = ! d.pageEdit;
+                ctx.querySelector('[data-act=page-tree]').hidden = ! d.pageTree;
+                ctx.querySelector('[data-needs-kids]').hidden = d.kids !== '1';
+                ctx.querySelector('[data-act=up]').setAttribute('aria-disabled', String(idx <= 0));
+                ctx.querySelector('[data-act=down]').setAttribute('aria-disabled', String(idx >= sibs.length - 1));
+                ctx.querySelector('[data-act=indent]').hidden = d.level !== '1' || d.nestable !== '1' || ! prev || prev.dataset.canHold !== '1';
+                ctx.querySelector('[data-act=outdent]').hidden = d.level !== '2';
+                const c = clip.get(), cutLi = c && c.mode === 'cut' && c.location === here ? nodeById(c.id) : null;
+                const pasteOff = ! c || String(c.id) === d.id || (cutLi && cutLi.contains(li));
+                ctx.querySelectorAll('[data-paste]').forEach(b => { b.hidden = pasteOff || (b.hasAttribute('data-needs-hold') && d.canHold !== '1'); });
+                if (! pasteOff) {
+                    const what = (c.mode === 'cut' ? 'Wklej „' : 'Wklej kopię „') + c.label + '”';
+                    ctx.querySelector('[data-paste-after]').textContent = what + ' za tą pozycją';
+                    ctx.querySelector('[data-paste-into]').textContent = what + ' jako podpozycję';
+                }
+                tree.querySelectorAll('.tree-ctx-on').forEach(r => r.classList.remove('tree-ctx-on'));
+                li.querySelector('[data-nav-row]').classList.add('tree-ctx-on');
+                ctx.hidden = false;
+                const w = ctx.offsetWidth, h = ctx.offsetHeight;
+                ctx.style.left = Math.max(8, Math.min(x, window.innerWidth - w - 8)) + 'px';
+                ctx.style.top = Math.max(8, Math.min(y, window.innerHeight - h - 8)) + 'px';
+                (focusFirst ? ctxItems()[0] : ctx).focus({ preventScroll: true });
+            }
+
+            function closeCtx(returnFocus) {
+                if (ctx.hidden) return;
+                ctx.hidden = true;
+                tree.querySelectorAll('.tree-ctx-on').forEach(r => r.classList.remove('tree-ctx-on'));
+                if (returnFocus && ctxLi) ctxLi.querySelector('[data-nav-row] > a')?.focus();
+            }
+
+            function move(li, dir) {
+                const id = idOf(li), parentId = parentIdOf(li), sibs = siblingsOf(li, 0), idx = sibs.indexOf(li), prev = sibs[idx - 1];
+                if (dir === 'up' && idx > 0) place(id, { parent_id: parentId, position: idx - 1 });
+                else if (dir === 'down' && idx < sibs.length - 1) place(id, { parent_id: parentId, position: idx + 1 });
+                else if (dir === 'indent' && prev && li.dataset.level === '1' && li.dataset.nestable === '1' && prev.dataset.canHold === '1') place(id, { parent_id: idOf(prev), position: 100000 });
+                else if (dir === 'outdent' && parentId) {
+                    const parentLi = li.parentElement.closest('[data-nav-node]');
+                    place(id, { parent_id: null, position: siblingsOf(parentLi, 0).indexOf(parentLi) + 1 });
+                } else announce('Nie można przesunąć pozycji w tym kierunku.');
+            }
+
+            function run(act) {
+                const li = ctxLi, d = li.dataset, id = d.id;
+                const btn = ctx.querySelector('[data-act="' + act + '"]');
+                if (btn?.getAttribute('aria-disabled') === 'true') return;
+                closeCtx(! ['edit', 'add', 'view', 'page-edit', 'page-tree'].includes(act));
+                if (act === 'edit') {
+                    // Wybrana pozycja ma przycisk „Edytuj pozycję” w karcie; inną najpierw wybieramy (#edytuj otwiera formularz).
+                    if (String(selectedId) === id) document.querySelector('[data-nav-edit]')?.click();
+                    else location.href = indexUrl(here, id, '#edytuj');
+                } else if (act === 'add') {
+                    if (String(selectedId) === id) document.querySelector('#nav-add-sub-menu [data-parent]')?.click();
+                    else location.href = indexUrl(here, id, '#dodaj');
+                } else if (act === 'view') window.open(d.publicUrl, '_blank', 'noopener');
+                else if (act === 'page-edit') location.href = d.pageEdit;
+                else if (act === 'page-tree') location.href = d.pageTree;
+                else if (act === 'toggle') submitForm(urlFor('toggle', id), 'PATCH');
+                else if (act === 'dup') submitForm(urlFor('copy', id), 'POST', 'Zduplikować „' + d.label + '”' + (d.kids === '1' ? ' razem z podpozycjami' : '') + '? Kopia stanie zaraz za nią i będzie ukryta.', { z_podpozycjami: '1' });
+                else if (act === 'cut') clip.put('cut', li, true);
+                else if (act === 'copy') clip.put('copy', li, true);
+                else if (act === 'copy-one') clip.put('copy', li, false);
+                else if (act === 'paste-after') paste(li, false);
+                else if (act === 'paste-into') paste(li, true);
+                else if (['up', 'down', 'indent', 'outdent'].includes(act)) move(li, act);
+                else if (act === 'copy-url') copyText(d.publicUrl, 'adres');
+                else if (act === 'copy-id') copyText(id, 'ID pozycji');
+                else if (act === 'delete') submitForm(urlFor('destroy', id), 'DELETE', 'Usunąć „' + d.label + '” z menu?' + (d.kids === '1' ? ' Usunięte zostaną też podpozycje.' : '') + ' Strona, do której prowadzi, zostaje.');
+            }
+
+            tree.addEventListener('contextmenu', e => {
+                const row = rowOf(e.target);
+                if (! row) return;
+                e.preventDefault();
+                openCtx(liOf(row), e.clientX, e.clientY, false);
+            });
+            tree.addEventListener('click', e => {
+                const btn = e.target.closest('[data-tree-menu-btn]');
+                if (! btn) return;
+                e.preventDefault();
+                const r = btn.getBoundingClientRect();
+                openCtx(liOf(btn), r.left, r.bottom + 4, false);
+            });
+            ctx.addEventListener('click', e => { const b = e.target.closest('[role=menuitem]'); if (b) run(b.dataset.act); });
+            ctx.addEventListener('keydown', e => {
+                const items = ctxItems(), i = items.indexOf(document.activeElement);
+                if (e.key === 'Escape' || e.key === 'Tab') { e.preventDefault(); closeCtx(true); }
+                else if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+                else if (e.key === 'Home') { e.preventDefault(); items[0].focus(); }
+                else if (e.key === 'End') { e.preventDefault(); items[items.length - 1].focus(); }
+                else if (e.key.length === 1 && /\S/.test(e.key)) {
+                    const k = e.key.toLowerCase();
+                    const next = [...items.slice(i + 1), ...items.slice(0, i + 1)].find(b => b.textContent.trim().toLowerCase().startsWith(k));
+                    if (next) { e.preventDefault(); next.focus(); }
+                }
+            });
+            document.addEventListener('pointerdown', e => { if (! ctx.hidden && ! ctx.contains(e.target) && ! e.target.closest('[data-tree-menu-btn]')) closeCtx(false); });
+            window.addEventListener('scroll', () => closeCtx(false), true);
+            window.addEventListener('resize', () => closeCtx(false));
+
+            // ── Klawiatura w drzewie (jak drzewo stron TYPO3) ──
+            const focusables = () => [...tree.querySelectorAll('#nav-tree-scroll [data-nav-row] > a')].filter(el => el.offsetParent !== null && ! el.closest('[hidden]'));
+            tree.addEventListener('keydown', e => {
+                const el = e.target;
+                if (! el.matches || ! el.matches('[data-nav-row] > a')) return;
+                const li = liOf(el);
+                if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) {
+                    e.preventDefault();
+                    const r = el.getBoundingClientRect();
+                    openCtx(li, r.left + 32, r.bottom + 2, true);
+                    return;
+                }
+                if (e.altKey && e.shiftKey && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                    e.preventDefault();
+                    move(li, { ArrowUp: 'up', ArrowDown: 'down', ArrowRight: 'indent', ArrowLeft: 'outdent' }[e.key]);
+                    return;
+                }
+                if ((e.ctrlKey || e.metaKey) && ! e.altKey) {
+                    const k = e.key.toLowerCase();
+                    if (k === 'x') { e.preventDefault(); clip.put('cut', li, true); return; }
+                    if (k === 'c' && ! window.getSelection().toString()) { e.preventDefault(); clip.put('copy', li, true); return; }
+                    if (k === 'v' && clip.get()) { e.preventDefault(); paste(li, e.shiftKey && li.dataset.canHold === '1'); return; }
+                }
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                if (! ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
+                e.preventDefault();
+                const list = focusables(), i = list.indexOf(el);
+                const state = li.hasAttribute('x-data') ? Alpine.$data(li) : null;
+                if (e.key === 'ArrowDown') list[i + 1]?.focus();
+                else if (e.key === 'ArrowUp') list[i - 1]?.focus();
+                else if (e.key === 'Home') list[0]?.focus();
+                else if (e.key === 'End') list[list.length - 1]?.focus();
+                else if (e.key === 'ArrowRight') {
+                    if (state && ! state.open) state.open = true;
+                    else if (state) Alpine.nextTick(() => focusables()[focusables().indexOf(el) + 1]?.focus());
+                } else if (e.key === 'ArrowLeft') {
+                    if (state && state.open) state.open = false;
+                    else li.parentElement.closest('[data-nav-node]')?.querySelector(':scope > [data-nav-row] > a')?.focus();
+                }
+            });
+
+            // Po przekierowaniu: #edytuj otwiera formularz wybranej pozycji, #dodaj — nową podpozycję; fokus wraca na pozycję.
+            document.addEventListener('alpine:initialized', () => {
+                if (location.hash === '#edytuj') document.querySelector('[data-nav-edit]')?.click();
+                else if (location.hash === '#dodaj') document.querySelector('#nav-add-sub-menu [data-parent]')?.click();
+                if (location.hash === '#edytuj' || location.hash === '#dodaj') history.replaceState(null, '', location.pathname + location.search);
+            });
+            const focusId = @js(session('focus_nav'));
+            if (focusId) {
+                const link = nodeById(focusId)?.querySelector(':scope > [data-nav-row] > a');
+                if (link) { link.focus({ preventScroll: true }); link.scrollIntoView({ block: 'center' }); }
+            }
         })();
     </script>
 

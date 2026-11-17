@@ -36,10 +36,15 @@ class NavItemController extends Controller
         // Wybrana pozycja (?pozycja=ID) — prawy panel pokazuje jej szczegóły; domyślnie pierwsza.
         $flat = $navItems->flatMap(fn (NavItem $i) => collect([$i])->concat($i->allChildren));
         $selected = $flat->firstWhere('id', (int) $request->query('pozycja')) ?? $navItems->first();
+        // Stan linków (jak ostrzeżenia TYPO3): szkic, wyłączona strona, adres bez strony, wyłączony moduł.
+        $health = \App\Support\MenuLinkCheck::forItems($flat);
 
         return view('admin.nav-items.index', [
             'navItems' => $navItems,
             'selected' => $selected,
+            'health' => $health,
+            'issues' => collect($health)->filter(fn ($h) => $h['issue'])->count(),
+            'history' => $selected ? $this->history($selected) : collect(),
             'location' => $location,
             // Wszystkie możliwe pozycje-rodzice dla współdzielonego modala edycji
             // (menu główne). Wykluczenie „samego siebie" odbywa się po stronie
@@ -276,6 +281,227 @@ class NavItemController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /**
+     * Ostatnie zmiany pozycji z dziennika zdarzeń (kto, kiedy, co) — „Historia” w karcie pozycji, jak w TYPO3.
+     *
+     * @return \Illuminate\Support\Collection<int, array{at: \Illuminate\Support\Carbon, user: string, event: string}>
+     */
+    private function history(NavItem $item): \Illuminate\Support\Collection
+    {
+        try {
+            return \App\Models\Activity::query()
+                ->where('subject_type', $item->getMorphClass())->where('subject_id', $item->id)
+                ->with('causer')->latest('id')->limit(5)->get()
+                ->map(fn ($a) => [
+                    'at' => $a->created_at,
+                    'user' => $a->causer?->name ?? 'system',
+                    'event' => ['created' => 'dodano', 'updated' => 'zmieniono', 'deleted' => 'usunięto'][$a->event] ?? (string) $a->event,
+                ]);
+        } catch (\Throwable) {
+            return collect();
+        }
+    }
+
+    /**
+     * Przenosi pozycję w dowolne miejsce (jak przeciąganie w drzewie stron TYPO3): pod inną pozycję
+     * (`parent_id`), na wskazaną pozycję wśród rodzeństwa (`position`, 0 = pierwsza) i opcjonalnie do innego
+     * menu (`location`, np. z menu głównego do stopki). Woła je skrypt drzewa — przeciąganie, Alt+Shift+strzałki,
+     * menu kontekstowe, „Wytnij / Wklej” (odpowiedź JSON) — i zwykły formularz (przekierowanie z komunikatem).
+     */
+    public function place(Request $request, NavItem $navItem)
+    {
+        $json = $request->expectsJson();
+        $data = $request->validate([
+            'location' => ['nullable', Rule::in(array_keys(NavItem::LOCATIONS))],
+            'parent_id' => ['nullable', 'integer'],
+            'position' => ['required', 'integer', 'min:0', 'max:100000'],
+        ]);
+        $location = $data['location'] ?? $navItem->location;
+        $parent = ($data['parent_id'] ?? null) ? NavItem::forCurrentSite()->find((int) $data['parent_id']) : null;
+
+        $denied = $navItem->site_id !== \App\Models\SiteSetting::current()->id ? 'Pozycja należy do innej witryny.' : $this->targetDenied($navItem, $location, $parent, $data['parent_id'] ?? null);
+        if ($denied) {
+            return $json ? response()->json(['ok' => false, 'message' => $denied], 422)
+                : redirect()->route('admin.pozycje-menu.index', ['location' => $navItem->location, 'pozycja' => $navItem->id])->with('error', $denied);
+        }
+
+        $from = [$navItem->location, $navItem->parent_id];
+        $at = DB::transaction(function () use ($navItem, $location, $parent, $data) {
+            $attrs = ['location' => $location, 'parent_id' => $parent?->id] + $this->shapeFor($navItem, $location, $parent);
+            $navItem->fill($attrs);
+            if ($navItem->isDirty()) {
+                $navItem->save();
+            }
+
+            return $this->insertAt($navItem, (int) $data['position']);
+        });
+        if ($from !== [$location, $parent?->id]) {
+            $this->resequence($from[0], $from[1], $navItem->site_id);
+        }
+
+        $where = $parent ? "pod „{$parent->label}”" : (NavItem::LOCATIONS[$location] ?? $location);
+        $message = "Przeniesiono „{$navItem->label}” ({$where}, pozycja {$at[0]} z {$at[1]}).";
+        if ($json) {
+            session()->flash('status', $message);
+
+            return response()->json(['ok' => true, 'message' => $message, 'location' => $location]);
+        }
+
+        return redirect()->route('admin.pozycje-menu.index', ['location' => $location, 'pozycja' => $navItem->id])->with('status', $message)->with('focus_nav', $navItem->id);
+    }
+
+    /**
+     * Kopiuje pozycję (z podpozycjami albo bez) we wskazane miejsce — „Duplikuj” i „Kopiuj / Wklej” w drzewie,
+     * także do innego menu. Kopia jest ukryta (jak kopia strony w TYPO3), żeby nie pojawiła się na stronie,
+     * zanim redaktor ją sprawdzi.
+     */
+    public function copy(Request $request, NavItem $navItem)
+    {
+        $data = $request->validate([
+            'location' => ['nullable', Rule::in(array_keys(NavItem::LOCATIONS))],
+            'parent_id' => ['nullable', 'integer'],
+            'position' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'z_podpozycjami' => ['nullable', 'boolean'],
+        ]);
+        $location = $data['location'] ?? $navItem->location;
+        $parent = ($data['parent_id'] ?? null) ? NavItem::forCurrentSite()->find((int) $data['parent_id']) : null;
+        $withKids = $request->boolean('z_podpozycjami') && $navItem->allChildren()->exists();
+        $back = redirect()->route('admin.pozycje-menu.index', ['location' => $navItem->location, 'pozycja' => $navItem->id]);
+
+        if ($navItem->site_id !== \App\Models\SiteSetting::current()->id) {
+            return $back->with('error', 'Pozycja należy do innej witryny.');
+        }
+        // Kopia z podpozycjami może trafić tylko na pasek menu głównego (menu ma jeden poziom zagnieżdżenia).
+        if ($withKids && ($parent || $location !== 'main')) {
+            $withKids = false;
+            $note = $parent ? ' Podpozycje nie zostały skopiowane — menu ma tylko jeden poziom zagnieżdżenia.' : ' Podpozycje nie zostały skopiowane — '.(NavItem::LOCATIONS[$location] ?? $location).' nie ma podmenu.';
+        }
+        if ($denied = $this->targetDenied($navItem, $location, $parent, $data['parent_id'] ?? null, copying: true)) {
+            return $back->with('error', $denied);
+        }
+
+        $position = $data['position'] ?? ($location === $navItem->location && $parent?->id === $navItem->parent_id
+            ? 1 + (int) array_search($navItem->id, $this->siblingIds($location, $parent?->id, $navItem->site_id), true)
+            : 100000);
+
+        $copy = DB::transaction(function () use ($navItem, $location, $parent, $withKids, $position) {
+            $copy = $navItem->replicate(['created_at', 'updated_at']);
+            $copy->fill(['location' => $location, 'parent_id' => $parent?->id, 'is_active' => false, 'order' => 0] + $this->shapeFor($navItem, $location, $parent));
+            $copy->save();
+            if ($withKids) {
+                foreach ($navItem->allChildren as $child) {
+                    $kid = $child->replicate(['created_at', 'updated_at']);
+                    $kid->fill(['parent_id' => $copy->id, 'location' => $location]);
+                    $kid->save();
+                }
+            }
+            $this->insertAt($copy, (int) $position);
+
+            return $copy;
+        });
+
+        return redirect()->route('admin.pozycje-menu.index', ['location' => $location, 'pozycja' => $copy->id])
+            ->with('status', "Skopiowano „{$navItem->label}”".($withKids ? ' z podpozycjami' : '').'. Kopia jest ukryta — pokaż ją, gdy będzie gotowa.'.($note ?? ''))
+            ->with('focus_nav', $copy->id);
+    }
+
+    /**
+     * Etykieta w menu = tytuł strony, do której prowadzi pozycja (w TYPO3 etykietą menu jest tytuł strony,
+     * chyba że ustawiono osobny „tytuł w nawigacji”).
+     */
+    public function labelFromPage(NavItem $navItem)
+    {
+        $page = $navItem->editablePage();
+        $back = redirect()->route('admin.pozycje-menu.index', ['location' => $navItem->location, 'pozycja' => $navItem->id]);
+        if (! $page) {
+            return $back->with('error', 'Ta pozycja nie prowadzi do strony serwisu.');
+        }
+        $navItem->update(['label' => $page->title]);
+
+        return $back->with('status', "Etykieta w menu to teraz „{$page->title}” — tak jak tytuł strony.");
+    }
+
+    /**
+     * Czy pozycję można postawić w danym miejscu. Menu ma jeden poziom zagnieżdżenia: rodzicem może być pozycja
+     * paska menu głównego (rozwijane menu, link, menu działań — bez przycisku CTA), a podpozycją — pozycja bez
+     * własnych podpozycji, która nie jest rozwijanym menu ani przyciskiem. Stopka i menu BIP nie mają podmenu.
+     */
+    private function targetDenied(NavItem $item, string $location, ?NavItem $parent, mixed $parentId, bool $copying = false): ?string
+    {
+        if ($parentId && ! $parent) {
+            return 'Wybrana pozycja nadrzędna nie istnieje.';
+        }
+        if ($parent) {
+            if ($parent->id === $item->id) {
+                return 'Pozycji nie można wstawić w nią samą.';
+            }
+            if ($parent->location !== 'main' || $location !== 'main') {
+                return (NavItem::LOCATIONS[$parent->location] ?? 'To menu').' nie ma podmenu — pozycje stoją jedna pod drugą.';
+            }
+            if ($parent->parent_id !== null) {
+                return 'Menu ma tylko jeden poziom zagnieżdżenia — „'.$parent->label.'” jest już podpozycją.';
+            }
+            if ($parent->is_button || ! in_array($parent->type, ['dropdown', 'link', 'projects'], true)) {
+                return "Pozycja „{$parent->label}” nie może mieć podpozycji.";
+            }
+            if (! $copying && $item->allChildren()->exists()) {
+                return "„{$item->label}” ma własne podpozycje — menu ma tylko jeden poziom zagnieżdżenia.";
+            }
+            if (in_array($item->type, ['dropdown', 'projects', 'volunteering', 'events', 'faq'], true)) {
+                return 'Rozwijane menu i pozycje modułów (wolontariat, wydarzenia, FAQ) mogą stać tylko na pasku menu.';
+            }
+            if ($item->is_button) {
+                return 'Przycisk (CTA) stoi tylko na pasku menu — wyłącz „przycisk” w edycji pozycji, aby zrobić z niej podpozycję.';
+            }
+        }
+        if ($location !== 'main') {
+            if (! $copying && $item->allChildren()->exists()) {
+                return (NavItem::LOCATIONS[$location] ?? $location).' nie ma podmenu — najpierw przenieś podpozycje „'.$item->label.'”.';
+            }
+            if (in_array($item->type, ['dropdown', 'projects', 'pages'], true)) {
+                return 'Rozwijane menu nie może trafić do: '.(NavItem::LOCATIONS[$location] ?? $location).' — tam są tylko zwykłe linki.';
+            }
+        }
+
+        return null;
+    }
+
+    /** Pola, które zależą od miejsca pozycji (jak w validated()): typ w stopce, CTA, nagłówek kolumny, mega menu. */
+    private function shapeFor(NavItem $item, string $location, ?NavItem $parent): array
+    {
+        $shape = [];
+        if ($location !== 'main') {
+            $shape['type'] = 'link';
+        }
+        if ($parent || $location !== 'main') {
+            $shape['is_mega'] = false;
+        }
+        if (! $parent) {
+            $shape['is_column_heading'] = false;
+        }
+        if ($location !== 'main' && \Illuminate\Support\Facades\Schema::hasColumn('nav_items', 'highlight')) {
+            $shape['highlight'] = false;
+        }
+
+        return $shape;
+    }
+
+    /**
+     * Wstawia pozycję na wskazane miejsce wśród rodzeństwa (to samo menu i rodzic, ta sama witryna)
+     * i przenumerowuje rodzeństwo. Zwraca [pozycja od 1, liczba pozycji].
+     *
+     * @return array{int, int}
+     */
+    private function insertAt(NavItem $item, int $position): array
+    {
+        $ids = array_values(array_filter($this->siblingIds($item->location, $item->parent_id, $item->site_id), fn ($id) => $id !== $item->id));
+        $index = min(max($position, 0), count($ids));
+        array_splice($ids, $index, 0, [$item->id]);
+        $this->applyOrder($ids);
+
+        return [$index + 1, count($ids)];
+    }
+
     /** Przełącza widoczność pozycji w menu (ukryj / pokaż) bez otwierania formularza. */
     public function toggleActive(NavItem $navItem)
     {
@@ -302,7 +528,7 @@ class NavItemController extends Controller
      */
     private function reorderSibling(NavItem $navItem, string $direction): array
     {
-        $ids = $this->siblingIds($navItem->location, $navItem->parent_id);
+        $ids = $this->siblingIds($navItem->location, $navItem->parent_id, $navItem->site_id);
         $pos = array_search($navItem->id, $ids, true);
         $target = $direction === 'up' ? $pos - 1 : $pos + 1;
 
@@ -330,7 +556,7 @@ class NavItemController extends Controller
             return ['ok' => false, 'message' => 'Tylko zwykły link bez własnych podpozycji można zagnieździć.'];
         }
 
-        $ids = $this->siblingIds($navItem->location, null);
+        $ids = $this->siblingIds($navItem->location, null, $navItem->site_id);
         $pos = array_search($navItem->id, $ids, true);
 
         if ($pos === false || $pos === 0) {
@@ -348,8 +574,8 @@ class NavItemController extends Controller
             'order' => 1 + (int) NavItem::where('parent_id', $previous->id)->max('order'),
         ]);
 
-        $this->resequence($navItem->location, null);
-        $this->resequence($navItem->location, $previous->id);
+        $this->resequence($navItem->location, null, $navItem->site_id);
+        $this->resequence($navItem->location, $previous->id, $navItem->site_id);
 
         return ['ok' => true, 'message' => "Zagnieżdżono „{$navItem->label}” w „{$previous->label}”."];
     }
@@ -367,13 +593,13 @@ class NavItemController extends Controller
         $parent = $navItem->parent;
         $oldParentId = $navItem->parent_id;
 
-        $top = $this->siblingIds($navItem->location, null);
+        $top = $this->siblingIds($navItem->location, null, $navItem->site_id);
         $parentPos = array_search($parent->id, $top, true);
         array_splice($top, $parentPos === false ? count($top) : $parentPos + 1, 0, [$navItem->id]);
 
         $navItem->update(['parent_id' => null]);
         $this->applyOrder($top);
-        $this->resequence($navItem->location, $oldParentId);
+        $this->resequence($navItem->location, $oldParentId, $navItem->site_id);
 
         return ['ok' => true, 'message' => "Wysunięto „{$navItem->label}” na najwyższy poziom."];
     }
@@ -383,9 +609,10 @@ class NavItemController extends Controller
      *
      * @return array<int, int>
      */
-    private function siblingIds(string $location, ?int $parentId): array
+    private function siblingIds(string $location, ?int $parentId, ?int $siteId = null): array
     {
         return NavItem::where('location', $location)
+            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
             ->where('parent_id', $parentId)
             ->orderBy('order')
             ->orderBy('id')
@@ -405,9 +632,9 @@ class NavItemController extends Controller
         }
     }
 
-    private function resequence(string $location, ?int $parentId): void
+    private function resequence(string $location, ?int $parentId, ?int $siteId = null): void
     {
-        $this->applyOrder($this->siblingIds($location, $parentId));
+        $this->applyOrder($this->siblingIds($location, $parentId, $siteId));
     }
 
     /**
