@@ -18,32 +18,40 @@
         $openPanelId = (int) (session('media_panel') ?: request()->integer('plik'));
         $kindIcon = ['image' => 'fa-image', 'document' => 'fa-file-lines', 'other' => 'fa-file'];
         $a11yText = ['ok' => 'dostępny', 'warn' => 'drobne uwagi', 'fail' => 'wymaga poprawy', 'error' => 'nie sprawdzono', 'unchecked' => 'nie sprawdzono'];
+        $showFolderTiles = ! $isFiltered && $media->currentPage() === 1 && ($subfolders->isNotEmpty() || $folder);
+        $parentCrumb = $folder ? collect($breadcrumbs)->slice(0, -1)->last() : null;
+        // Pliki tej strony dla podglądu z przewijaniem (←/→) i edytora obrazu.
+        $previewItems = $media->getCollection()->map(fn ($i) => [
+            'id' => $i['id'],
+            'name' => $i['file_name'],
+            'url' => $i['url'],
+            'ext' => $i['ext'],
+            'size' => $i['size'],
+            'alt' => $i['is_image'] ? (string) $i['alt'] : '',
+            'altNote' => ! $i['is_image'] ? null : ($i['has_alt'] ? 'Opis alternatywny: '.$i['alt'] : ($i['owner']['standalone'] ? 'Brak opisu alternatywnego — dodasz go w szczegółach pliku.' : null)),
+            'kind' => match (true) {
+                $i['is_image'] => 'image',
+                str_starts_with((string) $i['mime_type'], 'video/') => 'video',
+                str_starts_with((string) $i['mime_type'], 'audio/') => 'audio',
+                $i['mime_type'] === 'application/pdf' => 'pdf',
+                default => 'other',
+            },
+            'edit' => $i['edit'],
+        ])->values();
+        $libraryConfig = [
+            'uploadOpen' => $errors->has('files') || $errors->has('files.*'),
+            'pageIds' => $media->pluck('id')->values(),
+            'items' => $previewItems,
+            'canUpload' => ! $showArchived,
+            'openPanelId' => $openPanelId ?: null,
+            'panelUrl' => route('admin.multimedia.panel', '__ID__'),
+        ];
+        $menuItem = 'flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-ink hover:bg-brand-light focus-visible:bg-brand-light focus-visible:outline-none';
     @endphp
 
-    <div x-data="{
-            view: (() => { try { return localStorage.getItem('media-view') || 'grid' } catch (e) { return 'grid' } })(),
-            uploadOpen: {{ $errors->has('files') || $errors->has('files.*') ? 'true' : 'false' }},
-            selected: [],
-            pageIds: @js($media->pluck('id')->values()),
-            toggle(id) { const i = this.selected.indexOf(id); i === -1 ? this.selected.push(id) : this.selected.splice(i, 1); },
-            isSelected(id) { return this.selected.includes(id); },
-            get allSelected() { return this.pageIds.length > 0 && this.pageIds.every(id => this.selected.includes(id)); },
-            toggleAll() { this.allSelected ? this.selected = this.selected.filter(id => !this.pageIds.includes(id)) : this.pageIds.forEach(id => { if (!this.selected.includes(id)) this.selected.push(id) }); },
-            panelId: null, panelHtml: '', panelLoading: false, returnFocus: null,
-            async openPanel(id) {
-                this.returnFocus = document.activeElement;
-                this.panelId = id; this.panelLoading = true; this.panelHtml = '';
-                try {
-                    const r = await fetch(@js(route('admin.multimedia.panel', '__ID__')).replace('__ID__', id), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                    this.panelHtml = r.ok ? await r.text() : '<p class=&quot;text-sm text-ink&quot;>Nie udało się wczytać szczegółów pliku.</p>';
-                } catch (e) { this.panelHtml = '<p class=&quot;text-sm text-ink&quot;>Brak połączenia — spróbuj ponownie.</p>'; }
-                this.panelLoading = false;
-                this.$nextTick(() => this.$refs.panelHeading?.focus());
-            },
-            closePanel() { this.panelId = null; this.panelHtml = ''; this.$nextTick(() => this.returnFocus?.focus?.()); }
-        }"
-        x-init="$watch('view', v => { try { localStorage.setItem('media-view', v) } catch (e) {} }); @if ($openPanelId) openPanel({{ $openPanelId }}) @endif"
-        @keydown.escape.window="if (panelId) closePanel()">
+    {{-- Logika listy: Alpine.data('mediaLibrary') w @push('scripts') na dole widoku. --}}
+    <div x-data="mediaLibrary(@js($libraryConfig))" @keydown.escape.window="onEscape()" @drop.window="dropActive = false" @dragend.window="dropActive = false">
+        <p class="sr-only" aria-live="polite" x-text="announce"></p>
 
         {{-- ── Nagłówek: tytuł, miejsce, wgrywanie ───────────────────────── --}}
         <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
@@ -197,8 +205,16 @@
                 </div>
             </aside>
 
-            {{-- ── Główna kolumna ────────────────────────────────────────────── --}}
-            <div class="min-w-0 space-y-4">
+            {{-- ── Główna kolumna (upuszczenie plików gdziekolwiek tutaj otwiera wgrywanie do bieżącego folderu) ── --}}
+            <div class="relative min-w-0 space-y-4" @dragover="onDragOver($event)" @dragleave="onDragLeave($event, $el)" @drop="onDropFiles($event)">
+                @unless ($showArchived)
+                    <div x-show="dropActive" x-cloak class="pointer-events-none absolute inset-0 z-40 flex items-start justify-center rounded-md bg-brand-light/95 outline-2 outline-dashed outline-brand-dark" aria-hidden="true">
+                        <p class="sticky top-1/3 mt-24 flex items-center gap-3 rounded-md bg-white px-6 py-4 text-base font-bold text-ink shadow-lg">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-brand-dark"></i>
+                            Upuść pliki, aby wgrać je {{ $folder ? 'do folderu „'.$folder->name.'”' : 'do katalogu głównego' }}
+                        </p>
+                    </div>
+                @endunless
 
                 {{-- Uprawnienia bieżącego folderu (administrator) --}}
                 @if ($folder && auth()->user()->isAdmin())
@@ -264,7 +280,36 @@
                             class="{{ $btn }} bg-gray-100 text-ink hover:bg-brand-light">
                             <i class="fa-solid fa-sliders" aria-hidden="true"></i> Więcej filtrów
                         </button>
-                        <div class="ml-auto flex overflow-hidden rounded-md bg-gray-100" role="group" aria-label="Układ listy">
+                        {{-- Sortowanie (zapamiętane w sesji) --}}
+                        <div class="relative ml-auto" x-data="{ sortOpen: false }" @click.outside="sortOpen = false" @keydown.escape.stop="if (sortOpen) { sortOpen = false; $refs.sortBtn.focus() }">
+                            <button type="button" x-ref="sortBtn" @click="sortOpen = ! sortOpen" :aria-expanded="sortOpen.toString()" aria-controls="media-sort-list"
+                                class="{{ $btn }} bg-gray-100 text-ink hover:bg-brand-light">
+                                <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i>
+                                <span><span class="sr-only">Sortowanie: </span>{{ \App\Http\Controllers\Admin\MediaLibraryController::SORTS[$currentSort] }}</span>
+                                <i class="fa-solid fa-chevron-down text-[0.65rem]" aria-hidden="true"></i>
+                            </button>
+                            <ul id="media-sort-list" x-show="sortOpen" x-cloak role="list" class="absolute right-0 z-30 mt-1 w-48 overflow-hidden rounded-md bg-white py-1 shadow-lg">
+                                @foreach (\App\Http\Controllers\Admin\MediaLibraryController::SORTS as $sortKey => $sortLabel)
+                                    <li>
+                                        <a href="{{ route('admin.multimedia.index', array_merge(request()->except(['sort', 'page', 'plik']), ['sort' => $sortKey])) }}"
+                                            @if ($currentSort === $sortKey) aria-current="true" @endif
+                                            class="{{ $menuItem }} {{ $currentSort === $sortKey ? 'font-bold' : '' }}">
+                                            <i class="fa-solid fa-check w-4 {{ $currentSort === $sortKey ? 'text-brand-dark' : 'invisible' }}" aria-hidden="true"></i> {{ $sortLabel }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        {{-- Rozmiar miniatur (jak lupa −/+ w Joomli), tylko w kafelkach --}}
+                        <div x-show="view === 'grid'" class="flex overflow-hidden rounded-md bg-gray-100" role="group" aria-label="Rozmiar miniatur">
+                            <button type="button" @click="zoomBy(-1)" :disabled="zoom === 0" class="px-3 py-2 text-sm text-ink hover:bg-brand-light disabled:cursor-not-allowed disabled:text-muted disabled:hover:bg-gray-100">
+                                <i class="fa-solid fa-magnifying-glass-minus" aria-hidden="true"></i><span class="sr-only">Mniejsze miniatury</span>
+                            </button>
+                            <button type="button" @click="zoomBy(1)" :disabled="zoom === zoomSizes.length - 1" class="px-3 py-2 text-sm text-ink hover:bg-brand-light disabled:cursor-not-allowed disabled:text-muted disabled:hover:bg-gray-100">
+                                <i class="fa-solid fa-magnifying-glass-plus" aria-hidden="true"></i><span class="sr-only">Większe miniatury</span>
+                            </button>
+                        </div>
+                        <div class="flex overflow-hidden rounded-md bg-gray-100" role="group" aria-label="Układ listy">
                             <button type="button" @click="view = 'grid'" :aria-pressed="view === 'grid'"
                                 :class="view === 'grid' ? 'bg-brand-dark text-white' : 'text-ink hover:bg-brand-light'" class="px-3 py-2 text-sm">
                                 <i class="fa-solid fa-table-cells-large" aria-hidden="true"></i><span class="sr-only">Kafelki</span>
@@ -364,7 +409,14 @@
                     <button type="button" @click="selected = []" class="{{ $btn }} hover:bg-white/10">Odznacz</button>
                 </div>
 
-                @if ($media->isEmpty())
+                {{-- Foldery jako kafle nad plikami (jak w menedżerze mediów Joomli) --}}
+                @if ($showFolderTiles)
+                    @include('admin.media.partials.folder-tiles')
+                @endif
+
+                @if ($media->isEmpty() && $subfolders->isNotEmpty() && ! $isFiltered && ! $showArchived)
+                    <p class="rounded-md bg-white px-4 py-3 text-sm text-ink">W tym miejscu nie ma plików — są tylko foldery powyżej.</p>
+                @elseif ($media->isEmpty())
                     <div class="rounded-md bg-white px-6 py-16 text-center">
                         <i class="fa-solid fa-folder-open mb-3 text-4xl text-brand-dark" aria-hidden="true"></i>
                         <p class="font-bold text-ink">
@@ -388,13 +440,14 @@
                     </div>
 
                     {{-- Kafelki --}}
-                    <ul x-show="view === 'grid'" x-cloak role="list" class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                    <ul x-show="view === 'grid'" x-cloak role="list" class="grid gap-3" :style="gridStyle" aria-label="Pliki">
                         @foreach ($media as $item)
                             <li class="group relative rounded-md p-2 transition"
                                 :class="isSelected({{ $item['id'] }}) ? 'bg-brand-light' : 'bg-white hover:bg-gray-50'">
                                 <input type="checkbox" id="sel-{{ $item['id'] }}" :checked="isSelected({{ $item['id'] }})" @change="toggle({{ $item['id'] }})"
                                     class="absolute left-4 top-4 z-10 h-5 w-5 rounded border-gray-500 text-brand-dark shadow focus:ring-brand-dark">
                                 <label for="sel-{{ $item['id'] }}" class="sr-only">Zaznacz {{ $item['file_name'] }}</label>
+                                @include('admin.media.partials.item-actions', ['item' => $item])
 
                                 <button type="button" @click="openPanel({{ $item['id'] }})" class="block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark rounded-md"
                                     aria-haspopup="dialog">
@@ -440,7 +493,7 @@
                                     <th scope="col" class="px-4 py-3">Rozmiar</th>
                                     <th scope="col" class="px-4 py-3">Dodano</th>
                                     <th scope="col" class="px-4 py-3">Autor</th>
-                                    <th scope="col" class="px-4 py-3"><span class="sr-only">Pobieranie</span></th>
+                                    <th scope="col" class="px-4 py-3"><span class="sr-only">Akcje</span></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -480,8 +533,18 @@
                                         <td class="whitespace-nowrap px-4 py-2 text-ink">{{ $item['created_at']->format('d.m.Y') }}</td>
                                         <td class="px-4 py-2 text-ink">{{ $item['author'] }}</td>
                                         <td class="whitespace-nowrap px-4 py-2">
-                                            <a href="{{ $item['url'] }}" download
+                                            <button type="button" @click="openPreview({{ $item['id'] }})" aria-haspopup="dialog"
                                                 class="inline-flex min-h-11 items-center gap-1.5 rounded-md px-1 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                                <i class="fa-solid fa-eye text-xs" aria-hidden="true"></i> Podgląd<span class="sr-only">: {{ $item['file_name'] }}</span>
+                                            </button>
+                                            @if ($item['edit'])
+                                                <button type="button" @click="$dispatch('media-edit', @js($item['edit']))" aria-haspopup="dialog"
+                                                    class="ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-md px-1 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                                    <i class="fa-solid fa-crop-simple text-xs" aria-hidden="true"></i> Edytuj<span class="sr-only"> obraz: {{ $item['file_name'] }}</span>
+                                                </button>
+                                            @endif
+                                            <a href="{{ $item['url'] }}" download
+                                                class="ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-md px-1 font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                                 <i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i> Pobierz<span class="sr-only"> plik: {{ $item['file_name'] }}@if ($item['ext'] !== '') ({{ $item['ext'] }}, {{ $item['size'] }})@endif</span>
                                             </a>
                                         </td>
@@ -518,6 +581,9 @@
                 </div>
             </div>
         </div>
+
+        {{-- ── Podgląd pliku z przewijaniem ────────────────────────────────────── --}}
+        @include('admin.media.partials.preview')
 
         {{-- ── Potwierdzenie usunięcia plików w użyciu ───────────────────────── --}}
         @if ($usageConfirm)
@@ -564,9 +630,158 @@
             </div>
         @endif
     </div>
+
+    {{-- ── Edytor obrazu (kadr, obrót, rozmiar) ──────────────────────────── --}}
+    @include('admin.media.partials.image-editor')
 @endsection
 
 @push('scripts')
+<script>
+    /*
+     * Biblioteka plików (admin.media.index): zaznaczanie, szuflada szczegółów, menu akcji kafla,
+     * podgląd z przewijaniem, rozmiar miniatur, upuszczanie plików na listę. Wzorowane na menedżerze mediów Joomli.
+     */
+    document.addEventListener('alpine:init', () => {
+        const stored = (key, fallback) => { try { return localStorage.getItem(key) ?? fallback; } catch (e) { return fallback; } };
+        const store = (key, value) => { try { localStorage.setItem(key, value); } catch (e) {} };
+
+        Alpine.data('mediaLibrary', (cfg) => ({
+            view: stored('media-view', 'grid'),
+            zoomSizes: [7.5, 9.5, 12, 15, 19],
+            zoom: (() => { const z = parseInt(stored('media-zoom', '2'), 10); return z >= 0 && z <= 4 ? z : 2; })(),
+            uploadOpen: !! cfg.uploadOpen,
+            selected: [],
+            pageIds: cfg.pageIds || [],
+            items: cfg.items || [],
+            panelId: null, panelHtml: '', panelLoading: false, returnFocus: null,
+            menuId: null, copiedId: null, announce: '',
+            previewIdx: null,
+            dropActive: false,
+
+            init() {
+                this.$watch('view', v => store('media-view', v));
+                if (cfg.openPanelId) this.openPanel(cfg.openPanelId);
+            },
+
+            // Zaznaczanie
+            toggle(id) { const i = this.selected.indexOf(id); i === -1 ? this.selected.push(id) : this.selected.splice(i, 1); },
+            isSelected(id) { return this.selected.includes(id); },
+            get allSelected() { return this.pageIds.length > 0 && this.pageIds.every(id => this.selected.includes(id)); },
+            toggleAll() { this.allSelected ? this.selected = this.selected.filter(id => ! this.pageIds.includes(id)) : this.pageIds.forEach(id => { if (! this.selected.includes(id)) this.selected.push(id); }); },
+
+            // Szuflada szczegółów
+            async openPanel(id) {
+                this.returnFocus = document.activeElement;
+                this.panelId = id; this.panelLoading = true; this.panelHtml = '';
+                try {
+                    const r = await fetch(cfg.panelUrl.replace('__ID__', id), { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    this.panelHtml = r.ok ? await r.text() : '<p class="text-sm text-ink">Nie udało się wczytać szczegółów pliku.</p>';
+                } catch (e) { this.panelHtml = '<p class="text-sm text-ink">Brak połączenia — spróbuj ponownie.</p>'; }
+                this.panelLoading = false;
+                this.$nextTick(() => this.$refs.panelHeading?.focus());
+            },
+            closePanel() { this.panelId = null; this.panelHtml = ''; this.$nextTick(() => this.returnFocus?.focus?.()); },
+
+            // Menu akcji kafla
+            toggleMenu(id) { this.menuId = this.menuId === id ? null : id; },
+            async copyUrl(id, url) {
+                try {
+                    await navigator.clipboard.writeText(url);
+                    this.copiedId = id; this.announce = 'Skopiowano adres pliku.';
+                    setTimeout(() => { if (this.copiedId === id) this.copiedId = null; }, 2000);
+                } catch (e) { this.announce = 'Nie udało się skopiować adresu.'; }
+            },
+
+            // Podgląd z przewijaniem
+            get previewItem() { return this.previewIdx === null ? null : (this.items[this.previewIdx] || null); },
+            openPreview(id) {
+                const idx = this.items.findIndex(i => i.id === id);
+                if (idx === -1) return;
+                this.returnFocus = document.activeElement;
+                this.menuId = null;
+                this.previewIdx = idx;
+                this.$nextTick(() => document.getElementById('media-preview-title')?.focus());
+            },
+            closePreview(restoreFocus = true) {
+                this.previewIdx = null;
+                if (restoreFocus) this.$nextTick(() => this.returnFocus?.focus?.());
+            },
+            step(delta) {
+                const n = this.items.length;
+                if (! n || this.previewIdx === null) return;
+                this.previewIdx = (this.previewIdx + delta + n) % n;
+                this.announce = 'Plik ' + (this.previewIdx + 1) + ' z ' + n + ': ' + this.items[this.previewIdx].name;
+            },
+            previewKey(event, delta) {
+                if (['VIDEO', 'AUDIO', 'INPUT', 'SELECT', 'TEXTAREA', 'IFRAME'].includes(event.target.tagName)) return;
+                event.preventDefault();
+                this.step(delta);
+            },
+            detailsFromPreview() {
+                const id = this.previewItem?.id, back = this.returnFocus;
+                this.closePreview(false);
+                back?.focus?.();
+                if (id) this.openPanel(id);
+            },
+            editFromPreview() {
+                const edit = this.previewItem?.edit, back = this.returnFocus;
+                this.closePreview(false);
+                back?.focus?.();
+                if (edit) window.dispatchEvent(new CustomEvent('media-edit', { detail: edit }));
+            },
+            trapIn(event, el) {
+                const f = [...el.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select,textarea,video,audio,iframe,[tabindex]:not([tabindex="-1"])')].filter(e => e.offsetParent !== null);
+                if (! f.length) return;
+                if (event.shiftKey && document.activeElement === f[0]) { event.preventDefault(); f[f.length - 1].focus(); }
+                else if (! event.shiftKey && document.activeElement === f[f.length - 1]) { event.preventDefault(); f[0].focus(); }
+            },
+
+            // Rozmiar miniatur
+            get gridStyle() { return 'grid-template-columns: repeat(auto-fill, minmax(min(' + this.zoomSizes[this.zoom] + 'rem, 100%), 1fr))'; },
+            zoomBy(delta) {
+                this.zoom = Math.min(this.zoomSizes.length - 1, Math.max(0, this.zoom + delta));
+                store('media-zoom', this.zoom);
+            },
+
+            // Upuszczanie plików na listę → panel wgrywania (z polami autora i opisu alternatywnego)
+            hasFiles(event) { return !! event.dataTransfer && [...(event.dataTransfer.types || [])].includes('Files'); },
+            inUpload(event) { return !! event.target?.closest?.('#upload-panel'); },
+            onDragOver(event) {
+                if (! cfg.canUpload || ! this.hasFiles(event)) return;
+                if (this.inUpload(event) && this.uploadOpen) { this.dropActive = false; return; }
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'copy';
+                this.dropActive = true;
+            },
+            onDragLeave(event, el) { if (! el.contains(event.relatedTarget)) this.dropActive = false; },
+            onDropFiles(event) {
+                this.dropActive = false;
+                if (! cfg.canUpload || ! this.hasFiles(event) || (this.inUpload(event) && this.uploadOpen)) return;
+                event.preventDefault();
+                const files = event.dataTransfer.files;
+                if (! files.length) return;
+                this.uploadOpen = true;
+                this.$nextTick(() => {
+                    window.dispatchEvent(new CustomEvent('media-files-dropped', { detail: { files } }));
+                    document.getElementById('upload-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    this.announce = 'Dodano pliki do wgrania: ' + files.length + '. Uzupełnij opisy i wyślij przyciskiem w panelu wgrywania.';
+                });
+            },
+
+            // Esc: najpierw podgląd, potem menu akcji, na końcu szuflada (edytor obrazu obsługuje Esc sam)
+            onEscape() {
+                if (this.previewIdx !== null) return this.closePreview();
+                if (this.menuId !== null) {
+                    const id = this.menuId;
+                    this.menuId = null;
+                    document.getElementById('menu-btn-' + id)?.focus();
+                    return;
+                }
+                if (this.panelId) this.closePanel();
+            },
+        }));
+    });
+</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
     integrity="sha512-UtLOu9C7NuThQhuXXrGwx9Jb/z9zPQJcM85ND7HF1GGZc0H4eiL4o91A/GBUDqmAzgme6oAnq35AggAVb9fA==" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"

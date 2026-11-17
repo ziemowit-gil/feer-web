@@ -44,6 +44,15 @@ class Media extends BaseMedia
         return str_starts_with((string) $this->mime_type, 'image/');
     }
 
+    /** Obrazy, które edytor obrazu w bibliotece umie zapisać (kadr, obrót, rozmiar) bez utraty formatu. */
+    public const EDITABLE_IMAGES = ['image/jpeg', 'image/png', 'image/webp'];
+
+    /** Czy obraz da się edytować w bibliotece (JPG, PNG, WEBP — bez SVG i animowanych GIF-ów). */
+    public function isEditableImage(): bool
+    {
+        return in_array($this->mime_type, self::EDITABLE_IMAGES, true);
+    }
+
     public function isCheckableDocument(): bool
     {
         return in_array($this->mime_type, self::CHECKABLE_DOCUMENTS, true);

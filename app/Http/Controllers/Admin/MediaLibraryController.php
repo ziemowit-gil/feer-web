@@ -71,6 +71,16 @@ class MediaLibraryController extends Controller
     /** Rodzaje plików w filtrze (klucz → etykieta). */
     public const KINDS = ['image' => 'Obrazy', 'document' => 'Dokumenty', 'other' => 'Inne'];
 
+    /** Sortowanie listy plików (klucz w adresie → etykieta); wybór zapamiętany w sesji jak w Joomli. */
+    public const SORTS = [
+        'najnowsze' => 'Najnowsze',
+        'najstarsze' => 'Najstarsze',
+        'nazwa' => 'Nazwa A–Ż',
+        'nazwa-malejaco' => 'Nazwa Ż–A',
+        'najwieksze' => 'Największe',
+        'najmniejsze' => 'Najmniejsze',
+    ];
+
     /** Wyświetla bibliotekę multimediów z filtrowaniem, tagami i drzewem folderów. */
     public function index(Request $request)
     {
@@ -92,6 +102,14 @@ class MediaLibraryController extends Controller
         $kind = array_key_exists((string) $request->input('kind'), self::KINDS) ? $request->input('kind') : null;
 
         $usage = app(MediaUsage::class)->counts();
+
+        // Sortowanie: z adresu (i zapamiętane w sesji), inaczej ostatni wybór, domyślnie najnowsze.
+        if (array_key_exists((string) $request->input('sort'), self::SORTS)) {
+            $sort = $request->input('sort');
+            $request->session()->put('media_sort', $sort);
+        } else {
+            $sort = array_key_exists((string) $request->session()->get('media_sort'), self::SORTS) ? $request->session()->get('media_sort') : 'najnowsze';
+        }
 
         $media = $this->visibleMedia()
             ->with(['uploadedBy:id,name'])
@@ -135,7 +153,7 @@ class MediaLibraryController extends Controller
                       ->orWhereHas('uploadedBy', fn ($u) => $u->where('name', 'like', $like));
                 });
             })
-            ->latest()
+            ->tap(fn ($query) => $this->applySort($query, $sort))
             ->paginate(40)
             ->withQueryString()
             ->through(function (Media $media) use ($usage) {
@@ -170,6 +188,7 @@ class MediaLibraryController extends Controller
                     'usage' => (int) ($usage[$media->id] ?? 0),
                     'versions' => (int) $media->versions_count,
                     'a11y' => $media->isCheckableDocument() ? ($media->a11y_report['status'] ?? 'unchecked') : null,
+                    'edit' => $media->archived_at === null ? $this->editorPayload($media) : null,
                 ];
             });
 
@@ -185,6 +204,8 @@ class MediaLibraryController extends Controller
 
         $folderIds = MediaFolder::accessibleIdsFor(auth()->user());
         $quotaMb = (int) config('media-library.quota_mb', 0);
+        $folderTree = $this->folderTree();
+        $isFiltered = (bool) ($search || $tag || $kind || $authorSearch || $dateFrom || $dateTo);
 
         return view('admin.media.index', [
             'media' => $media,
@@ -192,7 +213,9 @@ class MediaLibraryController extends Controller
             'showArchived' => $showArchived,
             'breadcrumbs' => $folder ? $folder->path() : [],
             'allFolders' => MediaFolder::orderBy('name')->get()->when($folderIds !== null, fn ($c) => $c->whereIn('id', $folderIds))->values(),
-            'folderTree' => $this->folderTree(),
+            'folderTree' => $folderTree,
+            // Podfoldery bieżącego folderu jako kafle nad plikami (jak w menedżerze mediów Joomli) — tylko na 1. stronie i bez filtrów.
+            'subfolders' => $isFiltered || $media->currentPage() > 1 ? collect() : $folderTree->get($folder?->id ?? '', collect()),
             'allTags' => $allTags,
             'currentSearch' => $search,
             'currentTag' => $tag,
@@ -201,11 +224,52 @@ class MediaLibraryController extends Controller
             'currentDateTo' => $dateTo,
             'currentAuthor' => $authorSearch,
             'withArchived' => $withArchived,
-            'isFiltered' => (bool) ($search || $tag || $kind || $authorSearch || $dateFrom || $dateTo),
+            'isFiltered' => $isFiltered,
+            'currentSort' => $sort,
             'storageUsed' => MediaCleanup::quickTotal(),
             'storageQuota' => $quotaMb > 0 ? $quotaMb * 1024 * 1024 : null,
             'userGroups' => auth()->user()->isAdmin() ? \App\Models\UserGroup::orderBy('name')->get(['id', 'name']) : collect(),
         ]);
+    }
+
+    /**
+     * Kolejność plików na liście. Nazwa to nazwa wyświetlana (po zmianie nazwy w bibliotece),
+     * a gdy jej nie ma — nazwa pliku; przy remisie decyduje id, żeby stronicowanie było stabilne.
+     */
+    private function applySort(\Illuminate\Database\Eloquent\Builder $query, string $sort): void
+    {
+        $displayName = $query->getQuery()->getGrammar()->wrap('custom_properties->display_name');
+        $name = "LOWER(COALESCE(NULLIF({$displayName}, ''), file_name))";
+
+        match ($sort) {
+            'najstarsze' => $query->orderBy('created_at')->orderBy('id'),
+            'nazwa' => $query->orderByRaw("{$name} asc")->orderBy('id'),
+            'nazwa-malejaco' => $query->orderByRaw("{$name} desc")->orderByDesc('id'),
+            'najwieksze' => $query->orderByDesc('size')->orderByDesc('id'),
+            'najmniejsze' => $query->orderBy('size')->orderBy('id'),
+            default => $query->orderByDesc('created_at')->orderByDesc('id'),
+        };
+    }
+
+    /**
+     * Dane dla edytora obrazu (kadr, obrót, rozmiar): źródło z panelu (ta sama domena, więc canvas
+     * da się zapisać), adres zapisu i prawdziwa nazwa pliku (rozszerzenie musi się zgadzać przy nowej wersji).
+     * Null, gdy pliku nie da się edytować (SVG, GIF, dokumenty).
+     */
+    protected function editorPayload(Media $media): ?array
+    {
+        if (! $media->isEditableImage()) {
+            return null;
+        }
+
+        return [
+            'id' => $media->id,
+            'name' => $media->getCustomProperty('display_name') ?: $media->file_name,
+            'fileName' => $media->file_name,
+            'mime' => $media->mime_type,
+            'src' => route('admin.multimedia.source', ['media' => $media, 'v' => $media->updated_at?->getTimestamp()]),
+            'saveUrl' => route('admin.multimedia.edit-image', $media),
+        ];
     }
 
     /** Zapisuje tagi pliku (zastępuje dotychczasową listę). */

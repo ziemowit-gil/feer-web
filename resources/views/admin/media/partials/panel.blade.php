@@ -54,6 +54,12 @@
                 <i class="fa-solid" :class="done ? 'fa-check' : 'fa-link'" aria-hidden="true"></i>
                 <span x-text="done ? 'Skopiowano adres' : 'Kopiuj adres'">Kopiuj adres</span>
             </button>
+            @if ($edit ?? null)
+                <button type="button" class="{{ $btn }} bg-white text-ink hover:bg-brand-light" aria-haspopup="dialog"
+                    @click="$dispatch('media-edit', @js($edit))">
+                    <i class="fa-solid fa-crop-simple" aria-hidden="true"></i> Edytuj obraz
+                </button>
+            @endif
         </div>
         <p class="sr-only" aria-live="polite"></p>
     </div>

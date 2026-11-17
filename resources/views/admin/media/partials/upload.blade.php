@@ -19,10 +19,14 @@
                 alt: f.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ')
             }));
         },
+        takeFiles(list) {
+            if (! list || ! list.length) return;
+            try { this.$refs.input.files = list; } catch (e) {}
+            this.setFiles(list);
+        },
         onDrop(event) {
             this.drag = false;
-            this.$refs.input.files = event.dataTransfer.files;
-            this.setFiles(event.dataTransfer.files);
+            this.takeFiles(event.dataTransfer.files);
         },
         clear() { this.$refs.input.value = ''; this.files = []; this.meta = []; this.croppedFiles = {}; },
         isImage(f) { return f.type.startsWith('image/'); },
@@ -63,6 +67,8 @@
         }
     }"
     @dragover.prevent="drag = true" @dragleave.prevent="drag = false" @drop.prevent="onDrop($event)"
+    {{-- Pliki upuszczone gdziekolwiek na liście (index: onDropFiles) trafiają tutaj, z polami autora i opisu. --}}
+    @media-files-dropped.window="takeFiles($event.detail.files)"
     @submit.prevent="prepareAndSubmit($el)"
     class="rounded-md bg-white p-4">
     @csrf

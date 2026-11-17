@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Media;
 use App\Models\MediaFolder;
+use App\Models\MediaLibrary;
 use App\Models\MediaVersion;
 use App\Models\UserGroup;
 use App\Services\Media\DocumentA11yChecker;
@@ -18,7 +19,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * podmiana z zachowaniem adresu, audyt dostępności dokumentów, porządki
  * (duplikaty, nieużywane, za duże obrazy, miejsce) i uprawnienia folderów.
  *
- * Metody: panel(), replace(), versionDownload(), versionRestore(), recheck(),
+ * Metody: panel(), source(), editImage(), replace(), versionDownload(), versionRestore(), recheck(),
  *         documents(), cleanup(), folderPermissions().
  */
 class MediaToolsController extends MediaLibraryController
@@ -42,7 +43,112 @@ class MediaToolsController extends MediaLibraryController
             'owner' => $this->describeOwner($media, $model),
             'alt' => $this->describeAlt($media, $model),
             'allFolders' => MediaFolder::orderBy('name')->get()->when($folderIds !== null, fn ($c) => $c->whereIn('id', $folderIds))->values(),
+            'edit' => $media->archived_at === null ? $this->editorPayload($media) : null,
         ]);
+    }
+
+    /**
+     * Oryginał obrazu dla edytora — z panelu, więc zawsze z tej samej domeny co edytor
+     * (obraz z innej domeny „brudzi” canvas i przeglądarka nie pozwoliłaby go zapisać).
+     */
+    public function source(Media $media)
+    {
+        $this->authorizeMedia($media);
+        abort_unless($media->isEditableImage() && is_file($media->getPath()), 404);
+
+        return response()->file($media->getPath(), [
+            'Content-Type' => $media->mime_type,
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
+    /**
+     * Zapis z edytora obrazu (kadr, obrót, odbicie, zmiana rozmiaru — liczone w przeglądarce).
+     * mode=version: nowa wersja pod tym samym adresem (poprzednia zostaje w historii wersji, można ją przywrócić);
+     * mode=copy: nowy plik w tym samym folderze, z opisem alternatywnym, autorem i tagami oryginału.
+     */
+    public function editImage(Request $request, Media $media, MediaReplacer $replacer, MediaUsage $usage)
+    {
+        $this->authorizeMedia($media);
+
+        // Panel nie renderuje błędów walidacji jako JSON (bootstrap/app.php: tylko api/* i mcp/*),
+        // a edytor wysyła fetch — więc dla niego oddajemy 422 z komunikatem zamiast przekierowania.
+        try {
+            return $this->saveEditedImage($request, $media, $replacer, $usage);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (! $request->expectsJson()) {
+                throw $e;
+            }
+
+            return response()->json(['message' => collect($e->errors())->flatten()->first(), 'errors' => $e->errors()], 422);
+        }
+    }
+
+    private function saveEditedImage(Request $request, Media $media, MediaReplacer $replacer, MediaUsage $usage)
+    {
+        if (! $media->isEditableImage() || $media->archived_at !== null) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'file' => 'Ten plik nie jest edytowalnym obrazem (JPG, PNG lub WEBP poza archiwum).',
+            ]);
+        }
+
+        $request->validate([
+            'file' => ['required', 'file', 'max:20480', 'mimetypes:'.implode(',', Media::EDITABLE_IMAGES), 'dimensions:max_width=8000,max_height=8000'],
+            'mode' => ['required', 'in:version,copy'],
+            'note' => ['nullable', 'string', 'max:500'],
+        ], [], ['file' => 'obraz po edycji', 'mode' => 'sposób zapisu', 'note' => 'opis zmiany']);
+
+        $file = $request->file('file');
+        $incoming = $file->getMimeType();
+        if ($incoming !== $media->mime_type) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'file' => 'Obraz po edycji ma inny format niż oryginał — zapisz go jako '.strtoupper(pathinfo($media->file_name, PATHINFO_EXTENSION)).' (ta przeglądarka mogła nie obsłużyć formatu).',
+            ]);
+        }
+
+        $note = trim((string) $request->input('note')) ?: 'Edycja obrazu w bibliotece';
+
+        if ($request->input('mode') === 'version') {
+            $replacer->replace($media, $file, auth()->id(), $note);
+            $targetId = $media->id;
+            $message = 'Obraz zapisany jako nowa wersja — adres się nie zmienił, poprzednia wersja jest w historii.';
+        } else {
+            $base = pathinfo($media->file_name, PATHINFO_FILENAME);
+            $ext = strtolower(pathinfo($media->file_name, PATHINFO_EXTENSION));
+
+            /** @var Media $copy */
+            $copy = MediaLibrary::instance()->addMedia($file)
+                ->usingName($base.'-edycja')
+                ->usingFileName(\Illuminate\Support\Str::limit($base, 180, '').'-edycja.'.$ext)
+                ->toMediaCollection('files');
+
+            foreach (['alt', 'author', 'tags'] as $key) {
+                if (filled($media->getCustomProperty($key))) {
+                    $copy->setCustomProperty($key, $media->getCustomProperty($key));
+                }
+            }
+            if (filled($media->getCustomProperty('display_name'))) {
+                $copy->setCustomProperty('display_name', $media->getCustomProperty('display_name').' (edycja)');
+            }
+            $copy->uploaded_by_user_id = auth()->id();
+            $copy->media_folder_id = $media->media_folder_id;
+            $copy->save();
+
+            $targetId = $copy->id;
+            $message = 'Zapisano kopię obrazu po edycji — oryginał został bez zmian.';
+        }
+
+        $usage->forget();
+        $redirect = route('admin.multimedia.index', array_filter(['folder' => $media->media_folder_id]));
+
+        if ($request->expectsJson()) {
+            session()->flash('status', $message);
+            session()->flash('media_panel', $targetId);
+
+            return response()->json(['message' => $message, 'redirect' => $redirect, 'id' => $targetId]);
+        }
+
+        return redirect($redirect)->with('status', $message)->with('media_panel', $targetId);
     }
 
     /** Podmienia plik na nową wersję pod tym samym adresem. */
