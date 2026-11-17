@@ -194,6 +194,9 @@ class PageController extends Controller
             // Linki tej strony: własne sprawdzenie z karty albo jej pozycje z ostatniego skanu całej witryny.
             'linkCheck' => $selected ? \App\Support\PageLinkCheck::last($selected) : null,
             'selectedReviewDue' => $selected && \App\Support\ContentReview::pageDue($selected),
+            // Wersja robocza zmian (Workspaces) — ramka w karcie z podglądem, publikacją / zgłoszeniem i odrzuceniem.
+            'selectedDraft' => $selected && \Illuminate\Support\Facades\Schema::hasTable('page_drafts')
+                ? $selected->draft()->with(['user', 'submittedBy'])->first() : null,
             'personsCount' => $selected && $selected->isAbout()
                 ? Page::where('type', 'about_person')->where('parent_id', $selected->id)->count()
                 : 0,

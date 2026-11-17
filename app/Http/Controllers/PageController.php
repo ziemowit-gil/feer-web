@@ -28,6 +28,10 @@ class PageController extends Controller
         $preview = $this->isPreviewRequest($request);
         $isLive = $page->is_published && ($page->publish_at === null || $page->publish_at->isPast());
         abort_unless($isLive || $preview, 404);
+        // Podgląd wersji roboczej (Workspaces): treść, tytuł i opis z kopii, tylko w pamięci — strona się nie zmienia.
+        if ($preview && $request->boolean('robocza') && \Illuminate\Support\Facades\Schema::hasTable('page_drafts') && ($draft = $page->draft)) {
+            $page->forceFill(['title' => $draft->title, 'meta_description' => $draft->meta_description, 'content' => $draft->renderedContent()]);
+        }
         // Źródło domyślne listy podstron ([podstrony]) w treści tej strony.
         \App\Support\SubpageList::setContextPage($page);
 

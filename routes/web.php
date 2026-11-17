@@ -421,6 +421,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('podstrony/{page}/blok/{index}/udostepnij', [\App\Http\Controllers\Admin\PageBlocksController::class, 'share'])->whereNumber('index')->name('podstrony.blok.udostepnij');
         Route::post('podstrony/{page}/blok/{index}/odlacz', [\App\Http\Controllers\Admin\PageBlocksController::class, 'detach'])->whereNumber('index')->name('podstrony.blok.odlacz');
         Route::post('podstrony/{page}/blok-wspolny', [\App\Http\Controllers\Admin\PageBlocksController::class, 'insertShared'])->name('podstrony.blok-wspolny.wstaw');
+        // Wersja robocza opublikowanej strony (Workspaces): publikacja, zgłoszenie do akceptacji, odrzucenie.
+        Route::post('podstrony/{page}/robocza/opublikuj', [\App\Http\Controllers\Admin\PageDraftController::class, 'publish'])->name('podstrony.robocza.opublikuj');
+        Route::post('podstrony/{page}/robocza/zglos', [\App\Http\Controllers\Admin\PageDraftController::class, 'submit'])->name('podstrony.robocza.zglos');
+        Route::delete('podstrony/{page}/robocza', [\App\Http\Controllers\Admin\PageDraftController::class, 'discard'])->name('podstrony.robocza.odrzuc');
         Route::put('podstrony/{page}/blok-wspolny/{block}', [\App\Http\Controllers\Admin\PageBlocksController::class, 'updateShared'])->whereNumber('block')->name('podstrony.blok-wspolny.zapisz');
         Route::post('podstrony/{page}/ustawienia-na-podstrony', [AdminPageController::class, 'copySettingsToChildren'])->name('podstrony.ustawienia-na-podstrony');
         Route::post('podstrony/{page}/styl-menu-na-podstrony', [AdminPageController::class, 'copyNavStyleToChildren'])->name('podstrony.styl-na-podstrony');

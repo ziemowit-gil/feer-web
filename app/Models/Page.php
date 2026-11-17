@@ -44,6 +44,18 @@ class Page extends Model
         return (bool) $this->is_published && ! $this->trashed();
     }
 
+    /** Wersja robocza zmian tej (opublikowanej) strony — Workspaces w TYPO3. */
+    public function draft(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(PageDraft::class);
+    }
+
+    /** Podpisany link do podglądu wersji roboczej na publicznym adresie strony (?robocza=1). */
+    public function draftPreviewUrl(int $days = 14): string
+    {
+        return $this->siteAwareRoute($this->previewRouteName(), [$this->previewRouteParam() => $this->slug, 'preview' => 1, 'robocza' => 1], now()->addDays($days));
+    }
+
     public function revisionFields(): array
     {
         return ['title', 'slug', 'content', 'meta_title', 'meta_description'];

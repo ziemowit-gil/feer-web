@@ -312,8 +312,13 @@ class BlockEditorController extends Controller
         abort_unless(SiteSetting::current()->isModuleEnabled('block_editor'), 404); // wyłączony w Ustawienia → Moduły
         $target = $this->authorizeRecord($type, $record);
 
+        // Wersja robocza (Workspaces): ?robocza=1 na stronie — edytor otwiera kopię zmian (albo tworzy ją z bieżącej treści)
+        // i zapisuje do niej, a strona publiczna zostaje bez zmian. Bez panelu ustawień i pól typu (te zmienia się na żywo).
+        $draftMode = $record instanceof Page && request()->boolean('robocza') && \Illuminate\Support\Facades\Schema::hasTable('page_drafts');
+        $draft = $draftMode ? $record->draft : null;
+
         // Treść bez bloków (np. edytowana dotąd klasycznie) startuje z jednym blokiem HTML.
-        $blocks = $record->blocks;
+        $blocks = $draft ? $draft->blocks : $record->blocks;
         $imported = false;
         if (! is_array($blocks)) {
             $blocks = filled($record->content) ? [['type' => 'html', 'attrs' => ['html' => (string) $record->content]]] : [];
@@ -321,14 +326,16 @@ class BlockEditorController extends Controller
         }
 
         $updateUrl = $type === 'page'
-            ? route('admin.podstrony.bloki.update', $record)
+            ? route('admin.podstrony.bloki.update', $record).($draftMode ? '?robocza=1' : '')
             : route('admin.edytor-blokowy.update', [$type, $record->id]);
 
         // Pola typu strony (wydarzenie, harmonogram, nabór…) — okno „Pola typu strony”, zapis razem z blokami.
-        $typeFieldsHtml = $record instanceof Page ? PageTypeFields::render($record) : null;
+        $typeFieldsHtml = $record instanceof Page && ! $draftMode ? PageTypeFields::render($record) : null;
 
         return view('admin.pages.block-editor', [
             'typeFieldsHtml' => $typeFieldsHtml,
+            'draftMode' => $draftMode,
+            'draftPage' => $draftMode ? $record : null,
             'editorConfig' => [
                 'target' => ['type' => $type, 'id' => $record->id],
                 'labels' => $typeFieldsHtml !== null
@@ -336,8 +343,8 @@ class BlockEditorController extends Controller
                     : $target['labels'],
                 'page' => [
                     'id' => $record->id,
-                    'title' => $record->title,
-                    'meta_description' => (string) $record->meta_description,
+                    'title' => $draft ? $draft->title : $record->title,
+                    'meta_description' => (string) ($draft ? $draft->meta_description : $record->meta_description),
                     'type' => $this->typeLabel($type, $record),
                     'is_published' => (bool) $record->is_published,
                 ],
@@ -354,7 +361,7 @@ class BlockEditorController extends Controller
                 // Kafelki strony (pole „Kafelki na stronie" i nawigacja kafelkowa podstron) — podgląd nad/pod treścią, jak na stronie.
                 'pageTiles' => $record instanceof Page ? $this->pageTiles($record) : null,
                 // Publikacja, wersja robocza, kosz i miejsce w serwisie — jak w panelu bocznym formularza.
-                'settings' => $this->settingsConfig($type, $record),
+                'settings' => $draftMode ? null : $this->settingsConfig($type, $record),
                 // Elementy z menu „Wstaw" klasycznego edytora (moduły, wstawki HTML, wydarzenia).
                 'classic' => ClassicInserts::forBlockEditor(),
                 // Blok „Lista aktualności": kategorie do wyboru.
@@ -405,6 +412,19 @@ class BlockEditorController extends Controller
         ]);
 
         $blocks = BlockRenderer::normalize($data['blocks']);
+
+        // Zapis do wersji roboczej (Workspaces) — strona publiczna bez zmian; publikacja z karty strony.
+        if ($record instanceof Page && $request->boolean('robocza') && \Illuminate\Support\Facades\Schema::hasTable('page_drafts')) {
+            \App\Models\PageDraft::updateOrCreate(['page_id' => $record->id], [
+                'user_id' => $request->user()->id,
+                'title' => $data['title'],
+                'meta_description' => $data['meta_description'] ?? null,
+                'blocks' => $blocks,
+            ]);
+
+            return response()->json(['ok' => true, 'blocks' => $blocks, 'saved_at' => now()->format('H:i'), 'settings' => null]);
+        }
+
         $typeColumns = $this->typeColumns($request, $record);
         $settings = $this->settingsColumns($request, $record);
 

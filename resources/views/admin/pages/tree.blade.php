@@ -444,6 +444,35 @@
                         </div>
                     @endif
 
+                    {{-- Wersja robocza zmian (Workspaces w TYPO3): kopia w edytorze blokowym, publiczna strona bez zmian do publikacji. --}}
+                    @if ($selectedDraft)
+                        <div id="wersja-robocza" class="mt-3 scroll-mt-24 rounded-md bg-amber-50 px-3 py-2 text-xs text-ink" role="status">
+                            <p><i class="fa-solid fa-code-branch mr-1 text-amber-800" aria-hidden="true"></i>
+                                <strong>Wersja robocza zmian</strong> z {{ $selectedDraft->updated_at->format('d.m.Y H:i') }}@if ($selectedDraft->user) ({{ $selectedDraft->user->name }})@endif — odwiedzający widzą poprzednią wersję.
+                                @if ($selectedDraft->submitted_at)<br><i class="fa-solid fa-hourglass-half mr-1 text-amber-800" aria-hidden="true"></i>Zgłoszona do akceptacji {{ $selectedDraft->submitted_at->format('d.m.Y H:i') }}@if ($selectedDraft->submittedBy) przez {{ $selectedDraft->submittedBy->name }}@endif.@endif
+                                @unless ($selectedDraft->differsFromPage())<br>Na razie nie różni się od opublikowanej strony.@endunless
+                            </p>
+                            <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                                <a href="{{ $selected->draftPreviewUrl() }}" target="_blank" rel="noopener" class="{{ $ghost }}"><i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd zmian<span class="sr-only"> (nowa karta)</span></a>
+                                @if ($canEditSelected)
+                                    <a href="{{ route('admin.podstrony.bloki.edit', [$selected, 'robocza' => 1]) }}" class="{{ $ghost }}"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj wersję roboczą</a>
+                                    @if (auth()->user()->canApproveContent())
+                                        <form method="POST" action="{{ route('admin.podstrony.robocza.opublikuj', $selected) }}" data-confirm="Opublikować zmiany z wersji roboczej? Odwiedzający od razu zobaczą nową treść; poprzednia zostanie w historii.">
+                                            @csrf <button type="submit" class="{{ $ghost }}"><i class="fa-solid fa-upload" aria-hidden="true"></i> Opublikuj zmiany</button>
+                                        </form>
+                                    @elseif (! $selectedDraft->submitted_at)
+                                        <form method="POST" action="{{ route('admin.podstrony.robocza.zglos', $selected) }}">
+                                            @csrf <button type="submit" class="{{ $ghost }}"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Wyślij do akceptacji</button>
+                                        </form>
+                                    @endif
+                                    <form method="POST" action="{{ route('admin.podstrony.robocza.odrzuc', $selected) }}" data-confirm="Odrzucić wersję roboczą? Przygotowane zmiany przepadną, strona zostanie bez zmian.">
+                                        @csrf @method('DELETE') <button type="submit" class="inline-flex min-h-9 items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"><i class="fa-solid fa-xmark" aria-hidden="true"></i> Odrzuć</button>
+                                    </form>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
                     @unless ($canEditSelected)
                         <p class="mt-3 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
                             <i class="fa-solid fa-user-lock mr-1" aria-hidden="true"></i> Strona jest zablokowana do edycji przez administratora.
@@ -665,7 +694,12 @@
                             <h3 id="tresc-strony-h" class="text-sm font-bold text-ink">Treść strony
                                 @if ($pageBlocks !== null)<span class="font-normal text-muted">({{ count($pageBlocks) }} {{ trans_choice('blok|bloki|bloków', count($pageBlocks)) }})</span>@endif</h3>
                             @if ($canEditSelected)
-                                <a href="{{ route('admin.podstrony.bloki.edit', $selected) }}" class="{{ $ghost }}"><i class="fa-solid fa-cubes" aria-hidden="true"></i> {{ $pageBlocks !== null ? 'Otwórz w edytorze blokowym' : 'Przełącz na edytor blokowy' }}</a>
+                                <div class="flex flex-wrap items-center gap-1">
+                                    @if ($selected->is_published && ! $selectedDraft && \Illuminate\Support\Facades\Schema::hasTable('page_drafts'))
+                                        <a href="{{ route('admin.podstrony.bloki.edit', [$selected, 'robocza' => 1]) }}" class="{{ $ghost }}" title="Zmiany przygotujesz po cichu i opublikujesz naraz (albo po akceptacji)"><i class="fa-solid fa-code-branch" aria-hidden="true"></i> Przygotuj zmiany w wersji roboczej</a>
+                                    @endif
+                                    <a href="{{ route('admin.podstrony.bloki.edit', $selected) }}" class="{{ $ghost }}"><i class="fa-solid fa-cubes" aria-hidden="true"></i> {{ $pageBlocks !== null ? 'Otwórz w edytorze blokowym' : 'Przełącz na edytor blokowy' }}</a>
+                                </div>
                             @endif
                         </div>
                         @if ($pageBlocks === null)

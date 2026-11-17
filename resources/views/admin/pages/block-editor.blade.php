@@ -41,6 +41,13 @@
     <noscript>
         <p class="be-noscript">Edytor blokowy wymaga JavaScriptu. <a href="{{ $editorConfig['urls']['admin'] }}">{{ $editorConfig['labels']['noscript'] }}</a>.</p>
     </noscript>
+    @if (! empty($draftMode))
+        {{-- Wersja robocza (Workspaces): wyraźny pasek nad edytorem, żeby nikt nie myślił, że zmienia stronę na żywo. --}}
+        <div role="status" style="display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;padding:.5rem 1rem;background:#fff7e6;border-bottom:2px solid #b45309;color:#1d1d1a;font:600 14px/1.4 system-ui,sans-serif">
+            <span>Edytujesz <strong>wersję roboczą</strong> strony „{{ $draftPage->title }}”. Odwiedzający widzą poprzednią wersję, dopóki zmian nie opublikujesz.</span>
+            <a href="{{ route('admin.podstrony.index', ['wybrana' => $draftPage->id]) }}#wersja-robocza" style="color:#1d1d1a;text-decoration:underline">Opublikuj albo odrzuć w karcie strony</a>
+        </div>
+    @endif
     <div id="block-editor" data-config='@json($editorConfig, JSON_HEX_APOS | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT)'></div>
     @if (! empty($typeFieldsHtml))
         @include('admin.pages.partials.block-editor-type-fields', ['typeName' => $editorConfig['typeFields']['name']])
