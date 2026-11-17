@@ -50,7 +50,7 @@
             {{-- Strony i nawigacja: strony dodaje się do menu z panelu strony; tu zostaje reszta menu. --}}
             <p class="mb-3 rounded-md bg-white px-3 py-2 text-sm text-ink" data-nav-pages-hint>
                 <i class="fa-solid fa-sitemap mr-1 text-brand-dark" aria-hidden="true"></i>
-                Strony dodajesz do menu w <a href="{{ route('admin.podstrony.index') }}" class="font-bold text-brand-dark underline">Strony</a> (wybrana strona → „W menu nawigacji”).
+                Strony dodajesz do menu w <a href="{{ route('admin.podstrony.index') }}" class="font-bold text-brand-dark underline">Strony</a> (wybrana strona → „Pozycja w menu”).
                 Tutaj ustawiasz kolejność oraz linki zewnętrzne, nagłówki, menu rozwijane i mega-menu.
             </p>
         @endif

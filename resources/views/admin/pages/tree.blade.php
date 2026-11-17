@@ -9,6 +9,8 @@
         $btn = 'inline-flex min-h-9 items-center gap-1.5 rounded border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
         $tool = 'inline-flex items-center rounded-lg border border-gray-300 bg-white text-xs font-bold text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
         $toolStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem';
+        // Akcje strony w karcie: lekkie przyciski bez obrysu (tło dopiero po najechaniu), żeby karta nie była ścianą ramek.
+        $ghost = 'inline-flex min-h-9 items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-bold text-ink hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
         $seg = 'inline-flex items-center text-xs font-bold text-ink hover:bg-gray-50 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-dark';
         $segStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem;background:transparent';
     @endphp
@@ -386,8 +388,8 @@
 
                     {{-- Najważniejsze: adres, menu, ostatnia zmiana; reszta (położenie, nawigacja, publikacja) w „Więcej o stronie”. --}}
                     <dl class="mt-4 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Adres</dt><dd class="mt-0.5 break-all font-mono text-xs">/{{ $selected->slug }}</dd></div>
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">W menu</dt><dd class="mt-0.5">
+                        <div><dt class="text-xs font-semibold text-muted">Adres</dt><dd class="mt-0.5 break-all font-mono text-xs">/{{ $selected->slug }}</dd></div>
+                        <div><dt class="text-xs font-semibold text-muted">W menu</dt><dd class="mt-0.5">
                             @if ($selectedMenu)
                                 {{ collect($selectedMenu)->map(fn ($p) => $p['location_label'].($p['parent'] ? ' › '.$p['parent'] : ''))->unique()->implode(', ') }}
                                 <a href="#menu-nawigacji" onclick="document.getElementById('menu-nawigacji').open = true" class="ml-1 text-xs font-bold text-brand-dark underline">zmień</a>
@@ -395,15 +397,15 @@
                                 Nie <a href="#menu-nawigacji" onclick="document.getElementById('menu-nawigacji').open = true" class="ml-1 text-xs font-bold text-brand-dark underline">dodaj</a>
                             @endif
                         </dd></div>
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Ostatnia zmiana</dt><dd class="mt-0.5">{{ $selected->updated_at?->format('d.m.Y H:i') ?? '—' }}</dd></div>
+                        <div><dt class="text-xs font-semibold text-muted">Ostatnia zmiana</dt><dd class="mt-0.5">{{ $selected->updated_at?->format('d.m.Y H:i') ?? '—' }}</dd></div>
                     </dl>
                     <details class="mt-3 text-sm" id="wiecej-o-stronie">
                         <summary class="inline-flex min-h-9 cursor-pointer items-center gap-1.5 text-xs font-bold text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i> Więcej o stronie</summary>
                         <dl class="mt-2 grid gap-x-6 gap-y-3 sm:grid-cols-2 xl:grid-cols-3">
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Strona nadrzędna</dt>
+                        <div><dt class="text-xs font-semibold text-muted">Strona nadrzędna</dt>
                             <dd class="mt-0.5">@if ($rootline->isNotEmpty())<a href="{{ route('admin.podstrony.index', ['wybrana' => $rootline->last()->id]) }}" class="text-brand-dark hover:underline">{{ $rootline->last()->title }}</a>@else<span class="text-muted">— strona najwyższego poziomu</span>@endif</dd></div>
                         <div>
-                            <dt class="text-xs font-bold uppercase tracking-wide text-muted">Pozycja</dt>
+                            <dt class="text-xs font-semibold text-muted">Pozycja</dt>
                             <dd class="mt-0.5 flex flex-wrap items-center gap-2">
                                 <span><span class="font-bold">{{ $position + 1 }}</span> z {{ $siblings->count() }}</span>
                                 <span class="text-xs text-muted">{{ $siblingsLabel }}</span>
@@ -412,46 +414,48 @@
                                 @endif
                             </dd>
                         </div>
-                        <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Nawigacja po podstronach</dt><dd class="mt-0.5">{{ $selected->show_side_nav ? (\App\Models\Page::SIDE_NAV_STYLES[$selected->side_nav_style] ?? 'Boczne drzewo') : 'Wyłączona' }}</dd></div>
+                        <div><dt class="text-xs font-semibold text-muted">Nawigacja po podstronach</dt><dd class="mt-0.5">{{ $selected->show_side_nav ? (\App\Models\Page::SIDE_NAV_STYLES[$selected->side_nav_style] ?? 'Boczne drzewo') : 'Wyłączona' }}</dd></div>
                         @if ($selected->publish_at && ! $selectedLive && $selected->is_published)
-                            <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Publikacja</dt><dd class="mt-0.5">{{ $selected->publish_at->format('d.m.Y H:i') }}</dd></div>
+                            <div><dt class="text-xs font-semibold text-muted">Publikacja</dt><dd class="mt-0.5">{{ $selected->publish_at->format('d.m.Y H:i') }}</dd></div>
                         @endif
                         @if ($personsCount)
-                            <div><dt class="text-xs font-bold uppercase tracking-wide text-muted">Osoby</dt><dd class="mt-0.5"><a href="{{ route('admin.osoby.index') }}" class="text-brand-dark hover:underline">{{ $personsCount }} {{ trans_choice('osoba|osoby|osób', $personsCount) }}</a></dd></div>
+                            <div><dt class="text-xs font-semibold text-muted">Osoby</dt><dd class="mt-0.5"><a href="{{ route('admin.osoby.index') }}" class="text-brand-dark hover:underline">{{ $personsCount }} {{ trans_choice('osoba|osoby|osób', $personsCount) }}</a></dd></div>
                         @endif
                         </dl>
                     </details>
+                    {{-- Menu nawigacji tej strony (Strony i nawigacja na jednym ekranie) --}}
+                    @include('admin.pages.partials.page-menu', ['page' => $selected, 'positions' => $selectedMenu, 'mainMenuParents' => $mainMenuParents, 'btn' => $btn])
 
                     {{-- Szybkie akcje --}}
                     @if ($canEditSelected)
-                        <div class="mt-5 flex flex-wrap gap-2 border-t border-gray-100 pt-4" role="group" aria-label="Szybkie akcje strony">
+                        <div class="mt-5 flex flex-wrap items-center gap-1 border-t border-gray-100 pt-3" role="group" aria-label="Szybkie akcje strony">
                             <form method="POST" action="{{ route('admin.podstrony.widocznosc', $selected) }}">
                                 @csrf @method('PATCH') <input type="hidden" name="wybrana" value="{{ $selected->id }}">
-                                <button type="submit" class="{{ $btn }}">
+                                <button type="submit" class="{{ $ghost }}">
                                     <i class="fa-solid {{ $selected->is_published ? 'fa-eye-slash' : 'fa-eye text-green-600' }}" aria-hidden="true"></i> {{ $selected->is_published ? 'Cofnij publikację' : 'Opublikuj' }}
                                 </button>
                             </form>
                             <form method="POST" action="{{ route('admin.podstrony.wylacz', $selected) }}">
                                 @csrf @method('PATCH') <input type="hidden" name="wybrana" value="{{ $selected->id }}">
-                                <button type="submit" class="{{ $btn }}">
+                                <button type="submit" class="{{ $ghost }}">
                                     <i class="fa-solid {{ $selected->is_disabled ? 'fa-power-off text-green-600' : 'fa-ban' }}" aria-hidden="true"></i> {{ $selected->is_disabled ? 'Włącz stronę' : 'Wyłącz stronę' }}
                                 </button>
                             </form>
                             <form method="POST" action="{{ route('admin.podstrony.wyroznienie', $selected) }}">
                                 @csrf @method('PATCH') <input type="hidden" name="wybrana" value="{{ $selected->id }}">
-                                <button type="submit" class="{{ $btn }}">
+                                <button type="submit" class="{{ $ghost }}">
                                     <i class="fa-{{ $selected->is_featured ? 'solid text-amber-500' : 'regular' }} fa-star" aria-hidden="true"></i> {{ $selected->is_featured ? 'Usuń wyróżnienie' : 'Wyróżnij' }}
                                 </button>
                             </form>
                             <form method="POST" action="{{ route('admin.podstrony.clone', $selected) }}" data-confirm="Zduplikować stronę „{{ $selected->title }}”? Kopia zostanie zapisana jako szkic.">
                                 @csrf
-                                <button type="submit" class="{{ $btn }}"><i class="fa-solid fa-clone" aria-hidden="true"></i> Klonuj</button>
+                                <button type="submit" class="{{ $ghost }}"><i class="fa-solid fa-clone" aria-hidden="true"></i> Klonuj</button>
                             </form>
                             {{-- Kopiuj do witryny: kopia trafia do wybranej witryny sieci jako szkic (bez strony nadrzędnej i powiązania z działaniem). --}}
-                            @include('admin.partials.copy-to-site', ['action' => route('admin.podstrony.copy-to-site', $selected), 'siteId' => $selected->site_id, 'label' => $selected->title, 'note' => 'Kopia będzie szkicem w wybranej witrynie. Załączniki i galeria nie są kopiowane.', 'variant' => 'button', 'buttonClass' => $btn])
+                            @include('admin.partials.copy-to-site', ['action' => route('admin.podstrony.copy-to-site', $selected), 'siteId' => $selected->site_id, 'label' => $selected->title, 'note' => 'Kopia będzie szkicem w wybranej witrynie. Załączniki i galeria nie są kopiowane.', 'variant' => 'button', 'buttonClass' => $ghost])
                             @if ($projectOptions->isNotEmpty() && ! $selected->is_system)
                                 <div class="relative" x-data="{ open: false }" @keydown.escape="open = false" @click.outside="open = false">
-                                    <button type="button" class="{{ $btn }}" @click="open = ! open" :aria-expanded="open.toString()" aria-controls="to-project-panel">
+                                    <button type="button" class="{{ $ghost }}" @click="open = ! open" :aria-expanded="open.toString()" aria-controls="to-project-panel">
                                         <i class="fa-solid fa-diagram-project" aria-hidden="true"></i> Przenieś do działania
                                     </button>
                                     <form id="to-project-panel" x-show="open" x-cloak method="POST" action="{{ route('admin.podstrony.do-projektu', $selected) }}"
@@ -487,9 +491,9 @@
                                 </div>
                             @endif
                             @unless ($selected->is_system)
-                                <form method="POST" action="{{ route('admin.podstrony.destroy', $selected) }}" data-confirm="Usunąć stronę „{{ $selected->title }}”? Trafi do kosza.">
+                                <form method="POST" action="{{ route('admin.podstrony.destroy', $selected) }}" style="margin-left:auto" data-confirm="Usunąć stronę „{{ $selected->title }}”? Trafi do kosza.">
                                     @csrf @method('DELETE') <input type="hidden" name="wybrana" value="{{ $selected->id }}">
-                                    <button type="submit" class="inline-flex min-h-9 items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 bg-red-50 hover:bg-red-100">
+                                    <button type="submit" class="inline-flex min-h-9 items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
                                         <i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń
                                     </button>
                                 </form>
@@ -498,9 +502,9 @@
 
                         {{-- Przeniesienie w drzewie: nowa strona nadrzędna i miejsce wśród jej podstron (kolejność wśród
                              obecnych sąsiadów zmieniają przyciski „Wyżej / Niżej” przy pozycji oraz przeciąganie w drzewie). --}}
-                        <details class="mt-4 rounded-lg bg-gray-50 p-3">
-                        <summary class="cursor-pointer text-xs font-bold uppercase tracking-wide text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Przenieś w drzewie</summary>
-                        <form method="POST" action="{{ route('admin.podstrony.przenies', $selected) }}" class="mt-2" aria-label="Przenieś w drzewie">
+                        <details class="mt-1 text-sm">
+                        <summary class="inline-flex min-h-9 cursor-pointer items-center gap-1.5 text-xs font-bold text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i> Przenieś w drzewie</summary>
+                        <form method="POST" action="{{ route('admin.podstrony.przenies', $selected) }}" class="mt-1 rounded-md bg-gray-50 p-3" aria-label="Przenieś w drzewie">
                             @csrf @method('PATCH')
                             <div class="mt-2 flex flex-wrap items-end gap-2">
                                 <div class="min-w-56 flex-1">
@@ -527,14 +531,11 @@
                     @endif
                 </div>
 
-                {{-- Menu nawigacji tej strony (Strony i nawigacja na jednym ekranie) --}}
-                @include('admin.pages.partials.page-menu', ['page' => $selected, 'positions' => $selectedMenu, 'mainMenuParents' => $mainMenuParents, 'btn' => $btn])
-
                 {{-- Podstrony --}}
                 <div>
                     <div class="mb-2 flex items-center justify-between">
-                        <h3 class="text-sm font-bold text-ink">Podstrony <span class="font-normal text-muted">({{ $children->count() }})</span></h3>
-                        <a href="{{ route('admin.podstrony.create', ['parent_id' => $selected->id]) }}" class="{{ $btn }}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj podstronę</a>
+                        <h3 class="text-base font-bold text-ink">Podstrony <span class="font-normal text-muted">({{ $children->count() }})</span></h3>
+                        <a href="{{ route('admin.podstrony.create', ['parent_id' => $selected->id]) }}" class="{{ $ghost }}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj podstronę</a>
                     </div>
                     @if ($children->isEmpty())
                         <div class="rounded-lg border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-muted">

@@ -157,8 +157,8 @@
     .admin-metro .content-toolbar { border-width: 0 !important; background: var(--m-surface) !important; padding: .5rem .75rem .625rem !important; }
     /* Ikony w zwykłych przyciskach (obrys szary, przyciski segmentowe): mniejsze i w --m-muted (≥ 4,5:1 na bieli),
        po najechaniu w kolorze napisu; przyciski w kolorze marki i niebezpieczne bez zmian. */
-    .admin-metro #main :is(a, button):is([class*="border-gray"], [class*="hover:bg-gray-50"]):not([class*="bg-brand"]):not([class*="red"]) > i.fa-solid { font-size: .8125rem; color: var(--m-muted); transition: color .15s; }
-    .admin-metro #main :is(a, button):is([class*="border-gray"], [class*="hover:bg-gray-50"]):not([class*="bg-brand"]):not([class*="red"]):is(:hover, :focus-visible) > i.fa-solid { color: inherit; }
+    .admin-metro #main :is(a, button):is([class*="border-gray"], [class*="hover:bg-gray-50"], [class*="hover:bg-gray-100"]):not([class*="bg-brand"]):not([class*="red"]) > i.fa-solid:not([class*="text-"]) { font-size: .8125rem; color: var(--m-muted); transition: color .15s; }
+    .admin-metro #main :is(a, button):is([class*="border-gray"], [class*="hover:bg-gray-50"], [class*="hover:bg-gray-100"]):not([class*="bg-brand"]):not([class*="red"]):is(:hover, :focus-visible) > i.fa-solid:not([class*="text-"]) { color: inherit; }
     .admin-metro [style*="border-width:1px;border-style:solid"] { border-width: 0 !important; background: var(--m-surface) !important; }
 
     /* ── Stronicowanie (domyślny widok Laravela): kwadratowe przyciski 44 px, bieżąca strona w akcencie ── */

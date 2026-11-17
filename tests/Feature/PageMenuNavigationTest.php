@@ -128,7 +128,7 @@ class PageMenuNavigationTest extends TestCase
         $editor = User::factory()->create(['role' => User::ROLE_CONTENT_EDITOR]);
 
         $html = $this->actingAs($editor)->get(route('admin.podstrony.index', ['wybrana' => $page->id]))->assertOk()->getContent();
-        $this->assertStringContainsString('W menu nawigacji', $html);
+        $this->assertStringContainsString('Pozycja w menu', $html);
         $this->assertStringNotContainsString('Dodaj do menu', $html);
 
         $this->actingAs($editor)->post(route('admin.podstrony.menu.store', $page), ['location' => 'main'])->assertForbidden();
@@ -137,6 +137,6 @@ class PageMenuNavigationTest extends TestCase
     public function test_menu_nawigacji_odsyla_do_stron(): void
     {
         $this->actingAs($this->admin())->get(route('admin.pozycje-menu.index'))->assertOk()
-            ->assertSee('data-nav-pages-hint', false)->assertSee('„W menu nawigacji”');
+            ->assertSee('data-nav-pages-hint', false)->assertSee('„Pozycja w menu”');
     }
 }

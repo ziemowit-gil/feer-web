@@ -161,10 +161,24 @@ class AdminMetroStyleTest extends TestCase
         $this->assertStringContainsString(':is(.mt-group, .mt-tool) > i { font-size: .875rem; color: #b8b8b2;', $html);
         $this->assertStringContainsString(':is(.mt-group, .mt-tool):is(:hover, :focus-visible, .is-open) > i { color: inherit; }', $html);
         // Przyciski w treści i zakładki: ikony w --m-muted
-        $this->assertStringContainsString('> i.fa-solid { font-size: .8125rem; color: var(--m-muted);', $html);
+        $this->assertStringContainsString('> i.fa-solid:not([class*="text-"]) { font-size: .8125rem; color: var(--m-muted);', $html);
         $this->assertStringContainsString('.content-nav a > i { font-size: .8125rem; color: var(--m-muted); }', $html);
         // Kontrast przygaszonej ikony na pasku (tło #1d1d1a i najechane #34342f) ≥ 3:1
         $this->assertGreaterThanOrEqual(3, \App\Support\Color::contrast('#b8b8b2', '#34342f'));
+    }
+
+    public function test_karta_strony_ma_lekkie_akcje_i_usun_po_prawej(): void
+    {
+        $html = $this->actingAs($this->metroAdmin())->get(route('admin.podstrony.index'))->assertOk()->getContent();
+
+        $start = strpos($html, 'aria-label="Szybkie akcje strony"');
+        $this->assertNotFalse($start);
+        $actions = substr($html, $start, 4000);
+        // Akcje bez obrysu (tło dopiero po najechaniu), „Usuń” odsunięte na prawo
+        $this->assertStringContainsString('hover:bg-gray-100 hover:text-brand-dark', $actions);
+        $this->assertStringNotContainsString('border border-gray-200 bg-white', $actions);
+        // „Przenieś w drzewie” jako rozwijany link jak „Więcej o stronie”
+        $this->assertMatchesRegularExpression('/fa-chevron-down text-\[10px\]" aria-hidden="true"><\/i> Przenieś w drzewie/u', $html);
     }
 
     public function test_inne_style_panelu_maja_dawne_menu_z_naglowkami_grup(): void
