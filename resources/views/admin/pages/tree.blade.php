@@ -278,6 +278,8 @@
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} tree-icon relative text-gray-500"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-pen text-muted" aria-hidden="true"></i></span> Szkic — niewidoczna dla odwiedzających</li>
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} tree-icon relative text-gray-500"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-ban text-red-700" aria-hidden="true"></i></span> Wyłączona (sama albo przez stronę nadrzędną)</li>
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} tree-icon relative text-gray-500"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-key text-ink" aria-hidden="true"></i></span> Dostęp ograniczony (np. tylko po zalogowaniu)</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} tree-icon relative text-gray-500"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-hourglass-half text-amber-800" aria-hidden="true"></i></span> Ma datę zdjęcia z publikacji (zniknie sama)</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} tree-icon relative text-gray-500"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-circle-exclamation text-amber-800" aria-hidden="true"></i></span> Do przeglądu — od roku bez zmian i bez oznaczenia „sprawdzone”</li>
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-muted" aria-hidden="true">Aa</span> Szary tytuł — strona niewidoczna publicznie</li>
                     </ul>
                     <h3 class="mb-1.5 mt-3 font-bold">Oznaczenia</h3>
@@ -415,6 +417,24 @@
                         </p>
                     @endif
 
+                    {{-- Daty (jak starttime/endtime w TYPO3): zdjęcie z publikacji i przegląd treści po terminie. --}}
+                    @if ($selected->is_published && $selected->unpublish_at)
+                        <p class="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-ink" role="status">
+                            <i class="fa-solid fa-hourglass-half mr-1 text-amber-800" aria-hidden="true"></i>
+                            Strona zniknie ze strony publicznej <strong>{{ $selected->unpublish_at->format('d.m.Y H:i') }}</strong> ({{ $selected->unpublish_at->diffForHumans() }}). Datę zmienisz w edycji strony.
+                        </p>
+                    @endif
+                    @if ($selectedReviewDue)
+                        <div class="mt-3 flex flex-wrap items-center gap-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-ink" role="status">
+                            <span class="min-w-0 flex-1"><i class="fa-solid fa-circle-exclamation mr-1 text-amber-800" aria-hidden="true"></i>
+                                Do przeglądu: treść bez zmian od <strong>{{ $selected->updated_at->format('d.m.Y') }}</strong>. Sprawdź, czy jest aktualna.</span>
+                            <form method="POST" action="{{ route('admin.przeglad-tresci.reviewed') }}">
+                                @csrf <input type="hidden" name="items[]" value="pages:{{ $selected->id }}">
+                                <button type="submit" class="{{ $ghost }}"><i class="fa-solid fa-check" aria-hidden="true"></i> Oznacz jako sprawdzoną</button>
+                            </form>
+                        </div>
+                    @endif
+
                     @unless ($canEditSelected)
                         <p class="mt-3 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
                             <i class="fa-solid fa-user-lock mr-1" aria-hidden="true"></i> Strona jest zablokowana do edycji przez administratora.
@@ -487,6 +507,32 @@
                             <p class="mt-1"><a href="{{ route('admin.historia.index', ['page', $selected->id]) }}" class="text-xs font-bold text-brand-dark underline hover:text-ink">Cała historia z porównaniem wersji</a></p>
                         </details>
                     @endif
+
+                    {{-- Linki w treści (jak Linkvalidator w TYPO3, dla jednej strony). Rozwinięte, gdy są niedziałające. --}}
+                    @php $lcBroken = $linkCheck['broken'] ?? []; @endphp
+                    <details class="text-sm" id="linki-strony" @if ($lcBroken) open @endif>
+                        <summary class="inline-flex min-h-9 cursor-pointer items-center gap-1.5 text-xs font-bold text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i> Linki w treści
+                            <span class="font-normal {{ $lcBroken ? 'text-red-800' : 'text-muted' }}">— @if (! $linkCheck) jeszcze nie sprawdzone @elseif ($lcBroken) nie działa: {{ count($lcBroken) }} @else działają @endif</span></summary>
+                        <div class="mt-1 space-y-2 rounded-md bg-gray-50 p-3">
+                            @if ($linkCheck)
+                                <p class="text-xs text-muted">
+                                    {{ $linkCheck['source'] === 'page' ? 'Sprawdzono '.\Illuminate\Support\Carbon::parse($linkCheck['at'])->format('d.m.Y H:i').' (linków: '.$linkCheck['checked'].').' : 'Z ostatniego skanu całej witryny ('.\Illuminate\Support\Carbon::parse($linkCheck['at'])->format('d.m.Y H:i').').' }}
+                                    @if ($linkCheck['stale']) Treść zmieniła się od tego czasu — sprawdź ponownie. @endif
+                                </p>
+                                @if ($lcBroken)
+                                    <ul class="space-y-1" role="list">
+                                        @foreach ($lcBroken as $bl)
+                                            <li class="text-xs"><i class="fa-solid fa-link-slash mr-1 text-red-700" aria-hidden="true"></i><span class="break-all font-mono text-ink">{{ $bl['url'] }}</span> <span class="text-muted">— {{ $bl['error'] }}</span></li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            @endif
+                            <form method="POST" action="{{ route('admin.podstrony.sprawdz-linki', $selected) }}">
+                                @csrf
+                                <button type="submit" class="{{ $btn }}"><i class="fa-solid fa-link" aria-hidden="true"></i> Sprawdź linki tej strony</button>
+                            </form>
+                        </div>
+                    </details>
 
                     {{-- Szybkie akcje --}}
                     @if ($canEditSelected)
@@ -906,6 +952,7 @@
         <div role="separator" class="my-1 border-t border-gray-100"></div>
         <button type="button" role="menuitem" tabindex="-1" data-act="cut" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-scissors w-4 text-center text-gray-500" aria-hidden="true"></i> Wytnij <kbd class="ml-auto text-[10px] text-muted">Ctrl+X</kbd></button>
         <button type="button" role="menuitem" tabindex="-1" data-act="copy-page" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-copy w-4 text-center text-gray-500" aria-hidden="true"></i> Kopiuj stronę <kbd class="ml-auto text-[10px] text-muted">Ctrl+C</kbd></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="copy-tree" data-needs-edit data-needs-kids class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-folder-tree w-4 text-center text-gray-500" aria-hidden="true"></i> Kopiuj z podstronami</button>
         <button type="button" role="menuitem" tabindex="-1" data-act="paste-after" data-paste hidden class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-paste w-4 text-center text-gray-500" aria-hidden="true"></i> <span data-paste-after>Wklej za tą stroną</span></button>
         <button type="button" role="menuitem" tabindex="-1" data-act="paste-into" data-paste hidden class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-turn-down w-4 text-center text-gray-500" aria-hidden="true"></i> <span data-paste-into>Wklej jako podstronę</span></button>
         <div role="separator" class="my-1 border-t border-gray-100"></div>
@@ -1072,10 +1119,10 @@
             const clip = {
                 key: 'pageTreeClip:' + @js(\App\Models\SiteSetting::current()->id),
                 get() { try { return JSON.parse(localStorage.getItem(this.key) || 'null'); } catch (e) { return null; } },
-                put(mode, li) {
-                    try { localStorage.setItem(this.key, JSON.stringify({ mode, id: idOf(li), label: li.dataset.label })); } catch (e) {}
+                put(mode, li, withChildren = false) {
+                    try { localStorage.setItem(this.key, JSON.stringify({ mode, id: idOf(li), label: li.dataset.label, tree: withChildren })); } catch (e) {}
                     this.render();
-                    announce((mode === 'cut' ? 'Wycięto' : 'Skopiowano') + ' stronę „' + li.dataset.label + '”. Wklej ją z menu innej strony albo skrótem Ctrl+V.');
+                    announce((mode === 'cut' ? 'Wycięto' : 'Skopiowano') + ' stronę „' + li.dataset.label + '”' + (withChildren ? ' z podstronami' : '') + '. Wklej ją z menu innej strony albo skrótem Ctrl+V.');
                 },
                 clear() { try { localStorage.removeItem(this.key); } catch (e) {} this.render(); },
                 render() {
@@ -1083,7 +1130,7 @@
                     tree.querySelectorAll('.tree-cut').forEach(n => n.classList.remove('tree-cut'));
                     clipBox.hidden = ! c;
                     if (! c) return;
-                    clipBox.querySelector('[data-clip-text]').textContent = 'W schowku: „' + c.label + '” (' + (c.mode === 'cut' ? 'wycięta' : 'kopia') + ')';
+                    clipBox.querySelector('[data-clip-text]').textContent = 'W schowku: „' + c.label + '” (' + (c.mode === 'cut' ? 'wycięta' : (c.tree ? 'kopia z podstronami' : 'kopia')) + ')';
                     if (c.mode === 'cut') nodeById(c.id)?.classList.add('tree-cut');
                 },
             };
@@ -1105,8 +1152,9 @@
                 if (c.mode === 'cut') { clip.clear(); send(c.id, parentId, position); return; }
                 const f = document.createElement('form');
                 f.method = 'POST'; f.action = urlFor('pasteCopy', c.id); f.hidden = true;
-                f.innerHTML = '<input type="hidden" name="_token"><input type="hidden" name="parent_id"><input type="hidden" name="position">';
+                f.innerHTML = '<input type="hidden" name="_token"><input type="hidden" name="parent_id"><input type="hidden" name="position"><input type="hidden" name="z_podstronami">';
                 f.elements._token.value = csrf;
+                f.elements.z_podstronami.value = c.tree ? '1' : '0';
                 f.elements.parent_id.value = parentId || '';
                 f.elements.position.value = position;
                 document.body.appendChild(f);
@@ -1122,6 +1170,7 @@
                 ctx.querySelector('[data-ctx-publish]').textContent = d.published === '1' ? 'Cofnij publikację' : 'Opublikuj';
                 ctx.querySelector('[data-ctx-publish-icon]').className = 'fa-solid w-4 text-center text-gray-500 ' + (d.published === '1' ? 'fa-eye-slash' : 'fa-eye');
                 ctx.querySelectorAll('[data-needs-edit]').forEach(b => { b.hidden = ! canEdit; });
+                ctx.querySelectorAll('[data-needs-kids]').forEach(b => { b.hidden = b.hidden || d.folder !== '1'; });
                 const del = ctx.querySelector('[data-act=delete]');
                 del.hidden = ! canEdit || d.system === '1';
                 ctx.querySelector('[data-ctx-del-sep]').hidden = del.hidden;
@@ -1131,8 +1180,8 @@
                 const pasteOff = ! c || String(c.id) === d.pageId || (cutLi && cutLi.contains(li));
                 ctx.querySelectorAll('[data-paste]').forEach(b => { b.hidden = pasteOff; });
                 if (! pasteOff) {
-                    ctx.querySelector('[data-paste-after]').textContent = (c.mode === 'cut' ? 'Wklej „' : 'Wklej kopię „') + c.label + '” za tą stroną';
-                    ctx.querySelector('[data-paste-into]').textContent = (c.mode === 'cut' ? 'Wklej „' : 'Wklej kopię „') + c.label + '” jako podstronę';
+                    ctx.querySelector('[data-paste-after]').textContent = (c.mode === 'cut' ? 'Wklej „' : (c.tree ? 'Wklej kopię gałęzi „' : 'Wklej kopię „')) + c.label + '” za tą stroną';
+                    ctx.querySelector('[data-paste-into]').textContent = (c.mode === 'cut' ? 'Wklej „' : (c.tree ? 'Wklej kopię gałęzi „' : 'Wklej kopię „')) + c.label + '” jako podstronę';
                 }
                 ctx.querySelector('[data-act=down]').setAttribute('aria-disabled', String(idx >= sibs.length - 1));
 
@@ -1190,6 +1239,7 @@
                 else if (act === 'move') location.href = urlFor('select', id) + '#move-parent';
                 else if (act === 'branch') location.href = urlFor('branch', id);
                 else if (act === 'cut' || act === 'copy-page') clip.put(act === 'cut' ? 'cut' : 'copy', li);
+                else if (act === 'copy-tree') clip.put('copy', li, true);
                 else if (act === 'paste-after') paste(li, false);
                 else if (act === 'paste-into') paste(li, true);
                 else if (act === 'copy-url') copy(d.publicUrl, 'adres strony');

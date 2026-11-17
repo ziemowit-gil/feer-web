@@ -75,6 +75,21 @@ class ContentReview
         return $rows->sortBy(fn ($r) => $r['last']->timestamp)->values();
     }
 
+    /**
+     * Czy strona czeka na przegląd treści (te same reguły co stale() dla stron): opublikowana, nie systemowa i nie
+     * techniczna, a od N miesięcy nikt jej nie zmienił ani nie oznaczył jako sprawdzonej. Do znaczka w drzewie stron.
+     */
+    public static function pageDue(Page $page, int $months = self::DEFAULT_MONTHS): bool
+    {
+        if (! self::available() || ! $page->is_published || $page->is_system
+            || in_array($page->type, ['redirect', 'menu_link', 'menu_heading'], true) || ! $page->updated_at) {
+            return false;
+        }
+        $cutoff = now()->subMonths($months);
+
+        return $page->updated_at->lt($cutoff) && (! $page->reviewed_at || $page->reviewed_at->lt($cutoff));
+    }
+
     /** Liczba do przejrzenia (licznik w menu) — w pamięci podręcznej na godzinę. */
     public static function staleCount(?callable $canAccess = null): int
     {

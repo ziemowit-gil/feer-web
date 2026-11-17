@@ -427,6 +427,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('podstrony/zbiorczo', [AdminPageController::class, 'bulk'])->name('podstrony.bulk');
         Route::post('podstrony/{page}/klonuj', [AdminPageController::class, 'clone'])->name('podstrony.clone');
         Route::post('podstrony/{page}/wklej-kopie', [AdminPageController::class, 'pasteCopy'])->name('podstrony.wklej-kopie');
+        Route::post('podstrony/{page}/sprawdz-linki', [AdminPageController::class, 'checkLinks'])->name('podstrony.sprawdz-linki');
         Route::post('podstrony/{page}/kopiuj-do-witryny', [AdminPageController::class, 'copyToSite'])->name('podstrony.copy-to-site');
         Route::patch('podstrony/{page}/kolejnosc', [AdminPageController::class, 'updateOrder'])->name('podstrony.kolejnosc');
         Route::patch('podstrony/{page}/przenies', [AdminPageController::class, 'move'])->name('podstrony.przenies');

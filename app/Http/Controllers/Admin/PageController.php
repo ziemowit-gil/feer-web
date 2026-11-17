@@ -189,6 +189,9 @@ class PageController extends Controller
             'mainMenuParents' => \App\Models\NavItem::forCurrentSite()->where('location', 'main')->whereNull('parent_id')->orderBy('order')->get(['id', 'label']),
             // Historia w karcie strony: ostatnie wersje treści (pierwsza = bieżąca), z autorem i zmienionymi polami.
             'selectedRevisions' => $selected ? $this->recentRevisions($selected) : [],
+            // Linki tej strony: własne sprawdzenie z karty albo jej pozycje z ostatniego skanu całej witryny.
+            'linkCheck' => $selected ? \App\Support\PageLinkCheck::last($selected) : null,
+            'selectedReviewDue' => $selected && \App\Support\ContentReview::pageDue($selected),
             'personsCount' => $selected && $selected->isAbout()
                 ? Page::where('type', 'about_person')->where('parent_id', $selected->id)->count()
                 : 0,
@@ -1020,22 +1023,85 @@ class PageController extends Controller
             return $this->indexRedirect()->with('error', 'Wybrana strona nadrzędna nie istnieje.');
         }
 
-        $clone = $page->replicate();
-        $clone->title = "{$page->title} (kopia)";
-        $clone->slug = $this->uniqueSlug($clone->title);
-        $clone->parent_id = $parentId;
-        if ($parent) {
-            $clone->project_id = $parent->project_id;
+        $withChildren = $request->boolean('z_podstronami');
+        // Podstrony zbieramy przed utworzeniem kopii — wklejenie do własnej podstrony nie zapętla kopiowania.
+        $tree = $withChildren ? $this->subtreeOf($page) : [];
+        if (count($tree) > self::MAX_TREE_COPY) {
+            return $this->indexRedirect($page->id)->with('error', 'Gałąź ma więcej niż '.self::MAX_TREE_COPY.' podstron — skopiuj ją w częściach.');
         }
-        $clone->is_published = false;
-        $clone->is_system = false;
-        $clone->is_locked = false;
-        $clone->save();
+
+        $clone = \Illuminate\Support\Facades\DB::transaction(function () use ($page, $parentId, $parent, $tree) {
+            $clone = $this->draftCopy($page, $parentId, "{$page->title} (kopia)");
+            if ($parent) {
+                $clone->project_id = $parent->project_id;
+                $clone->save();
+            }
+            $map = [$page->id => $clone->id];
+            foreach ($tree as $child) {               // rodzice zawsze przed dziećmi (kolejność przejścia)
+                $map[$child->id] = $this->draftCopy($child, $map[$child->parent_id], $child->title, $clone->project_id)->id;
+            }
+
+            return $clone;
+        });
 
         [$at, $of] = $this->placePage($clone, $parentId, (int) $data['position']);
+        $children = count($tree);
 
         return redirect()->route('admin.podstrony.index', ['wybrana' => $clone->id])
-            ->with('status', "Wklejono kopię strony „{$page->title}” jako szkic „{$clone->title}” (pozycja {$at} z {$of}). Podstrony nie są kopiowane.");
+            ->with('status', "Wklejono kopię strony „{$page->title}” jako szkic „{$clone->title}” (pozycja {$at} z {$of}). "
+                .($withChildren ? "Skopiowano też podstrony: {$children} (jako szkice)." : 'Podstrony nie są kopiowane.'));
+    }
+
+    /** Największa gałąź kopiowana razem z podstronami jednym wklejeniem. */
+    private const MAX_TREE_COPY = 200;
+
+    /** Kopia strony jako szkic (bez flagi systemowej i blokady) pod wskazaną stroną nadrzędną, z kolejnością oryginału. */
+    private function draftCopy(Page $page, ?int $parentId, string $title, ?int $projectId = null): Page
+    {
+        $copy = $page->replicate();
+        $copy->title = $title;
+        $copy->slug = $this->uniqueSlug($title);
+        $copy->parent_id = $parentId;
+        if (func_num_args() >= 4) {
+            $copy->project_id = $projectId;
+        }
+        $copy->is_published = false;
+        $copy->is_system = false;
+        $copy->is_locked = false;
+        $copy->save();
+
+        return $copy;
+    }
+
+    /** @return array<int, Page> wszystkie podstrony (w głąb, rodzic przed dziećmi, w zapisanej kolejności) */
+    private function subtreeOf(Page $page): array
+    {
+        $out = [];
+        $walk = function (int $id, int $depth) use (&$walk, &$out) {
+            if ($depth > 20) {
+                return;
+            }
+            foreach ($this->treeQuery()->where('parent_id', $id)->orderBy('order')->orderBy('title')->get() as $child) {
+                $out[] = $child;
+                $walk($child->id, $depth + 1);
+            }
+        };
+        $walk($page->id, 0);
+
+        return $out;
+    }
+
+    /** Karta strony: sprawdza linki w treści tej strony (wewnętrzne i zewnętrzne) i wraca do karty z wynikiem. */
+    public function checkLinks(Page $page)
+    {
+        abort_unless($this->treeQuery()->whereKey($page->id)->exists(), 404);
+        $result = \App\Support\PageLinkCheck::run($page);
+        $n = count($result['broken']);
+
+        return redirect()->to(route('admin.podstrony.index', ['wybrana' => $page->id]).'#linki-strony')
+            ->with($n ? 'error' : 'status', $n
+                ? "Sprawdzono linki: {$result['checked']}. Nie działa: {$n}."
+                : "Sprawdzono linki: {$result['checked']}. Wszystkie działają.");
     }
 
     /** Klonuje podstronę jako szkic (bez flagi systemowej i blokady). */

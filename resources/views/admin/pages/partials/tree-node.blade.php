@@ -23,6 +23,9 @@
                 $state === 'disabled' => ['fa-ban', 'text-red-700', $node->is_disabled ? 'wyłączona' : 'wyłączona przez stronę nadrzędną'],
                 $state === 'draft' => ['fa-pen', 'text-muted', 'szkic'],
                 $node->is_published && $node->publish_at && $node->publish_at->isFuture() => ['fa-clock', 'text-brand-dark', 'zaplanowana'],
+                // Daty jak w TYPO3 (starttime/endtime): wygaśnięcie ustawione, przegląd treści po terminie.
+                $node->is_published && $node->unpublish_at !== null => ['fa-hourglass-half', 'text-amber-800', 'zniknie ze strony '.$node->unpublish_at->format('d.m.Y')],
+                \App\Support\ContentReview::pageDue($node) => ['fa-circle-exclamation', 'text-amber-800', 'do przeglądu treści — bez zmian od '.$node->updated_at->format('d.m.Y')],
                 $nodeRestricted => ['fa-key', 'text-ink', 'dostęp ograniczony: '.(\App\Models\Page::ACCESS_LEVELS[$node->access_level] ?? $node->access_level)],
                 default => [null, '', 'opublikowana'],
             };
