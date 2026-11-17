@@ -84,10 +84,20 @@ class PageController extends Controller
 
         $byParent = $all->groupBy(fn (Page $p) => $p->parent_id && $all->contains('id', $p->parent_id) ? $p->parent_id : 0);
 
+        // „Pokaż tylko tę gałąź” (jak tymczasowy punkt montowania drzewa w TYPO3): ?galaz=ID zawęża drzewo do jednej
+        // strony z podstronami, ?galaz=0 wraca do całego drzewa. Wybór trzymamy w sesji; gałąź spoza bieżącej witryny
+        // (albo usunięta) jest pomijana.
+        if ($request->has('galaz')) {
+            (int) $request->query('galaz') > 0
+                ? session(['pages_tree_branch' => (int) $request->query('galaz')])
+                : session()->forget('pages_tree_branch');
+        }
+        $branch = session('pages_tree_branch') ? $all->firstWhere('id', (int) session('pages_tree_branch')) : null;
+
         $selected = $request->filled('wybrana') ? $all->firstWhere('id', (int) $request->query('wybrana')) : null;
-        // Bez wyboru (albo ze starym identyfikatorem) otwieramy pierwszą stronę najwyższego poziomu —
+        // Bez wyboru (albo ze starym identyfikatorem) otwieramy pierwszą stronę najwyższego poziomu (w gałęzi: jej stronę) —
         // prawy panel zawsze pokazuje konkretną stronę, nie zbiorczy przegląd.
-        $selected ??= $byParent->get(0, collect())->first();
+        $selected ??= $branch ?? $byParent->get(0, collect())->first();
 
         // Identyfikatory przodków wybranej strony — te gałęzie są rozwinięte.
         $openIds = [];
@@ -148,8 +158,17 @@ class PageController extends Controller
             $position = max(0, (int) $siblings->search(fn (Page $p) => $p->id === $selected->id));
         }
 
+        // Gałąź: w drzewie tylko ona (rozwinięta), bez grup działań. Pozycja wybranej strony liczona wyżej na pełnym drzewie.
+        if ($branch) {
+            $treeRoots = collect([$branch]);
+            $projectGroups = collect();
+            $openIds[] = $branch->id;
+        }
+
         return view('admin.pages.tree', [
             'treeRoots' => $treeRoots,
+            'branch' => $branch,
+            'branchRootline' => $branch ? $this->rootlineOf($all, $branch) : collect(),
             'projectGroups' => $projectGroups,
             'byParent' => $byParent,
             'total' => $all->count(),
@@ -168,6 +187,8 @@ class PageController extends Controller
             'menuPositions' => $menuPositions = \App\Support\PageMenuPositions::forPages($all),
             'selectedMenu' => $selected ? ($menuPositions[$selected->id] ?? []) : [],
             'mainMenuParents' => \App\Models\NavItem::forCurrentSite()->where('location', 'main')->whereNull('parent_id')->orderBy('order')->get(['id', 'label']),
+            // Historia w karcie strony: ostatnie wersje treści (pierwsza = bieżąca), z autorem i zmienionymi polami.
+            'selectedRevisions' => $selected ? $this->recentRevisions($selected) : [],
             'personsCount' => $selected && $selected->isAbout()
                 ? Page::where('type', 'about_person')->where('parent_id', $selected->id)->count()
                 : 0,
@@ -935,6 +956,86 @@ class PageController extends Controller
         };
 
         return redirect()->back()->with('status', $message);
+    }
+
+    /** Przodkowie strony od najwyższego poziomu (do paska gałęzi). */
+    private function rootlineOf(\Illuminate\Support\Collection $all, Page $page): \Illuminate\Support\Collection
+    {
+        $line = collect();
+        $seen = [];
+        for ($node = $page; $node && $node->parent_id && ! in_array($node->parent_id, $seen, true); ) {
+            $seen[] = $node->parent_id;
+            $node = $all->firstWhere('id', $node->parent_id);
+            if ($node) {
+                $line->prepend($node);
+            }
+        }
+
+        return $line;
+    }
+
+    /** Pola wersji w języku redakcji (do „Historii” w karcie strony). */
+    private const REVISION_FIELD_LABELS = [
+        'title' => 'tytuł', 'slug' => 'adres', 'content' => 'treść', 'meta_title' => 'tytuł SEO', 'meta_description' => 'opis SEO',
+    ];
+
+    /**
+     * Ostatnie wersje strony do karty: kto, kiedy i które pola zmienił względem poprzedniej wersji.
+     *
+     * @return array<int, array{id:int, at:\Illuminate\Support\Carbon, user:string, changed:array<int,string>, current:bool}>
+     */
+    private function recentRevisions(Page $page, int $limit = 5): array
+    {
+        $revs = $page->revisions()->reorder()->latest()->orderByDesc('id')->with('user')->take($limit + 1)->get()->values();
+        $out = [];
+        foreach ($revs->take($limit) as $i => $rev) {
+            $older = $revs->get($i + 1);
+            $changed = $older
+                ? collect(self::REVISION_FIELD_LABELS)->filter(fn ($l, $f) => ($rev->data[$f] ?? null) !== ($older->data[$f] ?? null))->values()->all()
+                : ($i === $revs->count() - 1 ? ['utworzenie strony'] : []);
+            $out[] = ['id' => $rev->id, 'at' => $rev->created_at, 'user' => $rev->user?->name ?? '—', 'changed' => $changed, 'current' => $i === 0];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Schowek drzewa stron: „Kopiuj” + „Wklej” — kopia strony (bez podstron) jako szkic w wybranym miejscu drzewa:
+     * pod stroną nadrzędną `parent_id` (puste = poziom główny) na pozycji `position`.
+     */
+    public function pasteCopy(Request $request, Page $page)
+    {
+        abort_unless($this->treeQuery()->whereKey($page->id)->exists(), 404);
+        if ($response = $this->denyIfLocked($page)) {
+            return $response;
+        }
+
+        $data = $request->validate([
+            'parent_id' => ['nullable', 'integer'],
+            'position' => ['required', 'integer', 'min:0', 'max:'.self::LAST_POSITION],
+        ]);
+        $parentId = (int) ($data['parent_id'] ?? 0) ?: null;
+        $parent = $parentId ? $this->treeQuery()->find($parentId) : null;
+        if ($parentId && ! $parent) {
+            return $this->indexRedirect()->with('error', 'Wybrana strona nadrzędna nie istnieje.');
+        }
+
+        $clone = $page->replicate();
+        $clone->title = "{$page->title} (kopia)";
+        $clone->slug = $this->uniqueSlug($clone->title);
+        $clone->parent_id = $parentId;
+        if ($parent) {
+            $clone->project_id = $parent->project_id;
+        }
+        $clone->is_published = false;
+        $clone->is_system = false;
+        $clone->is_locked = false;
+        $clone->save();
+
+        [$at, $of] = $this->placePage($clone, $parentId, (int) $data['position']);
+
+        return redirect()->route('admin.podstrony.index', ['wybrana' => $clone->id])
+            ->with('status', "Wklejono kopię strony „{$page->title}” jako szkic „{$clone->title}” (pozycja {$at} z {$of}). Podstrony nie są kopiowane.");
     }
 
     /** Klonuje podstronę jako szkic (bez flagi systemowej i blokady). */

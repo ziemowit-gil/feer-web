@@ -79,6 +79,12 @@ class RevisionController extends Controller
 
         [, , $editRoute] = self::TYPES[$type];
 
+        // Przywrócenie z „Historii” w karcie strony (widok drzewa) wraca do drzewa z tą stroną.
+        if ($type === 'page' && request('wroc') === 'drzewo') {
+            return redirect()->route('admin.podstrony.index', ['wybrana' => $model->id])
+                ->with('status', 'Przywrócono wcześniejszą wersję treści strony.');
+        }
+
         return redirect($this->editUrl($type, $editRoute, $model))
             ->with('status', 'Przywrócono wcześniejszą wersję treści.');
     }

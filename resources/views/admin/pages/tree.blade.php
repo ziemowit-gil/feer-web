@@ -15,6 +15,25 @@
         $segStyle = 'min-height:2.25rem;padding:.375rem .75rem;gap:.375rem;background:transparent';
     @endphp
 
+    {{-- Stan drzewa zapamiętany w przeglądarce (jak w TYPO3): które gałęzie są rozwinięte i co jest w schowku.
+         Osobno dla każdej witryny. Musi być przed drzewem — węzły czytają go w x-data. --}}
+    <script>
+        window.pageTreeState = (() => {
+            const key = 'pageTreeOpen:' + @js(\App\Models\SiteSetting::current()->id);
+            let ids;
+            try { ids = new Set(JSON.parse(localStorage.getItem(key) || '[]')); } catch (e) { ids = new Set(); }
+            return {
+                paused: false,
+                has: id => ids.has(id),
+                set(id, open) {
+                    if (this.paused) return;
+                    open ? ids.add(id) : ids.delete(id);
+                    try { localStorage.setItem(key, JSON.stringify([...ids])); } catch (e) {}
+                },
+            };
+        })();
+    </script>
+
     {{-- Układ dwukolumnowy jest wyliczany w JS (matchMedia + style wbudowane), a nie klasami Tailwinda:
          działa nawet wtedy, gdy po wdrożeniu nie przebudowano CSS, i nigdy nie zostawia przyklejonego
          drzewa nad treścią. Uwaga: w atrybucie x-data nie wolno używać komentarzy //. --}}
@@ -133,6 +152,7 @@
                 filterInfo: '',
                 filter() {
                     const q = this.q.trim().toLowerCase();
+                    if (window.pageTreeState) window.pageTreeState.paused = !! q;
                     const items = this.$root.querySelectorAll('[data-tree-node]');
                     const groups = this.$root.querySelectorAll('[data-tree-group]');
                     items.forEach(li => { li.hidden = false; });
@@ -225,6 +245,21 @@
                     {{-- Wynik filtrowania: widoczny tekst i komunikat dla czytników ekranu (element zawsze w DOM, więc aria-live działa). --}}
                     <p id="tree-filter-status" role="status" aria-live="polite" class="mt-1 text-xs text-muted" :class="filterInfo ? '' : 'sr-only'" x-text="filterInfo"></p>
                 </div>
+                {{-- Gałąź: drzewo zawężone do jednej strony z podstronami (?galaz=ID, zapamiętane w sesji). --}}
+                @if ($branch)
+                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1 rounded bg-brand-light px-2.5 py-1.5 text-xs text-ink" role="status">
+                        <i class="fa-solid fa-code-branch text-brand-dark" aria-hidden="true"></i>
+                        <span class="min-w-0 flex-1">Tylko gałąź:
+                            @foreach ($branchRootline as $bAnc){{ $bAnc->title }} › @endforeach<strong>{{ $branch->title }}</strong></span>
+                        <a href="{{ route('admin.podstrony.index', ['galaz' => 0, 'wybrana' => $selected?->id]) }}" class="font-bold text-brand-dark underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Pokaż całe drzewo</a>
+                    </div>
+                @endif
+                {{-- Schowek: strona wycięta albo skopiowana z menu strony (Ctrl+X / Ctrl+C), wklejanie z menu innej strony. --}}
+                <div id="tree-clip" hidden class="flex items-center gap-2 rounded bg-gray-50 px-2.5 py-1.5 text-xs text-ink">
+                    <i class="fa-solid fa-clipboard text-muted" aria-hidden="true"></i>
+                    <span class="min-w-0 flex-1 truncate" data-clip-text></span>
+                    <button type="button" data-clip-clear class="rounded px-1.5 py-0.5 font-bold text-brand-dark underline hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Wyczyść</button>
+                </div>
                 @php
                     $usedTypes = $byParent->flatten()->pluck('type')->unique();
                     $typeLabels = \App\Models\Page::types();
@@ -236,21 +271,21 @@
                 @endphp
 
                 <div id="tree-legend" x-show="panel === 'legend'" x-cloak class="rounded bg-gray-50 p-3 text-xs text-ink">
-                    <h3 class="mb-1.5 font-bold">Stan strony</h3>
+                    <h3 class="mb-1.5 font-bold">Stan strony (znaczek na ikonie)</h3>
                     <ul role="list" class="space-y-1">
-                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-brand-dark"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span> Opublikowana</li>
-                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-brand-dark"><i class="fa-solid fa-clock" aria-hidden="true"></i></span> Zaplanowana (opublikuje się w ustawionym terminie)</li>
-                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-muted"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i></span> Szkic — niewidoczna dla odwiedzających</li>
-                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-red-700"><i class="fa-solid fa-ban" aria-hidden="true"></i></span> Wyłączona (sama albo przez stronę nadrzędną)</li>
-                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-muted" aria-hidden="true">Aa</span> Wyszarzony tytuł — strona niewidoczna publicznie</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} tree-icon relative text-gray-500"><i class="fa-solid fa-file-lines" aria-hidden="true"></i></span> Bez znaczka — opublikowana</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} tree-icon relative text-gray-500"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-clock text-brand-dark" aria-hidden="true"></i></span> Zaplanowana (opublikuje się w ustawionym terminie)</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} tree-icon relative text-gray-500"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-pen text-muted" aria-hidden="true"></i></span> Szkic — niewidoczna dla odwiedzających</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} tree-icon relative text-gray-500"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-ban text-red-700" aria-hidden="true"></i></span> Wyłączona (sama albo przez stronę nadrzędną)</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} tree-icon relative text-gray-500"><i class="fa-solid fa-file-lines" aria-hidden="true"></i><i class="tree-ov fa-solid fa-key text-ink" aria-hidden="true"></i></span> Dostęp ograniczony (np. tylko po zalogowaniu)</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-muted" aria-hidden="true">Aa</span> Szary tytuł — strona niewidoczna publicznie</li>
                     </ul>
                     <h3 class="mb-1.5 mt-3 font-bold">Oznaczenia</h3>
                     <ul role="list" class="space-y-1">
-                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-folder" aria-hidden="true"></i></span> Strona z podstronami</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-folder" aria-hidden="true"></i></span> Zwykła strona z podstronami (inne typy mają swoją ikonę)</li>
                         <li class="{{ $legendRow }}"><span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-muted" aria-hidden="true">3</span> Liczba podstron</li>
                         <li class="{{ $legendRow }}"><span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm text-[10px] font-bold" style="background:#166534;color:#fff" aria-hidden="true">D</span> Podstrona działania</li>
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-amber-500"><i class="fa-solid fa-star" aria-hidden="true"></i></span> Wyróżniona</li>
-                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-key" aria-hidden="true"></i></span> Dostęp ograniczony (np. tylko po zalogowaniu)</li>
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-lock" aria-hidden="true"></i></span> Strona systemowa — nie można jej usunąć</li>
                     </ul>
                     @if ($usedTypes->isNotEmpty())
@@ -261,7 +296,7 @@
                             @endforeach
                         </ul>
                     @endif
-                    <p class="mt-3 text-muted">Przeciągnij stronę na środek innej, aby zrobić z niej podstronę; w układzie „Kolejność” także na górną lub dolną krawędź, aby zmienić kolejność. Z klawiatury: Alt+Shift+strzałki. Prawy przycisk myszy, „⋯” albo Shift+F10 otwiera menu akcji strony.</p>
+                    <p class="mt-3 text-muted">Przeciągnij stronę na środek innej, aby zrobić z niej podstronę; w układzie „Kolejność” także na górną lub dolną krawędź, aby zmienić kolejność. Z klawiatury: Alt+Shift+strzałki. Prawy przycisk myszy, „⋯” albo Shift+F10 otwiera menu akcji strony. Strzałki góra/dół przechodzą między stronami, w prawo/lewo rozwijają i zwijają gałąź, Home/End — pierwsza i ostatnia strona. Ctrl+X / Ctrl+C wycina lub kopiuje stronę do schowka, Ctrl+V wkleja ją za wybraną stroną, Ctrl+Shift+V — jako jej podstronę.</p>
                 </div>
 
                 <fieldset id="tree-opts" x-show="panel === 'opts'" x-cloak class="space-y-1.5 rounded bg-gray-50 p-3 text-xs text-ink">
@@ -269,7 +304,7 @@
                     <label class="flex items-center gap-2"><input type="checkbox" x-model="opts.hideDrafts" @change="saveOpts()" class="{{ $optBox }}"> Ukryj szkice i wyłączone</label>
                     <label class="flex items-center gap-2"><input type="checkbox" x-model="opts.menuOnly" @change="saveOpts()" class="{{ $optBox }}"> Na najwyższym poziomie tylko strony z menu</label>
                     <label class="flex items-center gap-2"><input type="checkbox" x-model="opts.hideProjects" @change="saveOpts()" class="{{ $optBox }}"> Ukryj podstrony działań</label>
-                    <label class="flex items-center gap-2"><input type="checkbox" x-model="opts.noChips" @change="saveOpts()" class="{{ $optBox }}"> Bez ikon stanu</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" x-model="opts.noChips" @change="saveOpts()" class="{{ $optBox }}"> Bez znaczków stanu na ikonach</label>
                     <label class="flex items-center gap-2"><input type="checkbox" x-model="opts.noCounts" @change="saveOpts()" class="{{ $optBox }}"> Bez liczby podstron</label>
                     <p class="pt-1 text-muted">Opcje zmieniają tylko widok drzewa w tej przeglądarce — strony się nie zmieniają.</p>
                 </fieldset>
@@ -281,6 +316,8 @@
                 Z klawiatury: zaznacz stronę i użyj Alt+Shift+strzałek
                 (góra/dół — kolejność, w prawo — w głąb poprzedniej, w lewo — poziom wyżej).
                 Shift+F10 lub klawisz Menu na stronie otwiera menu jej akcji.
+                Strzałki góra i dół przechodzą między stronami, w prawo rozwija gałąź lub przechodzi do pierwszej podstrony, w lewo zwija gałąź lub wraca do strony nadrzędnej, Home i End — pierwsza i ostatnia strona.
+                Ctrl+X wycina, Ctrl+C kopiuje stronę do schowka; Ctrl+V wkleja ją za stroną z fokusem, Ctrl+Shift+V — jako jej podstronę.
             </p>
             <div id="tree-dnd-status" role="status" aria-live="polite" class="sr-only"></div>
             <div class="overflow-y-auto px-1.5 py-1.5" :style="full ? '' : 'max-height:calc(100vh - 16rem)'" style="max-height:calc(100vh - 16rem)" id="tree-scroll"
@@ -423,6 +460,33 @@
                     </details>
                     {{-- Menu nawigacji tej strony (Strony i nawigacja na jednym ekranie) --}}
                     @include('admin.pages.partials.page-menu', ['page' => $selected, 'positions' => $selectedMenu, 'mainMenuParents' => $mainMenuParents, 'btn' => $btn])
+                    {{-- Historia zmian (jak „Historia/Cofnij” w TYPO3): ostatnie wersje treści, kto i co zmienił, przywrócenie wersji. --}}
+                    @if ($selectedRevisions)
+                        @php $lastRev = $selectedRevisions[0]; @endphp
+                        <details class="text-sm" id="historia-strony">
+                            <summary class="inline-flex min-h-9 cursor-pointer items-center gap-1.5 text-xs font-bold text-brand-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-chevron-down text-[10px]" aria-hidden="true"></i> Historia zmian
+                                <span class="font-normal text-muted">— ostatnio {{ $lastRev['at']->diffForHumans() }}, {{ $lastRev['user'] }}</span></summary>
+                            <ol class="mt-1 divide-y divide-gray-100 rounded-md bg-gray-50" role="list">
+                                @foreach ($selectedRevisions as $rev)
+                                    <li class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-1.5">
+                                        <time datetime="{{ $rev['at']->toIso8601String() }}" class="whitespace-nowrap text-xs font-bold text-ink">{{ $rev['at']->format('d.m.Y H:i') }}</time>
+                                        <span class="text-xs text-ink">{{ $rev['user'] }}</span>
+                                        <span class="min-w-0 flex-1 text-xs text-muted">{{ $rev['changed'] ? 'zmieniono: '.implode(', ', $rev['changed']) : 'bez zmian w treści' }}</span>
+                                        @if ($rev['current'])
+                                            <span class="text-xs font-bold text-muted">bieżąca</span>
+                                        @elseif ($canEditSelected)
+                                            <form method="POST" action="{{ route('admin.historia.restore', ['page', $selected->id, $rev['id']]) }}?wroc=drzewo"
+                                                data-confirm="Przywrócić wersję z {{ $rev['at']->format('d.m.Y H:i') }}? Bieżąca treść zostanie zapisana w historii, więc da się do niej wrócić.">
+                                                @csrf
+                                                <button type="submit" class="{{ $ghost }}"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Przywróć<span class="sr-only"> wersję z {{ $rev['at']->format('d.m.Y H:i') }}</span></button>
+                                            </form>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ol>
+                            <p class="mt-1"><a href="{{ route('admin.historia.index', ['page', $selected->id]) }}" class="text-xs font-bold text-brand-dark underline hover:text-ink">Cała historia z porównaniem wersji</a></p>
+                        </details>
+                    @endif
 
                     {{-- Szybkie akcje --}}
                     @if ($canEditSelected)
@@ -560,6 +624,11 @@
         #page-tree .tree-sub { margin-left: .75rem; padding-left: .5rem; border-left: 1px solid #c4c9d2; }
         #page-tree .tree-sub > li { position: relative; }
         #page-tree .tree-sub > li::before { content: ''; position: absolute; left: -.5rem; top: .75rem; width: .375rem; border-top: 1px solid #c4c9d2; }
+        /* Ikona typu z nakładką stanu w prawym dolnym rogu (jak w TYPO3): białe kółko pod znaczkiem, żeby był czytelny. */
+        .tree-icon .tree-ov { position: absolute; right: -.375rem; bottom: -.25rem; font-size: .5625rem; line-height: 1; padding: 1px; border-radius: 9999px; background: #fff; }
+        #page-tree .tree-link.is-selected .tree-ov { background: var(--m-tile, var(--color-brand-light, #e8f0ff)); }
+        /* Strona wycięta do schowka: przerywana ramka i kursywa (bez przezroczystości treści). */
+        #page-tree [data-tree-node].tree-cut > [data-tree-row] > a { outline: 1px dashed #4b5563; outline-offset: -1px; font-style: italic; }
         /* Wybrana strona: jasne tło marki z kreską z lewej (zamiast pełnego paska), tekst ink ≥ 4,5:1. */
         #page-tree .tree-link.is-selected { box-shadow: inset 3px 0 0 var(--m-accent, var(--color-brand-dark, #1752bf)); background: var(--m-tile, var(--color-brand-light, #e8f0ff)); }
         /* Metro wymusza 44 px pól — w nagłówku drzewa filtr zostaje niższy (cel ≥ 24 px). */
@@ -743,6 +812,12 @@
         <button type="button" role="menuitem" tabindex="-1" data-act="add" class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-plus w-4 text-center text-gray-500" aria-hidden="true"></i> Dodaj podstronę</button>
         <button type="button" role="menuitem" tabindex="-1" data-act="clone" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-clone w-4 text-center text-gray-500" aria-hidden="true"></i> Duplikuj</button>
         <button type="button" role="menuitem" tabindex="-1" data-act="publish" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-eye-slash w-4 text-center text-gray-500" aria-hidden="true" data-ctx-publish-icon></i> <span data-ctx-publish>Cofnij publikację</span></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="branch" class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-code-branch w-4 text-center text-gray-500" aria-hidden="true"></i> Pokaż tylko tę gałąź</button>
+        <div role="separator" class="my-1 border-t border-gray-100"></div>
+        <button type="button" role="menuitem" tabindex="-1" data-act="cut" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-scissors w-4 text-center text-gray-500" aria-hidden="true"></i> Wytnij <kbd class="ml-auto text-[10px] text-muted">Ctrl+X</kbd></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="copy-page" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-copy w-4 text-center text-gray-500" aria-hidden="true"></i> Kopiuj stronę <kbd class="ml-auto text-[10px] text-muted">Ctrl+C</kbd></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="paste-after" data-paste hidden class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-paste w-4 text-center text-gray-500" aria-hidden="true"></i> <span data-paste-after>Wklej za tą stroną</span></button>
+        <button type="button" role="menuitem" tabindex="-1" data-act="paste-into" data-paste hidden class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-turn-down w-4 text-center text-gray-500" aria-hidden="true"></i> <span data-paste-into>Wklej jako podstronę</span></button>
         <div role="separator" class="my-1 border-t border-gray-100"></div>
         <button type="button" role="menuitem" tabindex="-1" data-act="up" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-arrow-up w-4 text-center text-gray-500" aria-hidden="true"></i> Przenieś wyżej</button>
         <button type="button" role="menuitem" tabindex="-1" data-act="down" data-needs-edit class="flex w-full items-center gap-2.5 rounded px-3 py-1.5 text-left text-sm text-ink hover:bg-gray-100 focus-visible:outline-none"><i class="fa-solid fa-arrow-down w-4 text-center text-gray-500" aria-hidden="true"></i> Przenieś niżej</button>
@@ -890,12 +965,63 @@
                 publish: @js(route('admin.podstrony.widocznosc', '__ID__')),
                 destroy: @js(route('admin.podstrony.destroy', '__ID__')),
                 select: @js(route('admin.podstrony.index', ['wybrana' => '__ID__'])),
+                branch: @js(route('admin.podstrony.index', ['galaz' => '__ID__', 'wybrana' => '__ID__'])),
+                pasteCopy: @js(route('admin.podstrony.wklej-kopie', '__ID__')),
             };
             const urlFor = (name, id) => routes[name].replace('__ID__', id);
             let ctxLi = null;
 
             // Pozycja wśród rodzeństwa w zapisanej kolejności (niezależnie od układu A–Z na ekranie).
             const savedSiblings = li => siblingsOf(li, 0).sort((a, b) => a.dataset.pos - b.dataset.pos);
+
+            // ── Schowek stron (Wytnij / Kopiuj / Wklej) ─────────────────────────
+            // Zapamiętany w przeglądarce dla witryny: { mode: 'cut' | 'copy', id, label }. Wycięta strona po wklejeniu
+            // znika ze schowka (przenosi ją ta sama trasa co przeciąganie), skopiowana zostaje — można wkleić kilka kopii.
+            const nodeById = id => tree.querySelector('[data-tree-node][data-page-id="' + id + '"]');
+            const clipBox = document.getElementById('tree-clip');
+            const clip = {
+                key: 'pageTreeClip:' + @js(\App\Models\SiteSetting::current()->id),
+                get() { try { return JSON.parse(localStorage.getItem(this.key) || 'null'); } catch (e) { return null; } },
+                put(mode, li) {
+                    try { localStorage.setItem(this.key, JSON.stringify({ mode, id: idOf(li), label: li.dataset.label })); } catch (e) {}
+                    this.render();
+                    announce((mode === 'cut' ? 'Wycięto' : 'Skopiowano') + ' stronę „' + li.dataset.label + '”. Wklej ją z menu innej strony albo skrótem Ctrl+V.');
+                },
+                clear() { try { localStorage.removeItem(this.key); } catch (e) {} this.render(); },
+                render() {
+                    const c = this.get();
+                    tree.querySelectorAll('.tree-cut').forEach(n => n.classList.remove('tree-cut'));
+                    clipBox.hidden = ! c;
+                    if (! c) return;
+                    clipBox.querySelector('[data-clip-text]').textContent = 'W schowku: „' + c.label + '” (' + (c.mode === 'cut' ? 'wycięta' : 'kopia') + ')';
+                    if (c.mode === 'cut') nodeById(c.id)?.classList.add('tree-cut');
+                },
+            };
+            clipBox.querySelector('[data-clip-clear]').addEventListener('click', () => { clip.clear(); announce('Wyczyszczono schowek.'); });
+            clip.render();
+
+            function paste(target, into) {
+                const c = clip.get();
+                if (! c) { announce('Schowek jest pusty.'); return; }
+                const cutLi = c.mode === 'cut' ? nodeById(c.id) : null;
+                if (String(c.id) === target.dataset.pageId || (cutLi && cutLi.contains(target))) { announce('Nie można wkleić strony w nią samą ani w jej podstronę.'); return; }
+                let parentId, position;
+                if (into) { parentId = idOf(target); position = 100000; }
+                else {
+                    parentId = parentIdOf(target);
+                    const sibs = savedSiblings(target).filter(n => String(idOf(n)) !== String(c.id));
+                    position = sibs.indexOf(target) + 1;
+                }
+                if (c.mode === 'cut') { clip.clear(); send(c.id, parentId, position); return; }
+                const f = document.createElement('form');
+                f.method = 'POST'; f.action = urlFor('pasteCopy', c.id); f.hidden = true;
+                f.innerHTML = '<input type="hidden" name="_token"><input type="hidden" name="parent_id"><input type="hidden" name="position">';
+                f.elements._token.value = csrf;
+                f.elements.parent_id.value = parentId || '';
+                f.elements.position.value = position;
+                document.body.appendChild(f);
+                f.submit();
+            }
 
             function openCtx(li, x, y, focusFirst) {
                 ctxLi = li;
@@ -910,6 +1036,14 @@
                 del.hidden = ! canEdit || d.system === '1';
                 ctx.querySelector('[data-ctx-del-sep]').hidden = del.hidden;
                 ctx.querySelector('[data-act=up]').setAttribute('aria-disabled', String(idx <= 0));
+                // Wklejanie: tylko gdy coś jest w schowku; wyciętej strony nie da się wkleić w nią samą ani w jej podstronę.
+                const c = clip.get(), cutLi = c && c.mode === 'cut' ? nodeById(c.id) : null;
+                const pasteOff = ! c || String(c.id) === d.pageId || (cutLi && cutLi.contains(li));
+                ctx.querySelectorAll('[data-paste]').forEach(b => { b.hidden = pasteOff; });
+                if (! pasteOff) {
+                    ctx.querySelector('[data-paste-after]').textContent = (c.mode === 'cut' ? 'Wklej „' : 'Wklej kopię „') + c.label + '” za tą stroną';
+                    ctx.querySelector('[data-paste-into]').textContent = (c.mode === 'cut' ? 'Wklej „' : 'Wklej kopię „') + c.label + '” jako podstronę';
+                }
                 ctx.querySelector('[data-act=down]').setAttribute('aria-disabled', String(idx >= sibs.length - 1));
 
                 tree.querySelectorAll('.tree-ctx-on').forEach(r => r.classList.remove('tree-ctx-on'));
@@ -964,6 +1098,10 @@
                 }
                 // „Przenieś do…”: panel szczegółów strony ma listę stron nadrzędnych (z wyłączoną nią samą i jej podstronami).
                 else if (act === 'move') location.href = urlFor('select', id) + '#move-parent';
+                else if (act === 'branch') location.href = urlFor('branch', id);
+                else if (act === 'cut' || act === 'copy-page') clip.put(act === 'cut' ? 'cut' : 'copy', li);
+                else if (act === 'paste-after') paste(li, false);
+                else if (act === 'paste-into') paste(li, true);
                 else if (act === 'copy-url') copy(d.publicUrl, 'adres strony');
                 else if (act === 'copy-id') copy(id, 'ID strony');
             }
@@ -1011,6 +1149,45 @@
 
             // Po „Przenieś do…” fokus od razu na liście stron nadrzędnych.
             if (location.hash === '#move-parent') document.getElementById('move-parent')?.focus();
+
+            // Klawiatura w drzewie (jak drzewo stron TYPO3): strzałki bez modyfikatorów przenoszą fokus między widocznymi
+            // stronami i grupami działań, w prawo/lewo rozwijają i zwijają gałąź; Ctrl+X / C / V — schowek.
+            const focusables = () => [...tree.querySelectorAll('#tree-scroll [data-tree-row] > a, #tree-scroll [data-tree-group] > button')]
+                .filter(el => el.offsetParent !== null && ! el.closest('[hidden]'));
+            tree.addEventListener('keydown', e => {
+                const el = e.target;
+                if (! el.matches || ! el.matches('[data-tree-row] > a, [data-tree-group] > button')) return;
+                const li = el.closest('[data-tree-node]');
+                const groupLi = el.matches('[data-tree-group] > button') ? el.parentElement : null;
+                const holder = groupLi || li;
+
+                if ((e.ctrlKey || e.metaKey) && ! e.altKey && li && ! groupLi) {
+                    const k = e.key.toLowerCase();
+                    const canEdit = li.dataset.canEdit === '1';
+                    if (k === 'x' && canEdit) { e.preventDefault(); clip.put('cut', li); return; }
+                    if (k === 'c' && canEdit && ! window.getSelection().toString()) { e.preventDefault(); clip.put('copy', li); return; }
+                    if (k === 'v' && clip.get()) { e.preventDefault(); paste(li, e.shiftKey); return; }
+                }
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                if (! ['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
+                e.preventDefault();
+                const list = focusables(), i = list.indexOf(el);
+                const state = holder && holder.hasAttribute('x-data') ? Alpine.$data(holder) : null;
+                if (e.key === 'ArrowDown') list[i + 1]?.focus();
+                else if (e.key === 'ArrowUp') list[i - 1]?.focus();
+                else if (e.key === 'Home') list[0]?.focus();
+                else if (e.key === 'End') list[list.length - 1]?.focus();
+                else if (e.key === 'ArrowRight') {
+                    if (state && ! state.open) state.open = true;
+                    else if (state) Alpine.nextTick(() => focusables()[focusables().indexOf(el) + 1]?.focus());
+                } else if (e.key === 'ArrowLeft') {
+                    if (state && state.open) state.open = false;
+                    else {
+                        const up = holder.parentElement.closest('[data-tree-node], [data-tree-group]');
+                        up?.querySelector(':scope > [data-tree-row] > a, :scope > button')?.focus();
+                    }
+                }
+            });
 
             // Klawiatura: Alt+Shift+strzałki na linku strony w drzewie.
             tree.addEventListener('keydown', e => {
