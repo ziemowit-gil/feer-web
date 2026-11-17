@@ -107,8 +107,13 @@ return new class extends Migration
             if (! Schema::hasColumn('donations', 'refunded_at')) {
                 $table->timestamp('refunded_at')->nullable()->after('thanked_at');
             }
-            $table->unique('p24_order_id', 'donations_p24_order_id_unique');
         });
+
+        if (! Schema::hasIndex('donations', 'donations_p24_order_id_unique')) {
+            Schema::table('donations', function (Blueprint $table) {
+                $table->unique('p24_order_id', 'donations_p24_order_id_unique');
+            });
+        }
 
         if (! Schema::hasColumn('site_settings', 'fundraising_texts')) {
             Schema::table('site_settings', function (Blueprint $table) {

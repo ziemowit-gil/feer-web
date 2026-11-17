@@ -69,9 +69,13 @@ class AdminMenuRolesTest extends TestCase
         $this->assertSame('Kontrola jakości', $blockOf('content', 'text_quality'));
         $this->assertSame('Działania', $blockOf('activity', 'portals'));
         $this->assertSame('Szkolenia i oferta', $blockOf('activity', 'shop'));
-        // Landing pages, kampanie zbiórkowe i bannery to jedna promocja — nie rozrzucone po Treściach i Komunikacji.
-        foreach (['landing', 'campaigns', 'banners'] as $promo) {
+        // Landing pages i bannery to jedna promocja — nie rozrzucone po Treściach i Komunikacji.
+        foreach (['landing', 'banners'] as $promo) {
             $this->assertSame('Promocja i kampanie', $blockOf('comms', $promo));
+        }
+        // Zbiórki i wpłaty (moduł Fundraising i darowizny) mają własny blok w Komunikacji.
+        foreach (['campaigns', 'donations'] as $fundraising) {
+            $this->assertSame('Zbiórki i darowizny', $blockOf('comms', $fundraising));
         }
         $this->assertSame('Funkcje i integracje', $blockOf('settings', 'templates'));
         $this->assertSame('Moduły i integracje', $blockOf('system', 'mcp'));
