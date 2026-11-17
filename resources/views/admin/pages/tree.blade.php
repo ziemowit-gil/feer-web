@@ -186,11 +186,11 @@
                     });
                 },
             }" x-init="applySort()">
-            <div class="space-y-2 border-b border-gray-100 p-3">
+            <div class="space-y-2 border-b border-gray-100 px-2.5 py-2">
                 <div class="flex items-center justify-between gap-2">
-                    <h2 class="text-sm font-bold text-ink"><i class="fa-solid fa-sitemap mr-1 text-brand-dark" aria-hidden="true"></i> Struktura serwisu <span class="font-normal text-muted">({{ $total }})</span></h2>
-                    <div class="flex items-center gap-1">
-                        <div role="group" aria-label="Układ drzewa" class="mr-1 flex flex-none whitespace-nowrap rounded bg-gray-100 p-0.5 text-[11px] font-bold">
+                    <h2 class="min-w-0 truncate text-sm font-bold text-ink">Struktura serwisu <span class="font-normal text-muted">({{ $total }})</span></h2>
+                    <div class="flex flex-none items-center gap-0.5">
+                        <div role="group" aria-label="Układ drzewa" class="mr-0.5 flex flex-none whitespace-nowrap rounded bg-gray-100 p-0.5 text-[11px] font-bold">
                             <button type="button" @click="setSort('az')" :aria-pressed="(sort === 'az').toString()" title="Strony z podstronami na górze, alfabetycznie"
                                 :class="sort === 'az' ? 'bg-white text-ink shadow-sm' : 'text-muted hover:text-ink'"
                                 class="rounded px-1.5 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">A–Z</button>
@@ -204,6 +204,15 @@
                         <button type="button" @click="setAll(false)" class="rounded p-1.5 text-xs text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" title="Zwiń wszystko" aria-label="Zwiń wszystkie gałęzie">
                             <i class="fa-solid fa-angles-up" aria-hidden="true"></i>
                         </button>
+                        <button type="button" @click="panel = panel === 'legend' ? '' : 'legend'" :aria-expanded="(panel === 'legend').toString()" aria-expanded="false" aria-controls="tree-legend" title="Legenda" aria-label="Legenda"
+                            :class="panel === 'legend' ? 'bg-brand-light text-ink' : 'text-muted hover:bg-gray-100 hover:text-brand-dark'" class="rounded p-1.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" @click="panel = panel === 'opts' ? '' : 'opts'" :aria-expanded="(panel === 'opts').toString()" aria-expanded="false" aria-controls="tree-opts" title="Opcje widoku drzewa" aria-label="Opcje widoku drzewa"
+                            :class="panel === 'opts' ? 'bg-brand-light text-ink' : 'text-muted hover:bg-gray-100 hover:text-brand-dark'" class="relative rounded p-1.5 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                            <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+                            <span x-show="Object.values(opts).some(Boolean)" x-cloak class="absolute -right-0.5 -top-0.5 rounded-full bg-brand-dark px-1 text-[9px] leading-tight text-white" x-text="Object.values(opts).filter(Boolean).length"></span>
+                        </button>
                     </div>
                 </div>
                 <div>
@@ -211,7 +220,7 @@
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted" aria-hidden="true"></i>
                         <input type="search" id="tree-filter" x-model="q" @input="filter()" placeholder="Filtruj drzewo…" autocomplete="off" aria-describedby="tree-filter-status"
-                            class="w-full rounded border-gray-500 py-1.5 pl-8 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                            class="w-full rounded border-gray-500 py-1 pl-8 text-sm focus:border-brand-dark focus:ring-brand-dark">
                     </div>
                     {{-- Wynik filtrowania: widoczny tekst i komunikat dla czytników ekranu (element zawsze w DOM, więc aria-live działa). --}}
                     <p id="tree-filter-status" role="status" aria-live="polite" class="mt-1 text-xs text-muted" :class="filterInfo ? '' : 'sr-only'" x-text="filterInfo"></p>
@@ -225,17 +234,6 @@
                     $optBox = 'h-4 w-4 rounded border-gray-500 text-brand-dark focus:ring-brand-dark';
                     $panelBtn = 'inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
                 @endphp
-                <div class="flex flex-wrap gap-1">
-                    <button type="button" @click="panel = panel === 'legend' ? '' : 'legend'" :aria-expanded="(panel === 'legend').toString()" aria-expanded="false" aria-controls="tree-legend"
-                        :class="panel === 'legend' ? 'bg-brand-light text-ink' : 'text-muted hover:bg-gray-100 hover:text-ink'" class="{{ $panelBtn }}">
-                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i> Legenda
-                    </button>
-                    <button type="button" @click="panel = panel === 'opts' ? '' : 'opts'" :aria-expanded="(panel === 'opts').toString()" aria-expanded="false" aria-controls="tree-opts"
-                        :class="panel === 'opts' ? 'bg-brand-light text-ink' : 'text-muted hover:bg-gray-100 hover:text-ink'" class="{{ $panelBtn }}">
-                        <i class="fa-solid fa-sliders" aria-hidden="true"></i> Opcje
-                        <span x-show="Object.values(opts).some(Boolean)" x-cloak class="rounded-full bg-brand-dark px-1.5 text-[10px] text-white" x-text="Object.values(opts).filter(Boolean).length"></span>
-                    </button>
-                </div>
 
                 <div id="tree-legend" x-show="panel === 'legend'" x-cloak class="rounded bg-gray-50 p-3 text-xs text-ink">
                     <h3 class="mb-1.5 font-bold">Stan strony</h3>
@@ -285,7 +283,7 @@
                 Shift+F10 lub klawisz Menu na stronie otwiera menu jej akcji.
             </p>
             <div id="tree-dnd-status" role="status" aria-live="polite" class="sr-only"></div>
-            <div class="overflow-y-auto p-2" :style="full ? '' : 'max-height:calc(100vh - 16rem)'" style="max-height:calc(100vh - 16rem)" id="tree-scroll"
+            <div class="overflow-y-auto px-1.5 py-1.5" :style="full ? '' : 'max-height:calc(100vh - 16rem)'" style="max-height:calc(100vh - 16rem)" id="tree-scroll"
                 @click="if (full && $event.target.closest('a[href]')) setFull(false)">
                 @if ($treeRoots->isEmpty() && $projectGroups->isEmpty())
                     <p class="px-2 py-6 text-center text-sm text-muted">Brak stron. Dodaj pierwszą stronę przyciskiem powyżej.</p>
@@ -299,7 +297,7 @@
                             @foreach ($projectGroups as $g)
                                 <li data-tree-group data-title="{{ \Illuminate\Support\Str::lower($g['title'] . ' ' . $g['pages']->pluck('title')->implode(' ')) }}" x-data="{ open: {{ $g['open'] ? 'true' : 'false' }} }">
                                     <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $g['open'] ? 'true' : 'false' }}" aria-controls="tree-proj-{{ $g['id'] }}"
-                                        class="flex min-h-7 w-full items-center gap-2 rounded py-0.5 pr-1.5 text-left text-sm font-semibold text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                        class="flex min-h-6 w-full items-center gap-1.5 rounded-sm py-px pr-1.5 text-left text-sm font-semibold text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                                         <span class="flex w-6 flex-none justify-center text-[11px] text-muted"><i class="fa-solid fa-chevron-right transition-transform" :class="open ? 'rotate-90' : ''" aria-hidden="true"></i></span>
                                         <span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm text-[10px] font-bold leading-none" style="background:#166534;color:#fff" aria-hidden="true">D</span>
                                         <span class="min-w-0 flex-1 truncate"><span class="sr-only">Działanie: </span>{{ $g['title'] }}</span>
@@ -560,9 +558,13 @@
          okna, oznacza tło jako nieaktywne i oddaje fokus przyciskowi, który go otworzył (WCAG 2.1.2, 2.4.3, 4.1.2). --}}
     <style>
         /* Drzewo stron: podstrony z linią pionową spod strzałki rodzica i krótkim łącznikiem do każdego wiersza. */
-        #page-tree .tree-sub { margin-left: .75rem; padding-left: .625rem; border-left: 2px solid #c4c9d2; }
+        #page-tree .tree-sub { margin-left: .75rem; padding-left: .5rem; border-left: 1px solid #c4c9d2; }
         #page-tree .tree-sub > li { position: relative; }
-        #page-tree .tree-sub > li::before { content: ''; position: absolute; left: -.625rem; top: .875rem; width: .5rem; border-top: 2px solid #c4c9d2; }
+        #page-tree .tree-sub > li::before { content: ''; position: absolute; left: -.5rem; top: .75rem; width: .375rem; border-top: 1px solid #c4c9d2; }
+        /* Wybrana strona: jasne tło marki z kreską z lewej (zamiast pełnego paska), tekst ink ≥ 4,5:1. */
+        #page-tree .tree-link.is-selected { box-shadow: inset 3px 0 0 var(--m-accent, var(--color-brand-dark, #1752bf)); background: var(--m-tile, var(--color-brand-light, #e8f0ff)); }
+        /* Metro wymusza 44 px pól — w nagłówku drzewa filtr zostaje niższy (cel ≥ 24 px). */
+        .admin-metro #page-tree #tree-filter { min-height: 2.25rem; border-width: 1px; }
         /* Widok „Drzewo na całą stronę”: gałęzie najwyższego poziomu w kolumnach, bez dzielenia gałęzi między kolumny. */
         #page-tree.tree-full #tree-scroll > ul { columns: 22rem; column-gap: 1.5rem; }
         #page-tree.tree-full #tree-scroll > ul > li { break-inside: avoid; }

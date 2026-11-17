@@ -57,6 +57,26 @@ class PageTreeViewTest extends TestCase
         $this->assertStringContainsString('aria-current="true"', $html);
     }
 
+    public function test_drzewo_jest_zwarte_a_karta_ma_menu_jako_rozwijane(): void
+    {
+        $root = $this->page('Dział');
+        $leaf = $this->page('Liść', ['parent_id' => $root->id]);
+
+        $html = $this->actingAs($this->admin())->get(route('admin.podstrony.index', ['wybrana' => $leaf->id]))
+            ->assertOk()->getContent();
+
+        // Wybrana strona w drzewie: jasne podświetlenie (nie pełny pasek marki), wiersze niskie (≥ 24 px)
+        $this->assertMatchesRegularExpression('/aria-current="true"\s+class="tree-link[^"]*is-selected bg-brand-light/u', $html);
+        $this->assertStringNotContainsString('bg-brand-dark text-white font-bold', $html);
+        $this->assertStringContainsString('tree-link flex min-h-6', $html);
+        // Legenda i opcje jako ikony w nagłówku drzewa
+        $this->assertStringContainsString('aria-controls="tree-legend" title="Legenda" aria-label="Legenda"', $html);
+        $this->assertStringContainsString('aria-label="Opcje widoku drzewa"', $html);
+        // Menu nawigacji strony w karcie jako rozwijane „Pozycja w menu”, bez osobnego paska
+        $this->assertStringContainsString('Pozycja w menu</summary>', $html);
+        $this->assertStringNotContainsString('W menu nawigacji</span>', $html);
+    }
+
     public function test_osoby_nie_sa_czescia_drzewa(): void
     {
         $about = $this->page('O nas', ['type' => 'about']);

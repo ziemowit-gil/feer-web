@@ -3,7 +3,7 @@
     Zmienne: $nodes (kolekcja Page), $byParent, $selected, $openIds, $depth.
 
     Nawigacja z listami zagnieżdżonymi (nie widżet ARIA tree): linki + przyciski
-    rozwijania z aria-expanded/aria-controls, cele ≥ 28 px wysokości (2.5.8 wymaga min. 24 px).
+    rozwijania z aria-expanded/aria-controls, cele ≥ 24 px wysokości (2.5.8), zwarte wiersze jak w drzewie stron TYPO3.
 --}}
 @php
     $typeIcons = \App\Models\Page::typeIcons();
@@ -28,7 +28,7 @@
                     <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="{{ $isOpen ? 'true' : 'false' }}"
                         aria-controls="tree-branch-{{ $node->id }}"
                         :aria-label="(open ? 'Zwiń' : 'Rozwiń') + ': {{ addslashes($node->title) }}'" aria-label="{{ $isOpen ? 'Zwiń' : 'Rozwiń' }}: {{ $node->title }}"
-                        class="flex min-h-7 w-6 flex-none items-center justify-center rounded text-[11px] text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                        class="flex min-h-6 w-6 flex-none items-center justify-center rounded text-[10px] text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                         <i class="fa-solid fa-chevron-right transition-transform" :class="open ? 'rotate-90' : ''" aria-hidden="true"></i>
                     </button>
                 @else
@@ -36,30 +36,30 @@
                 @endif
 
                 <a href="{{ route('admin.podstrony.index', ['wybrana' => $node->id]) }}" title="{{ $node->title }}" @if ($isSel) aria-current="true" @endif
-                    class="flex min-h-7 min-w-0 flex-1 items-center gap-2 rounded px-1.5 py-0.5 text-sm transition {{ $depth === 0 ? 'font-semibold' : '' }} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark
-                        {{ $isSel ? 'bg-brand-dark text-white font-bold' : 'text-ink hover:bg-gray-100' }}">
-                    <i class="fa-solid {{ $icon }} w-4 flex-none text-center text-xs {{ $isSel ? 'text-white' : 'text-gray-400' }}" aria-hidden="true"></i>
+                    class="tree-link flex min-h-6 min-w-0 flex-1 items-center gap-1.5 rounded-sm px-1.5 py-px text-sm leading-snug transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark
+                        {{ $isSel ? 'is-selected bg-brand-light text-ink font-semibold' : 'text-ink hover:bg-gray-100' }}">
+                    <i class="fa-solid {{ $icon }} w-4 flex-none text-center text-xs {{ $isSel ? 'text-brand-dark' : 'text-gray-400' }}" aria-hidden="true"></i>
                     <span class="min-w-0 flex-1 truncate {{ $node->is_published && ! $node->is_disabled && ! isset($inheritedDisabled[$node->id]) ? '' : 'opacity-70' }}">{{ $node->title }}</span>
-                    @if ($node->project_id)<span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm text-[10px] font-bold leading-none" style="{{ $isSel ? 'background:#fff;color:#166534' : 'background:#166534;color:#fff' }}" aria-hidden="true">D</span><span class="sr-only">(podstrona działania)</span>@endif
+                    @if ($node->project_id)<span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm text-[10px] font-bold leading-none" style="background:#166534;color:#fff" aria-hidden="true">D</span><span class="sr-only">(podstrona działania)</span>@endif
                     @if ($node->is_system)<i class="fa-solid fa-lock text-[10px] opacity-60" aria-hidden="true"></i><span class="sr-only">(systemowa)</span>@endif
-                    @if ($node->access_level && ! in_array($node->access_level, ['inherit', 'public'], true))<i class="fa-solid fa-key text-[10px] {{ $isSel ? 'text-white' : 'text-gray-500' }}" aria-hidden="true"></i><span class="sr-only">(dostęp ograniczony: {{ \App\Models\Page::ACCESS_LEVELS[$node->access_level] ?? $node->access_level }})</span>@endif
+                    @if ($node->access_level && ! in_array($node->access_level, ['inherit', 'public'], true))<i class="fa-solid fa-key text-[10px] text-gray-500" aria-hidden="true"></i><span class="sr-only">(dostęp ograniczony: {{ \App\Models\Page::ACCESS_LEVELS[$node->access_level] ?? $node->access_level }})</span>@endif
                     @if (! empty(($menuPositions ?? [])[$node->id] ?? null))
                         @php $nodeMenu = collect(($menuPositions ?? [])[$node->id])->map(fn ($p) => $p['location_label'].($p['parent'] ? ' › '.$p['parent'] : ''))->unique()->implode(', '); @endphp
-                        <i class="fa-solid fa-bars text-[10px] {{ $isSel ? 'text-white' : 'text-brand-dark' }}" title="W menu: {{ $nodeMenu }}" aria-hidden="true"></i><span class="sr-only">(w menu: {{ $nodeMenu }})</span>
+                        <i class="fa-solid fa-bars text-[10px] text-brand-dark" title="W menu: {{ $nodeMenu }}" aria-hidden="true"></i><span class="sr-only">(w menu: {{ $nodeMenu }})</span>
                     @endif
-                    @if ($node->is_featured)<i class="fa-solid fa-star text-[10px] {{ $isSel ? 'text-white' : 'text-amber-500' }}" aria-hidden="true"></i><span class="sr-only">(wyróżniona)</span>@endif
+                    @if ($node->is_featured)<i class="fa-solid fa-star text-[10px] text-amber-500" aria-hidden="true"></i><span class="sr-only">(wyróżniona)</span>@endif
                     @unless ($isSel)
                         <span data-tree-chip class="inline-flex">@include('admin.pages.partials.status-chip', ['page' => $node, 'compact' => true, 'inherited' => isset($inheritedDisabled[$node->id])])</span>
                     @else
                         <span class="sr-only">Wybrana strona. </span>
                     @endunless
                     @if ($kids->isNotEmpty())
-                        <span data-tree-count class="rounded-full px-1.5 text-[10px] font-bold {{ $isSel ? 'bg-white/25 text-white' : 'bg-gray-100 text-muted' }}"><span class="sr-only">podstron: </span>{{ $kids->count() }}</span>
+                        <span data-tree-count class="rounded-full px-1.5 text-[10px] font-bold bg-gray-100 text-muted"><span class="sr-only">podstron: </span>{{ $kids->count() }}</span>
                     @endif
                 </a>
                 {{-- Akcje wiersza dla myszy i dotyku; z klawiatury to samo menu otwiera Shift+F10 lub klawisz Menu na linku. --}}
                 <button type="button" data-tree-menu-btn tabindex="-1" aria-hidden="true" title="Akcje strony"
-                    class="flex min-h-7 w-7 flex-none items-center justify-center rounded text-xs text-muted opacity-0 hover:bg-gray-100 hover:text-brand-dark group-hover:opacity-100">
+                    class="flex min-h-6 w-6 flex-none items-center justify-center rounded text-xs text-muted opacity-0 hover:bg-gray-100 hover:text-brand-dark group-hover:opacity-100">
                     <i class="fa-solid fa-ellipsis" aria-hidden="true"></i>
                 </button>
             </div>
