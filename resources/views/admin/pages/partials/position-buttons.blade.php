@@ -5,13 +5,16 @@
     (strona, do której wraca widok drzewa).
 --}}
 @php
-    $posBtn = 'inline-flex h-7 w-7 items-center justify-center rounded border border-gray-200 bg-white text-xs text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark disabled:cursor-not-allowed disabled:border-gray-100 disabled:text-muted';
+    // $compact (tabela podstron): lekkie przyciski bez obrysu, tło po najechaniu; nieaktywny kierunek szary.
+    $posBtn = ($compact ?? false)
+        ? 'inline-flex h-7 w-7 items-center justify-center rounded text-xs text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent'
+        : 'inline-flex h-7 w-7 items-center justify-center rounded border border-gray-200 bg-white text-xs text-ink hover:border-brand-dark hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark disabled:cursor-not-allowed disabled:border-gray-100 disabled:text-muted';
     $posMoves = [
         ['to' => $index - 1, 'label' => 'Wyżej', 'icon' => 'fa-arrow-up', 'off' => $index <= 0],
         ['to' => $index + 1, 'label' => 'Niżej', 'icon' => 'fa-arrow-down', 'off' => $index >= $count - 1],
     ];
 @endphp
-<div class="inline-flex gap-1" role="group" aria-label="Pozycja strony „{{ $page->title }}”">
+<div class="inline-flex {{ ($compact ?? false) ? 'gap-0' : 'gap-1' }}" role="group" aria-label="Pozycja strony „{{ $page->title }}”">
     @foreach ($posMoves as $m)
         <form method="POST" action="{{ route('admin.podstrony.uloz') }}">
             @csrf

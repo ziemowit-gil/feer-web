@@ -77,6 +77,26 @@ class PageTreeViewTest extends TestCase
         $this->assertStringNotContainsString('W menu nawigacji</span>', $html);
     }
 
+    public function test_tabela_podstron_jest_zwarta_z_ikona_typu_i_lekkimi_przyciskami(): void
+    {
+        $root = $this->page('Dział');
+        $this->page('Pierwsza', ['parent_id' => $root->id]);
+        $this->page('Druga', ['parent_id' => $root->id]);
+
+        $html = $this->actingAs($this->admin())->get(route('admin.podstrony.index', ['wybrana' => $root->id]))
+            ->assertOk()->getContent();
+
+        $start = strpos($html, '<caption class="sr-only">Podstrony strony „Dział”');
+        $this->assertNotFalse($start);
+        $table = substr($html, $start, 12000);
+        // Nagłówki zwykłymi literami, ikona typu przed tytułem, adres w tym samym wierszu
+        $this->assertStringContainsString('px-3 py-1.5 text-xs font-semibold text-muted">Strona</th>', $table);
+        $this->assertStringContainsString('w-4 flex-none text-center text-xs text-gray-400', $table);
+        // Lekkie przyciski: bez szarych pól i obrysów, „Wyżej / Niżej” w wersji kompaktowej
+        $this->assertStringNotContainsString('bg-gray-100 hover:bg-brand-light', $table);
+        $this->assertStringContainsString('disabled:text-gray-300', $table);
+    }
+
     public function test_osoby_nie_sa_czescia_drzewa(): void
     {
         $about = $this->page('O nas', ['type' => 'about']);
@@ -148,10 +168,10 @@ class PageTreeViewTest extends TestCase
         $tree = $this->actingAs($admin)->get(route('admin.podstrony.index'))->assertOk()->getContent();
         $list = $this->actingAs($admin)->get(route('admin.podstrony.index', ['widok' => 'lista']))->assertOk()->getContent();
 
-        // Zakładka „Strony” aktywna na drzewie, „Lista stron” — na liście; zawsze obie widoczne.
-        $this->assertMatchesRegularExpression('/aria-current="page"[^>]*>\s*<i[^>]*><\/i>Strony/u', $tree);
-        $this->assertMatchesRegularExpression('/aria-current="page"[^>]*>\s*<i[^>]*><\/i>Lista stron/u', $list);
-        $this->assertStringContainsString('Lista stron', $tree);
+        // Zakładka „Strony Nawigator” aktywna na drzewie, „Strony lista” — na liście; zawsze obie widoczne.
+        $this->assertMatchesRegularExpression('/aria-current="page"[^>]*>\s*<i[^>]*><\/i>Strony Nawigator/u', $tree);
+        $this->assertMatchesRegularExpression('/aria-current="page"[^>]*>\s*<i[^>]*><\/i>Strony lista/u', $list);
+        $this->assertStringContainsString('Strony lista', $tree);
         $this->assertStringNotContainsString('Struktura serwisu', $list);
     }
 

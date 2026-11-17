@@ -2,7 +2,7 @@
     $user = auth()->user();
     $activeLocation = request()->routeIs('admin.pozycje-menu.*') ? request('location', 'main') : null;
 
-    // „Strony” = drzewo (domyślny sposób pracy), „Lista stron” = tabela z filtrami i operacjami
+    // „Strony Nawigator” = drzewo (domyślny sposób pracy), „Strony lista” = tabela z filtrami i operacjami
     // zbiorczymi. Lista włącza się wprost (?widok=lista) albo przez filtry serwerowe / kosz.
     $onPagesIndex = request()->routeIs('admin.podstrony.index');
     $pagesListMode = $onPagesIndex && (request('widok') === 'lista'
@@ -53,10 +53,10 @@
             </a>
         @elseif ($user->canAccessModule('pages'))
             <a href="{{ route('admin.podstrony.index') }}" @if ($pagesTreeActive) aria-current="page" @endif class="{{ $tab($pagesTreeActive) }}" style="{{ $tabStyle }}">
-                <i class="fa-solid fa-sitemap text-xs" aria-hidden="true"></i>Strony
+                <i class="fa-solid fa-sitemap text-xs" aria-hidden="true"></i>Strony Nawigator
             </a>
             <a href="{{ route('admin.podstrony.index', ['widok' => 'lista']) }}" @if ($pagesListMode) aria-current="page" @endif class="{{ $tab($pagesListMode) }}" style="{{ $tabStyle }}">
-                <i class="fa-solid fa-list text-xs" aria-hidden="true"></i>Lista stron
+                <i class="fa-solid fa-list text-xs" aria-hidden="true"></i>Strony lista
             </a>
             <a href="{{ route('admin.osoby.index') }}" @if (request()->routeIs('admin.osoby.*')) aria-current="page" @endif class="{{ $tab(request()->routeIs('admin.osoby.*')) }}" style="{{ $tabStyle }}">
                 <i class="fa-solid fa-address-card text-xs" aria-hidden="true"></i>Osoby

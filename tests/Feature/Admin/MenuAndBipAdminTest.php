@@ -38,7 +38,7 @@ class MenuAndBipAdminTest extends TestCase
             ->assertSee('aria-label="Sekcje menu"', false)
             ->assertSee('Menu główne')
             ->assertSee('Stopka')
-            ->assertDontSee('Lista stron');
+            ->assertDontSee('Strony lista');
 
         $this->actingAs($admin)->get(route('admin.pozycje-menu.index', ['location' => 'bip']))->assertOk()
             ->assertSee('aria-label="Sekcje BIP"', false)

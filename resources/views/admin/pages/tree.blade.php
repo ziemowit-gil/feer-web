@@ -530,15 +530,14 @@
                 </div>
 
                 {{-- Podstrony --}}
-                <div>
-                    <div class="mb-2 flex items-center justify-between">
-                        <h3 class="text-base font-bold text-ink">Podstrony <span class="font-normal text-muted">({{ $children->count() }})</span></h3>
+                {{-- Podstrony: jeden biały blok — nagłówek z liczbą i „Dodaj podstronę”, pod nim zwarta tabela. --}}
+                <div class="rounded-md bg-white">
+                    <div class="flex items-center justify-between gap-2 border-b border-gray-100 px-3 py-1.5">
+                        <h3 class="text-sm font-bold text-ink">Podstrony <span class="font-normal text-muted">({{ $children->count() }})</span></h3>
                         <a href="{{ route('admin.podstrony.create', ['parent_id' => $selected->id]) }}" class="{{ $ghost }}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj podstronę</a>
                     </div>
                     @if ($children->isEmpty())
-                        <div class="rounded-lg border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-muted">
-                            Ta strona nie ma jeszcze podstron.
-                        </div>
+                        <p class="px-3 py-6 text-center text-sm text-muted">Ta strona nie ma jeszcze podstron.</p>
                     @else
                         @include('admin.pages.partials.children-table', ['children' => $children, 'selected' => $selected, 'inheritedDisabled' => $inheritedDisabled])
                     @endif
@@ -624,7 +623,7 @@
 
             <div class="overflow-y-auto px-6 py-5" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr)); gap: 2rem; align-items: start; overflow-x: hidden">
 
-                {{-- Filtry: przechodzą do zakładki „Lista stron” z gotowymi parametrami --}}
+                {{-- Filtry: przechodzą do zakładki „Strony lista” z gotowymi parametrami --}}
                 <form method="GET" action="{{ route('admin.podstrony.index') }}" class="space-y-4" style="min-width: 0">
                     <input type="hidden" name="widok" value="lista">
                     <h3 class="text-sm font-bold uppercase tracking-wide text-muted">Filtry</h3>
