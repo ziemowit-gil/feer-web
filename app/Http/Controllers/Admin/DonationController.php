@@ -100,6 +100,11 @@ class DonationController extends Controller
             'admin_note' => ['nullable', 'string', 'max:2000'],
         ]);
 
+        // Opłaconą wpłatę online można tylko zwrócić — „failed”/„pending” cofnąłby i tak donations:sync.
+        if (! $donation->isManual() && $donation->isPaid() && ! in_array($data['status'], ['paid', 'refunded'], true)) {
+            return back()->withErrors(['status' => 'Opłaconą wpłatę online można oznaczyć tylko jako zwróconą.'])->withInput();
+        }
+
         $donation->update(['admin_note' => $data['admin_note'] ?? null]);
         $service->changeStatus($donation, $data['status'], $request->boolean('send_thanks'));
 

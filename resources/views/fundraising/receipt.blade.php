@@ -30,15 +30,15 @@
     @endforeach
 
     <table>
-        <tr><th>Numer potwierdzenia</th><td>{{ strtoupper(substr($donation->session_id, 0, 8)) }}/{{ ($donation->paid_at ?? now())->format('Y') }}</td></tr>
-        <tr><th>Darczyńca</th><td>{{ $donation->company_name ?: $donation->fullName() }}@if ($donation->company_name && $donation->fullName() !== '')<br>{{ $donation->fullName() }}@endif</td></tr>
+        <tr><th>{{ $texts->get('pdf_number_label', $vars) }}</th><td>{{ strtoupper(substr($donation->session_id, 0, 8)) }}/{{ ($donation->paid_at ?? now())->format('Y') }}</td></tr>
+        <tr><th>{{ $texts->get('pdf_donor_label', $vars) }}</th><td>{{ $donation->company_name ?: $donation->fullName() }}@if ($donation->company_name && $donation->fullName() !== '')<br>{{ $donation->fullName() }}@endif</td></tr>
         @if ($donation->nip)
-            <tr><th>NIP darczyńcy</th><td>{{ $donation->nip }}</td></tr>
+            <tr><th>{{ $texts->get('pdf_nip_label', $vars) }}</th><td>{{ $donation->nip }}</td></tr>
         @endif
-        <tr><th>Kwota</th><td>{{ number_format($donation->amount_grosze / 100, 2, ',', ' ') }} {{ $donation->currency }}</td></tr>
-        <tr><th>Data wpłaty</th><td>{{ ($donation->paid_at ?? now())->format('d.m.Y') }}</td></tr>
-        <tr><th>Cel</th><td>{{ $vars['kampania'] }}</td></tr>
-        <tr><th>Sposób wpłaty</th><td>{{ $donation->isManual() ? 'Przelew / wpłata przyjęta przez organizację' : 'Płatność online (Przelewy24)' }}@if ($donation->p24_order_id), nr transakcji {{ $donation->p24_order_id }}@endif</td></tr>
+        <tr><th>{{ $texts->get('pdf_amount_label', $vars) }}</th><td>{{ number_format($donation->amount_grosze / 100, 2, ',', ' ') }} {{ $donation->currency }}</td></tr>
+        <tr><th>{{ $texts->get('pdf_date_label', $vars) }}</th><td>{{ ($donation->paid_at ?? now())->format('d.m.Y') }}</td></tr>
+        <tr><th>{{ $texts->get('pdf_purpose_label', $vars) }}</th><td>{{ $vars['kampania'] }}</td></tr>
+        <tr><th>{{ $texts->get('pdf_method_label', $vars) }}</th><td>{{ $texts->get($donation->isManual() ? 'pdf_method_manual' : 'pdf_method_online', $vars) }}@if ($donation->p24_order_id), {{ $texts->get('pdf_transaction_label', $vars) }} {{ $donation->p24_order_id }}@endif</td></tr>
     </table>
 
     @foreach ($texts->paragraphs('pdf_footer', $vars) as $paragraph)

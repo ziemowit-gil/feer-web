@@ -21,7 +21,7 @@
         ['Facebook', 'fa-brands fa-facebook-f', 'https://www.facebook.com/sharer/sharer.php?u=' . urlencode($shareUrl)],
         ['LinkedIn', 'fa-brands fa-linkedin-in', 'https://www.linkedin.com/sharing/share-offsite/?url=' . urlencode($shareUrl)],
         ['X', 'fa-brands fa-x-twitter', 'https://twitter.com/intent/tweet?text=' . urlencode($shareText) . '&url=' . urlencode($shareUrl)],
-        ['E-mail', 'fa-solid fa-envelope', 'mailto:?subject=' . rawurlencode($vars['kampania']) . '&body=' . rawurlencode($shareText . ' ' . $shareUrl)],
+        [$texts->get('share_email_label', $vars), 'fa-solid fa-envelope', 'mailto:?subject=' . rawurlencode($texts->get('share_email_subject', $vars)) . '&body=' . rawurlencode($shareText . ' ' . $shareUrl)],
     ];
 @endphp
 
@@ -52,12 +52,15 @@
         <section class="mt-10 rounded-2xl bg-gray-50 p-5 sm:p-6" aria-labelledby="thanks-summary-heading">
             <h2 id="thanks-summary-heading" class="{{ $display }} mb-4 text-xl text-ink">{{ $texts->get('summary_heading', $vars) }}</h2>
             <dl class="grid gap-x-6 gap-y-3 text-ink sm:grid-cols-[auto_1fr]">
-                <dt class="font-bold">Kwota</dt><dd>{{ $donation->amountLabel() }}</dd>
-                <dt class="font-bold">Cel</dt><dd>{{ $vars['kampania'] }}</dd>
-                <dt class="font-bold">Rodzaj</dt><dd>{{ \App\Models\Donation::TYPES[$donation->type] ?? \App\Models\Donation::TYPES['one_time'] }}</dd>
-                <dt class="font-bold">Data</dt><dd>{{ ($donation->paid_at ?? now())->format('d.m.Y') }}</dd>
+                <dt class="font-bold">{{ $texts->get('summary_amount', $vars) }}</dt><dd>{{ $donation->amountLabel() }}</dd>
+                <dt class="font-bold">{{ $texts->get('summary_purpose', $vars) }}</dt><dd>{{ $vars['kampania'] }}</dd>
+                <dt class="font-bold">{{ $texts->get('summary_type', $vars) }}</dt><dd>{{ $texts->get($donation->isRecurring() ? 'type_recurring' : 'type_one_time', $vars) }}</dd>
+                <dt class="font-bold">{{ $texts->get('summary_date', $vars) }}</dt><dd>{{ ($donation->paid_at ?? now())->format('d.m.Y') }}</dd>
                 @if ($donation->company_name)
-                    <dt class="font-bold">Firma</dt><dd>{{ $donation->company_name }}@if ($donation->nip), NIP {{ $donation->nip }}@endif</dd>
+                    <dt class="font-bold">{{ $texts->get('summary_company', $vars) }}</dt><dd>{{ $donation->company_name }}</dd>
+                @endif
+                @if ($donation->nip)
+                    <dt class="font-bold">{{ $texts->get('summary_nip', $vars) }}</dt><dd>{{ $donation->nip }}</dd>
                 @endif
             </dl>
             @if ($donation->isRecurring() && filled($vars['konto']))
@@ -86,7 +89,7 @@
                         <a href="{{ $href }}" @if (! str_starts_with($href, 'mailto:')) target="_blank" rel="noopener" @endif
                            class="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-gray-100 px-4 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                             <i class="{{ $icon }}" aria-hidden="true"></i> {{ $name }}
-                            @unless (str_starts_with($href, 'mailto:'))<span class="sr-only">(udostępnij, otwiera się w nowej karcie)</span>@endunless
+                            @unless (str_starts_with($href, 'mailto:'))<span class="sr-only"> {{ $texts->get('share_sr', $vars) }}</span>@endunless
                         </a>
                     </li>
                 @endforeach

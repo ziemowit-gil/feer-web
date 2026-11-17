@@ -5,9 +5,6 @@
 @php use App\Support\FundraisingTexts; @endphp
 
 @section('content')
-    @if (session('status'))
-        <div role="status" class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink">{{ session('status') }}</div>
-    @endif
     @if (session('error') || ! $ready)
         <div role="alert" class="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-800">{{ session('error') ?? 'Brak kolumny fundraising_texts — uruchom migracje.' }}</div>
     @endif

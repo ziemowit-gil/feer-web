@@ -16,9 +16,16 @@
 
 @section('content')
     @if ($errors->any())
-        <div class="mb-6 rounded-md bg-red-50 p-4 text-sm text-red-800" role="alert">
-            <p class="font-bold">Popraw zaznaczone pola ({{ $errors->count() }}).</p>
+        <div id="campaign-errors" class="mb-6 rounded-md bg-red-50 p-4 text-sm text-red-800" role="alert" tabindex="-1">
+            <p class="font-bold">Popraw zaznaczone pola ({{ $errors->count() }}):</p>
+            <ul class="mt-2 list-disc space-y-1 pl-5">
+                @foreach ($errors->messages() as $errField => $errMessages)
+                    @php $errId = str_starts_with($errField, 'texts.') ? 'texts-'.substr($errField, 6) : $errField; @endphp
+                    <li><a href="#{{ $errId }}" class="underline">{{ $errMessages[0] }}</a></li>
+                @endforeach
+            </ul>
         </div>
+        <script>document.addEventListener('DOMContentLoaded', () => document.getElementById('campaign-errors')?.focus());</script>
     @endif
 
     <form method="POST" action="{{ $campaign->exists ? route('admin.kampanie.update', $campaign) : route('admin.kampanie.store') }}"
@@ -34,29 +41,29 @@
 
                     <div>
                         <label for="title" class="{{ $label }}">Tytuł zbiórki (nagłówek H1 strony)</label>
-                        <input type="text" id="title" name="title" value="{{ old('title', $campaign->title) }}" required class="{{ $field }}">
-                        @error('title') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        <input type="text" id="title" @error('title') aria-invalid=\"true\" aria-errormessage=\"title-error\" @enderror name="title" value="{{ old('title', $campaign->title) }}" required class="{{ $field }}">
+                        @error('title') <p id="title-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="slug" class="{{ $label }}">Adres (slug)</label>
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-ink">/kampanie/</span>
-                            <input type="text" id="slug" name="slug" value="{{ old('slug', $campaign->slug) }}" placeholder="zostanie wygenerowany z tytułu" class="flex-1 rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            <input type="text" id="slug" @error('slug') aria-invalid=\"true\" aria-errormessage=\"slug-error\" @enderror name="slug" value="{{ old('slug', $campaign->slug) }}" placeholder="zostanie wygenerowany z tytułu" class="flex-1 rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
                         </div>
-                        @error('slug') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        @error('slug') <p id="slug-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="excerpt" class="{{ $label }}">Krótki opis (podtytuł i kafelek na liście)</label>
-                        <textarea id="excerpt" name="excerpt" rows="2" class="{{ $field }}">{{ old('excerpt', $campaign->excerpt) }}</textarea>
-                        @error('excerpt') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        <textarea id="excerpt" @error('excerpt') aria-invalid=\"true\" aria-errormessage=\"excerpt-error\" @enderror name="excerpt" rows="2" class="{{ $field }}">{{ old('excerpt', $campaign->excerpt) }}</textarea>
+                        @error('excerpt') <p id="excerpt-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="content" class="{{ $label }}">Opis zbiórki</label>
-                        <textarea id="content" name="content" rows="10" class="{{ $field }}">{{ old('content', $campaign->content) }}</textarea>
-                        @error('content') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        <textarea id="content" @error('content') aria-invalid=\"true\" aria-errormessage=\"content-error\" @enderror name="content" rows="10" class="{{ $field }}">{{ old('content', $campaign->content) }}</textarea>
+                        @error('content') <p id="content-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
@@ -66,15 +73,15 @@
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="goal_amount" class="{{ $label }}">Cel (zł)</label>
-                            <input type="number" id="goal_amount" name="goal_amount" min="0" value="{{ old('goal_amount', $campaign->goal_amount ?? 0) }}" required class="{{ $field }}" aria-describedby="goal_amount_help">
+                            <input type="number" id="goal_amount" @error('goal_amount') aria-invalid=\"true\" aria-errormessage=\"goal_amount-error\" @enderror name="goal_amount" min="0" value="{{ old('goal_amount', $campaign->goal_amount ?? 0) }}" required class="{{ $field }}" aria-describedby="goal_amount_help">
                             <p id="goal_amount_help" class="mt-1 text-xs text-ink">0 = zbiórka bez celu (bez paska procentowego).</p>
-                            @error('goal_amount') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                            @error('goal_amount') <p id="goal_amount-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label for="external_amount" class="{{ $label }}">Zebrano poza stroną (zł)</label>
-                            <input type="number" id="external_amount" name="external_amount" min="0" value="{{ old('external_amount', $campaign->external_amount ?? 0) }}" class="{{ $field }}" aria-describedby="external_amount_help">
+                            <input type="number" id="external_amount" @error('external_amount') aria-invalid=\"true\" aria-errormessage=\"external_amount-error\" @enderror name="external_amount" min="0" value="{{ old('external_amount', $campaign->external_amount ?? 0) }}" class="{{ $field }}" aria-describedby="external_amount_help">
                             <p id="external_amount_help" class="mt-1 text-xs text-ink">Np. wpłaty z wplacam.ngo.pl, puszek, przelewów niewpisanych w „Wpłaty”. Doliczane do paska.</p>
-                            @error('external_amount') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                            @error('external_amount') <p id="external_amount-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
@@ -88,11 +95,11 @@
 
                     <div>
                         <label for="amount_options" class="{{ $label }}">Proponowane kwoty (zł)</label>
-                        <input type="text" id="amount_options" name="amount_options" inputmode="numeric" maxlength="100"
+                        <input type="text" id="amount_options" @error('amount_options') aria-invalid=\"true\" aria-errormessage=\"amount_options-error\" @enderror name="amount_options" inputmode="numeric" maxlength="100"
                             value="{{ old('amount_options', $campaign->amount_options) }}" placeholder="{{ implode(', ', Campaign::DEFAULT_AMOUNTS) }}"
                             aria-describedby="amount_options_help" class="{{ $field }}">
                         <p id="amount_options_help" class="mt-1 text-xs text-ink">Oddzielone przecinkami, {{ Campaign::MIN_AMOUNT }}–{{ number_format(Campaign::MAX_AMOUNT, 0, ',', ' ') }} zł, najwyżej 8. Puste = {{ implode(', ', Campaign::DEFAULT_AMOUNTS) }}.</p>
-                        @error('amount_options') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        @error('amount_options') <p id="amount_options-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="space-y-2">
@@ -129,11 +136,11 @@
                     <div x-show="mode === 'wplacam'" class="space-y-4" @if ($mode !== 'wplacam') x-cloak @endif>
                         <div>
                             <label for="wplacam_url" class="{{ $label }}">Adres zbiórki w wplacam.ngo.pl</label>
-                            <input type="url" id="wplacam_url" name="wplacam_url" value="{{ old('wplacam_url', $campaign->wplacam_url) }}" placeholder="https://wplacam.ngo.pl/…" class="{{ $field }}">
-                            @error('wplacam_url') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                            <input type="url" id="wplacam_url" @error('wplacam_url') aria-invalid=\"true\" aria-errormessage=\"wplacam_url-error\" @enderror name="wplacam_url" value="{{ old('wplacam_url', $campaign->wplacam_url) }}" placeholder="https://wplacam.ngo.pl/…" class="{{ $field }}">
+                            @error('wplacam_url') <p id="wplacam_url-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                         </div>
-                        <div>
-                            <p class="{{ $label }}">Jak pokazać wpłatę</p>
+                        <fieldset>
+                            <legend class="{{ $label }}">Jak pokazać wpłatę</legend>
                             @foreach (Campaign::WPLACAM_DISPLAYS as $value => $text)
                                 <label class="flex min-h-11 items-center gap-3 text-sm">
                                     <input type="radio" name="wplacam_display" value="{{ $value }}" @checked(old('wplacam_display', $campaign->wplacam_display ?? 'redirect') === $value) class="h-5 w-5 border-gray-500 text-brand-dark focus:ring-brand-dark">
@@ -141,13 +148,13 @@
                                 </label>
                             @endforeach
                             <p class="mt-1 text-xs text-ink">Kwot z wplacam.ngo.pl strona nie widzi — aktualizuj je polem „Zebrano poza stroną”.</p>
-                        </div>
+                        </fieldset>
                     </div>
 
                     <div x-show="mode === 'external'" @if ($mode !== 'external') x-cloak @endif>
                         <label for="donation_url" class="{{ $label }}">Adres zewnętrznej zbiórki</label>
-                        <input type="url" id="donation_url" name="donation_url" value="{{ old('donation_url', $campaign->donation_url) }}" placeholder="https://…" class="{{ $field }}">
-                        @error('donation_url') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        <input type="url" id="donation_url" @error('donation_url') aria-invalid=\"true\" aria-errormessage=\"donation_url-error\" @enderror name="donation_url" value="{{ old('donation_url', $campaign->donation_url) }}" placeholder="https://…" class="{{ $field }}">
+                        @error('donation_url') <p id="donation_url-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                     </div>
                 </fieldset>
 
@@ -216,13 +223,13 @@
                     <h2 class="text-base font-bold">Publikacja</h2>
                     <div>
                         <label for="status" class="{{ $label }}">Status</label>
-                        <select id="status" name="status" class="{{ $field }}" aria-describedby="status_help">
+                        <select id="status" @error('status') aria-invalid=\"true\" aria-errormessage=\"status-error\" @enderror name="status" class="{{ $field }}" aria-describedby="status_help">
                             @foreach (Campaign::STATUSES as $value => $text)
                                 <option value="{{ $value }}" @selected(old('status', $campaign->status ?? 'draft') === $value)>{{ $text }}</option>
                             @endforeach
                         </select>
                         <p id="status_help" class="mt-1 text-xs text-ink">Zakończona zostaje na stronie, ale nie przyjmuje wpłat.</p>
-                        @error('status') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        @error('status') <p id="status-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                     </div>
                     <label class="flex min-h-11 items-center gap-3 text-sm font-bold">
                         <input type="checkbox" name="is_featured" value="1" @checked(old('is_featured', $campaign->is_featured)) class="h-5 w-5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
@@ -231,13 +238,13 @@
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                         <div>
                             <label for="starts_at" class="{{ $label }}">Początek</label>
-                            <input type="date" id="starts_at" name="starts_at" value="{{ old('starts_at', $campaign->starts_at?->format('Y-m-d')) }}" class="{{ $field }}">
-                            @error('starts_at') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                            <input type="date" id="starts_at" @error('starts_at') aria-invalid=\"true\" aria-errormessage=\"starts_at-error\" @enderror name="starts_at" value="{{ old('starts_at', $campaign->starts_at?->format('Y-m-d')) }}" class="{{ $field }}">
+                            @error('starts_at') <p id="starts_at-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label for="ends_at" class="{{ $label }}">Koniec</label>
-                            <input type="date" id="ends_at" name="ends_at" value="{{ old('ends_at', $campaign->ends_at?->format('Y-m-d')) }}" class="{{ $field }}">
-                            @error('ends_at') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                            <input type="date" id="ends_at" @error('ends_at') aria-invalid=\"true\" aria-errormessage=\"ends_at-error\" @enderror name="ends_at" value="{{ old('ends_at', $campaign->ends_at?->format('Y-m-d')) }}" class="{{ $field }}">
+                            @error('ends_at') <p id="ends_at-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                         </div>
                     </div>
                     <div>

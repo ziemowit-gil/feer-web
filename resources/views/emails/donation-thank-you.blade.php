@@ -17,13 +17,13 @@
     @endif
 
     <table role="presentation" style="border-collapse: collapse; margin: 0 0 24px; font-size: 15px;">
-        <tr><th scope="row" style="text-align:left; padding:4px 16px 4px 0;">Kwota</th><td style="padding:4px 0;">{{ $donation->amountLabel() }}</td></tr>
-        <tr><th scope="row" style="text-align:left; padding:4px 16px 4px 0;">Cel</th><td style="padding:4px 0;">{{ $vars['kampania'] }}</td></tr>
-        <tr><th scope="row" style="text-align:left; padding:4px 16px 4px 0;">Data</th><td style="padding:4px 0;">{{ ($donation->paid_at ?? now())->format('d.m.Y') }}</td></tr>
+        <tr><th scope="row" style="text-align:left; padding:4px 16px 4px 0;">{{ $texts->get('summary_amount', $vars) }}</th><td style="padding:4px 0;">{{ $donation->amountLabel() }}</td></tr>
+        <tr><th scope="row" style="text-align:left; padding:4px 16px 4px 0;">{{ $texts->get('summary_purpose', $vars) }}</th><td style="padding:4px 0;">{{ $vars['kampania'] }}</td></tr>
+        <tr><th scope="row" style="text-align:left; padding:4px 16px 4px 0;">{{ $texts->get('summary_date', $vars) }}</th><td style="padding:4px 0;">{{ ($donation->paid_at ?? now())->format('d.m.Y') }}</td></tr>
     </table>
 
     <p style="margin: 0 0 24px;">
-        <a href="{{ $receiptUrl }}" style="display:inline-block; background:#1e6dff; color:#ffffff; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold;">{{ $texts->get('email_cta', $vars) }}</a>
+        <a href="{{ $receiptUrl }}" style="display:inline-block; background:#1752bf; color:#ffffff; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold;">{{ $texts->get('email_cta', $vars) }}</a>
     </p>
 
     @foreach ($texts->paragraphs('email_signature', $vars) as $paragraph)

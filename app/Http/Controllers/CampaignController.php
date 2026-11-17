@@ -9,6 +9,7 @@ use App\Services\Przelewy24Client;
 use App\Support\FundraisingTexts;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
@@ -27,12 +28,13 @@ class CampaignController extends Controller
     public function index(): View
     {
         $campaigns = Campaign::published()
-            ->orderByDesc('is_featured')
+            // Przed migracją modułu (kod wdraża się pushem) kolumny is_featured jeszcze nie ma.
+            ->when(Schema::hasColumn('campaigns', 'is_featured'), fn ($q) => $q->orderByDesc('is_featured'))
             ->orderBy('order')
             ->orderByDesc('created_at')
             ->get();
 
-        [$open, $finished] = $campaigns->partition(fn (Campaign $c) => $c->status === 'active'
+        [$open, $finished] = $campaigns->partition(fn (Campaign $c) => $c->statusValue() === 'active'
             && ! ($c->ends_at && $c->ends_at->isBefore(today())));
 
         return view('campaigns.index', [
@@ -71,7 +73,7 @@ class CampaignController extends Controller
         try {
             $url = $donations->initiate($data, $request->ip(), $campaign);
         } catch (RuntimeException $e) {
-            return back()->withInput()->with('donation_error', $e->getMessage());
+            return back()->withInput()->with('donation_error', self::errorText($e, $campaign));
         }
 
         return redirect()->away($url);
@@ -112,10 +114,11 @@ class CampaignController extends Controller
         try {
             $url = $donations->retry($donation, $request->ip());
         } catch (RuntimeException $e) {
-            return redirect()->route('kampanie.show', $campaign->slug)->with('donation_error', $e->getMessage());
+            return redirect()->route('kampanie.thanks', [$campaign->slug, $donation])->with('donation_error', self::errorText($e, $campaign));
         }
 
-        return redirect()->away($url);
+        // null = pierwotna wpłata jednak przeszła; nie pobieramy drugi raz.
+        return $url ? redirect()->away($url) : redirect()->route('kampanie.thanks', [$campaign->slug, $donation]);
     }
 
     /** Walidacja formularza wpłaty; komunikaty błędów z panelu. */
@@ -128,7 +131,7 @@ class CampaignController extends Controller
         $isCompany = $request->boolean('is_company');
 
         $data = $request->validate([
-            'amount' => ['required', 'string'],
+            'amount' => ['required', 'string', 'regex:/^(other|\d{1,6})$/'],
             'amount_other' => ['nullable', 'required_if:amount,other', 'numeric', 'min:'.$min, 'max:'.$max],
             'type' => ['nullable', Rule::in(array_keys(Donation::TYPES))],
             'first_name' => ['required', 'string', 'max:100'],
@@ -152,11 +155,12 @@ class CampaignController extends Controller
             'amount_other.max' => $rangeMessage,
             'amount_other.numeric' => $rangeMessage,
             'consent_rodo.accepted' => $texts->get('error_consent'),
-            'phone.regex' => 'Numer telefonu może zawierać tylko cyfry, spacje i znaki + ( ) -.',
+            'phone.regex' => $texts->get('error_phone'),
+            'amount.regex' => $texts->get('error_amount'),
         ], [
             'first_name' => mb_strtolower($texts->get('first_name_label')),
             'last_name' => mb_strtolower($texts->get('last_name_label')),
-            'email' => $texts->get('email_label'),
+            'email' => mb_strtolower($texts->get('email_label')),
             'phone' => mb_strtolower($texts->get('phone_label')),
             'company_name' => mb_strtolower($texts->get('company_label')),
             'dedication' => mb_strtolower($texts->get('dedication_label')),
@@ -189,6 +193,20 @@ class CampaignController extends Controller
             'is_anonymous' => $data['visibility'] === 'anonymous',
             'consent_newsletter' => $request->boolean('consent_newsletter'),
         ];
+    }
+
+    /** Komunikat wyjątku DonationService w brzmieniu z panelu. */
+    public static function errorText(RuntimeException $e, ?Campaign $campaign): string
+    {
+        $texts = FundraisingTexts::for($campaign);
+        $key = match ($e->getCode()) {
+            DonationService::ERROR_UNAVAILABLE => 'unavailable',
+            DonationService::ERROR_GATEWAY => 'error_gateway',
+            DonationService::ERROR_PROCESSING => 'error_processing',
+            default => null,
+        };
+
+        return $key ? $texts->get($key, $texts->vars()) : $e->getMessage();
     }
 
     /** NIP: 10 cyfr z poprawną sumą kontrolną. */

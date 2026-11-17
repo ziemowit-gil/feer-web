@@ -10,9 +10,6 @@
 @endphp
 
 @section('content')
-    @if (session('status'))
-        <div role="status" class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink">{{ session('status') }}</div>
-    @endif
 
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <p class="text-sm text-ink" aria-live="polite">

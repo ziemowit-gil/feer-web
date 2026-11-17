@@ -29,6 +29,11 @@ use RuntimeException;
  */
 class DonationService
 {
+    /** Kody wyjątków — kontroler zamienia je na teksty z panelu (FundraisingTexts). */
+    public const ERROR_UNAVAILABLE = 1;
+    public const ERROR_GATEWAY = 2;
+    public const ERROR_PROCESSING = 3;
+
     private ?array $columns = null;
 
     public function __construct(
@@ -44,7 +49,7 @@ class DonationService
     public function initiate(array $data, ?string $ip, ?Campaign $campaign = null): string
     {
         if (! $this->przelewy24->configured()) {
-            throw new RuntimeException('Płatności online są chwilowo niedostępne.');
+            throw new RuntimeException('Płatności online są chwilowo niedostępne.', self::ERROR_UNAVAILABLE);
         }
 
         $donation = Donation::create($this->existingColumns([
@@ -75,16 +80,25 @@ class DonationService
      * Ponowienie nieudanej płatności: nowa wpłata z tymi samymi danymi (nowy
      * sessionId — P24 nie pozwala zarejestrować tej samej sesji drugi raz).
      *
+     * Zwraca null, gdy okazało się, że pierwotna wpłata jednak przeszła — wtedy
+     * nie wolno pobierać pieniędzy drugi raz (kontroler pokazuje podziękowanie).
+     *
      * @throws RuntimeException
      */
-    public function retry(Donation $failed, ?string $ip): string
+    public function retry(Donation $failed, ?string $ip): ?string
     {
-        if ($failed->isPaid()) {
-            throw new RuntimeException('Ta wpłata jest już zaksięgowana.');
+        if (! $this->przelewy24->configured()) {
+            throw new RuntimeException('Płatności online są chwilowo niedostępne.', self::ERROR_UNAVAILABLE);
         }
 
-        if (! $this->przelewy24->configured()) {
-            throw new RuntimeException('Płatności online są chwilowo niedostępne.');
+        // „failed” bywa skutkiem chwilowego błędu transaction/verify, a pieniądze już
+        // wpłynęły — najpierw pytamy P24 o stan pierwotnej transakcji.
+        if ($failed->isPaid() || $this->reconcile($failed)) {
+            return null;
+        }
+        $state = $failed->source === 'manual' ? null : $this->przelewy24->findBySessionId($failed->session_id);
+        if (in_array($state['status'] ?? null, [1, 2], true)) {
+            throw new RuntimeException('Płatność jest jeszcze przetwarzana.', self::ERROR_PROCESSING);
         }
 
         $copy = $failed->replicate(['session_id', 'p24_order_id', 'paid_at', 'thanked_at', 'refunded_at', 'payload',
@@ -105,14 +119,17 @@ class DonationService
      */
     public function confirm(Donation $donation, int $p24OrderId, array $payload): bool
     {
-        if ($donation->isPaid()) {
+        if ($donation->refresh()->isPaid()) {
             return true;
         }
 
         if (! $this->przelewy24->verifyTransaction($donation->session_id, $donation->amount_grosze, $donation->currency, $p24OrderId)) {
-            $donation->update(['status' => 'failed', 'payload' => $payload]);
+            // Warunkowo: równoległy webhook mógł ją właśnie zaksięgować.
+            Donation::whereKey($donation->id)->where('status', '!=', 'paid')
+                ->update(['status' => 'failed', 'payload' => json_encode($payload)]);
+            $donation->refresh();
 
-            return false;
+            return $donation->isPaid();
         }
 
         if ($this->markPaid($donation, ['p24_order_id' => $p24OrderId, 'payload' => $payload])) {
@@ -193,6 +210,9 @@ class DonationService
         }
 
         if ($status === 'paid') {
+            if ($sendThankYou && $donation->thanked_at) {
+                $donation->forceFill(['thanked_at' => null])->save();
+            }
             $this->markPaid($donation, [], $sendThankYou);
 
             return;
@@ -219,7 +239,7 @@ class DonationService
 
             $fresh->update($this->existingColumns($attributes + [
                 'status' => 'paid',
-                'paid_at' => $attributes['paid_at'] ?? now(),
+                'paid_at' => $attributes['paid_at'] ?? $fresh->paid_at ?? now(),
                 'refunded_at' => null,
             ]));
 
@@ -250,8 +270,9 @@ class DonationService
     private function register(Donation $donation): string
     {
         $campaign = $donation->campaign;
-        $purpose = (string) config('szo.donation_purpose', 'Darowizna');
-        $description = $campaign ? trim($purpose.' — '.$campaign->title) : $purpose;
+        $texts = \App\Support\FundraisingTexts::for($campaign);
+        $description = trim($texts->get('payment_description', $texts->vars($donation)))
+            ?: (string) config('szo.donation_purpose', 'Darowizna');
 
         $token = $this->przelewy24->registerTransaction(
             $donation->session_id,
@@ -266,7 +287,7 @@ class DonationService
         if (! $token) {
             $donation->update(['status' => 'failed']);
 
-            throw new RuntimeException('Nie udało się połączyć z Przelewy24. Spróbuj ponownie za chwilę.');
+            throw new RuntimeException('Nie udało się połączyć z Przelewy24. Spróbuj ponownie za chwilę.', self::ERROR_GATEWAY);
         }
 
         $donation->update(['payload' => ['register_token' => $token]]);

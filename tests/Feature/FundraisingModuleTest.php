@@ -185,7 +185,10 @@ class FundraisingModuleTest extends TestCase
         $campaign = $this->campaign();
         $failed = Donation::create(['campaign_id' => $campaign->id, 'amount_grosze' => 5000, 'status' => 'failed',
             'first_name' => 'Anna', 'last_name' => 'K', 'email' => 'anna@example.com']);
-        Http::fake(['sandbox.przelewy24.pl/api/v1/transaction/register' => Http::response(['data' => ['token' => 'NEW']])]);
+        Http::fake([
+            'sandbox.przelewy24.pl/api/v1/transaction/by/sessionId/*' => Http::response(['error' => 'not found'], 404),
+            'sandbox.przelewy24.pl/api/v1/transaction/register' => Http::response(['data' => ['token' => 'NEW']]),
+        ]);
 
         $this->get(route('kampanie.thanks', [$campaign->slug, $failed]))->assertOk()
             ->assertSee('Płatność nie doszła do skutku')
@@ -433,5 +436,77 @@ class FundraisingModuleTest extends TestCase
         $this->postJson(route('przelewy24.webhook'), $this->webhookPayload($donation))->assertOk();
         $this->assertSame('paid', $donation->fresh()->status);
         Mail::assertNothingSent();
+    }
+
+    public function test_retry_does_not_charge_twice_when_original_payment_went_through(): void
+    {
+        Mail::fake();
+        $campaign = $this->campaign(['external_amount' => 0]);
+        // „failed” po chwilowym błędzie transaction/verify — pieniądze w P24 już są.
+        $failed = Donation::create(['campaign_id' => $campaign->id, 'amount_grosze' => 5000, 'status' => 'failed',
+            'first_name' => 'Anna', 'last_name' => 'K', 'email' => 'anna@example.com']);
+        Http::fake([
+            'sandbox.przelewy24.pl/api/v1/transaction/by/sessionId/*' => Http::response(['data' => ['status' => 2, 'orderId' => 777]]),
+            'sandbox.przelewy24.pl/api/v1/transaction/verify' => Http::response(['data' => ['status' => 'success']]),
+        ]);
+
+        $this->post(route('kampanie.retry', [$campaign->slug, $failed]))
+            ->assertRedirect(route('kampanie.thanks', [$campaign->slug, $failed]));
+
+        $this->assertSame(1, Donation::count());
+        $this->assertTrue($failed->fresh()->isPaid());
+        $this->assertSame(50, $campaign->fresh()->collected_amount);
+        Http::assertNotSent(fn (HttpRequest $r) => str_contains($r->url(), 'transaction/register'));
+    }
+
+    public function test_retry_waits_while_payment_is_still_processing(): void
+    {
+        $campaign = $this->campaign(['texts' => ['error_processing' => 'Wpłata wciąż się przetwarza.']]);
+        $failed = Donation::create(['campaign_id' => $campaign->id, 'amount_grosze' => 5000, 'status' => 'failed',
+            'first_name' => 'Anna', 'last_name' => 'K', 'email' => 'anna@example.com']);
+        Http::fake(['sandbox.przelewy24.pl/api/v1/transaction/by/sessionId/*' => Http::response(['data' => ['status' => 1, 'orderId' => 778]])]);
+
+        $this->post(route('kampanie.retry', [$campaign->slug, $failed]))
+            ->assertRedirect(route('kampanie.thanks', [$campaign->slug, $failed]))
+            ->assertSessionHas('donation_error', 'Wpłata wciąż się przetwarza.');
+        $this->assertSame(1, Donation::count());
+    }
+
+    public function test_paid_online_donation_can_only_be_refunded_in_panel(): void
+    {
+        $donation = Donation::create(['amount_grosze' => 1000, 'first_name' => 'A', 'last_name' => 'B', 'email' => 'a@example.com',
+            'status' => 'paid', 'paid_at' => now(), 'source' => 'online']);
+
+        $this->actingAs($this->admin())->put(route('admin.darowizny.update', $donation), ['status' => 'failed'])
+            ->assertSessionHasErrors('status');
+        $this->assertSame('paid', $donation->fresh()->status);
+    }
+
+    public function test_fractional_amount_cannot_bypass_the_amount_list(): void
+    {
+        $campaign = $this->campaign(['allow_custom_amount' => false]);
+
+        $this->post(route('kampanie.donate', $campaign->slug), $this->form(['amount' => '50.37']))
+            ->assertSessionHasErrors('amount');
+        $this->assertSame(0, Donation::count());
+    }
+
+    public function test_pending_szo_scope_skips_source_column_before_migration(): void
+    {
+        $this->assertStringContainsString('source', Donation::pendingSzo()->toSql());
+
+        \Illuminate\Support\Facades\Schema::table('donations', fn ($t) => $t->dropColumn('source'));
+
+        $this->assertStringNotContainsString('source', Donation::pendingSzo()->toSql());
+    }
+
+    public function test_campaign_without_status_column_behaves_like_before(): void
+    {
+        $legacy = new Campaign(['title' => 'Stara', 'slug' => 'stara', 'goal_amount' => 0, 'is_published' => true, 'donation_url' => 'https://pomagam.pl/x']);
+        $legacy->setRawAttributes(['title' => 'Stara', 'slug' => 'stara', 'is_published' => 1, 'donation_url' => 'https://pomagam.pl/x']);
+
+        $this->assertSame('active', $legacy->statusValue());
+        $this->assertSame('external', $legacy->paymentMode());
+        $this->assertFalse($legacy->acceptsOnline());
     }
 }

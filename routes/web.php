@@ -784,13 +784,13 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::resource('kampanie', AdminCampaignController::class)->parameters(['kampanie' => 'campaign'])->except('show')->middleware('edition:campaigns');
         Route::post('kampanie/zbiorczo', [AdminCampaignController::class, 'bulk'])->name('kampanie.bulk')->middleware('edition:campaigns');
         // Moduł Fundraising i darowizny: wpłaty (lista, ręczne dodanie, eksport) i globalne teksty zbiórek.
-        Route::get('darowizny', [\App\Http\Controllers\Admin\DonationController::class, 'index'])->name('darowizny.index');
-        Route::get('darowizny/eksport', [\App\Http\Controllers\Admin\DonationController::class, 'export'])->name('darowizny.export');
-        Route::get('darowizny/dodaj', [\App\Http\Controllers\Admin\DonationController::class, 'create'])->name('darowizny.create');
-        Route::post('darowizny', [\App\Http\Controllers\Admin\DonationController::class, 'store'])->name('darowizny.store');
-        Route::get('darowizny/{donation}', [\App\Http\Controllers\Admin\DonationController::class, 'edit'])->name('darowizny.edit');
-        Route::put('darowizny/{donation}', [\App\Http\Controllers\Admin\DonationController::class, 'update'])->name('darowizny.update');
-        Route::post('darowizny/{donation}/podziekowanie', [\App\Http\Controllers\Admin\DonationController::class, 'resendThanks'])->name('darowizny.thanks');
+        Route::get('darowizny', [\App\Http\Controllers\Admin\DonationController::class, 'index'])->name('darowizny.index')->middleware('edition:donations');
+        Route::get('darowizny/eksport', [\App\Http\Controllers\Admin\DonationController::class, 'export'])->name('darowizny.export')->middleware('edition:donations');
+        Route::get('darowizny/dodaj', [\App\Http\Controllers\Admin\DonationController::class, 'create'])->name('darowizny.create')->middleware('edition:donations');
+        Route::post('darowizny', [\App\Http\Controllers\Admin\DonationController::class, 'store'])->name('darowizny.store')->middleware('edition:donations');
+        Route::get('darowizny/{donation}', [\App\Http\Controllers\Admin\DonationController::class, 'edit'])->name('darowizny.edit')->middleware('edition:donations');
+        Route::put('darowizny/{donation}', [\App\Http\Controllers\Admin\DonationController::class, 'update'])->name('darowizny.update')->middleware('edition:donations');
+        Route::post('darowizny/{donation}/podziekowanie', [\App\Http\Controllers\Admin\DonationController::class, 'resendThanks'])->name('darowizny.thanks')->middleware('edition:donations');
         Route::get('zbiorki-teksty', [\App\Http\Controllers\Admin\FundraisingSettingsController::class, 'edit'])->name('zbiorki-teksty.edit')->middleware('edition:campaigns');
         Route::put('zbiorki-teksty', [\App\Http\Controllers\Admin\FundraisingSettingsController::class, 'update'])->name('zbiorki-teksty.update')->middleware('edition:campaigns');
 

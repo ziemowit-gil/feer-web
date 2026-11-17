@@ -149,7 +149,14 @@ class Donation extends Model
     /** Opłacone online, a jeszcze nieprzyjęte przez SZO — do ponowienia wysyłki. */
     public function scopePendingSzo(Builder $query): Builder
     {
-        return $query->where('status', 'paid')->whereNull('szo_synced_at')
-            ->where(fn ($q) => $q->whereNull('source')->orWhere('source', '!=', 'manual'));
+        $query->where('status', 'paid')->whereNull('szo_synced_at');
+
+        // Kolumna `source` powstaje w migracji modułu zbiórek, a kod trafia na produkcję
+        // przed migracją — bez tej osłony MySQL dawałby 500 w Ustawieniach i w donations:sync.
+        if (\Illuminate\Support\Facades\Schema::hasColumn('donations', 'source')) {
+            $query->where(fn ($q) => $q->whereNull('source')->orWhere('source', '!=', 'manual'));
+        }
+
+        return $query;
     }
 }

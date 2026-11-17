@@ -40,10 +40,6 @@
             </div>
         </div>
 
-        @if (session('status'))
-            <div role="alert" class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink">{{ session('status') }}</div>
-        @endif
-
         <div class="overflow-hidden rounded-md bg-white">
             <table class="w-full text-left text-sm">
                 <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">

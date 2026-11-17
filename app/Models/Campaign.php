@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -38,6 +39,7 @@ class Campaign extends Model implements HasMedia
         'online' => 'Wpłaty online na stronie (Przelewy24)',
         'wplacam' => 'wplacam.ngo.pl',
         'external' => 'Zewnętrzny link do zbiórki',
+        'none' => 'Bez wpłat na stronie (tylko informacja)',
     ];
 
     public const WPLACAM_DISPLAYS = [
@@ -88,7 +90,9 @@ class Campaign extends Model implements HasMedia
     {
         // Flaga publikacji (sitemap, stare zapytania) wynika ze statusu.
         static::saving(function (Campaign $campaign) {
-            $campaign->is_published = in_array($campaign->status, ['active', 'closed'], true);
+            if ($campaign->status !== null) {
+                $campaign->is_published = in_array($campaign->status, ['active', 'closed'], true);
+            }
         });
     }
 
@@ -139,9 +143,22 @@ class Campaign extends Model implements HasMedia
     /** Przelicza kwotę zebraną od zera: opłacone wpłaty + kwota spoza systemu. */
     public function refreshCollected(): void
     {
-        $grosze = (int) $this->donations()->where('status', 'paid')->sum('amount_grosze');
+        // Blokada wiersza zbiórki: dwie równoczesne wpłaty nie nadpiszą sumy starszą wartością.
+        $total = DB::transaction(function () {
+            $locked = static::withTrashed()->whereKey($this->id)->lockForUpdate()->first(['id', 'external_amount']);
+            if (! $locked) {
+                return null;
+            }
+            $grosze = (int) Donation::where('campaign_id', $this->id)->where('status', 'paid')->sum('amount_grosze');
+            $total = intdiv($grosze, 100) + (int) $locked->external_amount;
+            static::withTrashed()->whereKey($this->id)->update(['collected_amount' => $total]);
 
-        $this->forceFill(['collected_amount' => intdiv($grosze, 100) + (int) $this->external_amount])->saveQuietly();
+            return $total;
+        });
+
+        if ($total !== null) {
+            $this->setRawAttributes(array_merge($this->getAttributes(), ['collected_amount' => $total]), true);
+        }
     }
 
     /** Procent realizacji celu (0–100). */
@@ -157,7 +174,7 @@ class Campaign extends Model implements HasMedia
     /** Czy zbiórka przyjmuje wpłaty (aktywna i w zakresie dat). */
     public function isActive(): bool
     {
-        if ($this->status !== 'active') {
+        if ($this->statusValue() !== 'active') {
             return false;
         }
 
@@ -180,10 +197,22 @@ class Campaign extends Model implements HasMedia
         return $this->goal_amount > 0 && $this->collected_amount >= $this->goal_amount;
     }
 
+    /** Status zbiórki; przed migracją modułu (brak kolumny) wynika z flagi publikacji. */
+    public function statusValue(): string
+    {
+        return $this->status ?? ($this->is_published ? 'active' : 'draft');
+    }
+
+    /** Tryb płatności; przed migracją modułu: link zewnętrzny albo brak wpłat, jak dawniej. */
+    public function paymentMode(): string
+    {
+        return $this->payment_mode ?? (filled($this->donation_url) ? 'external' : 'none');
+    }
+
     /** Czy wpłaty przyjmujemy przez Przelewy24 na stronie. */
     public function acceptsOnline(): bool
     {
-        return $this->payment_mode === 'online' && $this->isActive();
+        return $this->paymentMode() === 'online' && $this->isActive();
     }
 
     /**

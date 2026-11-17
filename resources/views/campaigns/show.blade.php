@@ -50,7 +50,7 @@
             <div class="rounded-2xl bg-gray-50 p-5 sm:p-6">
                 <h2 id="campaign-support-heading" class="{{ $display }} mb-4 text-xl text-ink sm:text-2xl">{{ $texts->get('support_heading', $vars) }}</h2>
 
-                @include('campaigns.partials.progress', ['campaign' => $campaign, 'texts' => $texts, 'compact' => false])
+                @include('campaigns.partials.progress', ['campaign' => $campaign, 'texts' => $texts, 'compact' => false, 'baseVars' => $vars])
 
                 @if ($campaign->ends_at)
                     <p class="mt-4 text-sm text-ink">
@@ -62,7 +62,7 @@
                     @foreach ($texts->paragraphs('closed_message', $vars) as $paragraph)
                         <p class="mt-4 font-bold text-ink" role="status">{!! nl2br(e($paragraph)) !!}</p>
                     @endforeach
-                @elseif ($campaign->payment_mode === 'wplacam' && $wplacamUrl)
+                @elseif ($campaign->paymentMode() === 'wplacam' && $wplacamUrl)
                     @foreach ($texts->paragraphs('wplacam_note', $vars) as $paragraph)
                         <p class="mt-4 text-sm leading-relaxed text-ink">{!! nl2br(e($paragraph)) !!}</p>
                     @endforeach
@@ -74,18 +74,18 @@
                     <a href="{{ $wplacamUrl }}" target="_blank" rel="noopener"
                        class="{{ $display }} mt-4 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-brand-dark px-6 text-sm text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                         <i class="fa-solid fa-heart" aria-hidden="true"></i> {{ $texts->get('wplacam_cta', $vars) }}
-                        <span class="sr-only">(otwiera się w nowej karcie)</span>
+                        <span class="sr-only">{{ $texts->get('new_tab_sr', $vars) }}</span>
                     </a>
-                @elseif ($campaign->payment_mode === 'external' && $campaign->donation_url)
+                @elseif ($campaign->paymentMode() === 'external' && $campaign->donation_url)
                     <a href="{{ $campaign->donation_url }}" target="_blank" rel="noopener"
                        class="{{ $display }} mt-4 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-brand-dark px-6 text-sm text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
                         <i class="fa-solid fa-heart" aria-hidden="true"></i> {{ $texts->get('external_cta', $vars) }}
-                        <span class="sr-only">(otwiera się w nowej karcie)</span>
+                        <span class="sr-only">{{ $texts->get('new_tab_sr', $vars) }}</span>
                     </a>
                 @endif
             </div>
 
-            @if ($isOpen && $campaign->payment_mode === 'online')
+            @if ($isOpen && $campaign->paymentMode() === 'online')
                 @include('campaigns.partials.donation-form', [
                     'campaign' => $campaign, 'texts' => $texts, 'vars' => $vars,
                     'amounts' => $amounts, 'onlineEnabled' => $onlineEnabled,
@@ -107,7 +107,7 @@
                                 <i class="fa-solid fa-heart"></i>
                             </span>
                             <span class="min-w-0">
-                                <span class="{{ $display }} block text-sm text-ink">{{ $donation->publicLabel() }}</span>
+                                <span class="{{ $display }} block text-sm text-ink">{{ $donation->is_anonymous ? $texts->get('recent_anonymous', $vars) : $donation->publicLabel() }}</span>
                                 <span class="{{ $display }} block text-base text-brand-dark">{{ $donation->amountLabel() }}</span>
                                 @if ($donation->paid_at)
                                     <span class="block text-xs text-ink"><time datetime="{{ $donation->paid_at->toDateString() }}">{{ $donation->paid_at->translatedFormat('j F Y') }}</time></span>

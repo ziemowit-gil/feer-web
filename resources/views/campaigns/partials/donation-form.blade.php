@@ -14,7 +14,14 @@
     $fieldError = 'border-red-700';
     $errorFields = ['amount', 'amount_other', 'type', 'first_name', 'last_name', 'email', 'phone', 'company_name', 'nip', 'dedication', 'visibility', 'consent_rodo'];
     $hasFormErrors = collect($errorFields)->contains(fn ($f) => $errors->has($f));
-    $fieldId = fn ($f) => 'cd-' . str_replace('_', '-', $f === 'amount' ? 'amount-' . $amounts[0] : $f);
+    $fieldId = fn ($f) => match ($f) {
+        'amount' => 'cd-amount-' . $amounts[0],
+        'amount_other' => 'cd-amount-other-value',
+        default => 'cd-' . str_replace('_', '-', $f),
+    };
+    $optional = e($texts->get('optional_marker', $vars));
+    // Zaznaczony kafel ma też obrys (zostaje w trybie wymuszonych kolorów, gdzie tło znika).
+    $tileChecked = 'peer-checked:bg-brand-dark peer-checked:text-white peer-checked:outline peer-checked:outline-2 peer-checked:outline-offset-2 peer-checked:outline-ink';
     $isCompany = (bool) old('is_company');
     $legendClass = $display . ' mb-3 flex items-center gap-3 text-base text-ink';
     $step = fn ($n) => '<span class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-brand-dark text-sm text-white" aria-hidden="true">' . $n . '</span>';
@@ -61,7 +68,7 @@
                         <label class="relative">
                             <input type="radio" name="amount" value="{{ $value }}" id="cd-amount-{{ $value }}" x-model="amount"
                                    class="peer sr-only" @checked($oldAmount === (string) $value)>
-                            <span class="flex min-h-12 cursor-pointer items-center justify-center rounded-xl border-2 border-brand-dark bg-white px-3 text-base font-bold text-brand-dark transition hover:bg-brand-light peer-checked:bg-brand-dark peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2">
+                            <span class="flex min-h-12 cursor-pointer items-center justify-center rounded-xl border-2 border-brand-dark bg-white px-3 text-base font-bold text-brand-dark transition hover:bg-brand-light {{ $tileChecked }} peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2">
                                 {{ \App\Support\Money::zl($value) }}
                             </span>
                         </label>
@@ -70,21 +77,21 @@
                         <label class="relative">
                             <input type="radio" name="amount" value="other" id="cd-amount-other" x-model="amount"
                                    class="peer sr-only" @checked($oldAmount === 'other')>
-                            <span class="flex min-h-12 cursor-pointer items-center justify-center rounded-xl border-2 border-brand-dark bg-white px-3 text-base font-bold text-brand-dark transition hover:bg-brand-light peer-checked:bg-brand-dark peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2">
+                            <span class="flex min-h-12 cursor-pointer items-center justify-center rounded-xl border-2 border-brand-dark bg-white px-3 text-base font-bold text-brand-dark transition hover:bg-brand-light {{ $tileChecked }} peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2">
                                 {{ $texts->get('amount_other_option', $vars) }}
                             </span>
                         </label>
                     @endif
                 </div>
                 @if ($campaign->allow_custom_amount)
-                    <div class="mt-4" x-show="amount === 'other'" @if ($oldAmount !== 'other') x-cloak @endif>
+                    <div class="mt-4" x-show="amount === 'other'">
                         <label for="cd-amount-other-value" class="mb-1 block text-sm font-bold text-ink">{{ $texts->get('amount_other_label', $vars) }}</label>
                         <input type="number" name="amount_other" id="cd-amount-other-value" x-model="other"
                                min="{{ $min }}" max="{{ $max }}" step="1" inputmode="decimal" value="{{ old('amount_other') }}"
                                aria-describedby="cd-amount-other-help @error('amount_other') cd-amount-other-error @enderror"
                                @error('amount_other') aria-invalid="true" @enderror
                                class="{{ $fieldBase }} max-w-xs @error('amount_other') {{ $fieldError }} @enderror">
-                        <p id="cd-amount-other-help" class="mt-1 text-xs text-ink">{{ $min }}–{{ number_format($max, 0, ',', ' ') }} zł</p>
+                        <p id="cd-amount-other-help" class="mt-1 text-xs text-ink">{{ $texts->get('amount_other_help', $vars + ['min' => $min, 'max' => number_format($max, 0, ',', ' ')]) }}</p>
                         @error('amount_other') <p id="cd-amount-other-error" class="mt-1 text-sm font-semibold text-red-700">{{ $message }}</p> @enderror
                     </div>
                 @endif
@@ -101,7 +108,7 @@
                             <label class="relative">
                                 <input type="radio" name="type" value="{{ $value }}" class="peer sr-only" @checked($type === $value)
                                        @if ($value === 'recurring') aria-describedby="cd-recurring-note" @endif>
-                                <span class="flex min-h-12 cursor-pointer items-center justify-center rounded-xl border-2 border-brand-dark bg-white px-3 text-sm font-bold text-brand-dark transition hover:bg-brand-light peer-checked:bg-brand-dark peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2">
+                                <span class="flex min-h-12 cursor-pointer items-center justify-center rounded-xl border-2 border-brand-dark bg-white px-3 text-sm font-bold text-brand-dark transition hover:bg-brand-light {{ $tileChecked }} peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-2">
                                     {{ $texts->get($key, $vars) }}
                                 </span>
                             </label>
@@ -124,7 +131,7 @@
                         @php $id = $fieldId($name); @endphp
                         <div>
                             <label for="{{ $id }}" class="mb-1 block text-sm font-bold text-ink">
-                                {{ $texts->get($labelKey, $vars) }}@if ($required) <span aria-hidden="true">*</span>@else <span class="font-normal">(opcjonalnie)</span>@endif
+                                {{ $texts->get($labelKey, $vars) }}@if ($required) <span aria-hidden="true">*</span>@else <span class="font-normal">{!! $optional !!}</span>@endif
                             </label>
                             <input type="{{ $inputType }}" name="{{ $name }}" id="{{ $id }}" value="{{ old($name) }}"
                                    autocomplete="{{ $autocomplete }}" maxlength="{{ $maxlength }}"
@@ -141,11 +148,11 @@
                            aria-controls="cd-company-fields" class="h-5 w-5 rounded border-gray-500 text-brand-dark focus:ring-brand">
                     <span>{{ $texts->get('company_toggle', $vars) }}</span>
                 </label>
-                <div id="cd-company-fields" class="mt-2 grid gap-4 sm:grid-cols-2" x-show="company" @if (! $isCompany) x-cloak @endif>
+                <div id="cd-company-fields" class="mt-2 grid gap-4 sm:grid-cols-2" x-show="company">
                     @foreach ([['company_name', 'company_label', 'organization', 200], ['nip', 'nip_label', 'off', 20]] as [$name, $labelKey, $autocomplete, $maxlength])
                         @php $id = $fieldId($name); @endphp
                         <div>
-                            <label for="{{ $id }}" class="mb-1 block text-sm font-bold text-ink">{{ $texts->get($labelKey, $vars) }}@if ($name === 'nip') <span class="font-normal">(opcjonalnie)</span>@endif</label>
+                            <label for="{{ $id }}" class="mb-1 block text-sm font-bold text-ink">{{ $texts->get($labelKey, $vars) }}@if ($name === 'nip') <span class="font-normal">{!! $optional !!}</span>@endif</label>
                             <input type="text" name="{{ $name }}" id="{{ $id }}" value="{{ old($name) }}" autocomplete="{{ $autocomplete }}" maxlength="{{ $maxlength }}"
                                    @if ($name === 'nip') inputmode="numeric" @endif
                                    @error($name) aria-invalid="true" aria-describedby="{{ $id }}-error" @enderror
@@ -156,7 +163,7 @@
                 </div>
 
                 <div class="mt-4">
-                    <label for="cd-dedication" class="mb-1 block text-sm font-bold text-ink">{{ $texts->get('dedication_label', $vars) }} <span class="font-normal">(opcjonalnie)</span></label>
+                    <label for="cd-dedication" class="mb-1 block text-sm font-bold text-ink">{{ $texts->get('dedication_label', $vars) }} <span class="font-normal">{!! $optional !!}</span></label>
                     <textarea name="dedication" id="cd-dedication" rows="2" maxlength="300"
                               aria-describedby="cd-dedication-help @error('dedication') cd-dedication-error @enderror"
                               @error('dedication') aria-invalid="true" @enderror
@@ -201,7 +208,7 @@
                                    @error('consent_rodo') aria-invalid="true" aria-describedby="cd-consent-rodo-error" @enderror
                                    class="mt-0.5 h-5 w-5 flex-none rounded border-gray-500 text-brand-dark focus:ring-brand">
                             <span>{{ $texts->get('consent_rodo_label', $vars) }} <span aria-hidden="true">*</span>
-                                (<a href="{{ url('/polityka-prywatnosci') }}" class="font-bold text-brand-dark underline" target="_blank" rel="noopener">Polityka prywatności<span class="sr-only">, otwiera się w nowej karcie</span></a>)</span>
+                                (<a href="{{ url($texts->get('privacy_link_url', $vars)) }}" class="font-bold text-brand-dark underline" target="_blank" rel="noopener">{{ $texts->get('privacy_link_label', $vars) }}<span class="sr-only"> {{ $texts->get('new_tab_sr', $vars) }}</span></a>)</span>
                         </label>
                         @error('consent_rodo') <p id="cd-consent-rodo-error" class="ml-8 mt-1 text-sm font-semibold text-red-700">{{ $message }}</p> @enderror
                     </div>

@@ -68,6 +68,10 @@ class DonationController extends Controller
             'phone' => 'numer telefonu',
         ]);
 
+        if ($data['amount'] !== 'other' && ! ctype_digit((string) $data['amount'])) {
+            return back()->withInput()->withErrors(['amount' => 'Wybierz kwotę z listy albo wpisz własną.']);
+        }
+
         $amount = $data['amount'] === 'other'
             ? (float) $data['amount_other']
             : (float) $data['amount'];
@@ -128,10 +132,10 @@ class DonationController extends Controller
         try {
             $url = $donations->retry($donation, $request->ip());
         } catch (RuntimeException $e) {
-            return redirect()->route('donation.show')->with('donation_error', $e->getMessage());
+            return redirect()->route('donation.thanks', $donation)->with('donation_error', CampaignController::errorText($e, null));
         }
 
-        return redirect()->away($url);
+        return $url ? redirect()->away($url) : redirect()->route('donation.thanks', $donation);
     }
 
     /**
@@ -150,7 +154,8 @@ class DonationController extends Controller
             'donation' => $donation,
             'texts' => $texts,
             'vars' => $texts->vars($donation),
-        ])->setPaper('a4')->download('potwierdzenie-darowizny-'.($donation->paid_at ?? now())->format('Y-m-d').'.pdf');
+        ])->setPaper('a4')->download((\Illuminate\Support\Str::slug($texts->get('pdf_filename', $texts->vars($donation))) ?: 'potwierdzenie-darowizny')
+            .'-'.($donation->paid_at ?? now())->format('Y-m-d').'.pdf');
     }
 
     /** Wypełniony druk przelewu tradycyjnego (PDF) z danymi organizacji. */

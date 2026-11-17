@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Schema;
  * równoległych rejestrów.
  *
  *  - campaigns: status, wyróżnienie, progi kwot, wpłaty cykliczne, tryb płatności
- *    (Przelewy24 / wplacam.ngo.pl / zewnętrzny link), kwota zebrana poza systemem,
+ *    (Przelewy24 / wplacam.ngo.pl / zewnętrzny link / bez wpłat), kwota zebrana poza systemem,
  *    nadpisania tekstów (JSON) i opis alternatywny zdjęcia.
  *  - donations: powiązanie z kampanią, typ (jednorazowa/cykliczna), dane firmy,
  *    dedykacja, źródło (online/ręczna), data wysyłki podziękowania; unikalny
@@ -25,6 +25,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Przeniesienie danych tylko przy pierwszym przebiegu (gdy kolumny dopiero powstają).
+        $freshStatus = ! Schema::hasColumn('campaigns', 'status');
+        $freshExternal = ! Schema::hasColumn('campaigns', 'external_amount');
+        $freshMode = ! Schema::hasColumn('campaigns', 'payment_mode');
+
         Schema::table('campaigns', function (Blueprint $table) {
             if (! Schema::hasColumn('campaigns', 'status')) {
                 $table->string('status', 20)->default('draft')->after('slug');
@@ -66,12 +71,17 @@ return new class extends Migration
 
         // Dotychczasowe kampanie: status z flagi publikacji, ręczna kwota → kwota spoza systemu,
         // zewnętrzny link płatności → tryb „external”.
-        DB::table('campaigns')->update([
-            'external_amount' => DB::raw('collected_amount'),
-            'status' => DB::raw("CASE WHEN is_published = 1 THEN 'active' ELSE 'draft' END"),
-        ]);
-        DB::table('campaigns')->whereNotNull('donation_url')->where('donation_url', '!=', '')
-            ->update(['payment_mode' => 'external']);
+        if ($freshExternal) {
+            DB::table('campaigns')->update(['external_amount' => DB::raw('collected_amount')]);
+        }
+        if ($freshStatus) {
+            DB::table('campaigns')->update(['status' => DB::raw("CASE WHEN is_published = 1 THEN 'active' ELSE 'draft' END")]);
+        }
+        if ($freshMode) {
+            // Dotychczasowe zbiórki zachowują się jak dawniej: z linkiem → link zewnętrzny,
+            // bez linku → bez wpłat na stronie (formularz P24 włącza się świadomie w panelu).
+            DB::table('campaigns')->update(['payment_mode' => DB::raw("CASE WHEN donation_url IS NOT NULL AND donation_url <> '' THEN 'external' ELSE 'none' END")]);
+        }
 
         Schema::table('donations', function (Blueprint $table) {
             if (! Schema::hasColumn('donations', 'campaign_id')) {

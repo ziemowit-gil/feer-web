@@ -8,9 +8,6 @@
 @endphp
 
 @section('content')
-    @if (session('status'))
-        <div role="status" class="mb-4 rounded-md bg-brand-light px-4 py-3 text-sm text-ink">{{ session('status') }}</div>
-    @endif
 
     <div class="grid max-w-5xl gap-6 lg:grid-cols-2">
         <div class="rounded-md bg-white p-6">
@@ -57,6 +54,7 @@
                         <option value="{{ $value }}" @selected(old('status', $donation->status) === $value)>{{ $text }}</option>
                     @endforeach
                 </select>
+                @error('status') <p id="status-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                 <p id="status-help" class="mt-1 text-xs text-ink">„Zwrócona” odejmuje wpłatę od paska zbiórki. Zwrot pieniędzy w Przelewy24 wykonuje się w panelu P24.</p>
             </div>
             <label class="flex min-h-11 items-center gap-3 text-sm">
