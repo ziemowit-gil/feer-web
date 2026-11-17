@@ -24,8 +24,13 @@
     $onMenu = request()->routeIs('admin.pozycje-menu.*');
     $onBip = $activeLocation === 'bip' || request()->routeIs('admin.bip-dokumenty.*');
 @endphp
-<nav aria-label="{{ $onBip ? 'Sekcje BIP' : ($onMenu ? 'Sekcje menu' : 'Sekcje stron') }}" class="border-gray-200"
-     style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:.25rem 1rem;margin-bottom:1rem;border-bottom-width:1px;border-bottom-style:solid">
+{{-- Nagłówek sekcji: jeden blok z dwoma rzędami. Górny: zakładki po lewej, główna akcja widoku po prawej
+     (@push('content-tab-primary'), np. „Dodaj stronę”). Dolny, doklejony do górnego: pasek narzędzi
+     (@push('content-tab-actions'): widok i filtry | akcje poboczne). Style wbudowane, bez zależności od buildu CSS. --}}
+<div class="content-head" style="margin-bottom:1.25rem">
+<div class="content-head-row border-gray-200"
+     style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:.5rem 1rem;border-bottom-width:1px;border-bottom-style:solid">
+<nav aria-label="{{ $onBip ? 'Sekcje BIP' : ($onMenu ? 'Sekcje menu' : 'Sekcje stron') }}" class="content-nav">
     <div class="content-tabs" style="display:flex;flex-wrap:wrap;gap:.25rem">
         @if ($onBip)
             {{-- BIP jako osobna „witryna”: menu boczne BIP i dokumenty --}}
@@ -59,12 +64,17 @@
         @endif
     </div>
 </nav>
+@hasstack('content-tab-primary')
+    <div class="content-head-primary" style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding-bottom:.375rem">
+        @stack('content-tab-primary')
+    </div>
+@endif
+</div>
 
-{{-- Pasek narzędzi strony: osobny rząd pod zakładkami, w dwóch grupach (widok | akcje). Widoki wypełniają go
-     przez @push('content-tab-actions'). Style wbudowane, żeby układ nie zależał od przebudowy CSS. --}}
 @hasstack('content-tab-actions')
-    <div class="border-gray-200 bg-gray-50"
-         style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem 1.5rem;margin-bottom:1.25rem;padding:.5rem .75rem;border-width:1px;border-style:solid;border-radius:.75rem">
+    <div class="content-toolbar border-gray-200 bg-gray-50"
+         style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem 1.5rem;padding:.5rem .75rem;border-left-width:1px;border-right-width:1px;border-bottom-width:1px;border-style:solid;border-top-width:0;border-radius:0 0 .75rem .75rem">
         @stack('content-tab-actions')
     </div>
 @endif
+</div>

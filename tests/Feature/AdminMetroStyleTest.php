@@ -133,6 +133,40 @@ class AdminMetroStyleTest extends TestCase
         $this->assertStringNotContainsString('padding: .5rem 0 !important; border-bottom-width: 3px', $html);
     }
 
+    public function test_naglowek_stron_to_jeden_blok_zakladki_z_glowna_akcja_i_pasek_narzedzi_pod_spodem(): void
+    {
+        $html = $this->actingAs($this->metroAdmin())->get(route('admin.podstrony.index'))->assertOk()->getContent();
+
+        $head = strpos($html, 'class="content-head"');
+        $row = strpos($html, 'class="content-head-row', $head);
+        $tabs = strpos($html, 'class="content-tabs"', $row);
+        $primary = strpos($html, 'class="content-head-primary"', $tabs);
+        $toolbar = strpos($html, 'class="content-toolbar', $primary);
+        $this->assertNotFalse($head);
+        $this->assertTrue($row && $tabs && $primary && $toolbar, 'Kolejność: rząd zakładek → główna akcja → pasek narzędzi');
+
+        // „Dodaj stronę” w rzędzie zakładek, Kosz i Eksport w pasku narzędzi
+        $this->assertMatchesRegularExpression('/Dodaj (pod)?stronę/u', substr($html, $primary, $toolbar - $primary));
+        $toolbarHtml = substr($html, $toolbar, 6000);
+        $this->assertStringContainsString('Kosz', $toolbarHtml);
+        $this->assertStringContainsString('Eksport CSV', $toolbarHtml);
+        $this->assertDoesNotMatchRegularExpression('/Dodaj (pod)?stronę/u', $toolbarHtml);
+    }
+
+    public function test_ikony_w_przyciskach_i_na_pasku_menu_sa_subtelne(): void
+    {
+        $html = $this->actingAs($this->metroAdmin())->get(route('admin.podstrony.index'))->assertOk()->getContent();
+
+        // Pasek menu: mniejsze, przygaszone ikony, po najechaniu w kolorze napisu
+        $this->assertStringContainsString(':is(.mt-group, .mt-tool) > i { font-size: .875rem; color: #b8b8b2;', $html);
+        $this->assertStringContainsString(':is(.mt-group, .mt-tool):is(:hover, :focus-visible, .is-open) > i { color: inherit; }', $html);
+        // Przyciski w treści i zakładki: ikony w --m-muted
+        $this->assertStringContainsString('> i.fa-solid { font-size: .8125rem; color: var(--m-muted);', $html);
+        $this->assertStringContainsString('.content-nav a > i { font-size: .8125rem; color: var(--m-muted); }', $html);
+        // Kontrast przygaszonej ikony na pasku (tło #1d1d1a i najechane #34342f) ≥ 3:1
+        $this->assertGreaterThanOrEqual(3, \App\Support\Color::contrast('#b8b8b2', '#34342f'));
+    }
+
     public function test_inne_style_panelu_maja_dawne_menu_z_naglowkami_grup(): void
     {
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);

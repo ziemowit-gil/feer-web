@@ -84,7 +84,11 @@
             <a href="{{ route('admin.podstrony.eksport') }}" class="{{ $tool }}" style="{{ $toolStyle }}">
                 <i class="fa-solid fa-file-csv" aria-hidden="true"></i> Eksport CSV
             </a>
-            <span style="width:1px;height:1.5rem;background:#d1d5db" aria-hidden="true"></span>
+        </div>
+    @endpush
+
+    {{-- Główna akcja widoku: po prawej w rzędzie zakładek --}}
+    @push('content-tab-primary')
             @php $addBtn = 'inline-flex items-center bg-brand-dark text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2'; @endphp
             @if ($selected)
                 {{-- Przycisk dzielony: główna część dodaje podstronę wybranej strony, strzałka rozwija obie możliwości
@@ -113,7 +117,6 @@
                     <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj stronę
                 </a>
             @endif
-        </div>
     @endpush
 
     @include('admin.partials.content-nav-tabs')

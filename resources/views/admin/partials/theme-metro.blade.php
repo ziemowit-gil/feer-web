@@ -139,17 +139,26 @@
     .admin-metro #main :is(a, button)[class*="px-"]:is([class*="bg-brand-dark"], [class*="bg-gray-100"], [class*="bg-white"], [class*="bg-brand-light"], [class*="bg-ink"]) { min-height: 2.75rem; }
     .admin-metro [role="tab"] { min-height: 2.75rem; }
 
-    /* ── Zakładki (Strony / Menu / BIP): płaski pasek kafelków na białym polu, odstęp 2 px między nimi;
-         aktywna w pełnym kolorze marki (tekst --m-accent-fg ≥ 4,5:1), najechana w jasnym odcieniu marki (--m-tile, tekst ink). ── */
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] { border-bottom-width: 0 !important; gap: .5rem 1.5rem !important; margin-bottom: 1.5rem !important; }
-    .admin-metro nav[aria-label^="Sekcje"] .content-tabs { gap: 2px !important; padding: 2px; background: var(--m-surface); }
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a { min-height: 2.75rem !important; padding: .625rem 1.125rem !important; gap: .5rem !important; border-bottom-width: 0 !important; margin-bottom: 0 !important; background: transparent; color: var(--m-ink); font-family: var(--m-font-heading); font-size: 1rem; font-weight: 600; letter-spacing: 0; }
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a > i { font-size: .9375rem; color: var(--m-tile-icon, currentColor); }
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a:hover { background: var(--m-tile-hover, var(--m-hover)); color: var(--m-ink); }
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a[aria-current="page"] { background: var(--m-accent); color: var(--m-accent-fg); font-weight: 700; }
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a[aria-current="page"] > i { color: inherit; }
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a[aria-current="page"]:hover { background: var(--m-accent-hover); color: var(--m-accent-fg); }
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a:focus-visible { outline: 3px solid var(--m-focus); outline-offset: 2px; box-shadow: none; }
+    /* ── Nagłówek sekcji (Strony / Menu / BIP): jeden biały blok — u góry zakładki jako płaskie kafelki i główna akcja
+         po prawej, pod kreską pasek narzędzi. Aktywna zakładka w pełnym kolorze marki (tekst --m-accent-fg ≥ 4,5:1),
+         najechana w jasnym odcieniu marki (--m-tile-hover, tekst ink), ikony w --m-tile-icon (≥ 3:1). ── */
+    .admin-metro .content-head { margin-bottom: 1.5rem !important; background: var(--m-surface); }
+    .admin-metro .content-head-row { padding: .375rem; border-bottom-color: var(--m-line) !important; }
+    .admin-metro .content-head-row:last-child { border-bottom-width: 0 !important; }
+    .admin-metro .content-head-primary { padding: 0 .125rem 0 0 !important; align-self: center; }
+    .admin-metro .content-tabs { gap: 2px !important; }
+    .admin-metro .content-nav a { min-height: 2.75rem !important; padding: .625rem 1.125rem !important; gap: .5rem !important; border-bottom-width: 0 !important; margin-bottom: 0 !important; background: transparent; color: var(--m-ink); font-family: var(--m-font-heading); font-size: 1rem; font-weight: 600; letter-spacing: 0; }
+    .admin-metro .content-nav a > i { font-size: .8125rem; color: var(--m-muted); }
+    .admin-metro .content-nav a:hover { background: var(--m-tile-hover, var(--m-hover)); color: var(--m-ink); }
+    .admin-metro .content-nav a[aria-current="page"] { background: var(--m-accent); color: var(--m-accent-fg); font-weight: 700; }
+    .admin-metro .content-nav a[aria-current="page"] > i { color: inherit; }
+    .admin-metro .content-nav a[aria-current="page"]:hover { background: var(--m-accent-hover); color: var(--m-accent-fg); }
+    .admin-metro .content-nav a:focus-visible { outline: 3px solid var(--m-focus); outline-offset: 2px; box-shadow: none; }
+    .admin-metro .content-toolbar { border-width: 0 !important; background: var(--m-surface) !important; padding: .5rem .75rem .625rem !important; }
+    /* Ikony w zwykłych przyciskach (obrys szary, przyciski segmentowe): mniejsze i w --m-muted (≥ 4,5:1 na bieli),
+       po najechaniu w kolorze napisu; przyciski w kolorze marki i niebezpieczne bez zmian. */
+    .admin-metro #main :is(a, button):is([class*="border-gray"], [class*="hover:bg-gray-50"]):not([class*="bg-brand"]):not([class*="red"]) > i.fa-solid { font-size: .8125rem; color: var(--m-muted); transition: color .15s; }
+    .admin-metro #main :is(a, button):is([class*="border-gray"], [class*="hover:bg-gray-50"]):not([class*="bg-brand"]):not([class*="red"]):is(:hover, :focus-visible) > i.fa-solid { color: inherit; }
     .admin-metro [style*="border-width:1px;border-style:solid"] { border-width: 0 !important; background: var(--m-surface) !important; }
 
     /* ── Stronicowanie (domyślny widok Laravela): kwadratowe przyciski 44 px, bieżąca strona w akcencie ── */

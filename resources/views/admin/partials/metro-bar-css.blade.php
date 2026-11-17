@@ -69,6 +69,10 @@
     .admin-metro :is(.mt-group, .mt-tool).is-open { background: var(--m-accent); color: var(--m-accent-fg); }
     .admin-metro :is(.mt-group, .mt-tool).is-open:hover { background: var(--m-accent-hover); }
     .admin-metro .mt-chev { font-size: .625rem; transition: transform .15s; }
+    /* Ikony na pasku: mniejsze i przygaszone (#b8b8b2 na tle paska ≥ 7:1), po najechaniu i otwarciu w kolorze napisu */
+    .admin-metro :is(.mt-group, .mt-tool) > i { font-size: .875rem; color: #b8b8b2; transition: color .15s; }
+    .admin-metro :is(.mt-group, .mt-tool) > i.mt-chev { font-size: .5625rem; }
+    .admin-metro :is(.mt-group, .mt-tool):is(:hover, :focus-visible, .is-open) > i { color: inherit; }
     .admin-metro .is-open > .mt-chev { transform: rotate(180deg); }
     .admin-metro .mt-badge { display: inline-flex; min-width: 1.375rem; height: 1.375rem; align-items: center; justify-content: center; padding: 0 .375rem; background: #fff; color: var(--m-ink); font-size: .75rem; font-weight: 700; }
     .admin-metro .is-open > .mt-badge { background: var(--m-accent-fg); color: var(--m-accent); }
