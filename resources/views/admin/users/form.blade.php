@@ -81,6 +81,40 @@
             @error('user_group_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
 
+        {{-- Gałęzie stron tej osoby (jak „DB mounts” w TYPO3): widzi i edytuje w module Strony tylko zaznaczone strony z podstronami.
+             Sumują się z gałęziami z grupy. Dla ról Edytor (grupy) i Redaktor treści. --}}
+        @php
+            $mountSel = array_map('intval', (array) old('page_mounts', $user->page_mounts ?? []));
+            $mountPages = \App\Models\Page::forCurrentSite()->where('type', '!=', 'about_person')->orderBy('order')->orderBy('title')->get(['id', 'title', 'parent_id']);
+            $mountByParent = $mountPages->groupBy(fn ($p) => $p->parent_id && $mountPages->contains('id', $p->parent_id) ? $p->parent_id : 0);
+            $renderMounts = function ($parentId, $depth) use (&$renderMounts, $mountByParent, $mountSel) {
+                $html = '';
+                foreach ($mountByParent->get($parentId, collect()) as $p) {
+                    $html .= '<li><label class="flex min-h-9 items-center gap-2 rounded px-1 text-sm hover:bg-white" style="padding-left:'.(0.25 + $depth * 1.25).'rem">'
+                        .'<input type="checkbox" name="page_mounts[]" value="'.$p->id.'"'.(in_array($p->id, $mountSel, true) ? ' checked' : '').' class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">'
+                        .'<span>'.e($p->title).'</span>'
+                        .($mountByParent->has($p->id) ? '<span class="text-xs text-muted">(+ '.$mountByParent->get($p->id)->count().' podstron)</span>' : '')
+                        .'</label></li>';
+                    $html .= $renderMounts($p->id, $depth + 1);
+                }
+
+                return $html;
+            };
+        @endphp
+        <fieldset id="page-mounts-field" x-data="{ role: '{{ old('role', $user->role ?? 'editor') }}' }" x-show="['editor', 'content_editor'].includes(role)" x-cloak
+            @change.window="role = document.getElementById('role').value">
+            <legend class="mb-1 text-sm font-bold">Gałęzie stron tej osoby</legend>
+            <p id="page-mounts-help" class="mb-2 text-xs text-muted">Zaznacz strony (działy), np. stronę ośrodka. Osoba zobaczy w module Strony tylko je i ich podstrony — drzewo zaczyna się od nich — i tylko tam doda nowe strony. Sumuje się z gałęziami z grupy. Bez zaznaczenia — bez ograniczenia (albo jak w grupie).</p>
+            @if ($mountPages->isEmpty())
+                <p class="text-xs text-muted">Brak stron w serwisie.</p>
+            @else
+                <div class="max-h-72 overflow-y-auto rounded-md bg-gray-50 p-2" aria-describedby="page-mounts-help">
+                    <ul role="list">{!! $renderMounts(0, 0) !!}</ul>
+                </div>
+            @endif
+            @error('page_mounts.*') <p class="mt-1 text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
+        </fieldset>
+
         <div>
             <label for="password" class="mb-1 block text-sm font-bold">
                 {{ $user->exists ? 'Nowe hasło' : 'Hasło' }}

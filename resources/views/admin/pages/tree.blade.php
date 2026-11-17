@@ -128,9 +128,11 @@
                         <a href="{{ route('admin.podstrony.create', ['parent_id' => $selected->id]) }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-ink hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none">
                             <i class="fa-solid fa-indent w-4 text-center text-gray-500" aria-hidden="true"></i><span>jako podstronę „<span class="font-bold">{{ $selected->title }}</span>”</span>
                         </a>
+@unless ($mounted)
                         <a href="{{ route('admin.podstrony.create') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-ink hover:bg-gray-100 focus-visible:bg-gray-100 focus-visible:outline-none">
                             <i class="fa-solid fa-house w-4 text-center text-gray-500" aria-hidden="true"></i><span>na najwyższym poziomie</span>
                         </a>
+                        @endunless
                     </div>
                 </div>
             @else
@@ -245,6 +247,13 @@
                     {{-- Wynik filtrowania: widoczny tekst i komunikat dla czytników ekranu (element zawsze w DOM, więc aria-live działa). --}}
                     <p id="tree-filter-status" role="status" aria-live="polite" class="mt-1 text-xs text-muted" :class="filterInfo ? '' : 'sr-only'" x-text="filterInfo"></p>
                 </div>
+                {{-- Gałęzie redaktora (grupa albo osoba, jak „DB mounts” w TYPO3): drzewo zaczyna się od nich. --}}
+                @if ($mounted)
+                    <p class="flex items-start gap-2 rounded bg-gray-50 px-2.5 py-1.5 text-xs text-ink">
+                        <i class="fa-solid fa-user-lock mt-0.5 text-muted" aria-hidden="true"></i>
+                        <span>Widzisz tylko swoje gałęzie stron: {{ $treeRoots->pluck('title')->implode(', ') }}. Nowe strony dodasz wewnątrz nich.</span>
+                    </p>
+                @endif
                 {{-- Gałąź: drzewo zawężone do jednej strony z podstronami (?galaz=ID, zapamiętane w sesji). --}}
                 @if ($branch)
                     <div class="flex flex-wrap items-center gap-x-2 gap-y-1 rounded bg-brand-light px-2.5 py-1.5 text-xs text-ink" role="status">
@@ -351,7 +360,7 @@
                         </div>
                     @endif
                 @endif
-                <div data-tree-root-drop class="mt-2 hidden rounded border-2 border-dashed border-brand/50 px-3 py-3 text-center text-xs font-bold text-brand-dark">
+                <div data-tree-root-drop @if ($mounted) data-disabled @endif class="mt-2 hidden rounded border-2 border-dashed border-brand/50 px-3 py-3 text-center text-xs font-bold text-brand-dark">
                     Upuść tutaj, aby przenieść na poziom główny
                 </div>
             </div>
@@ -618,7 +627,7 @@
                                 <div class="min-w-56 flex-1">
                                     <label for="move-parent" class="mb-1 block text-xs font-bold text-ink">Pod stronę</label>
                                     <select id="move-parent" name="parent_id" class="w-full rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark">
-                                        <option value="" @selected(! $selected->parent_id)>— poziom główny —</option>
+                                        @unless ($mounted)<option value="" @selected(! $selected->parent_id)>— poziom główny —</option>@endunless
                                         @foreach ($moveOptions as $opt)
                                             <option value="{{ $opt['id'] }}" @selected($selected->parent_id === $opt['id']) @disabled($opt['disabled'])>{{ $opt['label'] }}</option>
                                         @endforeach
@@ -1034,7 +1043,7 @@
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/plain', String(idOf(dragLi)));
                 dragLi.classList.add('opacity-50');
-                rootDrop.classList.remove('hidden');
+                if (! rootDrop.hasAttribute('data-disabled')) rootDrop.classList.remove('hidden');
             });
 
             tree.addEventListener('dragend', () => {

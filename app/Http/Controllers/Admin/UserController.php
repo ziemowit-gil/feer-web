@@ -81,12 +81,22 @@ class UserController extends Controller
             'user_group_id' => ['nullable', Rule::exists(UserGroup::class, 'id')],
             'password' => ['required', 'string', 'min:8'],
             'local_login_allowed' => ['sometimes', 'boolean'],
+            // Gałęzie stron tej osoby (jak „DB mounts” w TYPO3) — tylko Edytor i Redaktor treści.
+            'page_mounts' => ['sometimes', 'array'],
+            'page_mounts.*' => ['integer', 'exists:pages,id'],
         ], [
             'name.regex' => 'Edytor BIP musi mieć podane imię i nazwisko (dwa wyrazy).',
         ]);
 
         if (in_array($data['role'], [User::ROLE_ADMIN, User::ROLE_BIP_EDITOR], true)) {
             $data['user_group_id'] = null;
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'page_mounts')) {
+            $data['page_mounts'] = in_array($data['role'], User::PAGE_MOUNT_ROLES, true)
+                ? (array_values(array_map('intval', $data['page_mounts'] ?? [])) ?: null)
+                : null;
+        } else {
+            unset($data['page_mounts']);
         }
 
         $data['local_login_allowed'] = $request->boolean('local_login_allowed');
@@ -118,12 +128,22 @@ class UserController extends Controller
             'local_login_allowed' => ['sometimes', 'boolean'],
             // Schemat kolorów panelu tej osoby (to samo co Mój profil → Wygląd panelu).
             'admin_scheme' => ['nullable', Rule::in(array_keys(User::ADMIN_SCHEMES))],
+            // Gałęzie stron tej osoby (jak „DB mounts” w TYPO3) — tylko Edytor i Redaktor treści.
+            'page_mounts' => ['sometimes', 'array'],
+            'page_mounts.*' => ['integer', 'exists:pages,id'],
         ], [
             'name.regex' => 'Edytor BIP musi mieć podane imię i nazwisko (dwa wyrazy).',
         ]);
 
         if (in_array($data['role'], [User::ROLE_ADMIN, User::ROLE_BIP_EDITOR], true)) {
             $data['user_group_id'] = null;
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'page_mounts')) {
+            $data['page_mounts'] = in_array($data['role'], User::PAGE_MOUNT_ROLES, true)
+                ? (array_values(array_map('intval', $data['page_mounts'] ?? [])) ?: null)
+                : null;
+        } else {
+            unset($data['page_mounts']);
         }
 
         $data['local_login_allowed'] = $request->boolean('local_login_allowed');

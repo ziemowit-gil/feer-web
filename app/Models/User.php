@@ -15,7 +15,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Revoltify\Subscriptionify\Concerns\InteractsWithSubscriptions;
 use Revoltify\Subscriptionify\Contracts\Subscribable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences', 'default_editor', 'admin_scheme', 'admin_nav_style'])]
+#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences', 'default_editor', 'admin_scheme', 'admin_nav_style', 'page_mounts'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable implements Subscribable
 {
@@ -111,6 +111,7 @@ class User extends Authenticatable implements Subscribable
             'yubikey_ids' => 'array',
             'notifications_seen_at' => 'datetime',
             'notification_preferences' => 'array',
+            'page_mounts' => 'array',
         ];
     }
 
@@ -182,10 +183,33 @@ class User extends Authenticatable implements Subscribable
         return $this->role === self::ROLE_CONTENT_EDITOR;
     }
 
+    /** Role, którym można przypisać gałęzie stron (redakcja stron). */
+    public const PAGE_MOUNT_ROLES = [self::ROLE_EDITOR, self::ROLE_CONTENT_EDITOR];
+
+    /**
+     * Gałęzie stron przypisane tej osobie (users.page_mounts, jak „DB mounts” w TYPO3) — tylko dla ról redakcji stron.
+     *
+     * @return array<int>
+     */
+    public function personalPageMounts(): array
+    {
+        if ($this->isAdmin() || ! in_array($this->role, self::PAGE_MOUNT_ROLES, true)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('intval', (array) ($this->page_mounts ?? []))));
+    }
+
     /** Czy edytor z grupy ma ograniczony zakres treści (tylko własne wpisy i/lub wybrane kategorie działań). */
     public function hasContentScope(): bool
     {
-        if ($this->isAdmin() || $this->role !== self::ROLE_EDITOR || ! $this->group) {
+        if ($this->isAdmin()) {
+            return false;
+        }
+        if ($this->personalPageMounts() !== []) {
+            return true;
+        }
+        if ($this->role !== self::ROLE_EDITOR || ! $this->group) {
             return false;
         }
 
@@ -197,17 +221,19 @@ class User extends Authenticatable implements Subscribable
     private ?array $allowedPageIdsCache = null;
 
     /**
-     * Strony, które redaktor może edytować: wybrane w grupie strony (działy) wraz ze wszystkimi podstronami.
+     * Strony, które redaktor może edytować: wybrane w grupie i przypisane osobie strony (działy) wraz ze wszystkimi podstronami.
      * null = bez ograniczeń (administrator albo grupa bez wskazanych stron).
      *
      * @return array<int>|null
      */
     public function allowedPageIds(): ?array
     {
-        if ($this->isAdmin() || $this->role !== self::ROLE_EDITOR) {
+        if ($this->isAdmin() || ! in_array($this->role, self::PAGE_MOUNT_ROLES, true)) {
             return null;
         }
-        $roots = array_values(array_filter(array_map('intval', (array) ($this->group?->page_ids ?? []))));
+        // Gałęzie z grupy (rola Edytor) i przypisane osobie — sumują się.
+        $groupRoots = $this->role === self::ROLE_EDITOR ? (array) ($this->group?->page_ids ?? []) : [];
+        $roots = array_values(array_unique(array_filter(array_map('intval', [...$groupRoots, ...$this->personalPageMounts()]))));
         if ($roots === []) {
             return null;
         }

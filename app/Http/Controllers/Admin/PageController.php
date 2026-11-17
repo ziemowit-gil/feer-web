@@ -168,6 +168,8 @@ class PageController extends Controller
         return view('admin.pages.tree', [
             'treeRoots' => $treeRoots,
             'branch' => $branch,
+            // Redaktor z przypisanymi gałęziami: drzewo zaczyna się od nich (zakres zapytań), bez poziomu głównego.
+            'mounted' => $request->user()->allowedPageIds() !== null,
             'branchRootline' => $branch ? $this->rootlineOf($all, $branch) : collect(),
             'projectGroups' => $projectGroups,
             'byParent' => $byParent,
@@ -334,6 +336,10 @@ class PageController extends Controller
             }
         }
 
+        if ($denied = $this->placementDenied($parentId)) {
+            return $fail($denied, 403);
+        }
+
         [$at, $of] = $this->placePage($page, $parentId, (int) $request->input('position'));
         $message = "Przeniesiono stronę „{$page->title}” na pozycję {$at} z {$of}.";
 
@@ -344,6 +350,20 @@ class PageController extends Controller
         }
 
         return $this->indexRedirect($page->id)->with('status', $message);
+    }
+
+    /**
+     * Redaktor z przypisanymi gałęziami (grupa albo osoba) nie może wynieść strony poza nie: na poziom główny
+     * ani pod stronę spoza swoich gałęzi. Zwraca komunikat błędu albo null, gdy miejsce jest dozwolone.
+     */
+    private function placementDenied(?int $parentId): ?string
+    {
+        $allowed = request()->user()?->allowedPageIds();
+        if ($allowed === null || ($parentId && in_array($parentId, $allowed, true))) {
+            return null;
+        }
+
+        return 'Masz dostęp tylko do swoich gałęzi stron — stronę możesz umieścić wyłącznie wewnątrz nich.';
     }
 
     /** Strony należące do drzewa bieżącej witryny (osoby mają własny moduł i nie są częścią drzewa). */
@@ -419,6 +439,10 @@ class PageController extends Controller
             if ($parent->id === $page->id || $parent->ancestors()->contains('id', $page->id)) {
                 return $this->indexRedirect($page->id)->with('error', 'Nie można przenieść strony do niej samej ani do jej podstrony.');
             }
+        }
+
+        if ($denied = $this->placementDenied($parent?->id)) {
+            return $this->indexRedirect($page->id)->with('error', $denied);
         }
 
         $atStart = ($data['position'] ?? 'end') === 'start';
@@ -1021,6 +1045,9 @@ class PageController extends Controller
         $parent = $parentId ? $this->treeQuery()->find($parentId) : null;
         if ($parentId && ! $parent) {
             return $this->indexRedirect()->with('error', 'Wybrana strona nadrzędna nie istnieje.');
+        }
+        if ($denied = $this->placementDenied($parentId)) {
+            return $this->indexRedirect($page->id)->with('error', $denied);
         }
 
         $withChildren = $request->boolean('z_podstronami');
