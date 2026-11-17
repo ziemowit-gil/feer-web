@@ -120,6 +120,19 @@ class AdminMetroStyleTest extends TestCase
         $this->actingAs($this->metroAdmin())->get(route('profile.edit'))->assertOk()->assertSee('data-nav-tiles-note', false);
     }
 
+    public function test_zakladki_stron_w_metro_maja_odstep_i_aktywna_w_kolorze_marki(): void
+    {
+        $html = $this->actingAs($this->metroAdmin())->get(route('admin.podstrony.index'))->assertOk()->getContent();
+
+        // Zakładki w osobnym kontenerze z odstępem (wcześniej „Strony”, „Lista stron”, „Osoby” sklejały się w jeden ciąg)
+        $this->assertStringContainsString('class="content-tabs"', $html);
+        $this->assertStringContainsString('.content-tabs { gap: 2px !important;', $html);
+        // Każda zakładka ma boczny odstęp i aktywna ma tło marki z tekstem --m-accent-fg
+        $this->assertStringContainsString('padding: .625rem 1.125rem !important', $html);
+        $this->assertStringContainsString('a[aria-current="page"] { background: var(--m-accent); color: var(--m-accent-fg);', $html);
+        $this->assertStringNotContainsString('padding: .5rem 0 !important; border-bottom-width: 3px', $html);
+    }
+
     public function test_inne_style_panelu_maja_dawne_menu_z_naglowkami_grup(): void
     {
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);

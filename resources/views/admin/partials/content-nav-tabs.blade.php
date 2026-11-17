@@ -26,7 +26,7 @@
 @endphp
 <nav aria-label="{{ $onBip ? 'Sekcje BIP' : ($onMenu ? 'Sekcje menu' : 'Sekcje stron') }}" class="border-gray-200"
      style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:.25rem 1rem;margin-bottom:1rem;border-bottom-width:1px;border-bottom-style:solid">
-    <div style="display:flex;flex-wrap:wrap;gap:.125rem">
+    <div class="content-tabs" style="display:flex;flex-wrap:wrap;gap:.25rem">
         @if ($onBip)
             {{-- BIP jako osobna „witryna”: menu boczne BIP i dokumenty --}}
             @if ($user->isAdmin())

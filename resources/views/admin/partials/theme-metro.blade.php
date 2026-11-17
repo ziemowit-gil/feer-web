@@ -139,11 +139,17 @@
     .admin-metro #main :is(a, button)[class*="px-"]:is([class*="bg-brand-dark"], [class*="bg-gray-100"], [class*="bg-white"], [class*="bg-brand-light"], [class*="bg-ink"]) { min-height: 2.75rem; }
     .admin-metro [role="tab"] { min-height: 2.75rem; }
 
-    /* ── Zakładki (Strony / Menu / BIP): duże, lekkie etykiety, aktywna z grubym podkreśleniem ── */
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] { border-bottom-width: 0 !important; gap: 0 1.5rem !important; margin-bottom: 1.5rem !important; }
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a { min-height: 2.75rem !important; padding: .5rem 0 !important; border-bottom-width: 3px !important; margin-bottom: 0 !important; color: var(--m-muted); font-family: var(--m-font-heading); font-size: 1.25rem; font-weight: 400; }
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a:hover { border-bottom-color: var(--m-line-strong); color: var(--m-ink); }
-    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a[aria-current="page"] { border-bottom-color: var(--m-accent); color: var(--m-ink); font-weight: 700; }
+    /* ── Zakładki (Strony / Menu / BIP): płaski pasek kafelków na białym polu, odstęp 2 px między nimi;
+         aktywna w pełnym kolorze marki (tekst --m-accent-fg ≥ 4,5:1), najechana w jasnym odcieniu marki (--m-tile, tekst ink). ── */
+    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] { border-bottom-width: 0 !important; gap: .5rem 1.5rem !important; margin-bottom: 1.5rem !important; }
+    .admin-metro nav[aria-label^="Sekcje"] .content-tabs { gap: 2px !important; padding: 2px; background: var(--m-surface); }
+    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a { min-height: 2.75rem !important; padding: .625rem 1.125rem !important; gap: .5rem !important; border-bottom-width: 0 !important; margin-bottom: 0 !important; background: transparent; color: var(--m-ink); font-family: var(--m-font-heading); font-size: 1rem; font-weight: 600; letter-spacing: 0; }
+    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a > i { font-size: .9375rem; color: var(--m-tile-icon, currentColor); }
+    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a:hover { background: var(--m-tile-hover, var(--m-hover)); color: var(--m-ink); }
+    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a[aria-current="page"] { background: var(--m-accent); color: var(--m-accent-fg); font-weight: 700; }
+    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a[aria-current="page"] > i { color: inherit; }
+    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a[aria-current="page"]:hover { background: var(--m-accent-hover); color: var(--m-accent-fg); }
+    .admin-metro nav[aria-label^="Sekcje"][style*="border-bottom-style:solid"] a:focus-visible { outline: 3px solid var(--m-focus); outline-offset: 2px; box-shadow: none; }
     .admin-metro [style*="border-width:1px;border-style:solid"] { border-width: 0 !important; background: var(--m-surface) !important; }
 
     /* ── Stronicowanie (domyślny widok Laravela): kwadratowe przyciski 44 px, bieżąca strona w akcencie ── */
