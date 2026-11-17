@@ -248,9 +248,14 @@ Route::get('/szukaj', [SearchController::class, 'index'])->name('search');
 
 // /newsletter — strona systemowa zapisu: modules/Newsletter/routes/web.php
 
-// Kampanie zbiórkowe
+// Zbiórki (moduł Fundraising i darowizny): lista, strona zbiórki, wpłata P24, podziękowania.
 Route::get('/kampanie', [CampaignController::class, 'index'])->name('kampanie.index');
 Route::get('/kampanie/{slug}', [CampaignController::class, 'show'])->name('kampanie.show');
+Route::post('/kampanie/{slug}/wplata', [CampaignController::class, 'donate'])->name('kampanie.donate')->middleware(['edition:donations', 'throttle:10,1']);
+Route::get('/kampanie/{slug}/wplata/{donation}', [CampaignController::class, 'thanks'])->name('kampanie.thanks');
+Route::post('/kampanie/{slug}/wplata/{donation}/ponow', [CampaignController::class, 'retry'])->name('kampanie.retry')->middleware(['edition:donations', 'throttle:10,1']);
+// Potwierdzenie darowizny w PDF (każda zaksięgowana wpłata; adres z losowym UUID wpłaty).
+Route::get('/darowizna/{donation}/potwierdzenie', [DonationController::class, 'receipt'])->name('donation.receipt')->middleware('throttle:30,1');
 
 // Subskrypcje tematyczne
 
@@ -262,6 +267,7 @@ Route::middleware(['module:support', 'edition:donations'])->prefix('wsparcie/dar
     Route::post('/', [DonationController::class, 'store'])->name('store')->middleware('throttle:10,1');
     Route::get('/druk-przelewu', [DonationController::class, 'slip'])->name('slip')->middleware('throttle:20,1');
     Route::get('/{donation}/dziekujemy', [DonationController::class, 'thanks'])->name('thanks');
+    Route::post('/{donation}/ponow', [DonationController::class, 'retry'])->name('retry')->middleware('throttle:10,1');
 });
 
 // Podcasty
@@ -412,6 +418,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('podstrony/{page}/blok/{index}/przesun', [\App\Http\Controllers\Admin\PageBlocksController::class, 'move'])->whereNumber('index')->name('podstrony.blok.przesun');
         Route::post('podstrony/{page}/blok/{index}/widocznosc', [\App\Http\Controllers\Admin\PageBlocksController::class, 'toggle'])->whereNumber('index')->name('podstrony.blok.widocznosc');
         Route::put('podstrony/{page}/blok/{index}', [\App\Http\Controllers\Admin\PageBlocksController::class, 'update'])->whereNumber('index')->name('podstrony.blok.zapisz');
+        Route::post('podstrony/{page}/blok/{index}/udostepnij', [\App\Http\Controllers\Admin\PageBlocksController::class, 'share'])->whereNumber('index')->name('podstrony.blok.udostepnij');
+        Route::post('podstrony/{page}/blok/{index}/odlacz', [\App\Http\Controllers\Admin\PageBlocksController::class, 'detach'])->whereNumber('index')->name('podstrony.blok.odlacz');
+        Route::post('podstrony/{page}/blok-wspolny', [\App\Http\Controllers\Admin\PageBlocksController::class, 'insertShared'])->name('podstrony.blok-wspolny.wstaw');
+        Route::put('podstrony/{page}/blok-wspolny/{block}', [\App\Http\Controllers\Admin\PageBlocksController::class, 'updateShared'])->whereNumber('block')->name('podstrony.blok-wspolny.zapisz');
         Route::post('podstrony/{page}/ustawienia-na-podstrony', [AdminPageController::class, 'copySettingsToChildren'])->name('podstrony.ustawienia-na-podstrony');
         Route::post('podstrony/{page}/styl-menu-na-podstrony', [AdminPageController::class, 'copyNavStyleToChildren'])->name('podstrony.styl-na-podstrony');
         Route::post('podstrony/{page}/pliki', [AdminAttachmentController::class, 'storeForPage'])->name('podstrony.pliki.store');
@@ -650,6 +660,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::get('multimedia/dostepnosc-dokumentow', [MediaToolsController::class, 'documents'])->name('multimedia.documents');
     Route::get('multimedia/porzadki', [MediaToolsController::class, 'cleanup'])->name('multimedia.cleanup');
     Route::get('multimedia/{media}/szczegoly', [MediaToolsController::class, 'panel'])->name('multimedia.panel');
+    Route::get('multimedia/{media}/zrodlo', [MediaToolsController::class, 'source'])->name('multimedia.source');
+    Route::post('multimedia/{media}/edytuj-obraz', [MediaToolsController::class, 'editImage'])->name('multimedia.edit-image');
     Route::post('multimedia/{media}/podmien', [MediaToolsController::class, 'replace'])->name('multimedia.replace');
     Route::post('multimedia/{media}/sprawdz-dostepnosc', [MediaToolsController::class, 'recheck'])->name('multimedia.recheck');
     Route::get('multimedia/{media}/wersje/{version}', [MediaToolsController::class, 'versionDownload'])->name('multimedia.versions.download');
@@ -767,6 +779,16 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
         Route::resource('kampanie', AdminCampaignController::class)->parameters(['kampanie' => 'campaign'])->except('show')->middleware('edition:campaigns');
         Route::post('kampanie/zbiorczo', [AdminCampaignController::class, 'bulk'])->name('kampanie.bulk')->middleware('edition:campaigns');
+        // Moduł Fundraising i darowizny: wpłaty (lista, ręczne dodanie, eksport) i globalne teksty zbiórek.
+        Route::get('darowizny', [\App\Http\Controllers\Admin\DonationController::class, 'index'])->name('darowizny.index');
+        Route::get('darowizny/eksport', [\App\Http\Controllers\Admin\DonationController::class, 'export'])->name('darowizny.export');
+        Route::get('darowizny/dodaj', [\App\Http\Controllers\Admin\DonationController::class, 'create'])->name('darowizny.create');
+        Route::post('darowizny', [\App\Http\Controllers\Admin\DonationController::class, 'store'])->name('darowizny.store');
+        Route::get('darowizny/{donation}', [\App\Http\Controllers\Admin\DonationController::class, 'edit'])->name('darowizny.edit');
+        Route::put('darowizny/{donation}', [\App\Http\Controllers\Admin\DonationController::class, 'update'])->name('darowizny.update');
+        Route::post('darowizny/{donation}/podziekowanie', [\App\Http\Controllers\Admin\DonationController::class, 'resendThanks'])->name('darowizny.thanks');
+        Route::get('zbiorki-teksty', [\App\Http\Controllers\Admin\FundraisingSettingsController::class, 'edit'])->name('zbiorki-teksty.edit')->middleware('edition:campaigns');
+        Route::put('zbiorki-teksty', [\App\Http\Controllers\Admin\FundraisingSettingsController::class, 'update'])->name('zbiorki-teksty.update')->middleware('edition:campaigns');
 
         Route::resource('pozycje-menu', NavItemController::class)->parameters(['pozycje-menu' => 'navItem'])->except('show');
         // „Strony i nawigacja”: menu ustawiane z panelu strony w drzewie stron.
@@ -775,6 +797,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::delete('podstrony/{page}/menu/{navItem}', [\App\Http\Controllers\Admin\PageMenuController::class, 'destroy'])->name('podstrony.menu.destroy');
         Route::patch('podstrony/{page}/menu-auto', [\App\Http\Controllers\Admin\PageMenuController::class, 'disableAuto'])->name('podstrony.menu.auto');
         Route::patch('pozycje-menu/{navItem}/przenies', [NavItemController::class, 'move'])->name('pozycje-menu.przenies');
+        // Drzewo menu jak w TYPO3: przeniesienie w dowolne miejsce (także do innego menu), kopia, etykieta z tytułu strony.
+        Route::post('pozycje-menu/{navItem}/umiesc', [NavItemController::class, 'place'])->name('pozycje-menu.umiesc');
+        Route::post('pozycje-menu/{navItem}/kopiuj', [NavItemController::class, 'copy'])->name('pozycje-menu.kopiuj');
+        Route::patch('pozycje-menu/{navItem}/etykieta-ze-strony', [NavItemController::class, 'labelFromPage'])->name('pozycje-menu.etykieta');
         Route::post('pozycje-menu/kolejnosc', [NavItemController::class, 'reorder'])->name('pozycje-menu.reorder');
         Route::post('pozycje-menu/ze-stron', [NavItemController::class, 'storeFromPages'])->name('pozycje-menu.ze-stron');
         Route::get('pozycje-menu/podglad', \App\Http\Controllers\Admin\NavItemPreviewController::class)->name('pozycje-menu.podglad');

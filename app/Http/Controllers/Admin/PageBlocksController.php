@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ContentBlock;
 use App\Models\Page;
 use App\Models\SiteSetting;
 use App\Support\BlockRenderer;
@@ -80,21 +81,106 @@ class PageBlocksController extends Controller
             'poziom' => ['nullable', 'integer', 'in:2,3,4'],
         ], [], ['tekst' => 'tekst bloku']);
 
-        $lines = preg_split('/\R/u', trim($data['tekst']));
-        $html = fn (string $s) => e(trim($s));
-        match ($block['type']) {
-            'heading' => $block['attrs'] = ['text' => $html(implode(' ', $lines)), 'level' => (int) ($data['poziom'] ?? $block['attrs']['level'] ?? 2)] + $block['attrs'],
-            'paragraph' => $block['attrs'] = ['text' => implode('<br>', array_map($html, $lines))] + $block['attrs'],
-            'list' => $block['attrs'] = ['items' => array_values(array_filter(array_map($html, $lines), fn ($i) => $i !== ''))] + $block['attrs'],
-        };
+        $block = $this->applyText($block, $data);
         $blocks[$index] = $block;
         $this->save($page, $blocks);
 
         return $this->back($page)->with('status', 'Zapisano blok „'.BlockSummary::describe($block)['label'].'”.');
     }
 
+    /**
+     * „Udostępnij jako blok wspólny”: blok trafia do bloków wspólnych witryny, a na stronie zastępuje go wstawka
+     * [blok:ID] — wygląd strony się nie zmienia, a ten sam blok można wstawić na innych stronach.
+     */
+    public function share(Request $request, Page $page, int $index): RedirectResponse
+    {
+        [$blocks, $error] = $this->load($request, $page, $index);
+        if ($error) {
+            return $error;
+        }
+        if (BlockSummary::sharedId($blocks[$index]) !== null) {
+            return $this->back($page)->with('error', 'Ten blok już jest blokiem wspólnym.');
+        }
+        $sum = BlockSummary::describe($blocks[$index]);
+        $name = trim((string) $request->input('nazwa')) ?: mb_strimwidth($sum['label'].($sum['text'] !== '' ? ': '.$sum['text'] : '').' ('.$page->title.')', 0, 180, '…');
+
+        $shared = ContentBlock::create(['type' => ContentBlock::SHARED, 'name' => $name,
+            'data' => ['blocks' => BlockRenderer::normalize([$blocks[$index]])], 'created_by' => $request->user()->id]);
+        $blocks[$index] = ['type' => 'shortcode', 'attrs' => ['code' => '[blok:'.$shared->id.']']] + (empty($blocks[$index]['hidden']) ? [] : ['hidden' => true]);
+        $this->save($page, $blocks);
+
+        return $this->back($page)->with('status', "Blok jest teraz blokiem wspólnym „{$name}”. Wstawisz go na innych stronach przyciskiem „Wstaw blok wspólny” w ich karcie.");
+    }
+
+    /** „Wstaw blok wspólny”: dodaje wstawkę [blok:ID] na końcu treści strony (potem można ją przesunąć). */
+    public function insertShared(Request $request, Page $page): RedirectResponse
+    {
+        [$blocks, $error] = $this->load($request, $page, null);
+        if ($error) {
+            return $error;
+        }
+        $shared = ContentBlock::forCurrentSite()->where('type', ContentBlock::SHARED)->find((int) $request->input('blok'));
+        if (! $shared) {
+            return $this->back($page)->with('error', 'Wybierz blok wspólny z listy.');
+        }
+        $blocks[] = ['type' => 'shortcode', 'attrs' => ['code' => '[blok:'.$shared->id.']']];
+        $this->save($page, $blocks);
+
+        return $this->back($page)->with('status', "Wstawiono blok wspólny „{$shared->name}” na końcu treści (pozycja ".count($blocks).').');
+    }
+
+    /** „Odłącz”: wstawkę bloku wspólnego zastępuje kopia jego bloków — dalsze zmiany bloku wspólnego tej strony nie dotyczą. */
+    public function detach(Request $request, Page $page, int $index): RedirectResponse
+    {
+        [$blocks, $error] = $this->load($request, $page, $index);
+        if ($error) {
+            return $error;
+        }
+        $shared = ($id = BlockSummary::sharedId($blocks[$index])) ? ContentBlock::forCurrentSite()->find($id) : null;
+        if (! $shared || ! $shared->isShared()) {
+            return $this->back($page)->with('error', 'To nie jest blok wspólny.');
+        }
+        array_splice($blocks, $index, 1, (array) ($shared->data['blocks'] ?? []));
+        $this->save($page, $blocks);
+
+        return $this->back($page)->with('status', "Odłączono blok wspólny „{$shared->name}” — na tej stronie jest teraz jego kopia.");
+    }
+
+    /** Szybka poprawka bloku wspólnego (nagłówek, akapit, lista bez formatowania) — zmienia go na wszystkich stronach. */
+    public function updateShared(Request $request, Page $page, ContentBlock $block): RedirectResponse
+    {
+        abort_unless(SiteSetting::current()->isModuleEnabled('block_editor') && $request->user()->canAccessModule('pages'), 403);
+        abort_unless($block->site_id === SiteSetting::current()->id && $block->isShared(), 404);
+        $inner = array_values((array) ($block->data['blocks'] ?? []));
+        if (count($inner) !== 1 || ! BlockSummary::quickEditable($inner[0])) {
+            return $this->back($page)->with('error', 'Ten blok wspólny poprawisz w edytorze blokowym strony, na której go odłączysz.');
+        }
+        $data = $request->validate([
+            'tekst' => ['required', 'string', 'max:20000'],
+            'poziom' => ['nullable', 'integer', 'in:2,3,4'],
+        ], [], ['tekst' => 'tekst bloku']);
+        $block->update(['data' => ['blocks' => BlockRenderer::normalize([$this->applyText($inner[0], $data)])] + (array) $block->data]);
+        $n = $block->usedOnPages()->count();
+
+        return $this->back($page)->with('status', "Zapisano blok wspólny „{$block->name}” — zmiana widać na stronach: {$n}.");
+    }
+
+    /** Wstawia tekst z formularza szybkiej edycji do bloku (nagłówek, akapit, lista). */
+    private function applyText(array $block, array $data): array
+    {
+        $lines = preg_split('/\R/u', trim($data['tekst']));
+        $html = fn (string $s) => e(trim($s));
+        $block['attrs'] = match ($block['type']) {
+            'heading' => ['text' => $html(implode(' ', $lines)), 'level' => (int) ($data['poziom'] ?? $block['attrs']['level'] ?? 2)] + $block['attrs'],
+            'paragraph' => ['text' => implode('<br>', array_map($html, $lines))] + $block['attrs'],
+            'list' => ['items' => array_values(array_filter(array_map($html, $lines), fn ($i) => $i !== ''))] + $block['attrs'],
+        };
+
+        return $block;
+    }
+
     /** @return array{0: array<int, array<string, mixed>>, 1: ?RedirectResponse} */
-    private function load(Request $request, Page $page, int $index): array
+    private function load(Request $request, Page $page, ?int $index): array
     {
         abort_unless(SiteSetting::current()->isModuleEnabled('block_editor'), 404);
         abort_unless($request->user()->canAccessModule('pages'), 403);
@@ -103,7 +189,7 @@ class PageBlocksController extends Controller
             return [[], $this->back($page)->with('error', "Strona „{$page->title}” jest zablokowana do edycji przez administratora.")];
         }
         $blocks = is_array($page->blocks) ? array_values($page->blocks) : [];
-        if ($request->input('v') !== self::version($page) || ! isset($blocks[$index])) {
+        if ($request->input('v') !== self::version($page) || ($index !== null && ! isset($blocks[$index]))) {
             return [[], $this->back($page)->with('error', 'Treść strony zmieniła się w międzyczasie (np. w edytorze blokowym). Sprawdź ją i spróbuj ponownie.')];
         }
 

@@ -657,6 +657,8 @@
                         $blocksVersion = \App\Http\Controllers\Admin\PageBlocksController::version($selected);
                         $blkBtn = 'inline-flex h-7 min-w-7 items-center justify-center gap-1 rounded px-1.5 text-xs font-bold text-muted hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent';
                         $fieldCls = 'w-full rounded border-gray-500 py-1.5 text-sm focus:border-brand-dark focus:ring-brand-dark';
+                        // Bloki wspólne witryny (ContentBlock::SHARED): do wstawiania i do opisu wstawek [blok:ID] w liście.
+                        $sharedBlocks = \App\Models\ContentBlock::forCurrentSite()->where('type', \App\Models\ContentBlock::SHARED)->orderBy('name')->get();
                     @endphp
                     <section class="rounded-md bg-white" id="tresc-strony" aria-labelledby="tresc-strony-h">
                         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-3 py-1.5">
@@ -681,7 +683,22 @@
                         @else
                             <ol class="divide-y divide-gray-100" role="list">
                                 @foreach ($pageBlocks as $bi => $blk)
-                                    @php $sum = \App\Support\BlockSummary::describe($blk); $isHidden = ! empty($blk['hidden']); @endphp
+                                    @php
+                                        $sum = \App\Support\BlockSummary::describe($blk);
+                                        $isHidden = ! empty($blk['hidden']);
+                                        // Wstawka bloku wspólnego: opis jego treści, liczba stron i szybka poprawka całego bloku wspólnego.
+                                        $sharedId = \App\Support\BlockSummary::sharedId($blk);
+                                        $shared = $sharedId ? $sharedBlocks->firstWhere('id', $sharedId) : null;
+                                        $sharedInner = $shared ? array_values((array) ($shared->data['blocks'] ?? [])) : [];
+                                        $sharedEditable = $shared && count($sharedInner) === 1 && \App\Support\BlockSummary::quickEditable($sharedInner[0]);
+                                        $editBlock = $shared ? ($sharedEditable ? $sharedInner[0] : null) : ($sum['editable'] ? $blk : null);
+                                        if ($shared) {
+                                            $innerSum = $sharedInner ? \App\Support\BlockSummary::describe($sharedInner[0]) : null;
+                                            $sharedPages = $shared->usedOnPages()->count();
+                                            $sum = ['label' => 'Blok wspólny', 'icon' => 'fa-link', 'editable' => $sharedEditable,
+                                                'text' => '„'.$shared->name.'” — '.($innerSum ? $innerSum['label'].($innerSum['text'] !== '' ? ': '.$innerSum['text'] : '') : 'pusty').' · na stronach: '.$sharedPages];
+                                        }
+                                    @endphp
                                     <li class="px-3 py-1.5 {{ $isHidden ? 'bg-gray-50' : '' }}">
                                         <div class="flex items-center gap-2">
                                             <span class="w-5 flex-none text-right text-[11px] font-bold text-muted" aria-hidden="true">{{ $bi + 1 }}</span>
@@ -703,6 +720,19 @@
                                                         @csrf <input type="hidden" name="v" value="{{ $blocksVersion }}">
                                                         <button type="submit" class="{{ $blkBtn }}" title="{{ $isHidden ? 'Pokaż na stronie' : 'Ukryj na stronie' }}" aria-label="{{ $isHidden ? 'Pokaż na stronie' : 'Ukryj na stronie' }}: blok {{ $bi + 1 }} ({{ $sum['label'] }})"><i class="fa-solid {{ $isHidden ? 'fa-eye' : 'fa-eye-slash' }}" aria-hidden="true"></i></button>
                                                     </form>
+                                                    @if ($shared)
+                                                        <form method="POST" action="{{ route('admin.podstrony.blok.odlacz', [$selected, $bi]) }}"
+                                                            data-confirm="Odłączyć blok wspólny „{{ $shared->name }}” na tej stronie? Strona dostanie jego kopię, a późniejsze zmiany bloku wspólnego jej nie obejmą.">
+                                                            @csrf <input type="hidden" name="v" value="{{ $blocksVersion }}">
+                                                            <button type="submit" class="{{ $blkBtn }}" title="Odłącz — zrób kopię tylko dla tej strony" aria-label="Odłącz blok wspólny {{ $bi + 1 }} ({{ $shared->name }})"><i class="fa-solid fa-link-slash" aria-hidden="true"></i></button>
+                                                        </form>
+                                                    @elseif (! $sharedId)
+                                                        <form method="POST" action="{{ route('admin.podstrony.blok.udostepnij', [$selected, $bi]) }}"
+                                                            data-confirm="Zrobić z tego bloku blok wspólny? Na stronie nic się nie zmieni, a blok wstawisz też na innych stronach — poprawka w jednym miejscu zmieni go wszędzie.">
+                                                            @csrf <input type="hidden" name="v" value="{{ $blocksVersion }}">
+                                                            <button type="submit" class="{{ $blkBtn }}" title="Udostępnij jako blok wspólny" aria-label="Udostępnij jako blok wspólny: blok {{ $bi + 1 }} ({{ $sum['label'] }})"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i></button>
+                                                        </form>
+                                                    @endif
                                                     @if ($sum['editable'])
                                                         <button type="button" class="{{ $blkBtn }}" aria-expanded="false" aria-controls="blk-edit-{{ $bi }}" title="Popraw tekst"
                                                             onclick="const p = document.getElementById('blk-edit-{{ $bi }}'); p.hidden = ! p.hidden; this.setAttribute('aria-expanded', String(! p.hidden)); if (! p.hidden) p.querySelector('textarea, input[type=text]').focus();">
@@ -712,9 +742,11 @@
                                                 </div>
                                             @endif
                                         </div>
-                                        @if ($canEditSelected && $sum['editable'])
-                                            <form id="blk-edit-{{ $bi }}" hidden method="POST" action="{{ route('admin.podstrony.blok.zapisz', [$selected, $bi]) }}" class="mb-1 ml-11 mt-1.5 space-y-2 rounded-md bg-gray-50 p-3">
+                                        @if ($canEditSelected && $sum['editable'] && $editBlock)
+                                            @php $blk = $editBlock; @endphp
+                                            <form id="blk-edit-{{ $bi }}" hidden method="POST" action="{{ $shared ? route('admin.podstrony.blok-wspolny.zapisz', [$selected, $shared->id]) : route('admin.podstrony.blok.zapisz', [$selected, $bi]) }}" class="mb-1 ml-11 mt-1.5 space-y-2 rounded-md bg-gray-50 p-3">
                                                 @csrf @method('PUT') <input type="hidden" name="v" value="{{ $blocksVersion }}">
+                                                @if ($shared)<p class="text-xs font-bold text-ink"><i class="fa-solid fa-link mr-1 text-muted" aria-hidden="true"></i>Zmiana obejmie wszystkie strony z tym blokiem wspólnym ({{ $sharedPages }}).</p>@endif
                                                 @if ($blk['type'] === 'heading')
                                                     <div class="flex flex-wrap items-end gap-2">
                                                         <div class="min-w-48 flex-1"><label for="blk-t-{{ $bi }}" class="mb-1 block text-xs font-bold text-ink">Tekst nagłówka</label>
@@ -735,6 +767,20 @@
                                     </li>
                                 @endforeach
                             </ol>
+                        @endif
+                        @if ($canEditSelected && $pageBlocks !== null && $sharedBlocks->isNotEmpty())
+                            {{-- Wstaw blok wspólny (jak „Wstaw rekord” w TYPO3): ten sam blok na wielu stronach, poprawiany w jednym miejscu. --}}
+                            <form method="POST" action="{{ route('admin.podstrony.blok-wspolny.wstaw', $selected) }}" class="flex flex-wrap items-end gap-2 border-t border-gray-100 px-3 py-2">
+                                @csrf <input type="hidden" name="v" value="{{ $blocksVersion }}">
+                                <div class="min-w-48 flex-1">
+                                    <label for="blk-shared" class="mb-1 block text-xs font-bold text-ink">Wstaw blok wspólny</label>
+                                    <select id="blk-shared" name="blok" required class="{{ $fieldCls }}">
+                                        <option value="">— wybierz blok —</option>
+                                        @foreach ($sharedBlocks as $sb)<option value="{{ $sb->id }}">{{ $sb->name }}</option>@endforeach
+                                    </select>
+                                </div>
+                                <button type="submit" class="{{ $btn }}"><i class="fa-solid fa-plus" aria-hidden="true"></i> Wstaw na końcu</button>
+                            </form>
                         @endif
                     </section>
                 @endif

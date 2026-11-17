@@ -278,6 +278,10 @@ class ShortcodeParser
         if (! $block) {
             return '';
         }
+        // Blok wspólny z edytora blokowego: bloki renderowane przy wyświetlaniu (zmiana działa na wszystkich stronach).
+        if ($block->isShared()) {
+            return BlockRenderer::render((array) ($block->data['blocks'] ?? []));
+        }
 
         return View::make('partials.blocks.'.(in_array($block->type, ['accordion', 'callout', 'pricing'], true) ? $block->type : 'cta'), ['block' => $block])->render();
     }

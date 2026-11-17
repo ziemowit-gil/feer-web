@@ -17,7 +17,8 @@ class ContentBlockController extends Controller
 {
     public function index(): JsonResponse
     {
-        return response()->json(ContentBlock::forCurrentSite()->orderBy('name')->get(['id', 'type', 'name']));
+        // Bloki wspólne z edytora blokowego mają własną obsługę (karta strony) — kreator ich nie pokazuje.
+        return response()->json(ContentBlock::forCurrentSite()->where('type', '!=', ContentBlock::SHARED)->orderBy('name')->get(['id', 'type', 'name']));
     }
 
     public function show(ContentBlock $block): JsonResponse

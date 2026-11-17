@@ -75,6 +75,13 @@ class BlockSummary
         ];
     }
 
+    /** Numer bloku wspólnego, gdy blok to sama wstawka [blok:ID] (inaczej null). */
+    public static function sharedId(array $block): ?int
+    {
+        return ($block['type'] ?? '') === 'shortcode' && preg_match('/^\[blok:(\d+)\]$/i', (string) ($block['attrs']['code'] ?? ''), $m)
+            ? (int) $m[1] : null;
+    }
+
     /** Szybka edycja w karcie: nagłówek, akapit i lista, o ile nie mają formatowania (linków, pogrubień), które by zginęło. */
     public static function quickEditable(array $block): bool
     {

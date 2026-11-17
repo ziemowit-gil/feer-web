@@ -125,4 +125,64 @@ class PageBlocksCardTest extends TestCase
             ->assertRedirect()->assertSessionHas('error');
         $this->assertSame('heading', $page->fresh()->blocks[0]['type']);
     }
+
+    public function test_udostepnienie_bloku_robi_blok_wspolny_bez_zmiany_wygladu(): void
+    {
+        $page = $this->pageWithBlocks();
+
+        $this->actingAs($this->admin())->post(route('admin.podstrony.blok.udostepnij', [$page, 1]), ['v' => $this->v($page)])
+            ->assertRedirect()->assertSessionHas('status');
+
+        $shared = \App\Models\ContentBlock::where('type', \App\Models\ContentBlock::SHARED)->firstOrFail();
+        $page->refresh();
+        $this->assertSame('[blok:'.$shared->id.']', $page->blocks[1]['attrs']['code']);
+        $this->assertStringContainsString('Pierwszy akapit', \App\Support\ShortcodeParser::render($page->content));
+        $this->assertSame(1, $shared->usedOnPages()->count());
+    }
+
+    public function test_blok_wspolny_wstawiony_na_drugiej_stronie_i_poprawiony_raz_zmienia_obie(): void
+    {
+        $page = $this->pageWithBlocks();
+        $admin = $this->admin();
+        $this->actingAs($admin)->post(route('admin.podstrony.blok.udostepnij', [$page, 1]), ['v' => $this->v($page)]);
+        $shared = \App\Models\ContentBlock::where('type', \App\Models\ContentBlock::SHARED)->firstOrFail();
+
+        $other = Page::create(['title' => 'Druga', 'slug' => 'druga', 'type' => 'standard', 'is_published' => true]);
+        $other->updateFromBlockEditor(['blocks' => [], 'content' => '']);
+        $this->actingAs($admin)->post(route('admin.podstrony.blok-wspolny.wstaw', $other), ['v' => $this->v($other), 'blok' => $shared->id])->assertRedirect();
+        $this->assertSame(2, $shared->usedOnPages()->count());
+
+        $html = $this->actingAs($admin)->get(route('admin.podstrony.index', ['wybrana' => $other->id]))->assertOk()->getContent();
+        $this->assertStringContainsString('Blok wspólny', $html);
+        $this->assertStringContainsString('na stronach: 2', $html);
+
+        $this->actingAs($admin)->put(route('admin.podstrony.blok-wspolny.zapisz', [$other, $shared]), ['tekst' => 'Wspólny nowy tekst'])->assertRedirect()->assertSessionHas('status');
+        $this->assertStringContainsString('Wspólny nowy tekst', \App\Support\ShortcodeParser::render($page->fresh()->content));
+        $this->assertStringContainsString('Wspólny nowy tekst', \App\Support\ShortcodeParser::render($other->fresh()->content));
+    }
+
+    public function test_odlaczenie_daje_kopie_niezalezna_od_bloku_wspolnego(): void
+    {
+        $page = $this->pageWithBlocks();
+        $admin = $this->admin();
+        $this->actingAs($admin)->post(route('admin.podstrony.blok.udostepnij', [$page, 1]), ['v' => $this->v($page)]);
+        $shared = \App\Models\ContentBlock::where('type', \App\Models\ContentBlock::SHARED)->firstOrFail();
+
+        $this->actingAs($admin)->post(route('admin.podstrony.blok.odlacz', [$page, 1]), ['v' => $this->v($page)])->assertRedirect()->assertSessionHas('status');
+        $page->refresh();
+        $this->assertSame('paragraph', $page->blocks[1]['type']);
+
+        $this->actingAs($admin)->put(route('admin.podstrony.blok-wspolny.zapisz', [$page, $shared]), ['tekst' => 'Zmieniony']);
+        $this->assertStringNotContainsString('Zmieniony', $page->fresh()->content);
+        $this->assertStringContainsString('Pierwszy akapit', $page->fresh()->content);
+    }
+
+    public function test_kreator_klasycznego_edytora_nie_pokazuje_blokow_wspolnych(): void
+    {
+        $page = $this->pageWithBlocks();
+        $admin = $this->admin();
+        $this->actingAs($admin)->post(route('admin.podstrony.blok.udostepnij', [$page, 1]), ['v' => $this->v($page)]);
+
+        $this->actingAs($admin)->getJson(route('admin.bloki-tresci.index'))->assertOk()->assertJsonCount(0);
+    }
 }
