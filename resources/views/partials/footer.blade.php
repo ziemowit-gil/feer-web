@@ -15,6 +15,8 @@
     @include('templates.test3.partials.footer')
 @elseif (($siteSettings->site_template ?? 'default') === 'bu2')
     @include('templates.bu2.partials.footer')
+@elseif (($siteSettings->site_template ?? 'default') === 'kreatywni')
+    @include('templates.kreatywni.partials.footer')
 @elseif (($siteSettings->site_template ?? 'default') === 'elearning')
     @include('templates.elearning.partials.footer')
 @elseif (($siteSettings->site_template ?? 'default') === 'podcasts')

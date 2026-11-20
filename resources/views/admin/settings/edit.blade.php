@@ -2824,6 +2824,9 @@
                     </div>
                 @endif
 
+                {{-- Ustawienia szablonu „kreatywni” (wizytówka fundacji): sekcje i teksty strony głównej --}}
+                @include('admin.settings.partials.kreatywni-fields')
+
                 {{-- Wariant motywu FEER (podmodel) „FEER IS”: układ strony głównej portalu usług --}}
                 <div x-show="tpl === 'feer'" x-cloak class="p-5 space-y-5 rounded-md bg-gray-50">
                     <h3 class="text-sm font-bold text-ink">Wariant motywu FEER: FEER IS</h3>

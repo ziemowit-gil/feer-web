@@ -472,6 +472,8 @@ class SiteSettingController extends Controller
             'vm_newsletter_text' => ['nullable', 'string', 'max:500'],
             'vm_header_badge_alt' => ['nullable', 'string', 'max:255'],
             'vm_footer_note' => ['nullable', 'string', 'max:1000'],
+            // Szablon „kreatywni”: teksty strony głównej (rejestr App\Support\KreatywniTexts).
+            ...\App\Support\KreatywniTexts::rules(),
             'vm_header_badge' => ['nullable', 'image', 'max:2048'],
             'vm_knowledge_image' => ['nullable', 'image', 'max:4096'],
         ];
@@ -745,12 +747,19 @@ class SiteSettingController extends Controller
             ->values()
             ->all() ?: null;
 
+        // Teksty strony głównej szablonu „kreatywni”: tylko gdy formularz je wysłał (inne formularze ich nie zerują).
+        if ($request->has('kreatywni_texts')) {
+            $data['kreatywni_texts'] = \App\Support\KreatywniTexts::clean($request->input('kreatywni_texts'));
+        } else {
+            unset($data['kreatywni_texts']);
+        }
+
         unset($data['header_partners'], $data['remove_header_partners'], $data['header_partners_alt']);
         unset($data['vm_header_badge'], $data['remove_vm_header_badge'], $data['vm_knowledge_image'], $data['remove_vm_knowledge_image']);
         unset($data['logo'], $data['remove_logo'], $data['og_image'], $data['remove_og_image'], $data['support_image'], $data['remove_support_image'], $data['support_gallery'], $data['remove_support_gallery'], $data['news_default_image'], $data['remove_news_default_image'], $data['bip_logo'], $data['remove_bip_logo'], $data['enabled_modules'], $data['section_order_json'], $data['homepage_sections_enabled']);
 
         // Do czasu wykonania migracji (nowa kolumna) zapis ustawień nie może padać — pomijamy brakującą kolumnę.
-        foreach (['support_steps_hidden', 'support_steps_title', 'support_steps_subtitle', 'support_step1_title', 'support_step1_text', 'support_step2_title', 'support_step2_text', 'support_step3_title', 'support_step3_text', 'homepage_sections_hidden', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'parent_link_label', 'parent_link_url', 'is_cta_label', 'is_cta_url', 'contact_branches', 'contact_branches_title', 'courses_registration_enabled', 'clarity_project_id', 'under_construction', 'under_construction_message', 'mourning_mode', 'mourning_from', 'mourning_until', 'contact_options', 'footer_options', 'header_options', 'contact_phone_hours', 'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact', 'fundraising_texts'] as $newColumn) {
+        foreach (['support_steps_hidden', 'support_steps_title', 'support_steps_subtitle', 'support_step1_title', 'support_step1_text', 'support_step2_title', 'support_step2_text', 'support_step3_title', 'support_step3_text', 'homepage_sections_hidden', 'wide_mission_cta_color', 'wide_mission_cta2_color', 'wide_mission_cta2_label', 'wide_mission_cta2_url', 'projects_layout', 'project_sections_nav', 'projects_stages_enabled', 'projects_team_funding_enabled', 'paid_activity_info', 'paid_info_page_id', 'projects_terms_enabled', 'projects_subprojects_enabled', 'projects_extras_enabled', 'portals_enabled', 'show_print_button', 'theme_variant', 'services_tabs', 'services_all_label', 'services_all_url', 'parent_link_label', 'parent_link_url', 'is_cta_label', 'is_cta_url', 'contact_branches', 'contact_branches_title', 'courses_registration_enabled', 'clarity_project_id', 'under_construction', 'under_construction_message', 'mourning_mode', 'mourning_from', 'mourning_until', 'contact_options', 'footer_options', 'header_options', 'contact_phone_hours', 'notice_enabled', 'notice_title', 'notice_text', 'notice_style', 'notice_on_home', 'notice_on_contact', 'fundraising_texts', 'kreatywni_texts'] as $newColumn) {
             if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', $newColumn)) {
                 unset($data[$newColumn]);
             }

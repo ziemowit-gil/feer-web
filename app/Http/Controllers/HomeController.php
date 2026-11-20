@@ -302,6 +302,18 @@ class HomeController extends Controller
         return view('templates.bu2.home', compact('slides', 'newsItems'));
     }
 
+    /**
+     * Strona główna szablonu „kreatywni” (wizytówka fundacji): sekcje z tekstami z App\Support\KreatywniTexts,
+     * profile social media z ustawień i do ośmiu zdjęć z modułu Galeria. Pusta lub ukryta sekcja się nie pokazuje.
+     */
+    private function kreatywniHome(SiteSetting $settings, Collection $gallery)
+    {
+        return view('templates.kreatywni.home', [
+            'texts' => \App\Support\KreatywniTexts::for($settings),
+            'gallery' => $gallery->take(8)->values(),
+        ]);
+    }
+
     /** Renderuje stronę główną w szablonie "wrzos" (siatka aktualności 4×2, blok "Kim jesteśmy?", karty wartości). */
     private function wrzosHome(SiteSetting $settings, Collection $partners)
     {
@@ -479,6 +491,9 @@ class HomeController extends Controller
         }
         if ($template === 'bu2') {
             return $this->bu2Home($settings, $slides);
+        }
+        if ($template === 'kreatywni') {
+            return $this->kreatywniHome($settings, $gallery);
         }
         if ($template === 'wrzos') {
             return $this->wrzosHome($settings, $partners);

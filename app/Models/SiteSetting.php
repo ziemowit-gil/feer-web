@@ -256,6 +256,7 @@ class SiteSetting extends Model implements HasMedia
         'podcasts'     => 'Podcasty (ciemny nagłówek, najnowszy odcinek z odtwarzaczem, siatka odcinków, partnerzy)',
         'vm'           => 'VM — fundacja (slider z kartą, blok powitalny, Wiedza, newsletter; styl Vis Maior)',
         'bu2'          => 'BU2 — jednostka uczelni (biały nagłówek z mega menu, menu boczne z drzewa menu, slider z panelem, aktualności, kontakt)',
+        'kreatywni'    => 'Kreatywni na co dzień — wizytówka fundacji (zielono-żółta, jedna strona: misja, oferta warsztatów, social media, opinie, wsparcie)',
     ];
 
     /**
@@ -277,6 +278,7 @@ class SiteSetting extends Model implements HasMedia
         'podcasts'     => ['Podcasty', 'Ciemny nagłówek, najnowszy odcinek z odtwarzaczem, siatka odcinków.', '#111827'],
         'vm'           => ['VM — Vis Maior', 'Slider z kartą, blok powitalny, sekcja Wiedza, newsletter.', '#15803d'],
         'bu2'          => ['BU2', 'Uczelniany: mega menu, menu boczne, zakładki i kafle podstron, slider z panelem.', '#00488e'],
+        'kreatywni'    => ['Kreatywni na co dzień', 'Wizytówka fundacji: zieleń i żółć, oferta warsztatów, mocny blok social media.', '#1b4a07'],
     ];
 
     /**
@@ -524,7 +526,7 @@ class SiteSetting extends Model implements HasMedia
         'accessibility_review_method', 'accessibility_contact_name', 'accessibility_contact_email',
         'accessibility_contact_phone', 'accessibility_architectural',
         'bank_account_number', 'bank_account_tax_number',
-        'donation_amounts', 'donation_intro', 'donation_headline', 'donation_impacts', 'donation_use_note', 'donation_reports_url', 'fundraising_texts',
+        'donation_amounts', 'donation_intro', 'donation_headline', 'donation_impacts', 'donation_use_note', 'donation_reports_url', 'fundraising_texts', 'kreatywni_texts',
         'support_intro', 'support_quick_transfer_url', 'support_buycoffee_url',
         'support_wplacam_url', 'support_method4_title', 'support_method4_text', 'support_method4_cta_label',
         'support_show_partners', 'support_steps_hidden', 'support_steps_title', 'support_steps_subtitle', 'support_step1_title', 'support_step1_text', 'support_step2_title', 'support_step2_text', 'support_step3_title', 'support_step3_text', 'support_testimonial_quote', 'support_testimonial_author', 'support_testimonial_role',
@@ -774,6 +776,7 @@ class SiteSetting extends Model implements HasMedia
         'footer_options' => 'array',
         'header_options' => 'array',
         'fundraising_texts' => 'array',
+        'kreatywni_texts' => 'array',
         'show_topbar_bip' => 'boolean',
         'show_topbar_social' => 'boolean',
         'contact_show_form' => 'boolean',
