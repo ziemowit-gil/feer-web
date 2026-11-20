@@ -131,6 +131,12 @@ class PageController extends Controller
             return response()->view('templates.bu2.page', $data);
         }
 
+        // Szablon „kreatywni” (wizytówka fundacji): własny układ podstron — pas z tytułem, menu boczne, treść, pas
+        // „Bądźmy w kontakcie”; typy stron z własnym widokiem (np. „O organizacji”) na pełną szerokość.
+        if (SiteSetting::current()->site_template === 'kreatywni') {
+            return response()->view('templates.kreatywni.page', $data);
+        }
+
         // Szablon „Strona działu": aktualności (opcjonalnie z jednej kategorii) do sekcji pod sliderem.
         if ($page->page_template === 'section' && $page->usesStandardLayout()) {
             $data['sectionPosts'] = $this->sectionPosts($page);

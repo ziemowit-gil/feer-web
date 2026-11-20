@@ -54,12 +54,17 @@ class TemplateKreatywniTest extends TestCase
         $this->assertStringContainsString('aria-label="Menu główne"', $html);
         $this->assertStringContainsString('>Oferta</a>', $html);
         $this->assertStringContainsString('<h1 id="kc-hero-title">Warsztaty kreatywne i twórcze</h1>', $html);
-        $this->assertStringContainsString('Naszą misją jest', $html);
+        $this->assertStringContainsString('aria-roledescription="karuzela"', $html);
+        $this->assertStringContainsString('Naszą misją jest', $html); // slajd 2 slidera
+        $this->assertStringContainsString('data-a11y-font="up"', $html); // pasek dostępności na górze
+        $this->assertStringContainsString('W czym pomagamy', $html);
         $this->assertStringContainsString('Laleczki motanki', $html);
-        $this->assertStringContainsString('Cena od 30 zł za osobę', $html);
+        $this->assertStringContainsString('<strong>od 30 zł</strong> <span>za osobę</span>', $html);
         $this->assertStringContainsString('Co nas wyróżnia?', $html);
-        $this->assertStringContainsString('Anna Mossór-Koper', $html);
-        $this->assertStringContainsString('<figcaption>Justyna</figcaption>', $html);
+        $this->assertStringNotContainsString('id="zespol"', $html, 'Zespół jest domyślnie ukryty (jest na stronie O nas).');
+        $this->assertStringContainsString('<span class="kc-review-name">Justyna</span>', $html);
+        $this->assertStringContainsString('class="kc-price-card kc-dark"', $html); // karta cenowa oferty
+        $this->assertStringContainsString('Boże Narodzenie', $html); // kolekcja warsztatów
         $this->assertStringContainsString('href="tel:+48663182816"', $html);
         $this->assertStringContainsString('class="kc kc-dark kc-footer"', $html);
         // Jeden nagłówek H1 na stronie.
@@ -84,7 +89,7 @@ class TemplateKreatywniTest extends TestCase
     {
         $this->useTemplate(['kreatywni_texts' => [
             'hero_title' => 'Tworzymy razem',
-            'offer_items' => "Origami | Składanie papieru\nFilc",
+            'offer_items' => "Origami | Zimowe warsztaty\nFilc",
             '_hidden' => ['reviews', 'team'],
         ]]);
 
@@ -92,7 +97,7 @@ class TemplateKreatywniTest extends TestCase
 
         $this->assertStringContainsString('Tworzymy razem', $html);
         $this->assertStringContainsString('Origami', $html);
-        $this->assertStringContainsString('Składanie papieru', $html);
+        $this->assertStringContainsString('Zimowe warsztaty', $html, 'Druga część wiersza to grupa (kolekcja) warsztatów.');
         $this->assertStringNotContainsString('Laleczki motanki', $html);
         $this->assertStringNotContainsString('id="opinie"', $html);
         $this->assertStringNotContainsString('id="zespol"', $html);
@@ -122,7 +127,9 @@ class TemplateKreatywniTest extends TestCase
         ]);
 
         $this->assertSame(['offer_price' => 'Cena od 40 zł', '_hidden' => ['gallery']], $clean);
-        $this->assertNull(KreatywniTexts::clean(['hero_title' => $default, '_sections' => '1', '_shown' => array_keys(KreatywniTexts::SECTIONS)]));
+        $allButTeam = array_values(array_diff(array_keys(KreatywniTexts::SECTIONS), KreatywniTexts::DEFAULT_HIDDEN));
+        $this->assertNull(KreatywniTexts::clean(['hero_title' => $default, '_sections' => '1', '_shown' => $allButTeam]));
+        $this->assertSame(['_hidden' => []], KreatywniTexts::clean(['_sections' => '1', '_shown' => array_keys(KreatywniTexts::SECTIONS)]));
     }
 
     private function settingsPayload(array $texts): array
@@ -169,11 +176,46 @@ class TemplateKreatywniTest extends TestCase
         $this->get('/')->assertOk()->assertSee('Warsztaty kreatywne i twórcze');
     }
 
+    public function test_mega_menu_ma_sekcje_strony_z_kotwicami_a_podstrona_wlasny_uklad_bez_spisu(): void
+    {
+        $this->useTemplate();
+        Page::create(['title' => 'Oferta', 'slug' => 'oferta', 'type' => 'standard', 'is_published' => true, 'meta_description' => 'Warsztaty z dojazdem.',
+            'content' => '<h2>Warsztaty tematyczne</h2><h3>Laleczki motanki</h3><p>Opis</p><h3>Perfumy</h3><p>Opis</p><h2>Zamów warsztaty</h2><p>Napisz.</p>']);
+        NavItem::create(['label' => 'Oferta', 'url' => '/oferta', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1]);
+        NavItem::create(['label' => 'Galeria', 'url' => '/galeria', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 2]);
+
+        $home = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('id="kc-mega-0"', $home);
+        $this->assertStringContainsString('aria-controls="kc-mega-0"', $home);
+        $this->assertStringContainsString('href="/oferta#laleczki-motanki"', $home);
+        $this->assertStringContainsString('class="kc-mega-head">Zamów warsztaty</a>', $home);
+        $this->assertStringNotContainsString('kc-mega-1', $home, 'Pozycja bez podmenu zostaje zwykłym linkiem.');
+
+        $page = $this->get('/oferta')->assertOk()->getContent();
+        $this->assertStringContainsString('class="kc-page-head"', $page);
+        $this->assertStringContainsString('id="laleczki-motanki"', $page);
+        $this->assertStringNotContainsString('Na tej stronie', $page);
+        $this->assertStringContainsString('Bądźmy w kontakcie', $page);
+        $this->assertStringContainsString('class="kc-price-card kc-dark"', $page, 'Strona Oferta ma na górze blok sprzedażowy.');
+    }
+
+    public function test_kontakt_ma_wlasny_uklad_bez_danych_domyslnych_innych_szablonow(): void
+    {
+        $this->useTemplate(['contact_phone' => '+48 663 182 816', 'contact_email' => 'warsztaty@example.pl', 'contact_address' => '', 'contact_city' => 'Kraków i okolice']);
+
+        $html = $this->followingRedirects()->get('/kontakt')->assertOk()->getContent();
+
+        $this->assertStringContainsString('class="kc-page-head"', $html);
+        $this->assertStringContainsString('href="mailto:warsztaty@example.pl"', $html);
+        $this->assertStringContainsString('Gdzie działamy', $html);
+        $this->assertStringNotContainsString('Pracujemy zdalnie', $html);
+    }
+
     public function test_seeder_zaklada_strony_menu_i_ustawienia_tylko_dla_wskazanej_witryny(): void
     {
         \Illuminate\Support\Facades\Storage::fake('public');
         $site = SiteSetting::current();
-        $site->forceFill(['slug' => 'kreatywni', 'contact_email' => 'juz@example.pl', 'site_template' => 'default'])->save();
+        $site->forceFill(['slug' => 'kreatywni', 'contact_email' => 'juz@example.pl', 'contact_address' => 'ul. Warszawska 12', 'site_template' => 'default'])->save();
 
         putenv('SITE_SLUG=kreatywni');
         try {
@@ -188,6 +230,7 @@ class TemplateKreatywniTest extends TestCase
         $this->assertSame('#1b4a07', $fresh->brand_color);
         $this->assertSame('juz@example.pl', $fresh->contact_email, 'Wypełnione pole zostaje bez zmian.');
         $this->assertSame('+48 663 182 816', $fresh->contact_phone);
+        $this->assertSame('', (string) $fresh->contact_address, 'Domyślny adres FEER z migracji traktujemy jak puste pole.');
 
         $pages = Page::withoutGlobalScopes()->where('site_id', $site->id);
         $this->assertSame(1, (clone $pages)->where('title', 'Oferta')->count());

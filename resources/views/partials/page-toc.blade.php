@@ -36,7 +36,9 @@
     </script>
 @endonce
 
-@if ($variant === 'mobile')
+@if (($siteSettings->site_template ?? 'default') === 'kreatywni')
+    {{-- Szablon „kreatywni”: sekcje strony są w mega menu nagłówka (App\Support\KreatywniMegaMenu), bez spisu. --}}
+@elseif ($variant === 'mobile')
     <details class="mb-6 rounded-md bg-gray-50 md:hidden">
         <summary class="flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-4 text-sm font-bold text-ink hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
             <i class="fa-solid fa-list-ul text-brand-dark" aria-hidden="true"></i> Na tej stronie

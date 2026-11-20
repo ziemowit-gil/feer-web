@@ -17,8 +17,8 @@ final class KreatywniTexts
 {
     /** Sekcje strony głównej w kolejności wyświetlania: klucz => [nazwa w panelu, opis]. */
     public const SECTIONS = [
-        'hero' => ['Powitanie', 'Góra strony: nazwa, hasło, przyciski i obrazek (domyślnie logo).'],
-        'mission' => ['Misja i obszary', 'Trzy punkty misji i cztery obszary działania.'],
+        'hero' => ['Slider na górze', 'Slajd 1: nazwa, hasło, przyciski i obrazek (domyślnie logo). Slajd 2: „Naszą misją jest” z punktami misji.'],
+        'mission' => ['Obszary działania', 'Krótki wstęp i cztery obszary działania.'],
         'social' => ['Social media', 'Duże karty z profilami z Ustawienia → Media i BIP. Bez ustawionych profili sekcja się nie pokazuje.'],
         'offer' => ['Oferta warsztatów', 'Lista warsztatów z ceną i przyciskiem do zapytania o termin.'],
         'why' => ['Dlaczego my', 'Wyróżniki i opis, jak pracujemy.'],
@@ -29,6 +29,9 @@ final class KreatywniTexts
         'contact' => ['Kontakt', 'Telefon i e-mail z Ustawienia → Kontakt oraz przycisk do formularza.'],
     ];
 
+    /** Sekcje ukryte, dopóki redakcja ich nie włączy (wizytówka ma być krótka; zespół jest na stronie „O nas”). */
+    public const DEFAULT_HIDDEN = ['team'];
+
     /**
      * Klucz => [sekcja, etykieta w panelu, typ pola, wartość domyślna].
      */
@@ -36,7 +39,7 @@ final class KreatywniTexts
         // Powitanie
         'hero_kicker' => ['hero', 'Napis nad nagłówkiem (puste = nazwa witryny)', 'line', ''],
         'hero_title' => ['hero', 'Nagłówek strony głównej (H1)', 'line', 'Warsztaty kreatywne i twórcze'],
-        'hero_text' => ['hero', 'Tekst pod nagłówkiem', 'text', 'Prowadzi je terapeuta zajęciowy. Dojeżdżamy do szkół, przedszkoli, szpitali i domów pomocy społecznej w Krakowie i okolicach.'],
+        'hero_text' => ['hero', 'Tekst pod nagłówkiem', 'text', 'Prowadzi je terapeuta zajęciowy. Przyjeżdżamy do Ciebie — Kraków i okolice.'],
         'hero_points' => ['hero', 'Krótkie hasła pod tekstem (jedno w wierszu)', 'list', "Z dojazdem do placówki\nMateriały w cenie\nDla dzieci, dorosłych i seniorów"],
         'hero_button' => ['hero', 'Główny przycisk — napis', 'line', 'Zobacz relacje z naszych działań'],
         'hero_button_url' => ['hero', 'Główny przycisk — adres (puste = Facebook z ustawień)', 'url', ''],
@@ -45,30 +48,35 @@ final class KreatywniTexts
         'hero_image' => ['hero', 'Obrazek (adres z Multimediów, puste = logo)', 'url', ''],
         'hero_image_alt' => ['hero', 'Opis obrazka dla czytników (puste = obrazek dekoracyjny)', 'line', ''],
 
-        // Misja i obszary
-        'mission_title' => ['mission', 'Nagłówek (H2)', 'line', 'Naszą misją jest'],
-        'mission_items' => ['mission', 'Punkty misji (jeden w wierszu)', 'list', "Realizacja warsztatów terapeutycznych m.in. w szpitalach i Domach Pomocy Społecznej.\nZakup i dystrybucja darów rzeczowych dla osób znajdujących się w trudnej sytuacji życiowej.\nRozwijanie kreatywności oraz poczucia sprawstwa poprzez różnorodne warsztaty tematyczne."],
-        'mission_text' => ['mission', 'Tekst przed obszarami', 'text', 'Twórcze działanie, kontakt z drugim człowiekiem i poczucie sprawczości potrafią realnie poprawić jakość życia — niezależnie od wieku czy stanu zdrowia. Wspieramy dzieci, dorosłych i seniorów, koncentrując się na czterech kluczowych obszarach.'],
-        'areas' => ['mission', 'Obszary działania (Tytuł | opis)', 'list', "Poprawa zdrowia psychicznego i fizycznego | Prowadzimy zajęcia, które pomagają redukować stres, wzmacniać koncentrację, usprawniać motorykę i budować poczucie bezpieczeństwa.\nRozwój umiejętności i kreatywności | Uczymy nowych technik rękodzielniczych, rozwijamy wyobraźnię i pokazujemy, jak twórczo spędzać czas — niezależnie od ograniczeń.\nIntegracja społeczna | Tworzymy przestrzeń do spotkań, rozmów i współpracy. Wspólne działania budują relacje i przeciwdziałają samotności.\nEdukacja ekologiczna | Promujemy ideę zero waste, uczymy recyklingu i pokazujemy, jak nadawać rzeczom drugie życie."],
+        // Slajd 2: misja
+        'mission_title' => ['hero', 'Slajd 2 — nagłówek (puste pole = tekst domyślny; slajd znika, gdy nie ma punktów)', 'line', 'Naszą misją jest'],
+        'mission_items' => ['hero', 'Slajd 2 — punkty misji (jeden w wierszu)', 'list', "Realizacja warsztatów terapeutycznych m.in. w szpitalach i Domach Pomocy Społecznej.\nZakup i dystrybucja darów rzeczowych dla osób znajdujących się w trudnej sytuacji życiowej.\nRozwijanie kreatywności oraz poczucia sprawstwa poprzez różnorodne warsztaty tematyczne."],
+        // Obszary działania
+        'areas_title' => ['mission', 'Nagłówek (H2)', 'line', 'W czym pomagamy'],
+        'mission_text' => ['mission', 'Tekst przed obszarami', 'text', 'Wspieramy dzieci, dorosłych i seniorów w czterech obszarach.'],
+        'areas' => ['mission', 'Obszary działania (Tytuł | krótki opis)', 'list', "Zdrowie psychiczne i fizyczne | Mniej stresu, lepsza koncentracja i sprawność dłoni.\nRozwój i kreatywność | Nowe techniki rękodzieła i twórczy czas.\nIntegracja społeczna | Spotkania i współpraca zamiast samotności.\nEdukacja ekologiczna | Zero waste i drugie życie rzeczy."],
 
         // Oferta
         'offer_title' => ['offer', 'Nagłówek (H2)', 'line', 'Warsztaty tematyczne z dojazdem'],
-        'offer_text' => ['offer', 'Tekst wstępu', 'text', 'Naszą misję realizujemy m.in. dzięki odpłatnym, mobilnym warsztatom w szkołach, przedszkolach, domach kultury, świetlicach, na festiwalach i wszędzie tam, gdzie są ludzie gotowi na inspirujące spotkanie.'],
-        'offer_price' => ['offer', 'Cena', 'line', 'Cena od 30 zł za osobę'],
-        'offer_price_note' => ['offer', 'Dopisek przy cenie', 'line', 'zależna od liczby osób oraz lokalizacji'],
-        'offer_items' => ['offer', 'Warsztaty (Tytuł | opis)', 'list', "Laleczki zapachowe | Inspirujące warsztaty projektowania pachnących laleczek z naturalnym suszem.\nBiżuteria z filcu | Interaktywny kurs tworzenia unikatowej biżuterii z wełny czesankowej.\nKolaż botaniczny | Obrazy wprost z natury. Nie musisz mieć zdolności plastycznych, wystarczy rozbudzić wyobraźnię.\nLaleczki ze sznurka | Co potrafią makramowe supełki, czyli całkowicie zaplątane zajęcia ze sznurkiem w roli głównej.\nChoinkowe bonsai | Świąteczne warsztaty sadzenia oraz dekorowania bożonarodzeniowego mini drzewka.\nDekorowanie bombek | Magiczne zajęcia ozdabiania bombek różnymi metodami oraz technikami.\nWianki wielkanocne | Wiosenne zajęcia rozwijające zainteresowania z wykorzystaniem wielkanocnych dodatków.\nKompozycje kwiatowe | Wielkanocne tworzenie kompozycji z żywych kwiatów, przepełnione kolorami oraz wiosenną atmosferą.\nDekorowanie jajek gipsowych | Wiosenne zajęcia ozdabiania jajek metodą decoupage z wykorzystaniem suszonych kwiatów.\nJęzyk migowy | Wprowadzenie do języka migowego, nauka podstawowych zwrotów oraz alfabetu.\nŚwiece sojowe | Relaksujące sesje tworzenia dekoracyjnych świec z ekologicznych materiałów.\nKomponowanie miodów smakowych | Nauka poprzez doświadczanie produktów pszczelich. Stwórz miód z ulubionymi dodatkami.\nLaleczki motanki | Zajmujące warsztaty tworzenia tradycyjnych lalek słowiańskich w duchu zero waste.\nPerfumy | Pachnące zajęcia komponowania personalizowanych perfum z olejkami eterycznymi.\nKule musujące | Sensoryczna zabawa polegająca na przygotowaniu magicznych, buzujących w wodzie kul.\nMydełka glicerynowe | Kreatywne warsztaty tworzenia dekoracyjnych mydełek z naturalnych składników."],
-        'offer_button' => ['offer', 'Przycisk — napis', 'line', 'Zapytaj o termin'],
+        'offer_text' => ['offer', 'Tekst wstępu', 'text', 'Przyjeżdżamy do szkół, przedszkoli, domów kultury, świetlic i na festyny.'],
+        'offer_card_title' => ['offer', 'Karta cenowa — nazwa', 'line', 'Warsztaty mobilne'],
+        'offer_price' => ['offer', 'Karta cenowa — cena', 'line', 'od 30 zł'],
+        'offer_price_unit' => ['offer', 'Karta cenowa — jednostka', 'line', 'za osobę'],
+        'offer_price_note' => ['offer', 'Karta cenowa — dopisek przy cenie', 'line', 'zależna od liczby osób oraz lokalizacji'],
+        'offer_features' => ['offer', 'Karta cenowa — korzyści (jedna w wierszu)', 'list', "Dojazd do Twojej placówki\nWszystkie materiały w cenie\nProgram dopasowany do wieku\nZaświadczenie o niekaralności"],
+        'offer_items' => ['offer', 'Warsztaty (Tytuł | grupa, np. Boże Narodzenie; opisy są na stronie Oferta)', 'list', "Laleczki zapachowe | Przez cały rok\nBiżuteria z filcu | Przez cały rok\nKolaż botaniczny | Przez cały rok\nLaleczki ze sznurka | Przez cały rok\nJęzyk migowy | Przez cały rok\nŚwiece sojowe | Przez cały rok\nMiody smakowe | Przez cały rok\nLaleczki motanki | Przez cały rok\nPerfumy | Przez cały rok\nKule musujące | Przez cały rok\nMydełka glicerynowe | Przez cały rok\nChoinkowe bonsai | Boże Narodzenie\nDekorowanie bombek | Boże Narodzenie\nWianki wielkanocne | Wielkanoc\nKompozycje kwiatowe | Wielkanoc\nDekorowanie jajek gipsowych | Wielkanoc"],
+        'offer_button' => ['offer', 'Przycisk — napis', 'line', 'Zamów warsztaty'],
         'offer_button_url' => ['offer', 'Przycisk — adres (puste = strona kontaktu)', 'url', ''],
 
         // Dlaczego my
         'why_title' => ['why', 'Nagłówek (H2)', 'line', 'Co nas wyróżnia?'],
-        'why_items' => ['why', 'Wyróżniki (Tytuł | opis)', 'list', "Mobilność | Dojeżdżamy do Twojej placówki, firmy itp. Ty wybierasz miejsce, a my zajmujemy się resztą.\nMateriały w cenie | Zapewniamy wszystkie potrzebne materiały oraz narzędzia.\nIndywidualne podejście | Dopasowujemy program do wieku oraz umiejętności uczestników.\nRóżnorodność zajęć | Oferujemy warsztaty na każdą okazję: od dekoracji sezonowych przez zabawki aż po tworzenie miodu smakowego czy kosmetyków naturalnych.\nProfesjonalna kadra | Nasze warsztaty prowadzi terapeuta zajęciowy oraz lingwista z bogatym doświadczeniem.\nRozwój umiejętności | Trenujesz kreatywność, odnajdujesz w sobie pierwiastek twórczy, usprawniasz procesy myślowe, a przy okazji dobrze się bawisz!\nElastyczność terminów | Dopasowujemy termin i godzinę zajęć do Twoich potrzeb.\nBezpieczeństwo | Pracujemy zgodnie z aktualnymi standardami sanitarnymi, dbając o zdrowie uczestników. Posiadamy zaświadczenie o niekaralności."],
+        'why_items' => ['why', 'Wyróżniki (Tytuł | krótki opis)', 'list', "Mobilność | Dojeżdżamy do Twojej placówki.\nMateriały w cenie | Przywozimy wszystko, co potrzebne.\nDla każdego wieku | Program dopasowany do grupy.\nBezpieczeństwo | Mamy zaświadczenie o niekaralności."],
         'how_title' => ['why', 'Nagłówek „Jak pracujemy” (H3)', 'line', 'Jak pracujemy?'],
-        'how_text' => ['why', 'Tekst „Jak pracujemy”', 'text', 'Prowadzimy warsztaty w grupach, indywidualnie oraz online, dostosowując się do potrzeb uczestników. Każde spotkanie oparte jest na kreatywności, interakcji i współpracy. Dbamy o przyjazną atmosferę, zachęcamy do eksperymentowania i odkrywania własnych talentów. Jesteśmy otwarci na nowe pomysły.'],
+        'how_text' => ['why', 'Tekst „Jak pracujemy” (puste = bez ramki)', 'text', ''],
 
         // Social media
         'social_title' => ['social', 'Nagłówek (H2)', 'line', 'Zobacz, co ostatnio tworzyliśmy'],
-        'social_text' => ['social', 'Tekst', 'text', 'Relacje z warsztatów, zdjęcia prac uczestników i zapowiedzi publikujemy na bieżąco w mediach społecznościowych. Zajrzyj tam i dołącz do nas.'],
+        'social_text' => ['social', 'Tekst', 'text', 'Relacje z warsztatów i zdjęcia prac publikujemy na bieżąco w mediach społecznościowych.'],
 
         // Galeria
         'gallery_title' => ['gallery', 'Nagłówek (H2)', 'line', 'Z naszych warsztatów'],
@@ -80,18 +88,18 @@ final class KreatywniTexts
 
         // Opinie
         'reviews_title' => ['reviews', 'Nagłówek (H2)', 'line', 'Co mówią o nas uczestnicy?'],
-        'reviews_items' => ['reviews', 'Opinie (Treść | podpis)', 'list', "Moi uczniowie wzięli udział już w kilku warsztatach, zawsze byłam pod wrażeniem zaangażowania oraz pomysłowości. W trakcie zajęć przygotowaliśmy prezenty m.in. na Dzień Mamy i Taty. Ogromny plus za mobilność, w końcu nie musimy wydawać pieniędzy na przejazdy :) | Maria\nNiedawno uczestniczyłam w warsztacie tworzenia lalek motanek podczas pikniku z okazji Dnia Dziecka. Byłam pod wrażeniem recyklingu tkanin i promowania praktyk zero waste. Dobra robota! | Magda\nWyjątkowe i inspirujące warsztaty. Nasze przedszkolaki zrobiły mydła na Dzień Babci i Dziadka. Wszyscy byli zachwyceni, zarówno dzieci, jak i obdarowani dziadkowie. Polecam każdemu! | Justyna"],
+        'reviews_items' => ['reviews', 'Opinie (Treść | podpis)', 'list', "Ogromny plus za mobilność, w końcu nie musimy wydawać pieniędzy na przejazdy :) | Maria\nByłam pod wrażeniem recyklingu tkanin i promowania praktyk zero waste. Dobra robota! | Magda\nWyjątkowe i inspirujące warsztaty. Polecam każdemu! | Justyna"],
         'reviews_button' => ['reviews', 'Przycisk — napis', 'line', 'Więcej opinii na Facebooku'],
         'reviews_url' => ['reviews', 'Przycisk — adres (puste = Facebook z ustawień)', 'url', ''],
 
         // Jak wesprzeć
         'support_title' => ['support', 'Nagłówek (H2)', 'line', 'Jak możesz wesprzeć nasze działania?'],
-        'support_text' => ['support', 'Tekst', 'text', "Fundacja boryka się z brakiem finansowania, a zapotrzebowanie na bezpłatną terapię zajęciową rośnie z każdym miesiącem. Szpitale i Domy Pomocy Społecznej proszą o wsparcie, którego nie zawsze jesteśmy w stanie udzielić.\n\nDziękujemy, że jesteś częścią naszej misji!"],
-        'support_items' => ['support', 'Sposoby wsparcia (Tytuł | opis | adres)', 'list', "1,5% podatku | Wpisz nas w zeznaniu PIT — to nic nie kosztuje. | \nDarowizna | Darowiznę możesz odliczyć od podatku, rozliczając PIT. | \nZamów warsztaty | Z odpłatnych warsztatów mobilnych finansujemy bezpłatne zajęcia w szpitalach i DPS-ach. | #oferta"],
+        'support_text' => ['support', 'Tekst', 'text', 'Dzięki Tobie prowadzimy bezpłatne zajęcia w szpitalach i Domach Pomocy Społecznej.'],
+        'support_items' => ['support', 'Sposoby wsparcia (Tytuł | krótki opis | adres)', 'list', "1,5% podatku | Wpisz nas w zeznaniu PIT. | \nDarowizna | Możesz ją odliczyć od podatku. | \nZamów warsztaty | Z nich finansujemy pomoc. | #oferta"],
 
         // Kontakt
         'contact_title' => ['contact', 'Nagłówek (H2)', 'line', 'Masz pytania? Napisz do nas!'],
-        'contact_text' => ['contact', 'Tekst', 'text', 'Ustalimy temat, termin i miejsce warsztatów. Działamy w Krakowie i okolicach.'],
+        'contact_text' => ['contact', 'Tekst', 'text', 'Ustalimy temat, termin i miejsce warsztatów.'],
         'contact_button' => ['contact', 'Przycisk do formularza — napis', 'line', 'Napisz wiadomość'],
     ];
 
@@ -154,9 +162,11 @@ final class KreatywniTexts
     /** @return array<int, string> */
     public function hidden(): array
     {
-        $hidden = $this->own['_hidden'] ?? [];
+        if (! array_key_exists('_hidden', $this->own) || ! is_array($this->own['_hidden'])) {
+            return self::DEFAULT_HIDDEN;
+        }
 
-        return is_array($hidden) ? array_values(array_intersect($hidden, array_keys(self::SECTIONS))) : [];
+        return array_values(array_intersect($this->own['_hidden'], array_keys(self::SECTIONS)));
     }
 
     /** Wartość zapisana w panelu (do formularza), bez domyślnej. */
@@ -253,12 +263,19 @@ final class KreatywniTexts
             }
         }
         // Formularz w panelu wysyła zaznaczone sekcje (`_shown`) i znacznik `_sections`; ukryte = pozostałe.
+        // Zapisujemy listę tylko wtedy, gdy różni się od domyślnej (także pustą — „pokaż wszystko”).
         if (! empty($texts['_sections'])) {
             $hidden = array_values(array_diff(array_keys(self::SECTIONS), (array) ($texts['_shown'] ?? [])));
+        } elseif (array_key_exists('_hidden', $texts)) {
+            $hidden = array_values(array_intersect((array) $texts['_hidden'], array_keys(self::SECTIONS)));
         } else {
-            $hidden = array_values(array_intersect((array) ($texts['_hidden'] ?? []), array_keys(self::SECTIONS)));
+            $hidden = self::DEFAULT_HIDDEN;
         }
-        if ($hidden !== []) {
+        $sorted = $hidden;
+        $default = self::DEFAULT_HIDDEN;
+        sort($sorted);
+        sort($default);
+        if ($sorted !== $default) {
             $out['_hidden'] = $hidden;
         }
 

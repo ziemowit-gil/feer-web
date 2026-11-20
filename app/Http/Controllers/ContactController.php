@@ -52,13 +52,14 @@ class ContactController extends Controller
     {
         $settings = SiteSetting::current();
         // Szablon „bu2” ma jeden układ kontaktu (menu boczne, dane teleadresowe, treść strony, formularz).
-        $view = $settings->site_template === 'bu2' ? 'templates.bu2.contact' : match ($settings->contactLayoutValue()) {
+        // Szablon „kreatywni” (wizytówka): własny, lekki układ — telefon, e-mail, profile social media i formularz.
+        $view = $settings->site_template === 'bu2' ? 'templates.bu2.contact' : ($settings->site_template === 'kreatywni' ? 'templates.kreatywni.contact' : match ($settings->contactLayoutValue()) {
             'split' => 'contact.show-split',
             'card'  => 'contact.show-card',
             'tabs'  => 'contact.show-tabs',
             'feer'  => 'contact.show-feer',
             default => 'contact.show',
-        };
+        });
 
         return view($view, $this->viewData($settings, $page));
     }

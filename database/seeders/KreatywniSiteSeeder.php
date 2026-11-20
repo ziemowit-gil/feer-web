@@ -64,12 +64,16 @@ class KreatywniSiteSeeder extends Seeder
             'meta_description' => 'Fundacja „Kreatywni na co dzień”: mobilne warsztaty kreatywne i terapeutyczne dla dzieci, dorosłych i seniorów w Krakowie i okolicach. Z dojazdem, materiały w cenie.',
             'contact_phone' => '+48 663 182 816',
             'contact_email' => 'warsztaty.kreatywninacodzien@gmail.com',
+            'contact_address' => '',
             'contact_city' => 'Kraków i okolice',
             'facebook_url' => 'https://www.facebook.com/profile.php?id=100075973327291',
             'instagram_url' => 'https://www.instagram.com/fundacja.kreatywni/',
         ];
+        // Wartości domyślne kolumn (dane FEER z migracji) traktujemy jak puste pole.
+        $placeholders = ['contact_email' => 'fundacja@feer.org.pl', 'contact_address' => 'ul. Warszawska 12', 'contact_city' => '00-001 Warszawa'];
         foreach ($blank as $key => $value) {
-            if (blank($this->site->{$key})) {
+            $current = trim((string) $this->site->{$key});
+            if ($current === '' || $current === ($placeholders[$key] ?? null)) {
                 $fill[$key] = $value;
             }
         }
