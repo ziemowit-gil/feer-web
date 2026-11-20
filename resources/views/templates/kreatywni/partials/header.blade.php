@@ -1,12 +1,13 @@
 {{--
     Nagłówek szablonu „kreatywni” (wizytówka fundacji), dwie części:
     1) pasek dostępności na samej górze (przewija się ze stroną): rozmiar tekstu A− / bieżący / A+, kontrast,
-       „Więcej ustawień” (otwiera wspólny panel ułatwień partials/a11y-panel), telefon, e-mail i profile social media;
+       „Więcej ustawień” (otwiera wspólny panel ułatwień partials/a11y-panel), telefon i e-mail;
        przyciski data-a11y-* obsługuje resources/js/app.js tak samo jak w panelu;
     2) przyklejona belka: logo i nazwa, mega menu z Menu nawigacji (App\Support\KreatywniMegaMenu: pozycja z
        podmenu — podstrony i sekcje strony, czyli dawny spis „Na tej stronie” — otwiera panel na całą szerokość po
        kliknięciu, Enter albo najechaniu; Esc zamyka i wraca na przycisk, klik obok i wyjście fokusem zamykają) wyśrodkowane,
-       bez tła (bieżąca/otwarta pozycja — pogrubienie i limonkowa kropka pod napisem), „Kontakt” po prawej; na wąskim ekranie „Menu” rozwija listę pozycji z podstronami
+       bez tła (bieżąca/otwarta pozycja — pogrubienie i limonkowa kropka pod napisem), po prawej wyróżnione profile
+       (Facebook, Instagram — przyciski z nazwą i znakiem w kolorach serwisu; na węższym ekranie sam znak) i „Kontakt”; na wąskim ekranie „Menu” rozwija listę pozycji z podstronami
        i sekcjami H2. Style: partials/base-css (prefiks kc-).
 --}}
 @php
@@ -14,6 +15,8 @@
     $kcItems = \App\Support\KreatywniMegaMenu::items($navItems);
     $kcLogo = $siteSettings->logoUrl();
     $kcSocial = $siteSettings->socialLinks(3);
+    // Serwis profilu po klasie ikony — do koloru znaku (Facebook, Instagram, YouTube); reszta w kolorach szablonu.
+    $kcNet = fn (string $icon) => str_contains($icon, 'facebook') ? 'fb' : (str_contains($icon, 'instagram') ? 'ig' : (str_contains($icon, 'youtube') ? 'yt' : 'other'));
     $kcContactUrl = $siteSettings->isModuleEnabled('contact') && \Illuminate\Support\Facades\Route::has('contact.show') ? site_route('contact.show') : null;
     // Gdy „Kontakt” jest już pozycją menu, w menu mobilnym nie dopisujemy go drugi raz.
     $kcPath = fn ($u) => rtrim((string) parse_url((string) $u, PHP_URL_PATH), '/');
@@ -51,17 +54,14 @@
             <i class="fa-solid fa-universal-access" aria-hidden="true"></i><span>Więcej ustawień<span class="kc-sr"> dostępności</span></span>
         </button>
 
-        @if ($kcPhone !== '' || $kcEmail !== '' || $kcSocial !== [])
-            <ul class="kc-topbar-contact" aria-label="Kontakt i profile">
+        @if ($kcPhone !== '' || $kcEmail !== '')
+            <ul class="kc-topbar-contact" aria-label="Kontakt">
                 @if ($kcPhone !== '')
                     <li><a href="tel:{{ preg_replace('/[^0-9+]/', '', $kcPhone) }}"><i class="fa-solid fa-phone" aria-hidden="true"></i>{{ $kcPhone }}</a></li>
                 @endif
                 @if ($kcEmail !== '')
                     <li class="kc-hide-md"><a href="mailto:{{ $kcEmail }}"><i class="fa-solid fa-envelope" aria-hidden="true"></i>{{ $kcEmail }}</a></li>
                 @endif
-                @foreach ($kcSocial as [$sUrl, $sIcon, $sLabel])
-                    <li><a href="{{ $sUrl }}" class="kc-top-social" target="_blank" rel="noopener"><i class="{{ $sIcon }}" aria-hidden="true"></i><span class="kc-sr">{{ $sLabel }} (otwiera się w nowej karcie)</span></a></li>
-                @endforeach
             </ul>
         @endif
     </div>
@@ -140,6 +140,12 @@
         @endif
 
         <div class="kc-tools">
+            @foreach ($kcSocial as [$sUrl, $sIcon, $sLabel])
+                <a href="{{ $sUrl }}" class="kc-net-pill" target="_blank" rel="noopener">
+                    <span class="kc-net kc-net-{{ $kcNet($sIcon) }}" aria-hidden="true"><i class="{{ $sIcon }}"></i></span>
+                    <span class="kc-net-label">{{ $sLabel }}</span><span class="kc-sr"> (otwiera się w nowej karcie)</span>
+                </a>
+            @endforeach
             @if ($kcContactUrl)
                 <a href="{{ $kcContactUrl }}" class="kc-btn kc-hide-sm" @if (request()->routeIs('contact.*')) aria-current="page" @endif><i class="fa-solid fa-envelope" aria-hidden="true"></i>Kontakt</a>
             @endif
@@ -181,8 +187,9 @@
             @if ($kcSocial !== [])
                 <div class="kc-mnav-social">
                     @foreach ($kcSocial as [$sUrl, $sIcon, $sLabel])
-                        <a href="{{ $sUrl }}" class="kc-icon-btn" target="_blank" rel="noopener">
-                            <i class="{{ $sIcon }}" aria-hidden="true"></i><span class="kc-sr">{{ $sLabel }} (otwiera się w nowej karcie)</span>
+                        <a href="{{ $sUrl }}" class="kc-net-pill" target="_blank" rel="noopener">
+                            <span class="kc-net kc-net-{{ $kcNet($sIcon) }}" aria-hidden="true"><i class="{{ $sIcon }}"></i></span>
+                            <span>{{ $sLabel }}</span><span class="kc-sr"> (otwiera się w nowej karcie)</span>
                         </a>
                     @endforeach
                 </div>

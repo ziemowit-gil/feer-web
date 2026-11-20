@@ -46,15 +46,13 @@
     .kc-top-btn:hover, .kc-top-btn[aria-pressed="true"], .kc-top-btn[aria-expanded="true"] { background: var(--kc-sun); border-color: var(--kc-sun); color: var(--kc-forest); }
     .kc-top-btn[aria-disabled="true"] { opacity: 1; border-style: dashed; cursor: not-allowed; }
     .kc-topbar-contact { display: flex; flex-wrap: wrap; align-items: center; gap: 0 1.25rem; margin: 0 0 0 auto; padding: 0; list-style: none; }
-    .kc-topbar-contact a.kc-top-social { justify-content: center; width: 2.25rem; padding: 0; border-radius: 50%; font-size: 1rem; }
-    .kc-topbar-contact li:has(.kc-top-social) { margin-left: -.85rem; }
-    .kc-topbar-contact a.kc-top-social:hover { background: var(--kc-sun); color: var(--kc-forest); text-decoration: none; }
-    .kc-topbar-contact a.kc-top-social i { color: inherit; }
-    .kc-topbar-contact a { display: inline-flex; align-items: center; gap: .45rem; min-height: 2.25rem; color: #fff; font-size: .88rem; font-weight: 600; text-decoration: none; }
+    .kc-topbar-contact a { display: inline-flex; align-items: center; gap: .45rem; min-height: 2.25rem; color: #fff; font-size: .88rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
     .kc-topbar-contact a:hover { text-decoration: underline; text-underline-offset: 4px; }
     .kc-topbar-contact i { color: var(--kc-sun); }
     .kc-topbar a:focus-visible, .kc-topbar button:focus-visible { outline: 3px solid var(--kc-sun); outline-offset: 2px; }
-    @media (max-width: 767px) { .kc-hide-md { display: none; } .kc-topbar-label { display: none; } }
+    @media (min-width: 768px) { .kc-topbar-in { flex-wrap: nowrap; } .kc-top-btn { white-space: nowrap; } }
+    @media (max-width: 1199px) { .kc-hide-md { display: none; } }
+    @media (max-width: 1023px) { .kc-topbar-label { display: none; } }
 
     /* ── Nagłówek ─────────────────────────────────────────────── */
     .kc-header { position: sticky; top: 0; z-index: 40; background: rgba(255, 255, 255, .97); border-bottom: 1px solid var(--kc-line); }
@@ -65,7 +63,7 @@
     .kc-brand-kind { font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--kc-muted); }
     .kc-brand-name { font-size: 1.15rem; font-weight: 800; color: var(--kc-forest); }
     .kc-nav { margin: 0 auto; }
-    .kc-nav > ul { display: flex; align-items: center; gap: .15rem; margin: 0; padding: 0; list-style: none; }
+    .kc-nav > ul { display: flex; flex-wrap: nowrap; align-items: center; gap: .15rem; margin: 0; padding: 0; list-style: none; white-space: nowrap; }
     .kc-nav-link { position: relative; display: inline-flex; align-items: center; gap: .4rem; min-height: 2.75rem; padding: .45rem 1rem; border: 0;
         background: transparent; color: var(--kc-ink); font: inherit; font-size: 1.06rem; font-weight: 700; text-decoration: none; cursor: pointer; }
     .kc-nav-link::after { content: ''; position: absolute; left: 50%; bottom: .1rem; width: .45rem; height: .45rem; border-radius: 50%; background: transparent; transform: translateX(-50%); }
@@ -105,6 +103,22 @@
         background: var(--kc-mint); color: var(--kc-forest); font-size: 1.1rem; text-decoration: none; cursor: pointer; transition: background-color .15s, color .15s; }
     .kc-icon-btn:hover, .kc-icon-btn[aria-expanded="true"] { background: var(--kc-forest); color: #fff; }
     .kc-header .kc-btn { min-height: 2.75rem; padding: .5rem 1.15rem; font-size: .95rem; }
+    /* Profile w belce i w menu mobilnym: przycisk z nazwą serwisu i znakiem w jego kolorze (znak to grafika, tekst obok
+       ma pełny kontrast); biały znak na kolorze serwisu ≥ 3:1 (Facebook 4,2:1, YouTube 4:1). */
+    .kc-net-pill { display: inline-flex; align-items: center; gap: .55rem; min-height: 2.75rem; padding: .3rem .95rem .3rem .3rem; border: 2px solid var(--kc-line); border-radius: 999px;
+        background: #fff; color: var(--kc-forest); font-size: .95rem; font-weight: 800; text-decoration: none; transition: border-color .15s, background-color .15s; }
+    .kc-net-pill:hover { border-color: var(--kc-forest); background: var(--kc-mint); }
+    .kc-net { display: inline-flex; align-items: center; justify-content: center; width: 2.05rem; height: 2.05rem; flex: none; border-radius: 50%; background: var(--kc-forest); color: #fff; font-size: 1.05rem; }
+    .kc-net-fb { background: #1877f2; }
+    .kc-net-ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
+    .kc-net-yt { background: #ff0000; }
+    .kc-top { flex-wrap: nowrap; }
+    .kc-brand-text, .kc-nav-link, .kc-net-pill, .kc-header .kc-btn { white-space: nowrap; }
+    .kc-tools { flex: none; }
+    @media (max-width: 1439px) { .kc-header .kc-net-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; } .kc-header .kc-top .kc-net-pill { padding: .3rem; } }
+    @media (min-width: 1024px) and (max-width: 1199px) { .kc-nav-link { padding: .45rem .65rem; font-size: 1rem; } .kc-brand-name { font-size: 1.05rem; } .kc-header .kc-btn { padding: .5rem .9rem; } }
+    @media (max-width: 479px) { .kc-header .kc-top .kc-net-pill { display: none; } }
+    @media (forced-colors: active) { .kc-net { border: 1px solid CanvasText; } }
     .kc-burger { display: none; }
     .kc-mnav { border-top: 1px solid var(--kc-line); background: #fff; }
     .kc-mnav ul { margin: 0; padding: .5rem 0 1rem; list-style: none; }
@@ -215,7 +229,15 @@
     .kc-social-text { display: flex; flex-direction: column; gap: .15rem; min-width: 0; }
     .kc-social-name { font-size: 1.2rem; font-weight: 800; }
     .kc-social-cta { font-size: .95rem; font-weight: 600; color: var(--kc-muted); }
-    .kc-social-arrow { margin-left: auto; font-size: 1.25rem; }
+    .kc-social a { min-height: 7rem; padding: 1.5rem 1.75rem; }
+    .kc-social-icon { width: 4rem; height: 4rem; border-radius: 1.1rem; font-size: 1.9rem; }
+    .kc-social-icon.kc-net-fb { background: #1877f2; }
+    .kc-social-icon.kc-net-ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
+    .kc-social-icon.kc-net-yt { background: #ff0000; }
+    .kc-social-name { font-size: 1.35rem; }
+    .kc-social-follow { display: inline-flex; align-items: center; gap: .45rem; margin-left: auto; padding: .55rem 1.1rem; border-radius: 999px; background: var(--kc-green); color: #fff; font-size: .95rem; font-weight: 800; white-space: nowrap; }
+    .kc-social a:hover .kc-social-follow { background: var(--kc-forest); }
+    @media (max-width: 479px) { .kc-social a { flex-wrap: wrap; } .kc-social-follow { margin-left: 0; } }
 
     /* Oferta */
     .kc-price { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: .35rem .75rem; margin: .5rem 0 0; padding: .75rem 1.25rem; border-radius: 1rem; background: var(--kc-sun); color: var(--kc-forest); }
