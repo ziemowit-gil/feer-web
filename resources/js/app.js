@@ -1171,3 +1171,58 @@ document.querySelectorAll('[data-phone-reveal]').forEach((box) => {
     btn.addEventListener('focus', open);
     if (window.matchMedia('(hover: hover)').matches) box.addEventListener('mouseenter', open);
 });
+
+// Blok „Zakładki” (BlockRenderer, typ tabs, [data-tabs]): z sekcji z nagłówkami robimy listę kart ARIA (wzorzec APG —
+// strzałki w lewo/prawo, Home, End; zakładka otwiera się przy przejściu). Nagłówki paneli zostają dla czytników ekranu
+// (ukryte wizualnie), więc struktura strony się nie zmienia. Bez JS zostają sekcje jedna pod drugą.
+document.querySelectorAll('[data-tabs]').forEach((box, n) => {
+    const panels = [...box.children].filter((el) => el.classList.contains('content-tab'));
+    if (panels.length < 2) return;
+    const list = document.createElement('div');
+    list.className = 'content-tablist';
+    list.setAttribute('role', 'tablist');
+    const tabs = panels.map((panel, i) => {
+        const id = panel.id || `content-tabs-${n}-${i}`;
+        const tab = document.createElement('button');
+        tab.type = 'button';
+        tab.id = `${id}-tab`;
+        tab.setAttribute('role', 'tab');
+        tab.setAttribute('aria-controls', id);
+        tab.textContent = panel.querySelector('.content-tab-title')?.textContent.trim() || `Zakładka ${i + 1}`;
+        panel.id = id;
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', tab.id);
+        panel.tabIndex = 0;
+        list.append(tab);
+        return tab;
+    });
+    const select = (i, focus) => {
+        tabs.forEach((tab, j) => {
+            tab.setAttribute('aria-selected', String(j === i));
+            tab.tabIndex = j === i ? 0 : -1;
+            panels[j].hidden = j !== i;
+        });
+        if (focus) tabs[i].focus();
+    };
+    list.addEventListener('click', (e) => {
+        const i = tabs.indexOf(e.target.closest('[role="tab"]'));
+        if (i >= 0) select(i, false);
+    });
+    list.addEventListener('keydown', (e) => {
+        const i = tabs.indexOf(document.activeElement);
+        const to = { ArrowRight: (i + 1) % tabs.length, ArrowLeft: (i - 1 + tabs.length) % tabs.length, Home: 0, End: tabs.length - 1 }[e.key];
+        if (i < 0 || to === undefined) return;
+        e.preventDefault();
+        select(to, true);
+    });
+    // Odnośnik do miejsca w zakładce (np. ze spisu treści: #kotwica) otwiera właściwą zakładkę.
+    const fromHash = () => {
+        let target = null;
+        try { target = location.hash.length > 1 ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null; } catch (e) { target = null; }
+        return target ? panels.findIndex((p) => p.contains(target)) : -1;
+    };
+    box.prepend(list);
+    box.classList.add('is-enhanced');
+    select(Math.max(0, fromHash()), false);
+    window.addEventListener('hashchange', () => { const i = fromHash(); if (i >= 0) select(i, false); });
+});

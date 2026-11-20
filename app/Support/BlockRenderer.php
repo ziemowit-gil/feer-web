@@ -21,21 +21,36 @@ use DOMNode;
  */
 class BlockRenderer
 {
-    public const MAX_DEPTH = 4;
+    /** Najgłębsze drzewo: kontener → część (kolumna, zakładka) → zwykłe bloki. */
+    public const MAX_DEPTH = 2;
 
     public const MAX_BLOCKS = 500;
 
-    /** Typy z zagnieżdżonymi blokami i dozwolone typy dzieci (null = dowolne nie-kontenerowe). */
+    /**
+     * Typy z zagnieżdżonymi blokami i dozwolone typy dzieci (null = dowolne nie-kontenerowe). Zagnieżdżenie ma jeden
+     * poziom: w kontenerze (kolumny, zakładki, rozwijana sekcja, ramka) są tylko zwykłe bloki — kontener w kontenerze
+     * zostaje przy normalizacji rozpakowany (treść zostaje, znika opakowanie). Prosta struktura = przewidywalna
+     * kolejność tabulacji i nagłówków dla czytników ekranu.
+     */
     private const CONTAINERS = [
         'columns' => ['column'],
         'column' => null,
+        'tabs' => ['tab'],
+        'tab' => null,
         'callout' => null,
         'details' => null,
     ];
 
+    /** Części kontenerów, które istnieją tylko w swoim rodzicu: kolumna w „Kolumnach”, zakładka w „Zakładkach”. */
+    private const PARTS = ['column' => 'columns', 'tab' => 'tabs'];
+
+    /** Najwięcej części w kontenerze. */
+    private const MAX_PARTS = ['columns' => 4, 'tabs' => 8];
+
     public const TYPES = [
         'paragraph', 'heading', 'list', 'quote', 'image', 'gallery', 'buttons', 'callout', 'partnerevent',
         'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist', 'banner', 'imagebanner', 'materials', 'phone',
+        'tabs', 'tab', 'faq', 'cta', 'people', 'cards',
     ];
 
     private const INLINE_TAGS = ['strong', 'b', 'em', 'i', 'a', 'br', 'code', 's', 'sub', 'sup', 'mark'];
@@ -43,6 +58,9 @@ class BlockRenderer
     private const DROP_WITH_CONTENT = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button', 'select', 'textarea', 'svg', 'math', 'template', 'noscript'];
 
     private int $count = 0;
+
+    /** Numer okna harmonogramu (BlockSchedule::wrap) — unikalny w obrębie jednego renderowania. */
+    private int $windowSeq = 0;
 
     /**
      * Czyści drzewo bloków: tylko znane typy, znane atrybuty, ograniczona głębokość i liczba bloków.
@@ -52,7 +70,30 @@ class BlockRenderer
      */
     public static function normalize(array $blocks): array
     {
-        return (new self)->normalizeList($blocks, 0, null);
+        return (new self)->normalizeList($blocks, false, null);
+    }
+
+    /**
+     * Ile kontenerów leży w innych kontenerach (np. rozwijana sekcja w kolumnie) — normalizacja je rozpakuje,
+     * a edytor mówi o tym redakcji przy otwarciu starszej treści.
+     *
+     * @param  array<int, mixed>  $blocks
+     */
+    public static function nestedContainers(array $blocks, bool $nested = false): int
+    {
+        $n = 0;
+        foreach ($blocks as $b) {
+            $type = is_array($b) ? (string) ($b['type'] ?? '') : '';
+            if (! array_key_exists($type, self::CONTAINERS)) {
+                continue;
+            }
+            if ($nested && ! isset(self::PARTS[$type])) {
+                $n++;
+            }
+            $n += self::nestedContainers(is_array($b['inner'] ?? null) ? $b['inner'] : [], true);
+        }
+
+        return $n;
     }
 
     /** @param  array<int, mixed>  $blocks */
@@ -60,11 +101,14 @@ class BlockRenderer
     {
         $renderer = new self;
 
-        return $renderer->renderList($renderer->normalizeList($blocks, 0, null));
+        return $renderer->renderList($renderer->normalizeList($blocks, false, null));
     }
 
-    /** @param  array<int, mixed>  $blocks */
-    private function normalizeList(array $blocks, int $depth, ?array $allowed): array
+    /**
+     * @param  array<int, mixed>  $blocks
+     * @param  bool  $nested  czy lista leży już w kontenerze (wtedy kontenery są rozpakowywane)
+     */
+    private function normalizeList(array $blocks, bool $nested, ?array $allowed): array
     {
         $out = [];
         foreach ($blocks as $block) {
@@ -78,12 +122,15 @@ class BlockRenderer
             if ($allowed !== null && ! in_array($type, $allowed, true)) {
                 continue;
             }
-            // „column" ma sens tylko wewnątrz „columns".
-            if ($type === 'column' && $allowed === null) {
+            // Kolumna / zakładka ma sens tylko w swoim rodzicu.
+            $isPart = isset(self::PARTS[$type]);
+            if ($isPart && $allowed === null) {
                 continue;
             }
-            // Kontenery nie zagnieżdżają się w nieskończoność.
-            if (array_key_exists($type, self::CONTAINERS) && $type !== 'column' && $depth >= self::MAX_DEPTH) {
+            // Kontener w kontenerze (dozwolony jest jeden poziom): zostaje treść, znika tylko opakowanie.
+            if (! $isPart && $nested && array_key_exists($type, self::CONTAINERS)) {
+                array_push($out, ...$this->normalizeList($this->unwrap($block), $nested, $allowed));
+
                 continue;
             }
 
@@ -94,9 +141,9 @@ class BlockRenderer
             if (array_key_exists($type, self::CONTAINERS)) {
                 $childAllowed = self::CONTAINERS[$type];
                 $inner = is_array($block['inner'] ?? null) ? $block['inner'] : [];
-                $normalized['inner'] = $this->normalizeList($inner, $depth + 1, $childAllowed);
-                if ($type === 'columns') {
-                    $normalized['inner'] = array_slice($normalized['inner'], 0, 4);
+                $normalized['inner'] = $this->normalizeList($inner, true, $childAllowed);
+                if (isset(self::MAX_PARTS[$type])) {
+                    $normalized['inner'] = array_slice($normalized['inner'], 0, self::MAX_PARTS[$type]);
                 }
             }
 
@@ -104,11 +151,49 @@ class BlockRenderer
             if (! empty($block['hidden'])) {
                 $normalized['hidden'] = true;
             }
+            // Harmonogram: „Pokaż od” / „Ukryj od” (BlockSchedule) — części kontenerów go nie mają.
+            if (! $isPart) {
+                if ($from = BlockSchedule::clean($block['from'] ?? null)) {
+                    $normalized['from'] = $from;
+                }
+                if ($until = BlockSchedule::clean($block['until'] ?? null)) {
+                    $normalized['until'] = $until;
+                }
+            }
 
             $out[] = $normalized;
         }
 
         return $out;
+    }
+
+    /**
+     * Treść opakowania bez niego (kontener w kontenerze): kolumny i zakładki oddają bloki
+     * wszystkich części, a tytuł rozwijanej sekcji / zakładki zostaje jako pogrubiony akapit (nie nagłówek — nie
+     * znamy poziomu, a przeskok poziomów psułby strukturę). Ukrycie i harmonogram opakowania przechodzą na treść.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function unwrap(array $block): array
+    {
+        $type = (string) $block['type'];
+        $a = is_array($block['attrs'] ?? null) ? $block['attrs'] : [];
+        $inner = is_array($block['inner'] ?? null) ? array_values(array_filter($block['inner'], 'is_array')) : [];
+        $out = [];
+        if (in_array($type, ['columns', 'tabs'], true)) {
+            foreach ($inner as $part) {
+                array_push($out, ...(isset(self::PARTS[$part['type'] ?? '']) ? $this->unwrap($part) : [$part]));
+            }
+        } else {
+            $title = trim((string) match ($type) { 'details' => $a['summary'] ?? '', 'tab' => $a['label'] ?? '', default => '' });
+            if ($title !== '') {
+                $out[] = ['type' => 'paragraph', 'attrs' => ['text' => '<strong>'.e($title).'</strong>']];
+            }
+            array_push($out, ...$inner);
+        }
+        $inherit = array_filter(['hidden' => ! empty($block['hidden']) ? true : null, 'from' => $block['from'] ?? null, 'until' => $block['until'] ?? null]);
+
+        return $inherit ? array_map(fn ($b) => $b + $inherit, $out) : $out;
     }
 
     /** @return array<string, mixed> */
@@ -118,6 +203,7 @@ class BlockRenderer
         $rich = fn (string $key, int $max = 20000) => self::inline(mb_substr((string) ($a[$key] ?? ''), 0, $max));
         $pick = fn (string $key, array $options, string $default) => in_array($a[$key] ?? null, $options, true) ? $a[$key] : $default;
         $align = fn () => $pick('align', ['left', 'center', 'right'], 'left');
+        $line = fn (string $key, int $max) => self::line($a[$key] ?? '', $max);
 
         return match ($type) {
             'paragraph' => ['text' => $rich('text'), 'align' => $align(), 'lead' => (bool) ($a['lead'] ?? false)],
@@ -197,9 +283,70 @@ class BlockRenderer
             'subpages' => self::subpagesAttrs($a),
             'newslist' => NewsList::normalize($a),
             'materials' => MaterialList::normalize($a),
+            'tabs' => ['level' => max(2, min(4, (int) ($a['level'] ?? 2)))],
+            'tab' => ['label' => $line('label', 120)],
+            'faq' => [
+                'title' => $line('title', 200),
+                'level' => max(2, min(4, (int) ($a['level'] ?? 2))),
+                'items' => self::items($a, 50, fn ($it) => [
+                    'q' => self::line($it['q'] ?? '', 300),
+                    'a' => self::inline(mb_substr((string) ($it['a'] ?? ''), 0, 5000)),
+                ], 'q'),
+            ],
+            'cta' => [
+                'title' => $line('title', 200),
+                'level' => max(2, min(4, (int) ($a['level'] ?? 2))),
+                'text' => $rich('text', 3000),
+                'label' => $line('label', 120),
+                'url' => self::url($str('url')),
+                'newTab' => (bool) ($a['newTab'] ?? false),
+                'tone' => $pick('tone', ['light', 'gray'], 'light'),
+            ],
+            'people' => [
+                'level' => max(2, min(4, (int) ($a['level'] ?? 3))),
+                'columns' => max(2, min(4, (int) ($a['columns'] ?? 3))),
+                'items' => self::items($a, 30, fn ($it) => [
+                    'name' => self::line($it['name'] ?? '', 120),
+                    'role' => self::line($it['role'] ?? '', 160),
+                    'photo' => self::url(mb_substr((string) ($it['photo'] ?? ''), 0, 2000)),
+                    'email' => filter_var(trim((string) ($it['email'] ?? '')), FILTER_VALIDATE_EMAIL) ? mb_substr(trim((string) $it['email']), 0, 160) : '',
+                    'phone' => preg_replace('/[^0-9 +()\-.]/', '', self::line($it['phone'] ?? '', 40)),
+                    'bio' => self::line($it['bio'] ?? '', 600),
+                ], 'name'),
+            ],
+            'cards' => [
+                'level' => max(2, min(4, (int) ($a['level'] ?? 3))),
+                'columns' => max(2, min(4, (int) ($a['columns'] ?? 3))),
+                'items' => self::items($a, 24, fn ($it) => [
+                    'title' => self::line($it['title'] ?? '', 160),
+                    'text' => self::line($it['text'] ?? '', 600),
+                    'image' => self::url(mb_substr((string) ($it['image'] ?? ''), 0, 2000)),
+                    'alt' => self::line($it['alt'] ?? '', 300),
+                    'url' => self::url(mb_substr((string) ($it['url'] ?? ''), 0, 2000)),
+                ], 'title'),
+            ],
             'shortcode' => ['code' => preg_match('/^\[[a-z0-9_-]+(?::[^\]\r\n]{1,200})?\]$/i', $str('code', 220)) ? $str('code', 220) : ''],
             default => [],
         };
+    }
+
+    /** Jednowierszowy tekst bez znaczników (białe znaki zwinięte do spacji). */
+    private static function line(mixed $value, int $max): string
+    {
+        return mb_substr(trim((string) preg_replace('/\s+/u', ' ', strip_tags(is_scalar($value) ? (string) $value : ''))), 0, $max);
+    }
+
+    /**
+     * Lista elementów bloku typowanego (FAQ, osoby, karty): najwyżej $max, każdy przez $map, bez elementów
+     * z pustym polem $required (np. pytanie bez treści).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private static function items(array $a, int $max, callable $map, string $required): array
+    {
+        $items = array_slice(array_values(array_filter(is_array($a['items'] ?? null) ? $a['items'] : [], 'is_array')), 0, $max);
+
+        return array_values(array_filter(array_map($map, $items), fn ($it) => $it[$required] !== ''));
     }
 
     /**
@@ -248,7 +395,18 @@ class BlockRenderer
     /** @param  array<int, array<string, mixed>>  $blocks */
     private function renderList(array $blocks): string
     {
-        return implode("\n", array_filter(array_map(fn ($b) => empty($b['hidden']) ? $this->renderBlock($b) : '', $blocks), fn ($html) => $html !== ''));
+        return implode("\n", array_filter(array_map(function ($b) {
+            if (! empty($b['hidden'])) {
+                return '';
+            }
+            $html = $this->renderBlock($b);
+            // Blok z harmonogramem: o widoczności decyduje BlockSchedule::filter() przy wyświetlaniu strony.
+            if ($html !== '' && (isset($b['from']) || isset($b['until']))) {
+                $html = BlockSchedule::wrap($html, $b['from'] ?? null, $b['until'] ?? null, ++$this->windowSeq);
+            }
+
+            return $html;
+        }, $blocks), fn ($html) => $html !== ''));
     }
 
     /** @param  array<string, mixed>  $b */
@@ -354,6 +512,24 @@ class BlockRenderer
             case 'column':
                 return $inner();
 
+            case 'tabs':
+                return $this->renderTabs($a, $b['inner'] ?? []);
+
+            case 'tab':
+                return $inner();
+
+            case 'faq':
+                return $this->renderFaq($a);
+
+            case 'cta':
+                return $this->renderCta($a);
+
+            case 'people':
+                return $this->renderPeople($a);
+
+            case 'cards':
+                return $this->renderCards($a);
+
             case 'details':
                 if ($a['summary'] === '') {
                     return '';
@@ -450,6 +626,129 @@ class BlockRenderer
         }
 
         return '';
+    }
+
+    /**
+     * Zakładki: bez skryptu każda zakładka to sekcja z nagłówkiem (czytelna jedna pod drugą); skrypt frontu
+     * (resources/js/app.js, [data-tabs]) robi z nich listę kart ARIA z obsługą strzałek, Home i End.
+     *
+     * @param  array<string, mixed>  $a
+     * @param  array<int, array<string, mixed>>  $tabs
+     */
+    private function renderTabs(array $a, array $tabs): string
+    {
+        $tag = 'h'.$a['level'];
+        $html = '';
+        foreach (array_values($tabs) as $i => $tab) {
+            $label = ($tab['attrs']['label'] ?? '') !== '' ? $tab['attrs']['label'] : 'Zakładka '.($i + 1);
+            $html .= '<section class="content-tab"><'.$tag.' class="content-tab-title">'.e($label).'</'.$tag.'>'
+                .'<div class="content-tab-body">'.$this->renderList($tab['inner'] ?? []).'</div></section>';
+        }
+
+        return $html !== '' ? '<div class="content-tabs" data-tabs>'.$html.'</div>' : '';
+    }
+
+    /**
+     * Pytania i odpowiedzi: opcjonalny nagłówek sekcji i pytania jako rozwijane sekcje (te same style co „Rozwijana
+     * sekcja”). Pusta linia w odpowiedzi zaczyna nowy akapit.
+     *
+     * @param  array<string, mixed>  $a
+     */
+    private function renderFaq(array $a): string
+    {
+        if ($a['items'] === []) {
+            return '';
+        }
+        $tag = 'h'.$a['level'];
+        $items = array_map(function ($it) {
+            $paras = array_filter(preg_split('~(?:<br\s*/?>\s*){2,}~i', $it['a']) ?: [], fn ($p) => trim(strip_tags($p)) !== '');
+
+            return '<details class="content-details"><summary>'.e($it['q']).'</summary><div class="content-details-body">'
+                .implode('', array_map(fn ($p) => '<p>'.trim($p).'</p>', $paras)).'</div></details>';
+        }, $a['items']);
+
+        return '<div class="content-faq">'.($a['title'] !== '' ? "<{$tag} class=\"content-faq-title\">".e($a['title'])."</{$tag}>" : '')
+            .implode('', $items).'</div>';
+    }
+
+    /**
+     * Wezwanie do działania: nagłówek, krótki tekst i jeden przycisk na jasnym tle (bez ramek; tekst ink, kontrast ≥ 12:1).
+     *
+     * @param  array<string, mixed>  $a
+     */
+    private function renderCta(array $a): string
+    {
+        $hasText = trim(strip_tags($a['text'])) !== '';
+        $hasButton = $a['label'] !== '' && $a['url'] !== '';
+        if ($a['title'] === '' && ! $hasText && ! $hasButton) {
+            return '';
+        }
+        $tag = 'h'.$a['level'];
+        $button = '';
+        if ($hasButton) {
+            $target = $a['newTab'] ? ' target="_blank" rel="noopener"' : '';
+            $sr = $a['newTab'] ? '<span class="sr-only"> (otwiera się w nowej karcie)</span>' : '';
+            $button = '<p class="content-cta-action"><a href="'.e($a['url']).'" class="cta-button"'.$target.'>'.e($a['label']).$sr.'</a></p>';
+        }
+
+        return '<div class="content-cta content-cta--'.$a['tone'].'">'
+            .($a['title'] !== '' ? "<{$tag} class=\"content-cta-title\">".e($a['title'])."</{$tag}>" : '')
+            .($hasText ? '<p class="content-cta-text">'.$a['text'].'</p>' : '')
+            .$button.'</div>';
+    }
+
+    /**
+     * Zespół / osoby do kontaktu: lista kart (zdjęcie, imię i nazwisko jako nagłówek, funkcja, opis, e-mail, telefon).
+     * Zdjęcie ma pusty alt — osobę nazywa nagłówek tuż obok. role="list", bo style list zdejmują semantykę w Safari.
+     *
+     * @param  array<string, mixed>  $a
+     */
+    private function renderPeople(array $a): string
+    {
+        if ($a['items'] === []) {
+            return '';
+        }
+        $tag = 'h'.$a['level'];
+        $cards = array_map(function ($p) use ($tag) {
+            $contact = array_filter([
+                $p['email'] !== '' ? '<a href="mailto:'.e($p['email']).'">'.e($p['email']).'</a>' : null,
+                $p['phone'] !== '' ? '<a href="tel:'.e(preg_replace('/[^0-9+]/', '', $p['phone'])).'">'.e($p['phone']).'</a>' : null,
+            ]);
+
+            return '<li class="content-person">'
+                .($p['photo'] !== '' ? '<img class="content-person-photo" src="'.e($p['photo']).'" alt="" loading="lazy">' : '')
+                .'<div class="content-person-body">'
+                ."<{$tag} class=\"content-person-name\">".e($p['name'])."</{$tag}>"
+                .($p['role'] !== '' ? '<p class="content-person-role">'.e($p['role']).'</p>' : '')
+                .($p['bio'] !== '' ? '<p class="content-person-bio">'.e($p['bio']).'</p>' : '')
+                .($contact ? '<p class="content-person-contact">'.implode('<br>', $contact).'</p>' : '')
+                .'</div></li>';
+        }, $a['items']);
+
+        return '<ul class="content-people content-people--cols-'.$a['columns'].'" role="list">'.implode('', $cards).'</ul>';
+    }
+
+    /**
+     * Siatka kart: tytuł (nagłówek, opcjonalnie link na całą kartę), krótki opis i grafika. W kodzie grafika jest po
+     * tekście (czytnik zaczyna od tytułu), na ekranie nad nim (CSS order). Bez opisu grafika jest dekoracyjna.
+     *
+     * @param  array<string, mixed>  $a
+     */
+    private function renderCards(array $a): string
+    {
+        if ($a['items'] === []) {
+            return '';
+        }
+        $tag = 'h'.$a['level'];
+        $cards = array_map(fn ($c) => '<li class="content-card">'
+            .'<div class="content-card-body">'
+            ."<{$tag} class=\"content-card-title\">".($c['url'] !== '' ? '<a href="'.e($c['url']).'" class="content-card-link">'.e($c['title']).'</a>' : e($c['title']))."</{$tag}>"
+            .($c['text'] !== '' ? '<p class="content-card-text">'.e($c['text']).'</p>' : '')
+            .'</div>'
+            .($c['image'] !== '' ? '<img class="content-card-image" src="'.e($c['image']).'" alt="'.e($c['alt']).'" loading="lazy">' : '')
+            .'</li>', $a['items']);
+
+        return '<ul class="content-cards content-cards--cols-'.$a['columns'].'" role="list">'.implode('', $cards).'</ul>';
     }
 
     /** @param  array<string, mixed>  $a */

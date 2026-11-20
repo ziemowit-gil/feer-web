@@ -34,12 +34,17 @@ class BlockSummary
         'imagebanner' => ['Baner graficzny', 'fa-rectangle-ad'],
         'materials' => ['Lista materiałów', 'fa-book-open'],
         'phone' => ['Telefon', 'fa-phone'],
+        'tabs' => ['Zakładki', 'fa-folder'],
+        'faq' => ['Pytania i odpowiedzi', 'fa-circle-question'],
+        'cta' => ['Wezwanie do działania', 'fa-bullhorn'],
+        'people' => ['Zespół / osoby', 'fa-users'],
+        'cards' => ['Siatka kart', 'fa-table-cells-large'],
     ];
 
     /** Znaczniki, które szybka edycja zachowuje bez utraty informacji (zwykły tekst z podziałem wierszy). */
     private const PLAIN_TAGS = '<br>';
 
-    /** @return array{label:string, icon:string, text:string, editable:bool} */
+    /** @return array{label:string, icon:string, text:string, editable:bool, schedule:?string, scheduleState:?string} */
     public static function describe(array $block): array
     {
         $type = (string) ($block['type'] ?? '');
@@ -62,6 +67,11 @@ class BlockSummary
             'imagebanner' => (string) ($a['alt'] ?? ''),
             'phone' => trim(($a['label'] ?? '').' '.($a['number'] ?? '')),
             'shortcode' => (string) ($a['code'] ?? ''),
+            'tabs' => implode(' · ', array_map(fn ($t) => (string) ($t['attrs']['label'] ?? ''), $inner)),
+            'faq' => trim(($a['title'] ?? '').' · '.count($a['items'] ?? []).' '.self::plural(count($a['items'] ?? []), 'pytanie', 'pytania', 'pytań'), ' ·'),
+            'cta' => trim(($a['title'] ?? '').(($a['label'] ?? '') !== '' ? ' → '.$a['label'] : '')),
+            'people' => implode(' · ', array_map(fn ($p) => (string) ($p['name'] ?? ''), array_slice($a['items'] ?? [], 0, 4))).(count($a['items'] ?? []) > 4 ? ' …' : ''),
+            'cards' => implode(' · ', array_map(fn ($c) => (string) ($c['title'] ?? ''), array_slice($a['items'] ?? [], 0, 4))).(count($a['items'] ?? []) > 4 ? ' …' : ''),
             'columns', 'callout' => count($inner).' '.self::plural(count($inner), 'element', 'elementy', 'elementów').': '
                 .implode(' · ', array_map(fn ($b) => self::describe($b)['label'], array_slice(self::flatten($inner), 0, 4))),
             default => '',
@@ -72,6 +82,9 @@ class BlockSummary
             'icon' => $icon,
             'text' => mb_strimwidth(trim(preg_replace('/\s+/u', ' ', $text)), 0, 140, '…'),
             'editable' => self::quickEditable($block),
+            // Harmonogram („Pokaż od” / „Ukryj od”): opis i stan scheduled|active|expired albo null.
+            'schedule' => BlockSchedule::label($block),
+            'scheduleState' => BlockSchedule::stateOf($block),
         ];
     }
 

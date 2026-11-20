@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ContentBlock;
 use App\Models\ListingSection;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Project;
 use App\Models\SiteSetting;
 use App\Support\BlockRenderer;
+use App\Support\BlockSummary;
 use App\Support\ClassicInserts;
 use App\Support\NewsList;
 use App\Support\PageTypeFields;
@@ -128,6 +130,29 @@ class BlockEditorController extends Controller
                 'noscript' => 'Przejdź do listy działań w panelu',
             ],
         ],
+        // Blok wspólny (ContentBlock typu SHARED): jedna treść wstawiana na wielu stronach — edycja zmienia ją wszędzie.
+        'shared' => [
+            'model' => ContentBlock::class,
+            'module' => 'pages',
+            'admin_route' => 'admin.podstrony.index',
+            'labels' => [
+                'kind' => 'Blok wspólny',
+                'title' => 'Nazwa bloku wspólnego (tylko w panelu)',
+                'back' => 'Wróć do stron',
+                'view' => 'Zobacz stronę z tym blokiem',
+                'form' => 'Otwórz Strony Nawigator',
+                'typeLabel' => 'Rodzaj',
+                'published' => 'w użyciu',
+                'publishedLong' => 'Wstawiany na strony',
+                'draftLong' => 'Wstawiany na strony',
+                'contentLabel' => 'Treść bloku wspólnego',
+                'more' => 'Zmiana bloku wspólnego działa od razu na wszystkich stronach, na których go wstawiono.',
+                'imported' => 'Ten blok wspólny miał wcześniej treść HTML',
+                'empty' => 'Blok wspólny nie ma jeszcze bloków.',
+                'titleRequired' => 'Nazwa bloku wspólnego nie może być pusta.',
+                'noscript' => 'Przejdź do Strony Nawigator',
+            ],
+        ],
     ];
 
     /** Maksymalna liczba podpowiedzi w wyborze odnośnika wewnętrznego. */
@@ -244,6 +269,43 @@ class BlockEditorController extends Controller
     }
 
     /**
+     * „Zapisz jako blok wspólny” z menu bloku w edytorze: zaznaczony blok (albo kilka) trafia do bloków wspólnych
+     * witryny, a edytor zastępuje go wstawką [blok:ID]. Ukrycie i harmonogram zostają przy wstawce na stronie,
+     * nie w bloku wspólnym (inna strona może chcieć pokazać go w innym terminie).
+     */
+    public function storeShared(Request $request): JsonResponse
+    {
+        abort_unless(SiteSetting::current()->isModuleEnabled('block_editor'), 404);
+        abort_unless($request->user()->canAccessModule('pages'), 403);
+
+        $data = $this->validateJson($request, [
+            'name' => ['nullable', 'string', 'max:180'],
+            'blocks' => ['required', 'array', 'min:1', 'max:100'],
+        ]);
+        $blocks = BlockRenderer::normalize(array_map(
+            fn ($b) => is_array($b) ? array_diff_key($b, array_flip(['hidden', 'from', 'until'])) : $b,
+            $data['blocks'],
+        ));
+        // Wstawka innego bloku wspólnego w środku nie miałaby sensu (jeden poziom, bez pętli).
+        $blocks = array_values(array_filter($blocks, fn ($b) => BlockSummary::sharedId($b) === null));
+        if ($blocks === []) {
+            return response()->json(['message' => 'Ten blok nie ma treści, którą dałoby się udostępnić.'], 422);
+        }
+        $sum = BlockSummary::describe($blocks[0]);
+        $name = trim((string) ($data['name'] ?? '')) ?: mb_strimwidth($sum['label'].($sum['text'] !== '' ? ': '.$sum['text'] : ''), 0, 180, '…');
+
+        $shared = ContentBlock::create(['type' => ContentBlock::SHARED, 'name' => $name, 'data' => ['blocks' => $blocks], 'created_by' => $request->user()->id]);
+
+        return response()->json([
+            'ok' => true,
+            'id' => $shared->id,
+            'name' => $shared->name,
+            'code' => '[blok:'.$shared->id.']',
+            'edit' => route('admin.edytor-blokowy.edit', ['shared', $shared->id]),
+        ]);
+    }
+
+    /**
      * Podgląd shortcode'u (blok „Shortcode”) albo HTML-a z shortcode'ami (blok
      * „Własny HTML”) — ten sam renderer co na stronie publicznej. Edytor wstawia
      * wynik w nieaktywny kontener podglądu, bez skryptów.
@@ -292,7 +354,11 @@ class BlockEditorController extends Controller
         abort_unless(auth()->user()->canAccessModule($target['module']), 403);
         abort_unless(SiteSetting::current()->isModuleEnabled($target['module']), 404);
 
-        return $target['model']::query()->forCurrentSite()->findOrFail($id);
+        $record = $target['model']::query()->forCurrentSite()->findOrFail($id);
+        // Bloki z kreatora (CTA, akordeon…) mają własny formularz — w edytorze blokowym tylko bloki wspólne.
+        abort_if($record instanceof ContentBlock && ! $record->isShared(), 404);
+
+        return $record;
     }
 
     private function authorizeRecord(string $type, Model $record): array
@@ -338,9 +404,11 @@ class BlockEditorController extends Controller
             'draftPage' => $draftMode ? $record : null,
             'editorConfig' => [
                 'target' => ['type' => $type, 'id' => $record->id],
-                'labels' => $typeFieldsHtml !== null
-                    ? ['more' => 'Adres, menu, publikacja, dostęp i szablon są w klasycznym formularzu.'] + $target['labels']
-                    : $target['labels'],
+                'labels' => match (true) {
+                    $typeFieldsHtml !== null => ['more' => 'Adres, menu, publikacja, dostęp i szablon są w klasycznym formularzu.'] + $target['labels'],
+                    $record instanceof ContentBlock => ['more' => 'Zmiana działa od razu na wszystkich stronach z tym blokiem — teraz: '.$record->usedOnPages()->count().'. Ukrycie i harmonogram ustawiasz przy wstawce na każdej stronie.'] + $target['labels'],
+                    default => $target['labels'],
+                },
                 'page' => [
                     'id' => $record->id,
                     'title' => $draft ? $draft->title : $record->title,
@@ -349,6 +417,8 @@ class BlockEditorController extends Controller
                     'is_published' => (bool) $record->is_published,
                 ],
                 'blocks' => BlockRenderer::normalize($blocks),
+                // Starsza treść z sekcją w sekcji (np. rozwijana sekcja w kolumnie) — normalizacja ją rozpakowała.
+                'flattened' => BlockRenderer::nestedContainers($blocks),
                 // Działanie: płótno w układzie strony działania (kategoria, „Opis działania”, podgląd menu bocznego).
                 'layout' => $record instanceof Project ? $this->projectLayout($record) : null,
                 'imported' => $imported,
@@ -364,6 +434,8 @@ class BlockEditorController extends Controller
                 'settings' => $draftMode ? null : $this->settingsConfig($type, $record),
                 // Elementy z menu „Wstaw" klasycznego edytora (moduły, wstawki HTML, wydarzenia).
                 'classic' => ClassicInserts::forBlockEditor(),
+                // Edytujemy sam blok wspólny: bez wstawiania innych bloków wspólnych i bez „Zapisz jako blok wspólny”.
+                'shared' => $record instanceof ContentBlock ? ['id' => $record->id, 'pages' => $record->usedOnPages()->count()] : null,
                 // Blok „Lista aktualności": kategorie do wyboru.
                 'newsCategories' => NewsList::categoryOptions(),
                 'materialGroups' => \App\Models\EducationalMaterial::TARGET_GROUPS,
@@ -374,7 +446,7 @@ class BlockEditorController extends Controller
                     // ?klasyczny=1 — bez tego domyślny edytor blokowy (Mój profil) odesłałby z formularza z powrotem tutaj.
                     // Aktualności (z włączonym edytorem) mają formularz tylko jako okno „Ustawienia aktualności”.
                     'admin' => match (true) {
-                        $record instanceof ListingSection => route($target['admin_route']),
+                        $record instanceof ListingSection, $record instanceof ContentBlock => route($target['admin_route']),
                         $record instanceof News => route('admin.newsy.edit', [$record, 'osadzony' => 1]),
                         default => route($target['admin_route'], $record).'?klasyczny=1',
                     },
@@ -390,7 +462,11 @@ class BlockEditorController extends Controller
                         'store' => \App\Support\Edition::allows('content_templates') ? route('admin.szablony.store') : null,
                     ] : null,
                     // Historia wersji treści (jak przycisk „Historia wersji" klasycznego edytora).
-                    'history' => in_array($type, ['page', 'news', 'project'], true) ? route('admin.historia.json', ['type' => $type, 'id' => $record->id]) : null,
+                    'history' => ($historyType = ['page' => 'page', 'news' => 'news', 'project' => 'project', 'shared' => 'shared_block'][$type] ?? null)
+                        ? route('admin.historia.json', ['type' => $historyType, 'id' => $record->id]) : null,
+                    // „Zapisz jako blok wspólny” w menu bloku (nie w edytorze samego bloku wspólnego).
+                    'shareBlock' => ! $record instanceof ContentBlock && auth()->user()->canAccessModule('pages') ? route('admin.edytor-blokowy.blok-wspolny') : null,
+                    'sharedEdit' => auth()->user()->canAccessModule('pages') ? route('admin.edytor-blokowy.edit', ['shared', 0]) : null,
                     // Podgląd wersji roboczej — podpisany link (strona publiczna dla szkicu zwraca 404).
                     'preview' => method_exists($record, 'previewUrl') ? $record->previewUrl() : null,
                     // Import treści z Worda (jak „Import → DOCX" klasycznego edytora) — tylko w wersji z tą funkcją.
@@ -412,6 +488,14 @@ class BlockEditorController extends Controller
         ]);
 
         $blocks = BlockRenderer::normalize($data['blocks']);
+
+        // Blok wspólny: nazwa i bloki (zmiana od razu na wszystkich stronach; wersja trafia do historii).
+        if ($record instanceof ContentBlock) {
+            $blocks = array_values(array_filter($blocks, fn ($b) => BlockSummary::sharedId($b) === null));
+            $record->update(['name' => $data['title'], 'data' => ['blocks' => $blocks] + (array) $record->data]);
+
+            return response()->json(['ok' => true, 'blocks' => $blocks, 'saved_at' => now()->format('H:i'), 'settings' => null]);
+        }
 
         // Zapis do wersji roboczej (Workspaces) — strona publiczna bez zmian; publikacja z karty strony.
         if ($record instanceof Page && $request->boolean('robocza') && \Illuminate\Support\Facades\Schema::hasTable('page_drafts')) {
@@ -600,7 +684,7 @@ class BlockEditorController extends Controller
     /** Bieżące wartości ustawień panelu bocznego (do edytora). @return array<string, mixed>|null */
     private function settingsValues(Model $record): ?array
     {
-        if ($record instanceof ListingSection) {
+        if ($record instanceof ListingSection || $record instanceof ContentBlock) {
             return null;
         }
         $base = ['is_published' => (bool) $record->is_published, 'pending_approval' => (bool) ($record->pending_approval ?? false)];
@@ -775,6 +859,7 @@ class BlockEditorController extends Controller
             $record instanceof News => $record->category?->name ? 'Aktualność · '.$record->category->name : 'Aktualność',
             $record instanceof Project => $record->category?->name ? 'Działanie · '.$record->category->name : 'Działanie',
             $record instanceof ListingSection => 'Działania · pod menu kategorii',
+            $record instanceof ContentBlock => 'Blok wspólny',
             default => self::TARGETS[$type]['labels']['kind'],
         };
     }
@@ -786,6 +871,8 @@ class BlockEditorController extends Controller
             $record instanceof News => route('news.show', $record),
             $record instanceof Project => route('projects.show', $record),
             $record instanceof ListingSection => $record->publicUrl(),
+            // Blok wspólny: pierwsza strona, na której go wstawiono (albo strona główna).
+            $record instanceof ContentBlock => ($first = $record->usedOnPages()->first()) ? Page::find($first->id)?->publicUrl() ?? url('/') : url('/'),
         };
     }
 

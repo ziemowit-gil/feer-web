@@ -34,6 +34,12 @@ trait HasBlockContent
             && $this->blocks !== null;
     }
 
+    /** Drzewo bloków trafia do każdej wersji w historii (HasRevisions) — przywrócenie wraca do bloków, nie do HTML. */
+    public function revisionExtraFields(): array
+    {
+        return ['blocks'];
+    }
+
     /** Zapis z edytora blokowego: `content` pochodzi z `blocks`, więc ich nie zerujemy. */
     public function updateFromBlockEditor(array $attributes): bool
     {

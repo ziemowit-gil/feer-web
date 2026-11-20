@@ -80,7 +80,10 @@ class ClassicInserts
                 : [],
             'tileSets' => TileSet::forCurrentSite()->orderBy('name')->get(['id', 'name'])->map(fn ($t) => ['value' => $t->id, 'label' => $t->name])->all(),
             'contentBlocks' => ContentBlock::forCurrentSite()->orderBy('name')->get(['id', 'type', 'name'])
-                ->map(fn ($b) => ['value' => $b->id, 'type' => $b->type, 'label' => (ContentBlock::TYPES[$b->type] ?? $b->type).': '.$b->name])->all(),
+                ->map(fn ($b) => ['value' => $b->id, 'type' => $b->type, 'label' => ($b->isShared() ? 'Blok wspólny' : (ContentBlock::TYPES[$b->type] ?? $b->type)).': '.$b->name])->all(),
+            // Bloki wspólne z edytora blokowego — blok „Blok wspólny” w edytorze (jedna treść na wielu stronach).
+            'sharedBlocks' => ContentBlock::forCurrentSite()->where('type', ContentBlock::SHARED)->orderBy('name')->get(['id', 'type', 'name'])
+                ->map(fn ($b) => ['value' => $b->id, 'label' => (string) $b->name])->all(),
             'blockTypes' => ContentBlock::TYPES,
             'newBlockTypes' => array_keys($site->availableOptions('content_block_types', ContentBlock::TYPES)),
             'tilesGrids' => Page::forCurrentSite()->where('is_published', true)->where('type', 'tiles_grid')->orderBy('title')->get(['slug', 'title'])

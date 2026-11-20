@@ -104,9 +104,11 @@ class PageBlocksController extends Controller
         $sum = BlockSummary::describe($blocks[$index]);
         $name = trim((string) $request->input('nazwa')) ?: mb_strimwidth($sum['label'].($sum['text'] !== '' ? ': '.$sum['text'] : '').' ('.$page->title.')', 0, 180, '…');
 
+        // Ukrycie i harmonogram zostają przy wstawce na tej stronie, nie w bloku wspólnym.
+        $flags = array_intersect_key($blocks[$index], array_flip(['hidden', 'from', 'until']));
         $shared = ContentBlock::create(['type' => ContentBlock::SHARED, 'name' => $name,
-            'data' => ['blocks' => BlockRenderer::normalize([$blocks[$index]])], 'created_by' => $request->user()->id]);
-        $blocks[$index] = ['type' => 'shortcode', 'attrs' => ['code' => '[blok:'.$shared->id.']']] + (empty($blocks[$index]['hidden']) ? [] : ['hidden' => true]);
+            'data' => ['blocks' => BlockRenderer::normalize([array_diff_key($blocks[$index], $flags)])], 'created_by' => $request->user()->id]);
+        $blocks[$index] = ['type' => 'shortcode', 'attrs' => ['code' => '[blok:'.$shared->id.']']] + $flags;
         $this->save($page, $blocks);
 
         return $this->back($page)->with('status', "Blok jest teraz blokiem wspólnym „{$name}”. Wstawisz go na innych stronach przyciskiem „Wstaw blok wspólny” w ich karcie.");
@@ -153,7 +155,7 @@ class PageBlocksController extends Controller
         abort_unless($block->site_id === SiteSetting::current()->id && $block->isShared(), 404);
         $inner = array_values((array) ($block->data['blocks'] ?? []));
         if (count($inner) !== 1 || ! BlockSummary::quickEditable($inner[0])) {
-            return $this->back($page)->with('error', 'Ten blok wspólny poprawisz w edytorze blokowym strony, na której go odłączysz.');
+            return $this->back($page)->with('error', 'Ten blok wspólny poprawisz w edytorze blokowym — przycisk „Edytuj blok wspólny” przy nim.');
         }
         $data = $request->validate([
             'tekst' => ['required', 'string', 'max:20000'],

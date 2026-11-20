@@ -217,6 +217,16 @@ function start(config) {
         columns: { title: 'Kolumny', icon: 'table-columns', cat: 'design', desc: 'Treść obok siebie (na telefonie jedna pod drugą).', keywords: ['układ', 'dwie kolumny', 'grid'], container: true, create: () => ({ ratio: 'equal' }), inner: () => [block('column'), block('column')] },
         column: { title: 'Kolumna', icon: 'square', cat: 'design', desc: 'Jedna kolumna układu.', container: true, hidden: true, create: () => ({}), inner: () => [block('paragraph')] },
         separator: { title: 'Separator', icon: 'minus', cat: 'design', desc: 'Pozioma linia oddzielająca sekcje.', keywords: ['linia', 'hr', 'podział'], create: () => ({}) },
+        // Zakładki (kontener jak kolumny): bez skryptu i w czytnikach ekranu — sekcje z nagłówkami; ze skryptem — karty ARIA.
+        tabs: { title: 'Zakładki', icon: 'folder', cat: 'design', desc: 'Treść podzielona na zakładki (np. „Dla kogo”, „Program”, „Zapisy”). Bez JavaScriptu — sekcje z nagłówkami jedna pod drugą.', keywords: ['zakładki', 'karty', 'tabs', 'sekcje'], container: true, create: () => ({ level: 2 }), inner: () => [block('tab', { label: 'Zakładka 1' }), block('tab', { label: 'Zakładka 2' })] },
+        tab: { title: 'Zakładka', icon: 'folder-open', cat: 'design', desc: 'Jedna zakładka bloku „Zakładki”.', container: true, hidden: true, create: () => ({ label: '' }), inner: () => [block('paragraph')] },
+        // Bloki typowane: stała struktura (nagłówki, alt, przyciski) zamiast układania wyglądu z akapitów.
+        faq: { title: 'Pytania i odpowiedzi', icon: 'circle-question', cat: 'text', desc: 'Pytania z rozwijanymi odpowiedziami (FAQ) i opcjonalnym nagłówkiem sekcji.', keywords: ['faq', 'pytania', 'odpowiedzi', 'akordeon'], create: () => ({ title: 'Najczęstsze pytania', level: 2, items: [{ q: '', a: '' }] }) },
+        cta: { title: 'Wezwanie do działania', icon: 'bullhorn', cat: 'design', desc: 'Nagłówek, krótki tekst i jeden wyraźny przycisk na jasnym tle (np. zapisy, apel o darowiznę).', keywords: ['cta', 'apel', 'zapisy', 'wezwanie', 'darowizna', 'przycisk'], create: () => ({ title: '', level: 2, text: '', label: '', url: '', newTab: false, tone: 'light' }) },
+        people: { title: 'Zespół / osoby do kontaktu', icon: 'users', cat: 'design', desc: 'Karty osób: zdjęcie, imię i nazwisko, funkcja, krótki opis, e-mail i telefon.', keywords: ['zespół', 'osoby', 'kontakt', 'pracownicy', 'koordynator'], create: () => ({ level: 3, columns: 3, items: [{ name: '', role: '', photo: '', email: '', phone: '', bio: '' }] }) },
+        cards: { title: 'Siatka kart', icon: 'table-cells', cat: 'design', desc: 'Karty z grafiką, tytułem, krótkim opisem i linkiem — np. oferta, programy, obszary działania.', keywords: ['karty', 'siatka', 'kafelki', 'oferta', 'grid'], create: () => ({ level: 3, columns: 3, items: [1, 2, 3].map(() => ({ title: '', text: '', image: '', alt: '', url: '' })) }) },
+        // Blok wspólny = wstawka [blok:ID]: jedna treść na wielu stronach, poprawka w jednym miejscu działa wszędzie.
+        sharedblock: { as: 'shortcode', title: 'Blok wspólny', icon: 'link', cat: 'design', desc: 'Ta sama treść na wielu stronach (np. kontakt, numer konta, apel) — poprawka bloku wspólnego zmienia go wszędzie.', keywords: ['wspólny', 'powtarzalny', 'globalny', 'kontakt', 'numer konta', 'reużywalny'], hidden: !(CI.sharedBlocks || []).length || !!config.shared, create: () => ({ code: firstCode(CI.sharedBlocks, (v) => '[blok:' + v + ']') }) },
         shortcode: { title: 'Shortcode', icon: 'code', cat: 'widgets', desc: 'Osadzenie modułu: formularz, kafelki, blok z kreatora.', keywords: ['formularz', 'kafelki', 'blok', 'moduł'], create: () => ({ code: '' }) },
         subpages: { title: 'Lista podstron', icon: 'sitemap', cat: 'widgets', desc: 'Linki do podstron tej lub wskazanej strony. Aktualizuje się sama — nowa podstrona pojawi się bez edycji.', keywords: ['podstrony', 'spis', 'menu', 'linki', 'nawigacja', 'dzieci'], create: () => ({ source: 'current', page: null, manual: false, picked: [], sort: 'drzewo', depth: 1, layout: 'lista' }) },
         materials: { title: 'Materiały edukacyjne', icon: 'book-open', cat: 'widgets', desc: 'Karty materiałów (nagrania, PDF, scenariusze) — wszystkie albo z wybranej grupy i typu. Aktualizuje się sama.', keywords: ['materiały', 'karty pracy', 'pdf', 'nagrania', 'edukacja', 'webinar'], create: () => ({ group: null, type: null, limit: 6 }) },
@@ -288,16 +298,78 @@ function start(config) {
             if (def.container) out.inner = hydrate(b.inner);
             // Blok ukryty w karcie strony („Treść strony” w Strony Nawigator) — flaga zostaje przy zapisie z edytora.
             if (b.hidden) out.hidden = true;
+            // Harmonogram bloku (panel „Blok” → „Widoczność”): „Pokaż od” / „Ukryj od”, czas polski.
+            if (b.from) out.from = b.from;
+            if (b.until) out.until = b.until;
             return out;
         });
     }
 
     const withNewIds = (b) => ({ ...clone(b), id: uid(), inner: b.inner ? b.inner.map(withNewIds) : undefined });
 
+    // ── Jeden poziom zagnieżdżenia ─────────────────────────────────────────
+    // W kontenerze (kolumna, zakładka, rozwijana sekcja, ramka) są tylko zwykłe bloki — prosta struktura to przewidywalna
+    // kolejność tabulacji i nagłówków dla czytników ekranu (tak samo normalizuje serwer: BlockRenderer::unwrap).
+    const PART_OF = { column: 'columns', tab: 'tabs' };
+    const isWrapper = (type) => !!BLOCKS[type]?.container && !PART_OF[type];
+    function unwrapBlock(b) {
+        const out = [];
+        if (b.type === 'columns' || b.type === 'tabs') b.inner.forEach((p) => out.push(...(PART_OF[p.type] ? unwrapBlock(p) : [p])));
+        else {
+            const title = ((b.type === 'details' ? b.attrs.summary : b.type === 'tab' ? b.attrs.label : '') || '').trim();
+            if (title) out.push(block('paragraph', { text: '<strong>' + escapeHtml(title) + '</strong>' }));
+            out.push(...(b.inner || []));
+        }
+        // Ukrycie i harmonogram opakowania przechodzą na treść.
+        ['hidden', 'from', 'until'].forEach((k) => { if (b[k]) out.forEach((x) => { if (!x[k]) x[k] = b[k]; }); });
+        return out.flatMap((x) => (isWrapper(x.type) ? unwrapBlock(x) : [x]));
+    }
+    // Dopasowanie wstawianych bloków do miejsca: w „Kolumnach” / „Zakładkach” tylko ich części, w kontenerze bez kontenerów.
+    function fitToParent(blocks, parent) {
+        const plain = (x) => (isWrapper(x.type) ? unwrapBlock(x) : [x]);
+        if (parent?.type === 'columns') return blocks.map((x) => (x.type === 'column' ? x : block('column', {}, plain(x))));
+        if (parent?.type === 'tabs') return blocks.map((x) => (x.type === 'tab' ? x : block('tab', { label: 'Nowa zakładka' }, plain(x))));
+        if (parent && blocks.some((x) => isWrapper(x.type))) {
+            setTimeout(() => announce('W sekcji nie zagnieździsz kolejnej sekcji — wstawiono samą jej treść.'), 400);
+            const out = blocks.flatMap(plain);
+            return out.length ? out : [block('paragraph')];
+        }
+        return blocks;
+    }
+    // Czy blok można postawić obok bloku z rodzicem dstParent (przeciąganie, przenoszenie).
+    function canPlace(src, dstParent) {
+        const parentKind = dstParent?.type === 'columns' || dstParent?.type === 'tabs' ? dstParent.type : null;
+        if ((PART_OF[src.type] || null) !== parentKind) return false;
+        return !(isWrapper(src.type) && dstParent);
+    }
+    // Czy miejsce wstawiania leży w kontenerze (wtedy bez kolejnych kontenerów).
+    function targetInContainer(target) {
+        if (!target) return false;
+        if (target.parentId) return true;
+        const r = find(target.afterId || target.beforeId);
+        return !!r?.parent;
+    }
+
+    // ── Harmonogram bloku ──────────────────────────────────────────────────
+    // Terminy w czasie polskim (jak pole datetime-local: 2026-12-01T08:00); serwer rozstrzyga je przy wyświetlaniu strony.
+    const warsawNow = () => {
+        const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Warsaw', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date()).map((x) => [x.type, x.value]));
+        return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`;
+    };
+    function scheduleState(b) {
+        if (!b.from && !b.until) return null;
+        const now = warsawNow();
+        if (b.from && now < b.from) return 'scheduled';
+        if (b.until && now >= b.until) return 'expired';
+        return 'active';
+    }
+    const fmtWhen = (v) => { const [d, t] = String(v).split('T'); const [y, m, dd] = d.split('-'); return `${Number(dd)}.${m}.${y} ${t}`; };
+
     const PATTERNS = [
-        { title: 'Wezwanie do działania', desc: 'Nagłówek, krótki tekst i przycisk.', build: () => [block('heading', { text: 'Dołącz do nas' }), block('paragraph', { text: 'Napisz w jednym, dwóch zdaniach, co zyska osoba, która kliknie przycisk.' }), block('buttons', { items: [{ label: 'Zgłoś się', url: '', variant: 'brand', newTab: false }] })] },
+        { title: 'Wezwanie do działania', desc: 'Nagłówek, krótki tekst i przycisk na jasnym tle.', build: () => [block('cta', { title: 'Dołącz do nas', text: 'Napisz w jednym, dwóch zdaniach, co zyska osoba, która kliknie przycisk.', label: 'Zgłoś się' })] },
         { title: 'Tekst i zdjęcie obok siebie', desc: 'Dwie kolumny: treść i obraz.', build: () => [block('columns', {}, [block('column', {}, [block('heading', { text: 'Tytuł sekcji', level: 3 }), block('paragraph', { text: 'Treść sekcji…' })]), block('column', {}, [block('image')])])] },
-        { title: 'Pytania i odpowiedzi', desc: 'Nagłówek i trzy rozwijane pytania.', build: () => [block('heading', { text: 'Najczęstsze pytania' }), ...[1, 2, 3].map((n) => block('details', { summary: 'Pytanie ' + n }, [block('paragraph', { text: 'Odpowiedź…' })]))] },
+        { title: 'Pytania i odpowiedzi', desc: 'Nagłówek i trzy rozwijane pytania.', build: () => [block('faq', { title: 'Najczęstsze pytania', items: [1, 2, 3].map((n) => ({ q: 'Pytanie ' + n, a: 'Odpowiedź…' })) })] },
+        { title: 'Zakładki: dla kogo, program, zapisy', desc: 'Trzy zakładki z treścią — np. opis szkolenia.', build: () => [block('tabs', {}, ['Dla kogo', 'Program', 'Zapisy'].map((label) => block('tab', { label }, [block('paragraph')])))] },
         { title: 'Dokumenty do pobrania', desc: 'Nagłówek i lista plików.', build: () => [block('heading', { text: 'Dokumenty do pobrania' }), block('file'), block('file')] },
         { title: 'Kontakt w sprawie', desc: 'Nagłówek i osoba do kontaktu.', build: () => [block('heading', { text: 'Kontakt w sprawie', level: 3 }), block('paragraph', { text: 'Imię Nazwisko<br>tel. <a href="tel:+48000000000">000 000 000</a><br><a href="mailto:adres@feer.org.pl">adres@feer.org.pl</a>' })] },
     ];
@@ -339,6 +411,7 @@ function start(config) {
         buttonIndex: 0,
         slash: null,
         imported: !!config.imported,
+        flattened: Number(config.flattened || 0),
     };
 
     // ── Drzewo ─────────────────────────────────────────────────────────────
@@ -534,9 +607,9 @@ function start(config) {
         } else if (target && 'index' in target) {
             index = target.index;
         }
-        // Kolumny przyjmują wyłącznie bloki „Kolumna”.
+        // Kolumny przyjmują wyłącznie bloki „Kolumna”, zakładki — „Zakładka”, a kontener nie przyjmuje kontenerów.
         const parent = list === S.blocks ? null : findParentOfList(list);
-        if (parent?.type === 'columns') blocks = blocks.map((b) => (b.type === 'column' ? b : block('column', {}, [b])));
+        blocks = fitToParent(blocks, parent);
         list.splice(index, 0, ...blocks);
         markDirty();
         renderCanvas();
@@ -553,8 +626,8 @@ function start(config) {
         const prevId = focusPrev ? neighbourEditableBlockId(id, -1) : null;
         pushHistory();
         r.list.splice(r.index, 1);
-        // Kolumny bez kolumn znikają; kolumna nie zostaje sama.
-        if (r.parent?.type === 'columns' && r.list.length === 0) {
+        // Kolumny bez kolumn (zakładki bez zakładek) znikają; część nie zostaje sama.
+        if ((r.parent?.type === 'columns' || r.parent?.type === 'tabs') && r.list.length === 0) {
             const pr = find(r.parent.id);
             pr?.list.splice(pr.index, 1);
         }
@@ -587,12 +660,12 @@ function start(config) {
         const dst = find(targetId);
         if (!src || !dst) return;
         const dstParent = dst.parent;
-        if ((src.block.type === 'column') !== (dstParent?.type === 'columns')) return;
+        if (!canPlace(src.block, dstParent)) { announce('Tu nie można przenieść tego bloku — w sekcji nie zagnieździsz kolejnej sekcji.'); return; }
         pushHistory();
         src.list.splice(src.index, 1);
         const d = find(targetId);
         d.list.splice(d.index + (after ? 1 : 0), 0, src.block);
-        if (src.parent?.type === 'columns' && src.list.length === 0) {
+        if ((src.parent?.type === 'columns' || src.parent?.type === 'tabs') && src.list.length === 0) {
             const pr = find(src.parent.id);
             pr?.list.splice(pr.index, 1);
         }
@@ -622,7 +695,7 @@ function start(config) {
     function copyBlock(id, clipboardData = null) {
         const r = find(id);
         if (!r) return false;
-        if (r.block.type === 'column') { announce('Kolumny nie można skopiować — skopiuj cały blok „Kolumny”'); return false; }
+        if (PART_OF[r.block.type]) { announce(r.block.type === 'tab' ? 'Zakładki nie można skopiować osobno — skopiuj cały blok „Zakładki”' : 'Kolumny nie można skopiować — skopiuj cały blok „Kolumny”'); return false; }
         const json = JSON.stringify(serialize([r.block]));
         blockClip = json;
         if (clipboardData) {
@@ -642,7 +715,7 @@ function start(config) {
         try { list = hydrate(JSON.parse(json)); } catch (e) { list = []; }
         if (!list.length) return false;
         const r = find(afterId);
-        insertBlocks(list, r?.block.type === 'column' ? { parentId: r.block.id } : (r ? { afterId } : null));
+        insertBlocks(list, PART_OF[r?.block.type] ? { parentId: r.block.id } : (r ? { afterId } : null));
         selectBlock(list[list.length - 1].id, { focusWrapper: true });
         announce('Wklejono blok: ' + BLOCKS[list[0].type].title);
         return true;
@@ -652,10 +725,12 @@ function start(config) {
         const r = find(id);
         if (!r) return;
         pushHistory();
+        blocks = fitToParent(blocks, r.parent);
         r.list.splice(r.index, 1, ...blocks);
         markDirty();
         renderCanvas();
         if (blocks[0]) focusBlock(blocks[blocks.length - 1].id, focus);
+        return blocks;
     }
     function updateAttrs(b, patch, { rerender = true, typing = false } = {}) {
         typing ? typingHistory() : pushHistory();
@@ -1172,7 +1247,8 @@ function start(config) {
         let current = null;
         restoreBtn.addEventListener('click', () => {
             if (!current) return;
-            const blocks = htmlToBlocks(current.content || '');
+            // Wersje z edytora blokowego mają drzewo bloków — przywracamy je wprost (starsze: z HTML).
+            const blocks = Array.isArray(current.blocks) ? hydrate(current.blocks) : htmlToBlocks(current.content || '');
             done();
             pushHistory();
             S.blocks = blocks.length ? blocks : [block('paragraph')];
@@ -1268,7 +1344,7 @@ function start(config) {
         if (S.insertTarget) return S.insertTarget;
         if (S.selectedId) {
             const r = find(S.selectedId);
-            if (r?.block.type === 'column') return { parentId: r.block.id };
+            if (PART_OF[r?.block.type]) return { parentId: r.block.id };
             if (r) return { afterId: r.block.id };
         }
         return null;
@@ -1277,15 +1353,15 @@ function start(config) {
         const target = insertionTarget();
         // Pusty akapit na pozycji wstawiania zamieniamy (jak w Gutenbergu).
         const sel = S.selectedId && !S.insertTarget ? find(S.selectedId) : null;
-        if (sel && sel.block.type === 'paragraph' && !textOf(sel.block.attrs.text)) replaceBlock(sel.block.id, blocks);
-        else insertBlocks(blocks, target);
+        if (sel && sel.block.type === 'paragraph' && !textOf(sel.block.attrs.text)) blocks = replaceBlock(sel.block.id, blocks) || blocks;
+        else blocks = insertBlocks(blocks, target);
         closePanel({ restoreFocus: false }); // fokus ustawiamy zaraz na wstawionym bloku
-        const first = blocks[0];
+        const first = blocks.find((x) => find(x.id)) || null;
         if (first) {
             const def = BLOCKS[first.type];
             def.rich || def.container ? focusBlock(first.id, 'start') : selectBlock(first.id, { focusWrapper: true });
         }
-        announce('Wstawiono: ' + (blocks.length > 1 ? 'wzorzec' : BLOCKS[first.type].title));
+        if (first) announce('Wstawiono: ' + (blocks.length > 1 ? 'wzorzec' : BLOCKS[first.type].title));
     }
 
     let inserterTab = 'blocks';
@@ -1297,15 +1373,18 @@ function start(config) {
                 type: 'button', role: 'tab', class: 'be-tab', 'aria-selected': String(inserterTab === key),
                 onClick: () => { inserterTab = key; renderPanel(); leftPanel.querySelector('[role=tab][aria-selected=true]')?.focus(); },
             }, label)));
+        // W kontenerze (kolumna, zakładka, sekcja) bez kolejnych kontenerów — jeden poziom zagnieżdżenia.
+        const inContainer = targetInContainer(insertionTarget());
+        const nestNote = inContainer ? h('p', { class: 'be-help' }, 'Wstawiasz do sekcji — kolumny, zakładki i rozwijane sekcje dodasz tylko na głównym poziomie treści.') : null;
         const draw = () => {
             const q = search.value.trim().toLowerCase();
             if (inserterTab === 'patterns') {
-                results.replaceChildren(...PATTERNS.filter((p) => !q || (p.title + ' ' + p.desc).toLowerCase().includes(q)).map((p) =>
+                results.replaceChildren(...PATTERNS.filter((p) => (!q || (p.title + ' ' + p.desc).toLowerCase().includes(q)) && !(inContainer && p.build().some((x) => isWrapper(x.type)))).map((p) =>
                     h('button', { type: 'button', class: 'be-pattern', onClick: () => insertFromPanel(p.build()) }, h('strong', {}, p.title), h('span', {}, p.desc))));
                 return;
             }
             const groups = Object.entries(CATEGORIES).map(([cat, label]) => {
-                const items = Object.entries(BLOCKS).filter(([type, d]) => !d.hidden && d.cat === cat && matches(type, q));
+                const items = Object.entries(BLOCKS).filter(([type, d]) => !d.hidden && d.cat === cat && matches(type, q) && !(inContainer && isWrapper(type)));
                 if (!items.length) return null;
                 return h('section', { class: 'be-inserter-group' }, h('h2', {}, label),
                     h('div', { class: 'be-inserter-grid' }, ...items.map(([type, d]) => h('button', {
@@ -1322,7 +1401,7 @@ function start(config) {
         });
         draw();
         leftPanel.setAttribute('aria-label', 'Wstaw blok');
-        leftPanel.replaceChildren(h('div', { class: 'be-panel-head' }, h('h2', {}, 'Wstaw'), close), h('div', { class: 'be-panel-body' }, tabs, search, results));
+        leftPanel.replaceChildren(h('div', { class: 'be-panel-head' }, h('h2', {}, 'Wstaw'), close), h('div', { class: 'be-panel-body' }, tabs, search, nestNote, results));
     }
     function matches(type, q) {
         if (!q) return true;
@@ -1333,11 +1412,13 @@ function start(config) {
     // Zaznaczanie kilku bloków w widoku listy i owijanie ich w ramkę, rozwijaną sekcję albo dwie kolumny.
     const listChecked = new Set();
     function wrapChecked(kind) {
-        const picked = S.blocks.filter((b) => listChecked.has(b.id));
-        if (!picked.length) return;
+        const chosen = S.blocks.filter((b) => listChecked.has(b.id));
+        if (!chosen.length) return;
         pushHistory();
-        const at = S.blocks.indexOf(picked[0]);
+        const at = S.blocks.indexOf(chosen[0]);
         S.blocks = S.blocks.filter((b) => !listChecked.has(b.id));
+        // Zaznaczone sekcje oddają samą treść — w nowym opakowaniu nie może być kolejnego (jeden poziom).
+        const picked = chosen.flatMap((b) => (isWrapper(b.type) ? unwrapBlock(b) : [b]));
         let wrapper;
         if (kind === 'columns') {
             const half = Math.ceil(picked.length / 2);
@@ -1353,7 +1434,7 @@ function start(config) {
         const build = (list, depth) => h('ul', { 'aria-label': depth ? null : 'Bloki: ' + L.contentLabel.toLowerCase() }, ...list.map((b) => {
             const d = BLOCKS[b.type];
             const label = blockLabel(b);
-            const pick = depth === 0 && b.type !== 'column' ? h('input', { type: 'checkbox', class: 'be-list-check', checked: listChecked.has(b.id), 'aria-label': 'Zaznacz blok: ' + d.title + (label ? ' — ' + label : '') }) : null;
+            const pick = depth === 0 && !PART_OF[b.type] ? h('input', { type: 'checkbox', class: 'be-list-check', checked: listChecked.has(b.id), 'aria-label': 'Zaznacz blok: ' + d.title + (label ? ' — ' + label : '') }) : null;
             pick?.addEventListener('change', () => { pick.checked ? listChecked.add(b.id) : listChecked.delete(b.id); renderPanel(); leftPanel.querySelector(`[data-check-id="${b.id}"]`)?.focus(); });
             if (pick) pick.dataset.checkId = b.id;
             return h('li', { class: pick ? 'be-list-row' : null }, pick,
@@ -1378,7 +1459,8 @@ function start(config) {
     }
     function blockLabel(b) {
         const a = b.attrs;
-        const t = a.text ? textOf(a.text) : (a.summary || a.caption || a.label || a.code || (a.items && typeof a.items[0] === 'string' ? textOf(a.items[0]) : '') || '');
+        const first = (a.items || [])[0];
+        const t = a.text ? textOf(a.text) : (a.summary || a.title || a.caption || a.label || a.code || (typeof first === 'string' ? textOf(first) : (first?.q || first?.name || first?.title || '')) || '');
         return t.length > 40 ? t.slice(0, 40) + '…' : t;
     }
 
@@ -1406,6 +1488,11 @@ function start(config) {
         walk(S.blocks, (b) => {
             const a = b.attrs;
             const w = [];
+            // Nagłówki w blokach typowanych (FAQ, wezwanie, zakładki, osoby, karty) liczą się do kolejności poziomów.
+            const headingCheck = (level) => {
+                if (level > lastLevel + 1) w.push(`Pominięty poziom nagłówka: po H${lastLevel} jest H${level}. Użyj H${lastLevel + 1}.`);
+                lastLevel = level;
+            };
             const linkCheck = (html) => {
                 const d = document.createElement('div'); d.innerHTML = html || '';
                 d.querySelectorAll('a').forEach((link) => {
@@ -1455,6 +1542,36 @@ function start(config) {
                     if (!a.caption.trim()) w.push('Dodaj podpis tabeli (krótki opis jej zawartości).');
                     break;
                 case 'details': if (!a.summary.trim()) w.push('Rozwijana sekcja nie ma tytułu.'); break;
+                case 'tabs':
+                    headingCheck(a.level);
+                    if (b.inner.length < 2) w.push('Zakładki mają sens od dwóch — przy jednej wystarczy zwykły nagłówek.');
+                    b.inner.forEach((t, i) => { if (!t.attrs.label.trim()) w.push(`Zakładka ${i + 1} nie ma nazwy — na stronie pojawi się „Zakładka ${i + 1}”.`); });
+                    break;
+                case 'faq':
+                    if (a.title.trim()) headingCheck(a.level);
+                    if (!a.items.some((it) => it.q.trim())) w.push('Wpisz co najmniej jedno pytanie — bez pytań blok nie pojawi się na stronie.');
+                    a.items.forEach((it, i) => { if (it.q.trim() && !textOf(it.a)) w.push(`Pytanie ${i + 1} nie ma odpowiedzi.`); linkCheck(it.a); });
+                    break;
+                case 'cta':
+                    if (a.title.trim()) headingCheck(a.level);
+                    if (a.label.trim() && !a.url) w.push(`Przycisk „${a.label}” nie ma adresu — na stronie się nie pokaże.`);
+                    if (GENERIC_LINK.test(a.label.trim())) w.push(`Tekst przycisku „${a.label}” nie mówi, dokąd prowadzi.`);
+                    linkCheck(a.text);
+                    break;
+                case 'people':
+                    if (a.items.some((p) => p.name.trim())) headingCheck(a.level);
+                    a.items.forEach((p, i) => {
+                        if (!p.name.trim()) w.push(`Osoba ${i + 1} nie ma imienia i nazwiska — na stronie zostanie pominięta.`);
+                        if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email.trim())) w.push(`Adres e-mail osoby ${i + 1} wygląda na błędny — na stronie zostanie pominięty.`);
+                    });
+                    break;
+                case 'cards':
+                    if (a.items.some((c) => c.title.trim())) headingCheck(a.level);
+                    a.items.forEach((c, i) => {
+                        if (!c.title.trim()) w.push(`Karta ${i + 1} nie ma tytułu — na stronie zostanie pominięta.`);
+                        if (c.alt && /^(zdjęcie|obraz|grafika|img|image|foto)[\s_-]*\d*(\.\w+)?$/i.test(c.alt.trim())) w.push(`Opis grafiki karty ${i + 1} nic nie mówi — opisz ją albo zostaw puste (grafika dekoracyjna).`);
+                    });
+                    break;
                 case 'phone':
                     if (!a.number.replace(/\D/g, '')) w.push('Wpisz numer telefonu — bez niego klocek nie pokaże się na stronie.');
                     break;
@@ -1473,6 +1590,7 @@ function start(config) {
                     break;
                 default: break;
             }
+            if (b.from && b.until && b.until <= b.from) w.push('Termin „Ukryj od” jest wcześniejszy niż „Pokaż od” — blok nigdy się nie pokaże.');
             if (w.length) map.set(b.id, w);
         });
         return map;
@@ -1539,10 +1657,19 @@ function start(config) {
             wrap.classList.add('is-hidden-block');
             wrap.append(h('p', { class: 'be-hidden-note' }, 'Ukryty na stronie — odwiedzający go nie widzą. Pokażesz go w karcie strony (Strony Nawigator → Treść strony).'));
         }
+        const sched = scheduleState(b);
+        if (sched) {
+            if (sched !== 'active') wrap.classList.add('is-hidden-block');
+            wrap.append(h('p', { class: 'be-hidden-note' }, icon('clock'), ' ', {
+                scheduled: `Zaplanowany — odwiedzający zobaczą go ${fmtWhen(b.from)}${b.until ? ', zniknie ' + fmtWhen(b.until) : ''}.`,
+                expired: `Po terminie — zniknął ze strony ${fmtWhen(b.until)}. Zmienisz to w panelu „Blok” → „Widoczność”.`,
+                active: `Widoczny${b.until ? ' do ' + fmtWhen(b.until) : ''} — ma ustawiony harmonogram.`,
+            }[sched]));
+        }
         wrap.append(def.edit ? def.edit(b) : editors[b.type](b));
         // Szybkie wstawianie „w miejscu”: plus pod blokiem (tylko dla myszy; z klawiatury — „/”, menu bloku
         // „Wstaw blok po” i przycisk „Dodaj blok”, więc plus nie zwiększa liczby tabulatorów).
-        if (b.type !== 'column') {
+        if (!PART_OF[b.type]) {
             const add = h('button', { type: 'button', class: 'be-between', tabindex: '-1', 'aria-hidden': 'true', title: 'Wstaw blok poniżej', onMousedown: (e) => e.preventDefault() }, icon('plus'));
             add.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1582,6 +1709,12 @@ function start(config) {
                 h('p', {}, L.imported + ', więc treść jest teraz w bloku „Własny HTML”. Przekształć ją w bloki, aby edytować wygodnie akapitami, nagłówkami i obrazami.'),
                 h('button', { type: 'button', class: 'be-btn be-btn--primary', onClick: () => { S.imported = false; convertHtmlBlock(htmlBlock); } }, icon('wand-magic-sparkles'), ' Przekształć w bloki'),
                 h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => { S.imported = false; renderNotices(); } }, 'Nie teraz')));
+        }
+        if (S.flattened) {
+            items.push(h('div', { class: 'be-notice', role: 'note' },
+                icon('object-ungroup'),
+                h('p', {}, `Uproszczono ${S.flattened} ${plural(S.flattened, 'sekcję zagnieżdżoną', 'sekcje zagnieżdżone', 'sekcji zagnieżdżonych')} w innej sekcji (np. rozwijaną sekcję w kolumnie): treść została, zniknęło tylko opakowanie. Strona zmieni się po zapisie.`),
+                h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => { S.flattened = 0; renderNotices(); } }, 'OK')));
         }
         if (S.dashConverted) {
             items.push(h('div', { class: 'be-notice', role: 'note' },
@@ -1769,7 +1902,8 @@ function start(config) {
         const m = t.match(/^\/([\p{L}\d -]{0,20})$/u);
         if (!m) { closeSlash(); return; }
         const q = m[1].trim().toLowerCase();
-        const items = Object.keys(BLOCKS).filter((type) => !BLOCKS[type].hidden && matches(type, q)).slice(0, 9);
+        const inContainer = !!find(b.id)?.parent;
+        const items = Object.keys(BLOCKS).filter((type) => !BLOCKS[type].hidden && matches(type, q) && !(inContainer && isWrapper(type))).slice(0, 9);
         S.slash = { blockId: b.id, el, items, index: 0 };
         drawSlash();
     }
@@ -1835,6 +1969,12 @@ function start(config) {
         columns: (b) => h('div', { class: `content-columns content-columns--${b.inner.length}` + (b.attrs.ratio !== 'equal' && b.inner.length === 2 ? ' content-columns--' + b.attrs.ratio : '') }, ...b.inner.map(renderBlock)),
         column: (b) => h('div', { class: 'content-column' }, innerList(b)),
         details: (b) => detailsEditor(b),
+        tabs: (b) => h('div', { class: 'content-tabs be-tabs-edit' }, ...b.inner.map(renderBlock)),
+        tab: (b) => tabEditor(b),
+        faq: (b) => faqEditor(b),
+        cta: (b) => ctaEditor(b),
+        people: (b) => peoplePreview(b),
+        cards: (b) => cardsPreview(b),
         table: (b) => tableEditor(b),
         separator: () => h('hr', {}),
         embed: (b) => embedEditor(b),
@@ -1986,6 +2126,112 @@ function start(config) {
         summary.addEventListener('input', () => { typingHistory(); b.attrs.summary = summary.textContent.replace(/\s+/g, ' ').trim(); summary.classList.toggle('is-empty', !b.attrs.summary); markDirty(); });
         summary.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); const first = b.inner[0]; if (first) focusBlock(first.id, 'start'); } });
         return h('div', { class: 'content-details be-details' }, summary, h('div', { class: 'content-details-body' }, innerList(b)));
+    }
+
+    // Jednowierszowe pole edytowane w miejscu (nazwa zakładki, pytanie, nagłówek bloku) — bez formatowania.
+    function plainEditable(value, { tag = 'div', cls = '', label, placeholder, onInput, onEnter }) {
+        const el = h(tag, { class: (cls + ' be-plain').trim(), contenteditable: 'plaintext-only', 'data-be-editable': '', role: 'textbox', 'aria-label': label, 'data-placeholder': placeholder || '' });
+        el.textContent = value || '';
+        el.classList.toggle('is-empty', !value);
+        el.addEventListener('input', () => {
+            typingHistory();
+            const v = el.textContent.replace(/\s+/g, ' ').trim();
+            onInput(v);
+            el.classList.toggle('is-empty', !v);
+            markDirty();
+            scheduleWarnings();
+        });
+        el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); onEnter?.(); } });
+        el.addEventListener('paste', (e) => { e.preventDefault(); document.execCommand('insertText', false, e.clipboardData.getData('text/plain').replace(/\s+/g, ' ')); });
+        return el;
+    }
+    // Pole z odnośnikami i pogrubieniem w elemencie listy (odpowiedź w FAQ): Enter łamie wiersz, Ctrl+K — odnośnik.
+    function inlineRich(value, { cls = '', label, placeholder, onInput }) {
+        const el = h('div', { class: (cls + ' be-rich').trim(), contenteditable: 'true', 'data-be-editable': '', role: 'textbox', 'aria-multiline': 'true', 'aria-label': label, 'data-placeholder': placeholder || '' });
+        el.innerHTML = value || '';
+        const sync = () => el.classList.toggle('is-empty', isEmptyEl(el));
+        sync();
+        el.addEventListener('input', () => { typingHistory(); onInput(el.innerHTML.replace(/(<br\s*\/?>\s*)+$/i, '')); sync(); markDirty(); scheduleWarnings(); });
+        el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.execCommand('insertLineBreak'); }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openLinkDialog(el); }
+        });
+        el.addEventListener('paste', (e) => { e.preventDefault(); document.execCommand('insertText', false, e.clipboardData.getData('text/plain')); });
+        return el;
+    }
+    function openBlockSettings(b) {
+        S.sidebarOpen = true; S.sidebarTab = 'block';
+        selectBlock(b.id);
+        renderSidebar(); updateTopbar();
+        sidebar.querySelector('.be-side-section h3')?.focus();
+    }
+
+    function tabEditor(b) {
+        const r = find(b.id);
+        const n = r ? r.index + 1 : 1;
+        const level = r?.parent?.attrs.level || 2;
+        return h('section', { class: 'content-tab be-tab-edit' },
+            plainEditable(b.attrs.label, {
+                tag: 'h' + level, cls: 'content-tab-title', label: 'Nazwa zakładki ' + n, placeholder: 'Nazwa zakładki, np. „Program”',
+                onInput: (v) => { b.attrs.label = v; }, onEnter: () => { const first = b.inner[0]; if (first) focusBlock(first.id, 'start'); },
+            }),
+            h('div', { class: 'content-tab-body' }, innerList(b)));
+    }
+
+    function faqEditor(b) {
+        const a = b.attrs;
+        const items = a.items.map((it, i) => {
+            const answer = inlineRich(it.a, { cls: 'be-faq-answer', label: `Odpowiedź na pytanie ${i + 1}`, placeholder: 'Odpowiedź (Enter = nowy wiersz, pusta linia = nowy akapit)', onInput: (v) => { it.a = v; } });
+            return h('div', { class: 'content-details be-details' },
+                plainEditable(it.q, { cls: 'be-summary', label: `Pytanie ${i + 1}`, placeholder: 'Pytanie', onInput: (v) => { it.q = v; }, onEnter: () => answer.focus() }),
+                h('div', { class: 'content-details-body' }, answer));
+        });
+        return h('div', { class: 'content-faq' },
+            plainEditable(a.title, { tag: 'h' + a.level, cls: 'content-faq-title', label: 'Nagłówek sekcji pytań (opcjonalnie)', placeholder: 'Nagłówek sekcji (opcjonalnie)', onInput: (v) => { a.title = v; } }),
+            ...items,
+            a.items.length < 50 ? h('button', { type: 'button', class: 'be-btn be-btn--secondary be-mt', onClick: () => {
+                updateAttrs(b, { items: [...a.items, { q: '', a: '' }] });
+                [...(wrapperOf(b.id)?.querySelectorAll('.be-summary') || [])].pop()?.focus();
+                announce('Dodano pytanie ' + b.attrs.items.length);
+            } }, icon('plus'), ' Dodaj pytanie') : null);
+    }
+
+    function ctaEditor(b) {
+        const a = b.attrs;
+        return h('div', { class: `content-cta content-cta--${a.tone}` },
+            plainEditable(a.title, { tag: 'h' + a.level, cls: 'content-cta-title', label: 'Nagłówek wezwania', placeholder: 'Nagłówek, np. „Dołącz do wolontariatu”', onInput: (v) => { a.title = v; } }),
+            richField(b, 'text', { tag: 'p', class: 'content-cta-text', placeholder: 'Jedno, dwa zdania: co zyska osoba, która kliknie przycisk', lineBreak: true, mergeable: false, label: 'Tekst wezwania' }),
+            h('p', { class: 'content-cta-action' }, h('span', { class: 'cta-button' },
+                plainEditable(a.label, { tag: 'span', cls: 'be-cta-label', label: 'Tekst przycisku', placeholder: 'Tekst przycisku', onInput: (v) => { a.label = v; } }))),
+            a.label && !a.url ? h('p', { class: 'be-help' }, h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => openBlockSettings(b) }, icon('link'), ' Ustaw adres przycisku')) : null);
+    }
+
+    // Osoby i karty edytuje się w panelu „Blok” (dane w polach), a płótno pokazuje wynik jak na stronie.
+    function emptyTyped(b, iconName, title, text) {
+        return h('div', { class: 'be-placeholder' }, h('div', { class: 'be-placeholder-title' }, icon(iconName), ' ' + title), h('p', {}, text),
+            h('button', { type: 'button', class: 'be-btn be-btn--primary', onClick: () => openBlockSettings(b) }, icon('sliders'), ' Uzupełnij w panelu'));
+    }
+    function peoplePreview(b) {
+        const a = b.attrs;
+        const named = a.items.filter((p) => p.name.trim());
+        if (!named.length) return emptyTyped(b, 'users', BLOCKS.people.title, 'Wpisz dane osób w panelu po prawej. Na stronie pojawią się osoby z imieniem i nazwiskiem.');
+        return h('ul', { class: `content-people content-people--cols-${a.columns}`, role: 'list' }, ...named.map((p) => h('li', { class: 'content-person' },
+            p.photo ? h('img', { class: 'content-person-photo', src: p.photo, alt: '' }) : null,
+            h('div', { class: 'content-person-body' },
+                h('h' + a.level, { class: 'content-person-name' }, p.name),
+                p.role ? h('p', { class: 'content-person-role' }, p.role) : null,
+                p.bio ? h('p', { class: 'content-person-bio' }, p.bio) : null,
+                p.email || p.phone ? h('p', { class: 'content-person-contact' }, p.email || null, p.email && p.phone ? h('br', {}) : null, p.phone || null) : null))));
+    }
+    function cardsPreview(b) {
+        const a = b.attrs;
+        const titled = a.items.filter((c) => c.title.trim());
+        if (!titled.length) return emptyTyped(b, 'table-cells', BLOCKS.cards.title, 'Wpisz tytuły, opisy i adresy kart w panelu po prawej. Karta bez tytułu nie pojawi się na stronie.');
+        return h('ul', { class: `content-cards content-cards--cols-${a.columns}`, role: 'list' }, ...titled.map((c) => h('li', { class: 'content-card' },
+            h('div', { class: 'content-card-body' },
+                h('h' + a.level, { class: 'content-card-title' }, c.url ? h('span', { class: 'content-card-link' }, c.title) : c.title),
+                c.text ? h('p', { class: 'content-card-text' }, c.text) : null),
+            c.image ? h('img', { class: 'content-card-image', src: c.image, alt: '' }) : null)));
     }
 
     function tableEditor(b) {
@@ -2253,7 +2499,8 @@ function start(config) {
         const groups = [
             ['Formularze', (CI.forms || []).map((o) => ['[formularz:' + o.value + ']', o.label])],
             ['Zestawy kafelków', (CI.tileSets || []).map((o) => ['[kafelki-zestaw:' + o.value + ']', o.label])],
-            ['Bloki z kreatora', (CI.contentBlocks || []).map((o) => ['[blok:' + o.value + ']', o.label])],
+            ['Bloki wspólne', config.shared ? [] : (CI.sharedBlocks || []).map((o) => ['[blok:' + o.value + ']', o.label])],
+            ['Bloki z kreatora', (CI.contentBlocks || []).filter((o) => o.type !== 'blocks').map((o) => ['[blok:' + o.value + ']', o.label])],
             ['Siatki kafelków', (CI.tilesGrids || []).map((o) => ['[kafelki:' + o.value + ']', o.label])],
             ['Paski FEER', (CI.bands || []).map((o) => ['[pasek:' + o.value + ']', o.label])],
             ['Strefy banerów', (CI.bannerZones || []).map((o) => ['[banery:' + o.value + ']', o.label + ' (' + o.count + ')'])],
@@ -2261,7 +2508,8 @@ function start(config) {
             ['Listy', [['[klauzule-rodo]', 'Klauzule RODO'], ['[klauzule-rodo:en]', 'Klauzule RODO (wersje angielskie)'], ['[nabory]', 'Lista naborów'], ['[zapytania-ofertowe]', 'Zapytania ofertowe']]],
         ].filter(([, opts]) => opts.length);
         const nameOf = (code) => { for (const [, opts] of groups) { const o = opts.find(([v]) => v === code); if (o) return o[1]; } return null; };
-        const kindOf = (code) => SC_KINDS.find(([re]) => re.test(code)) || [null, 'Moduł', 'code', 'module, z którego pochodzi'];
+        const sharedIdOf = (code) => { const m = code.match(/^\[blok:(\d+)\]$/); return m && (CI.sharedBlocks || []).some((x) => x.value === Number(m[1])) ? Number(m[1]) : null; };
+        const kindOf = (code) => (sharedIdOf(code) ? [null, 'Blok wspólny', 'link', 'edytorze bloku wspólnego'] : SC_KINDS.find(([re]) => re.test(code)) || [null, 'Moduł', 'code', 'module, z którego pochodzi']);
 
         const setCode = (code, { focus = true } = {}) => {
             pushHistory();
@@ -2298,8 +2546,15 @@ function start(config) {
         const editButton = (code) => {
             const ts = code.match(/^\[kafelki-zestaw:(\d+)\]$/);
             if (ts && window.TilesBuilder) return btn('Edytuj zestaw', 'pen', (t) => window.TilesBuilder.open({ id: Number(ts[1]), trigger: t, onSave: () => { shortcodePreviewCache.delete(code); loaded = null; load(); } }));
+            // Blok wspólny edytuje się w edytorze blokowym (nowa karta); po powrocie podgląd się odświeża.
+            const sid = sharedIdOf(code);
+            if (sid && config.urls.sharedEdit) {
+                return h('a', { href: config.urls.sharedEdit.replace(/\/0$/, '/' + sid), target: '_blank', rel: 'noopener', class: 'be-btn be-btn--secondary',
+                    onClick: () => window.addEventListener('focus', () => { shortcodePreviewCache.delete(code); loaded = null; load(); }, { once: true }) },
+                icon('pen'), ' Edytuj blok wspólny', h('span', { class: 'be-sr-only' }, ' (otwiera się w nowej karcie; zmiana obejmie wszystkie strony z tym blokiem)'));
+            }
             const bm = code.match(/^\[blok:(\d+)\]$/);
-            const cb = bm && (CI.contentBlocks || []).find((x) => x.value === Number(bm[1]));
+            const cb = bm && (CI.contentBlocks || []).find((x) => x.value === Number(bm[1]) && x.type !== 'blocks');
             if (cb && window.BlockBuilder) return btn('Edytuj blok', 'pen', (t) => window.BlockBuilder.open({ type: cb.type, id: cb.value, trigger: t, onSave: () => { shortcodePreviewCache.delete(code); loaded = null; load(); } }));
             return null;
         };
@@ -2769,7 +3024,7 @@ function start(config) {
             groups.push(h('div', { class: 'be-tool-group' }, ...[['left', 'Do lewej'], ['center', 'Wyśrodkuj'], ['right', 'Do prawej']].map(([v, l]) =>
                 btn(l, 'align-' + v, () => { updateAttrs(b, { align: v }); }, { 'aria-pressed': String((b.attrs.align || 'left') === v) }))));
         }
-        if (def.rich || ['table', 'image', 'embed'].includes(b.type)) {
+        if (def.rich || ['table', 'image', 'embed', 'faq', 'cta'].includes(b.type)) {
             groups.push(h('div', { class: 'be-tool-group' },
                 btn(`Pogrubienie (${mod}+B)`, 'bold', () => withSelection(() => document.execCommand('bold'))),
                 btn(`Kursywa (${mod}+I)`, 'italic', () => withSelection(() => document.execCommand('italic'))),
@@ -2787,14 +3042,17 @@ function start(config) {
 
         groups.push(h('div', { class: 'be-tool-group' }, dropdown(icon('ellipsis-vertical'), [
             { label: 'Duplikuj', icon: 'copy', shortcut: mod + '+Shift+D', onClick: () => duplicateBlock(b.id) },
-            ...(b.type === 'column' ? [] : [
+            ...(PART_OF[b.type] ? [] : [
                 { label: 'Kopiuj blok', icon: 'copy', shortcut: mod + '+C', onClick: () => copyBlock(b.id) },
                 { label: 'Wytnij blok', icon: 'scissors', shortcut: mod + '+X', onClick: () => cutBlock(b.id) },
             ]),
+            ...(config.urls.shareBlock && !PART_OF[b.type] && !(b.type === 'shortcode' && /^\[blok:\d+\]$/i.test(b.attrs.code || ''))
+                ? [{ label: 'Zapisz jako blok wspólny', icon: 'share-nodes', onClick: () => saveAsShared(b) }] : []),
             ...(blockClip ? [{ label: 'Wklej blok po', icon: 'paste', shortcut: mod + '+V', onClick: () => pasteBlocks(blockClip, b.id) }] : []),
             { label: 'Wstaw blok przed', icon: 'arrow-up', onClick: () => { const r = find(b.id); togglePanel('inserter', r.parent ? { parentId: r.parent.id, index: r.index } : { index: r.index }); } },
             { label: 'Wstaw blok po', icon: 'arrow-down', onClick: () => { const r = find(b.id); togglePanel('inserter', r.parent ? { parentId: r.parent.id, index: r.index + 1 } : { index: r.index + 1 }); } },
             ...(b.type === 'callout' || b.type === 'details' ? [{ label: 'Rozgrupuj (zostaw samą treść)', icon: 'object-ungroup', onClick: () => replaceBlock(b.id, b.inner.length ? b.inner : [block('paragraph')]) }] : []),
+            ...(b.type === 'tabs' ? [{ label: 'Rozgrupuj (zostaw samą treść)', icon: 'object-ungroup', onClick: () => { const out = unwrapBlock(b); replaceBlock(b.id, out.length ? out : [block('paragraph')]); } }] : []),
             { label: 'Usuń blok', icon: 'trash', shortcut: 'Shift+Alt+Z', danger: true, onClick: () => removeBlock(b.id) },
         ], 'Więcej opcji')));
 
@@ -2833,6 +3091,53 @@ function start(config) {
     }
     document.addEventListener('mousedown', (e) => { if (openDropdown && !e.target.closest('.be-dropdown')) openDropdown(); });
 
+    // Proste okno z jednym polem tekstowym (np. nazwa bloku wspólnego). Zwraca tekst albo null (Anuluj / Esc).
+    function promptText({ title, label, help, value = '', submit = 'Zapisz' }) {
+        return new Promise((resolve) => {
+            const n = ++dialogSeq;
+            const trigger = document.activeElement;
+            const input = h('input', { type: 'text', class: 'be-input', id: `be-prompt-${n}`, maxlength: '180', 'aria-describedby': help ? `be-prompt-help-${n}` : null });
+            input.value = value;
+            const dlg = h('dialog', { class: 'be-dialog be-dialog--small', 'aria-labelledby': `be-prompt-title-${n}` });
+            const done = (result) => { dlg.close(); dlg.remove(); if (result === null && trigger?.isConnected) trigger.focus(); resolve(result); };
+            dlg.append(h('form', { onSubmit: (e) => { e.preventDefault(); done(input.value.trim()); } },
+                h('h2', { id: `be-prompt-title-${n}` }, title),
+                h('div', { class: 'be-field' }, h('label', { for: `be-prompt-${n}` }, label), input, help ? h('p', { id: `be-prompt-help-${n}`, class: 'be-help' }, help) : null),
+                h('div', { class: 'be-dialog-actions' },
+                    h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => done(null) }, 'Anuluj'),
+                    h('button', { type: 'submit', class: 'be-btn be-btn--primary' }, submit))));
+            dlg.addEventListener('cancel', (e) => { e.preventDefault(); done(null); });
+            document.body.append(dlg);
+            dlg.showModal();
+            input.focus(); input.select();
+        });
+    }
+
+    // „Zapisz jako blok wspólny”: blok trafia do bloków wspólnych witryny, a tu zastępuje go wstawka [blok:ID]
+    // (ukrycie i harmonogram zostają przy wstawce). Poprawka bloku wspólnego zmieni go na wszystkich stronach.
+    async function saveAsShared(b) {
+        const label = blockLabel(b);
+        const name = await promptText({
+            title: 'Zapisz jako blok wspólny', label: 'Nazwa bloku wspólnego', submit: 'Zapisz blok wspólny',
+            help: 'Widać ją tylko w panelu, np. „Dane do przelewu” albo „Kontakt — biuro”. Blok wstawisz potem na innych stronach blokiem „Blok wspólny”.',
+            value: (BLOCKS[b.type].title + (label ? ': ' + label : '')).slice(0, 180),
+        });
+        if (name === null) return;
+        try {
+            const res = await postJson(config.urls.shareBlock, { name, blocks: serialize([{ ...b, hidden: undefined, from: undefined, until: undefined }]) });
+            (CI.sharedBlocks ||= []).push({ value: res.id, label: res.name });
+            (CI.contentBlocks ||= []).push({ value: res.id, type: 'blocks', label: 'Blok wspólny: ' + res.name });
+            BLOCKS.sharedblock.hidden = false;
+            const nb = block('shortcode', { code: res.code });
+            ['hidden', 'from', 'until'].forEach((k) => { if (b[k]) nb[k] = b[k]; });
+            replaceBlock(b.id, [nb]);
+            selectBlock(nb.id, { focusWrapper: true });
+            announce(`Zapisano blok wspólny „${res.name}”. Zapisz stronę, aby wstawić go w tym miejscu.`);
+        } catch (e) {
+            announce('Nie udało się zapisać bloku wspólnego: ' + e.message);
+        }
+    }
+
     // ── Przeciąganie (alternatywa z klawiatury: strzałki w pasku i Alt+Shift+↑/↓) ──
     let dragId = null;
     function dragHandle(b) {
@@ -2854,7 +3159,7 @@ function start(config) {
         const id = wrap.dataset.id;
         if (id === dragId || isDescendant(dragId, id)) return;
         const src = find(dragId); const dst = find(id);
-        if (!src || !dst || (src.block.type === 'column') !== (dst.parent?.type === 'columns')) return;
+        if (!src || !dst || !canPlace(src.block, dst.parent)) return;
         e.preventDefault();
         e.stopPropagation();
         const rect = wrap.getBoundingClientRect();
@@ -3159,6 +3464,69 @@ function start(config) {
         }, icon('link'), ' Wybierz stronę', h('span', { class: 'be-sr-only' }, srSuffix));
     }
 
+    const HEADING_LEVELS = [[2, 'H2 — sekcja'], [3, 'H3 — podsekcja'], [4, 'H4 — szczegół']];
+    // Przesuwanie i usuwanie elementów bloku (zakładki, pytania, osoby, karty) — fokus zostaje przy przesuwanym elemencie,
+    // po usunięciu idzie na nagłówek sekcji (nie na „Usuń” sąsiada).
+    function itemButtons(b, arr, i, noun, { min = 1, afterRemove = 'section:' + noun, onRemove = null } = {}) {
+        const key = (dir, n) => `${b.id}-${dir}-${n}`;
+        const move = (to) => {
+            pushHistory();
+            const [x] = arr.splice(i, 1);
+            arr.splice(to, 0, x);
+            markDirty(); rerenderBlock(b.id);
+            const canUp = to > 0; const canDown = to < arr.length - 1;
+            renderSidebar({ focusKey: to < i ? key(canUp ? 'up' : 'down', to) : key(canDown ? 'down' : 'up', to) });
+            announce(`${noun} ${i + 1} przesunięto na pozycję ${to + 1}`);
+        };
+        const n = noun.toLowerCase();
+        return h('div', { class: 'be-row' },
+            h('button', { type: 'button', class: 'be-btn be-btn--icon', 'data-focus-key': key('up', i), 'aria-label': `Przesuń: ${n} ${i + 1} wcześniej`, disabled: i === 0 ? true : null, onClick: () => move(i - 1) }, icon('arrow-up')),
+            h('button', { type: 'button', class: 'be-btn be-btn--icon', 'data-focus-key': key('down', i), 'aria-label': `Przesuń: ${n} ${i + 1} dalej`, disabled: i === arr.length - 1 ? true : null, onClick: () => move(i + 1) }, icon('arrow-down')),
+            arr.length > min ? h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => {
+                pushHistory();
+                const [removed] = arr.splice(i, 1);
+                onRemove?.(removed, i);
+                markDirty(); rerenderBlock(b.id);
+                renderSidebar({ focusKey: typeof afterRemove === 'function' ? afterRemove(i, arr.length) : afterRemove });
+                announce(`Usunięto: ${n} ${i + 1}`);
+            } }, icon('trash'), ' Usuń', h('span', { class: 'be-sr-only' }, ` ${n} ${i + 1}`)) : null);
+    }
+    function mediaButtons(current, label, onPick, onRemove) {
+        return h('div', { class: 'be-row' },
+            current ? h('img', { src: current, alt: '', class: 'be-thumb' }) : null,
+            h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: async () => { const picked = await openMediaLibrary(); if (picked[0]) onPick(picked[0]); renderSidebar(); } }, icon('photo-film'), current ? ' Zmień ' + label : ' Wybierz ' + label),
+            current ? h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => { onRemove(); renderSidebar(); } }, icon('trash'), ' Usuń ' + label) : null);
+    }
+    // „Widoczność (harmonogram)”: blok przygotowany z wyprzedzeniem pokaże się i zniknie sam (czas polski).
+    function scheduleSection(b) {
+        const title = 'Widoczność (harmonogram)';
+        const input = (key, label, help) => {
+            const el = h('input', { type: 'datetime-local', class: 'be-input', value: b[key] || '' });
+            el.addEventListener('change', () => {
+                pushHistory();
+                if (el.value) b[key] = el.value.slice(0, 16); else delete b[key];
+                markDirty(); rerenderBlock(b.id); renderSidebar();
+                const st = scheduleState(b);
+                announce(st === 'scheduled' ? 'Blok pokaże się ' + fmtWhen(b.from) : st === 'expired' ? 'Blok jest po terminie — odwiedzający go nie widzą' : st === 'active' ? 'Blok jest widoczny' + (b.until ? ' do ' + fmtWhen(b.until) : '') : 'Blok jest widoczny zawsze');
+            });
+            return field(label, el, help);
+        };
+        const st = scheduleState(b);
+        const status = {
+            scheduled: `Teraz ukryty — pokaże się ${fmtWhen(b.from)}.`,
+            expired: `Teraz ukryty — zniknął ${fmtWhen(b.until)}.`,
+            active: b.until ? `Teraz widoczny — zniknie ${fmtWhen(b.until)}.` : 'Teraz widoczny.',
+        }[st];
+        return panelSection(title,
+            input('from', 'Pokaż od', 'Puste — od razu po zapisie.'),
+            input('until', 'Ukryj od', 'Puste — bez końca. Np. koniec naboru, zbiórki albo zapisów.'),
+            h('p', { class: 'be-help' }, status ? [icon('clock'), ' ' + status] : 'Przygotuj blok z wyprzedzeniem — strona sama pokaże go i schowa w podanych terminach (czas polski), bez pamiętania o sprzątaniu.'),
+            b.from || b.until ? h('button', { type: 'button', class: 'be-btn be-btn--ghost', onClick: () => {
+                pushHistory(); delete b.from; delete b.until; markDirty(); rerenderBlock(b.id);
+                renderSidebar({ focusKey: 'section:' + title }); announce('Usunięto terminy — blok jest widoczny zawsze');
+            } }, icon('xmark'), ' Usuń terminy') : null);
+    }
+
     function blockSettings(b) {
         const def = BLOCKS[b.type];
         const a = b.attrs;
@@ -3247,6 +3615,86 @@ function start(config) {
             case 'details':
                 parts.push(panelSection('Ustawienia', checkbox('Domyślnie rozwinięta', a.open, (v) => set({ open: v }, { rerender: false }))));
                 break;
+            case 'tabs':
+                parts.push(panelSection('Ustawienia',
+                    field('Poziom nagłówków zakładek', select(a.level, HEADING_LEVELS, (v) => set({ level: Number(v) })), 'Bez JavaScriptu i dla czytników ekranu nazwy zakładek są nagłówkami — nie pomijaj poziomów.'),
+                    h('p', { class: 'be-help' }, 'Nazwy zakładek wpisujesz w treści. Na stronie zakładki działają też z klawiatury: strzałki w lewo i w prawo, Home, End.')),
+                panelSection('Zakładki',
+                    ...b.inner.map((t, i) => h('div', { class: 'be-item' },
+                        h('p', { class: 'be-item-label' }, `${i + 1}. ${t.attrs.label || '(bez nazwy)'}`),
+                        itemButtons(b, b.inner, i, 'Zakładka', { afterRemove: 'section:Zakładki', onRemove: (removed, at) => {
+                            // Treść usuniętej zakładki trafia do sąsiedniej (jak przy zmniejszaniu liczby kolumn).
+                            const keep = removed.inner.filter((x) => x.type !== 'paragraph' || textOf(x.attrs.text));
+                            b.inner[Math.max(0, at - 1)]?.inner.push(...keep);
+                        } }))),
+                    b.inner.length < 8 ? h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: () => {
+                        pushHistory(); b.inner.push(block('tab', { label: 'Zakładka ' + (b.inner.length + 1) })); markDirty(); rerenderBlock(b.id);
+                        renderSidebar({ focusKey: 'section:Zakładki' }); announce('Dodano zakładkę ' + b.inner.length);
+                    } }, icon('plus'), ' Dodaj zakładkę') : null,
+                    h('p', { class: 'be-help' }, 'Przy usuwaniu treść zakładki trafia do poprzedniej.')));
+                break;
+            case 'tab':
+                parts.push(panelSection(null, h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: () => { const r = find(b.id); selectBlock(r.parent.id, { focusWrapper: true }); } }, icon('arrow-up'), ' Zaznacz cały blok zakładek')));
+                break;
+            case 'faq':
+                parts.push(panelSection('Ustawienia',
+                    field('Poziom nagłówka sekcji', select(a.level, HEADING_LEVELS, (v) => set({ level: Number(v) })), 'Dotyczy nagłówka nad pytaniami (jeśli go wpiszesz). Pytania są przyciskami rozwijania, nie nagłówkami.'),
+                    h('p', { class: 'be-help' }, 'Pytania i odpowiedzi wpisujesz w treści. W odpowiedzi Enter łamie wiersz, pusta linia zaczyna akapit, Ctrl+K dodaje odnośnik.')),
+                panelSection('Pytania',
+                    ...a.items.map((it, i) => h('div', { class: 'be-item' },
+                        h('p', { class: 'be-item-label' }, `${i + 1}. ${it.q || '(bez pytania — na stronie pominięte)'}`),
+                        itemButtons(b, a.items, i, 'Pytanie', { afterRemove: 'section:Pytania' })))));
+                break;
+            case 'cta':
+                parts.push(panelSection('Przycisk',
+                    field('Tekst przycisku', textInput(a.label, (v) => updateAttrs(b, { label: v }, { typing: true })), 'Powiedz, co się stanie: „Zapisz się na szkolenie”, nie „Kliknij tutaj”.'),
+                    field('Adres', textInput(a.url, (v) => { updateAttrs(b, { url: v.trim() }, { typing: true }); scheduleWarnings(); }, { type: 'url', placeholder: 'https://… lub /strona' })),
+                    pickLinkButton(`cta-${b.id}`, ' dla przycisku', () => find(b.id)?.block.attrs.url, (v) => updateAttrs(b, { url: v })),
+                    checkbox('Otwieraj w nowej karcie', a.newTab, (v) => set({ newTab: v }, { rerender: false }), 'Używaj oszczędnie. Czytnik ekranu usłyszy informację o nowej karcie.'),
+                    h('p', { class: 'be-help' }, 'Bez adresu przycisk nie pojawi się na stronie.')),
+                panelSection('Wygląd',
+                    field('Poziom nagłówka', select(a.level, HEADING_LEVELS, (v) => set({ level: Number(v) })), 'Nie pomijaj poziomów.'),
+                    field('Tło', select(a.tone, [['light', 'Jasnoniebieskie'], ['gray', 'Jasnoszare']], (v) => set({ tone: v })))));
+                break;
+            case 'people': {
+                const person = (p, i) => panelSection('Osoba ' + (i + 1),
+                    field('Imię i nazwisko', textInput(p.name, (v) => { typingHistory(); p.name = v; markDirty(); rerenderBlock(b.id); })),
+                    field('Funkcja', textInput(p.role, (v) => { typingHistory(); p.role = v; markDirty(); rerenderBlock(b.id); }), 'Np. „Koordynatorka projektu”.'),
+                    mediaButtons(p.photo, 'zdjęcie', (m) => { pushHistory(); p.photo = m.url; markDirty(); rerenderBlock(b.id); }, () => { pushHistory(); p.photo = ''; markDirty(); rerenderBlock(b.id); }),
+                    p.photo ? h('p', { class: 'be-help' }, 'Zdjęcie jest dekoracyjne (bez opisu) — osobę nazywa imię i nazwisko obok.') : null,
+                    field('E-mail', textInput(p.email, (v) => { typingHistory(); p.email = v.trim(); markDirty(); rerenderBlock(b.id); scheduleWarnings(); }, { type: 'email' })),
+                    field('Telefon', textInput(p.phone, (v) => { typingHistory(); p.phone = v.replace(/[^0-9 +()\-.]/g, ''); markDirty(); rerenderBlock(b.id); }, { type: 'tel' })),
+                    field('Krótki opis (opcjonalnie)', textInput(p.bio, (v) => { typingHistory(); p.bio = v; markDirty(); rerenderBlock(b.id); }, { multiline: true, rows: 3, maxlength: 600 })),
+                    itemButtons(b, a.items, i, 'Osoba', { afterRemove: (at, len) => 'section:Osoba ' + (Math.min(at, len - 1) + 1) }));
+                parts.push(panelSection('Układ',
+                    field('Liczba kolumn', select(a.columns, [[2, '2'], [3, '3'], [4, '4']], (v) => set({ columns: Number(v) })), 'Na telefonie karty ustawiają się jedna pod drugą.'),
+                    field('Poziom nagłówków (imię i nazwisko)', select(a.level, HEADING_LEVELS, (v) => set({ level: Number(v) })), 'Zwykle H3, gdy nad blokiem jest nagłówek sekcji H2.')),
+                ...a.items.map(person),
+                a.items.length < 30 ? panelSection(null, h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: () => {
+                    pushHistory(); a.items.push({ name: '', role: '', photo: '', email: '', phone: '', bio: '' }); markDirty(); rerenderBlock(b.id);
+                    renderSidebar({ focusKey: 'section:Osoba ' + a.items.length }); announce('Dodano osobę ' + a.items.length);
+                } }, icon('plus'), ' Dodaj osobę')) : null);
+                break;
+            }
+            case 'cards': {
+                const card = (c, i) => panelSection('Karta ' + (i + 1),
+                    field('Tytuł', textInput(c.title, (v) => { typingHistory(); c.title = v; markDirty(); rerenderBlock(b.id); scheduleWarnings(); })),
+                    field('Krótki opis', textInput(c.text, (v) => { typingHistory(); c.text = v; markDirty(); rerenderBlock(b.id); }, { multiline: true, rows: 3, maxlength: 600 })),
+                    field('Adres (opcjonalnie)', textInput(c.url, (v) => { typingHistory(); c.url = v.trim(); markDirty(); rerenderBlock(b.id); }, { type: 'url', placeholder: 'https://… lub /strona' }), 'Z adresem cała karta jest linkiem — jego nazwą jest tytuł.'),
+                    pickLinkButton(`card-${b.id}-${i}`, ' dla karty ' + (i + 1), () => c.url, (v) => { pushHistory(); c.url = v; markDirty(); rerenderBlock(b.id); }),
+                    mediaButtons(c.image, 'grafikę', (m) => { pushHistory(); c.image = m.url; if (!c.alt && m.alt) c.alt = m.alt; markDirty(); rerenderBlock(b.id); }, () => { pushHistory(); c.image = ''; c.alt = ''; markDirty(); rerenderBlock(b.id); }),
+                    c.image ? field('Opis grafiki', textInput(c.alt, (v) => { typingHistory(); c.alt = v; markDirty(); scheduleWarnings(); }), 'Zostaw puste, jeśli grafika tylko ilustruje kartę. Opisz, jeśli przekazuje coś, czego nie ma w tytule i opisie.') : null,
+                    itemButtons(b, a.items, i, 'Karta', { afterRemove: (at, len) => 'section:Karta ' + (Math.min(at, len - 1) + 1) }));
+                parts.push(panelSection('Układ',
+                    field('Liczba kolumn', select(a.columns, [[2, '2'], [3, '3'], [4, '4']], (v) => set({ columns: Number(v) })), 'Na telefonie karty ustawiają się jedna pod drugą.'),
+                    field('Poziom nagłówków (tytuły kart)', select(a.level, HEADING_LEVELS, (v) => set({ level: Number(v) })), 'Zwykle H3, gdy nad blokiem jest nagłówek sekcji H2.')),
+                ...a.items.map(card),
+                a.items.length < 24 ? panelSection(null, h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: () => {
+                    pushHistory(); a.items.push({ title: '', text: '', image: '', alt: '', url: '' }); markDirty(); rerenderBlock(b.id);
+                    renderSidebar({ focusKey: 'section:Karta ' + a.items.length }); announce('Dodano kartę ' + a.items.length);
+                } }, icon('plus'), ' Dodaj kartę')) : null);
+                break;
+            }
             case 'table': {
                 const cellPos = S.tableCell?.id === b.id ? S.tableCell : null;
                 const mutate = (fn) => { pushHistory(); fn(a.rows); markDirty(); rerenderBlock(b.id); renderSidebar(); };
@@ -3364,6 +3812,7 @@ function start(config) {
                 break;
             default: break;
         }
+        if (!PART_OF[b.type]) parts.push(scheduleSection(b));
         parts.push(panelSection(null, h('div', { class: 'be-grid-2' },
             h('button', { type: 'button', class: 'be-btn be-btn--secondary', onClick: () => duplicateBlock(b.id) }, icon('copy'), ' Duplikuj'),
             h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => removeBlock(b.id) }, icon('trash'), ' Usuń'))));

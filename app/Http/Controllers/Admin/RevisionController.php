@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BipDocument;
+use App\Models\ContentBlock;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Project;
@@ -29,6 +30,8 @@ class RevisionController extends Controller
         'bip_document' => [BipDocument::class, 'bip', 'admin.bip-dokumenty.edit', 'Dokument BIP'],
         // Treści strony „Wesprzyj nas” (ustawienia) — dostęp tylko dla administratora.
         'support'      => [SiteSetting::class, 'settings', 'admin.ustawienia.edit', 'Strona wsparcia'],
+        // Blok wspólny z edytora blokowego (jedna treść na wielu stronach).
+        'shared_block' => [ContentBlock::class, 'pages', 'admin.edytor-blokowy.edit', 'Blok wspólny'],
     ];
 
     /** Historia zmian danego rekordu — lista wersji z różnicami względem bieżącej. */
@@ -62,6 +65,8 @@ class RevisionController extends Controller
                 'ago'        => $r->created_at->diffForHumans(),
                 'user'       => $r->user?->name ?? '—',
                 'content'    => $r->data['content'],
+                // Drzewo bloków (wersje z edytora blokowego) — edytor przywraca bloki zamiast przerabiać HTML.
+                'blocks'     => is_array($r->data['blocks'] ?? null) ? $r->data['blocks'] : ($r->data['data']['blocks'] ?? null),
                 'word_count' => str_word_count(strip_tags($r->data['content'] ?? '')),
             ])
             ->values();
@@ -92,7 +97,11 @@ class RevisionController extends Controller
     /** Adres edycji rekordu; ustawienia serwisu nie mają parametru trasy — otwieramy zakładkę „Wesprzyj nas”. */
     private function editUrl(string $type, string $route, Model $model): string
     {
-        return $type === 'support' ? route($route, ['tab' => 'support']) : route($route, $model);
+        return match ($type) {
+            'support' => route($route, ['tab' => 'support']),
+            'shared_block' => route($route, ['shared', $model->id]),
+            default => route($route, $model),
+        };
     }
 
     private function resolve(string $type, int $id): Model
@@ -104,6 +113,9 @@ class RevisionController extends Controller
         // Ustawienia serwisu może zmieniać wyłącznie administrator (także przywracać ich wersje).
         abort_if($type === 'support' && ! auth()->user()->isAdmin(), 403);
 
-        return $class::findOrFail($id);
+        $model = $class::findOrFail($id);
+        abort_if($model instanceof ContentBlock && (! $model->isShared() || (int) $model->site_id !== (int) SiteSetting::current()->id), 404);
+
+        return $model;
     }
 }

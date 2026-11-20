@@ -720,6 +720,9 @@
                                     @php
                                         $sum = \App\Support\BlockSummary::describe($blk);
                                         $isHidden = ! empty($blk['hidden']);
+                                        // Harmonogram bloku (edytor → panel bloku → „Widoczność”): poza terminem odwiedzający go nie widzą.
+                                        $schedLabel = $sum['schedule'];
+                                        $offNow = in_array($sum['scheduleState'], ['scheduled', 'expired'], true);
                                         // Wstawka bloku wspólnego: opis jego treści, liczba stron i szybka poprawka całego bloku wspólnego.
                                         $sharedId = \App\Support\BlockSummary::sharedId($blk);
                                         $shared = $sharedId ? $sharedBlocks->firstWhere('id', $sharedId) : null;
@@ -733,7 +736,7 @@
                                                 'text' => '„'.$shared->name.'” — '.($innerSum ? $innerSum['label'].($innerSum['text'] !== '' ? ': '.$innerSum['text'] : '') : 'pusty').' · na stronach: '.$sharedPages];
                                         }
                                     @endphp
-                                    <li class="px-3 py-1.5 {{ $isHidden ? 'bg-gray-50' : '' }}">
+                                    <li class="px-3 py-1.5 {{ $isHidden || $offNow ? 'bg-gray-50' : '' }}">
                                         <div class="flex items-center gap-2">
                                             <span class="w-5 flex-none text-right text-[11px] font-bold text-muted" aria-hidden="true">{{ $bi + 1 }}</span>
                                             <i class="fa-solid {{ $sum['icon'] }} w-4 flex-none text-center text-xs text-gray-500" aria-hidden="true"></i>
@@ -742,6 +745,7 @@
                                                 @if ($isHidden)<span class="sr-only"> (ukryty na stronie)</span>@endif
                                             </span>
                                             @if ($isHidden)<span class="flex-none text-[11px] font-bold text-muted" aria-hidden="true"><i class="fa-solid fa-eye-slash"></i> ukryty</span>@endif
+                                            @if ($schedLabel)<span class="flex-none text-[11px] font-bold {{ $offNow ? 'text-muted' : 'text-ink' }}"><i class="fa-solid fa-clock" aria-hidden="true"></i> {{ $schedLabel }}</span>@endif
                                             @if ($canEditSelected)
                                                 <div class="flex flex-none items-center" role="group" aria-label="Akcje bloku {{ $bi + 1 }}: {{ $sum['label'] }}">
                                                     @foreach ([['gora', 'fa-arrow-up', 'Wyżej', $bi === 0], ['dol', 'fa-arrow-down', 'Niżej', $bi === count($pageBlocks) - 1]] as [$dir, $dirIcon, $dirLabel, $dirOff])
@@ -760,6 +764,8 @@
                                                             @csrf <input type="hidden" name="v" value="{{ $blocksVersion }}">
                                                             <button type="submit" class="{{ $blkBtn }}" title="Odłącz — zrób kopię tylko dla tej strony" aria-label="Odłącz blok wspólny {{ $bi + 1 }} ({{ $shared->name }})"><i class="fa-solid fa-link-slash" aria-hidden="true"></i></button>
                                                         </form>
+                                                        <a href="{{ route('admin.edytor-blokowy.edit', ['shared', $shared->id]) }}" class="{{ $blkBtn }}" title="Edytuj blok wspólny — zmiana na wszystkich stronach" aria-label="Edytuj blok wspólny {{ $bi + 1 }} ({{ $shared->name }}) w edytorze blokowym"><i class="fa-solid fa-cubes" aria-hidden="true"></i></a>
+                                                        <a href="{{ route('admin.historia.index', ['shared_block', $shared->id]) }}" class="{{ $blkBtn }}" title="Historia zmian bloku wspólnego" aria-label="Historia zmian bloku wspólnego {{ $bi + 1 }} ({{ $shared->name }})"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></a>
                                                     @elseif (! $sharedId)
                                                         <form method="POST" action="{{ route('admin.podstrony.blok.udostepnij', [$selected, $bi]) }}"
                                                             data-confirm="Zrobić z tego bloku blok wspólny? Na stronie nic się nie zmieni, a blok wstawisz też na innych stronach — poprawka w jednym miejscu zmieni go wszędzie.">

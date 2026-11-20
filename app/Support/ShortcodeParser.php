@@ -39,6 +39,16 @@ class ShortcodeParser
 
         $content = static::unwrapBlockShortcodes($content);
 
+        // Bloki wspólne najpierw — ich treść może zawierać formularz, kafelki czy listy, które rozwijają się niżej.
+        $content = preg_replace_callback(
+            '/(?:<p>\s*)?\[blok:(\d+)\](?:\s*<\/p>)?/i',
+            fn ($matches) => static::renderBlock((int) $matches[1]),
+            $content,
+        );
+
+        // Bloki z harmonogramem („Pokaż od” / „Ukryj od” w edytorze blokowym) — poza terminem znikają.
+        $content = BlockSchedule::filter($content);
+
         $content = preg_replace_callback(
             '/\[formularz:([a-z0-9_\-]+)\]/i',
             fn ($matches) => static::renderForm(trim($matches[1])),
@@ -48,12 +58,6 @@ class ShortcodeParser
         $content = preg_replace_callback(
             '/\[kafelki:([a-z0-9_\-]+)\]/i',
             fn ($matches) => static::renderTilesGrid(trim($matches[1])),
-            $content,
-        );
-
-        $content = preg_replace_callback(
-            '/(?:<p>\s*)?\[blok:(\d+)\](?:\s*<\/p>)?/i',
-            fn ($matches) => static::renderBlock((int) $matches[1]),
             $content,
         );
 
@@ -279,8 +283,10 @@ class ShortcodeParser
             return '';
         }
         // Blok wspólny z edytora blokowego: bloki renderowane przy wyświetlaniu (zmiana działa na wszystkich stronach).
+        // Harmonogram jego bloków rozstrzygamy od razu (numery okien zaczynają się od 1 w każdym renderowaniu),
+        // a wstawek innych bloków wspólnych w środku nie rozwijamy — jeden poziom, bez pętli.
         if ($block->isShared()) {
-            return BlockRenderer::render((array) ($block->data['blocks'] ?? []));
+            return (string) preg_replace('/(?:<p>\s*)?\[blok:\d+\](?:\s*<\/p>)?/i', '', BlockSchedule::filter(BlockRenderer::render((array) ($block->data['blocks'] ?? []))));
         }
 
         return View::make('partials.blocks.'.(in_array($block->type, ['accordion', 'callout', 'pricing'], true) ? $block->type : 'cta'), ['block' => $block])->render();

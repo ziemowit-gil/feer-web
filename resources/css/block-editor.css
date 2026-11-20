@@ -661,3 +661,17 @@ ul.be-rich, ol.be-rich { min-height: 1.75em; }
 /* Blok ukryty na stronie (przełącznik „Ukryj” w karcie strony): przerywana ramka i podpis, treść bez przezroczystości. */
 .be-block.is-hidden-block { outline: 2px dashed #6b7280; outline-offset: 4px; }
 .be-hidden-note { margin: 0 0 .5rem; font-size: .8125rem; font-weight: 700; color: #374151; }
+
+/* Zakładki w edytorze: wszystkie jedna pod drugą (tak wyglądają bez JavaScriptu), nazwa zakładki jako nagłówek do wpisania. */
+.be-tabs-edit > .be-block--tab + .be-block--tab { margin-top: 1rem; }
+.be-tab-edit { padding: 0.75rem; border-radius: 0.5rem; background: #f9fafb; }
+.be-tab-edit > .content-tab-title { margin: 0 0 0.5rem; }
+/* Elementy bloków typowanych w panelu (pytania, zakładki): nazwa i przyciski przesuwania. */
+.be-item { padding: 0.5rem 0; border-top: 1px solid var(--be-line); }
+.be-item:first-of-type { border-top: 0; }
+.be-item-label { margin: 0 0 0.35rem; font-size: 0.875rem; font-weight: 700; color: var(--be-ink); overflow-wrap: anywhere; }
+.be-faq-answer { min-height: 1.5em; position: relative; }
+.be-cta-label { display: inline-block; min-width: 4ch; }
+.be-cta-label:focus { outline: 2px solid #fff; outline-offset: 2px; }
+.be-block--cta .cta-button::after { content: none; }
+
