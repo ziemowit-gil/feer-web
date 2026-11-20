@@ -199,6 +199,40 @@ class TemplateKreatywniTest extends TestCase
         $this->assertStringContainsString('class="kc-price-card kc-dark"', $page, 'Strona Oferta ma na górze blok sprzedażowy.');
     }
 
+    public function test_dedykowana_strona_o_nas_i_jej_sekcje_w_mega_menu(): void
+    {
+        $this->useTemplate();
+        Page::create(['title' => 'O nas', 'slug' => 'o-nas', 'type' => 'standard', 'is_published' => true, 'content' => '']);
+        NavItem::create(['label' => 'O nas', 'url' => '/o-nas', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1]);
+
+        $home = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('href="/o-nas#zespol"', $home);
+        $this->assertStringContainsString('href="/o-nas#dolacz"', $home);
+
+        $html = $this->get('/o-nas')->assertOk()->getContent();
+        $this->assertStringContainsString('id="zespol"', $html);
+        $this->assertStringContainsString('Anna Mossór-Koper', $html);
+        $this->assertStringContainsString('Dlaczego powstała Fundacja?', $html);
+        $this->assertStringContainsString('Aby chronić pszczoły, lasy i rzeki.', $html);
+        $this->assertStringContainsString('id="historia"', $html);
+        $this->assertStringContainsString('id="dolacz"', $html);
+        $this->assertStringContainsString('Poznajmy się', $html);
+        $this->assertStringNotContainsString('Bądźmy w kontakcie', $html, 'Strona O nas ma własne zaproszenie zamiast ogólnego pasa.');
+        $this->assertSame(1, substr_count($html, '<h1'));
+    }
+
+    public function test_slider_ma_slajd_z_zaproszeniem_do_social_media(): void
+    {
+        $this->useTemplate(['facebook_url' => 'https://www.facebook.com/profile.php?id=1', 'instagram_url' => 'https://www.instagram.com/fundacja.kreatywni/']);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('aria-label="3 z 3"', $html);
+        $this->assertStringContainsString('Obserwuj na Facebooku', $html);
+        $this->assertStringContainsString('Obserwuj na Instagramie', $html);
+        $this->assertStringContainsString('class="kc-net-pill"', $html, 'Profile wyróżnione w belce.');
+    }
+
     public function test_kontakt_ma_wlasny_uklad_bez_danych_domyslnych_innych_szablonow(): void
     {
         $this->useTemplate(['contact_phone' => '+48 663 182 816', 'contact_email' => 'warsztaty@example.pl', 'contact_address' => '', 'contact_city' => 'Kraków i okolice']);

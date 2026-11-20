@@ -35,7 +35,16 @@ final class KreatywniMegaMenu
                 $groups[] = ['heading' => null, 'links' => $children];
             }
 
-            if ($page && $base && $page->usesStandardLayout() && filled($page->content)) {
+            if ($page && $base && $page->usesStandardLayout() && self::isAboutSlug((string) $page->slug)) {
+                // Dedykowana podstrona „O nas”: sekcje z templates.kreatywni.partials.about.
+                $texts = KreatywniTexts::for();
+                $groups[] = ['heading' => null, 'links' => array_values(array_filter([
+                    $texts->rows('about_team') !== [] ? ['label' => $texts->get('about_team_title'), 'url' => $base.'#zespol', 'current' => false] : null,
+                    $texts->rows('about_why') !== [] ? ['label' => $texts->get('about_why_title'), 'url' => $base.'#dlaczego', 'current' => false] : null,
+                    $texts->get('about_story') !== '' ? ['label' => $texts->get('about_story_title'), 'url' => $base.'#historia', 'current' => false] : null,
+                    ['label' => $texts->get('about_join_title'), 'url' => $base.'#dolacz', 'current' => false],
+                ]))];
+            } elseif ($page && $base && $page->usesStandardLayout() && filled($page->content)) {
                 [, $toc] = TableOfContents::inject((string) $page->content, 1);
                 $current = null;
                 foreach ($toc as $entry) {
@@ -56,10 +65,19 @@ final class KreatywniMegaMenu
             }
 
             $item->description = $page ? trim((string) $page->meta_description) : '';
+            if ($page && self::isAboutSlug((string) $page->slug) && $item->description === '') {
+                $item->description = KreatywniTexts::for()->get('about_lead');
+            }
             $item->groups = $groups;
             $item->hasPanel = $groups !== [];
 
             return $item;
         });
+    }
+
+    /** Adres dedykowanej podstrony „O nas” (o-nas, o-nas-2… — UniqueSlug dopisuje numer w sieci witryn). */
+    public static function isAboutSlug(string $slug): bool
+    {
+        return (bool) preg_match('/^o-nas(-\d+)?$/', $slug);
     }
 }

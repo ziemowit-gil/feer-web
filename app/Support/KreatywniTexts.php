@@ -17,7 +17,7 @@ final class KreatywniTexts
 {
     /** Sekcje strony głównej w kolejności wyświetlania: klucz => [nazwa w panelu, opis]. */
     public const SECTIONS = [
-        'hero' => ['Slider na górze', 'Slajd 1: nazwa, hasło, przyciski i obrazek (domyślnie logo). Slajd 2: „Naszą misją jest” z punktami misji.'],
+        'hero' => ['Slider na górze', 'Slajd 1: nazwa, hasło, przyciski i obrazek (domyślnie logo). Slajd 2: „Naszą misją jest” z punktami misji. Slajd 3: zaproszenie na Facebooka i Instagram.'],
         'mission' => ['Obszary działania', 'Krótki wstęp i cztery obszary działania.'],
         'social' => ['Social media', 'Duże karty z profilami z Ustawienia → Media i BIP. Bez ustawionych profili sekcja się nie pokazuje.'],
         'offer' => ['Oferta warsztatów', 'Lista warsztatów z ceną i przyciskiem do zapytania o termin.'],
@@ -27,6 +27,14 @@ final class KreatywniTexts
         'reviews' => ['Opinie', 'Opinie uczestników.'],
         'support' => ['Jak wesprzeć', '1,5% podatku, darowizny, warsztaty odpłatne.'],
         'contact' => ['Kontakt', 'Telefon i e-mail z Ustawienia → Kontakt oraz przycisk do formularza.'],
+    ];
+
+    /**
+     * Teksty podstron z własnym układem (nie są sekcjami strony głównej, więc nie mają przełącznika „pokaż”):
+     * klucz grupy => [nazwa w panelu, opis].
+     */
+    public const PAGE_GROUPS = [
+        'about' => ['Podstrona „O nas”', 'Dedykowany układ strony o adresie o-nas: misja, zespół, „Dlaczego powstała Fundacja”, historia i zaproszenie do wolontariatu. Treść tej strony w edytorze pokazuje się pod nimi.'],
     ];
 
     /** Sekcje ukryte, dopóki redakcja ich nie włączy (wizytówka ma być krótka; zespół jest na stronie „O nas”). */
@@ -51,6 +59,11 @@ final class KreatywniTexts
         // Slajd 2: misja
         'mission_title' => ['hero', 'Slajd 2 — nagłówek (puste pole = tekst domyślny; slajd znika, gdy nie ma punktów)', 'line', 'Naszą misją jest'],
         'mission_items' => ['hero', 'Slajd 2 — punkty misji (jeden w wierszu)', 'list', "Realizacja warsztatów terapeutycznych m.in. w szpitalach i Domach Pomocy Społecznej.\nZakup i dystrybucja darów rzeczowych dla osób znajdujących się w trudnej sytuacji życiowej.\nRozwijanie kreatywności oraz poczucia sprawstwa poprzez różnorodne warsztaty tematyczne."],
+        // Slajd 3: social media
+        'slide_social_kicker' => ['hero', 'Slajd 3 — napis nad nagłówkiem (slajd jest, gdy są profile w Ustawienia → Media i BIP)', 'line', 'Bądź na bieżąco'],
+        'slide_social_title' => ['hero', 'Slajd 3 — nagłówek', 'line', 'Zobacz nas na Facebooku i Instagramie'],
+        'slide_social_text' => ['hero', 'Slajd 3 — tekst', 'text', 'Relacje z warsztatów i zdjęcia prac uczestników publikujemy na bieżąco. Obserwuj nas, żeby nic Cię nie ominęło.'],
+
         // Obszary działania
         'areas_title' => ['mission', 'Nagłówek (H2)', 'line', 'W czym pomagamy'],
         'mission_text' => ['mission', 'Tekst przed obszarami', 'text', 'Wspieramy dzieci, dorosłych i seniorów w czterech obszarach.'],
@@ -96,6 +109,21 @@ final class KreatywniTexts
         'support_title' => ['support', 'Nagłówek (H2)', 'line', 'Jak możesz wesprzeć nasze działania?'],
         'support_text' => ['support', 'Tekst', 'text', 'Dzięki Tobie prowadzimy bezpłatne zajęcia w szpitalach i Domach Pomocy Społecznej.'],
         'support_items' => ['support', 'Sposoby wsparcia (Tytuł | krótki opis | adres)', 'list', "1,5% podatku | Wpisz nas w zeznaniu PIT. | \nDarowizna | Możesz ją odliczyć od podatku. | \nZamów warsztaty | Z nich finansujemy pomoc. | #oferta"],
+
+        // Podstrona „O nas” (templates.kreatywni.partials.about)
+        'about_kicker' => ['about', 'Napis nad tytułem', 'line', 'Poznajmy się'],
+        'about_lead' => ['about', 'Zdanie pod tytułem', 'text', 'Wierzymy, że każdy ma w sobie ogromny potencjał — wystarczy stworzyć mu przestrzeń, by mógł go odkrywać.'],
+        'about_mission' => ['about', 'Misja (duży cytat)', 'text', 'Naszą misją jest wspieranie rozwoju dzieci oraz dorosłych poprzez kreatywne, edukacyjne i pełne radości zajęcia, które pobudzają wyobraźnię, uczą współpracy i budują pewność siebie.'],
+        'about_team_title' => ['about', 'Zespół — nagłówek (H2)', 'line', 'Kto prowadzi warsztaty'],
+        'about_team' => ['about', 'Zespół (Imię i nazwisko | rola | opis)', 'list', "Anna Mossór-Koper | Terapeuta zajęciowy, koordynator zajęć | Uwielbiam robić coś z „niczego”, eksperymentować, modyfikować, tworzyć, inspirując innych. Jako terapeuta zajęciowy prowadzę warsztaty w sposób rozwijający motorykę, sensorykę oraz sferę emocjonalną. Zależy mi na tym, aby uczestnicy zapomnieli o troskach i przenieśli się do świata twórczości, spokoju, harmonii i piękna. Stawiam na kreatywność, wzrost poczucia sprawstwa oraz kształtowanie zdrowych nawyków.\nSławomir Koper | Instruktor zajęć, nauczyciel języków obcych | Z zamiłowania ogrodnik i miłośnik pszczół. Uświadamiam ludziom wartość pszczół oraz ryzyko związane z ich brakiem. Każde zajęcia projektuję tak, by były bezpieczne, angażujące i dostosowane do wieku oraz potrzeb uczestników. Stawiam na naukę poprzez zabawę. Posługuję się językiem angielskim, niemieckim, niderlandzkim oraz chorwackim i inspiruję uczestników do nauki języków."],
+        'about_why_title' => ['about', '„Dlaczego powstała” — nagłówek (H2)', 'line', 'Dlaczego powstała Fundacja?'],
+        'about_why' => ['about', '„Dlaczego powstała” (Tytuł | punkt; punkt; punkt)', 'list', "Wsparcie pacjentów długoterminowych | Aby podnosić na duchu.; Aby dodawać skrzydeł i siły do walki.; Aby choć na chwilę pomóc zapomnieć o chorobie.\nIntegracja społeczna | Aby przeciwdziałać marginalizacji.; Aby integrować różnorodne grupy społeczne.; Aby zwiększyć świadomość oraz poszanowanie dla neuroróżnorodności.\nRozwój zmysłów | Aby rozwijać zmysły za pomocą różnorodnych, angażujących aktywności.; Aby promować apiterapię oraz inne naturalne metody profilaktyczne.; Aby obcować z naturą i jej darami.\nZdrowie psychiczne | Aby wspierać dobrostan psychiczny i równowagę emocjonalną.; Aby zapobiegać wypaleniu zawodowemu oraz depresji.\nEdukacja ekologiczna | Aby kształtować proekologiczne postawy.; Aby wspierać inicjatywy na rzecz ochrony środowiska naturalnego.; Aby chronić pszczoły, lasy i rzeki."],
+        'about_story_kicker' => ['about', 'Historia — napis nad nagłówkiem', 'line', 'Od 2020 roku'],
+        'about_story_title' => ['about', 'Historia — nagłówek (H2)', 'line', 'Historia powstania Fundacji'],
+        'about_story' => ['about', 'Historia (pusta linia = nowy akapit)', 'text', "Wszystko zaczęło się w 2020 roku — czasie, który dla wielu był pełen lęku, izolacji i niepewności. Gdy świat nagle zwolnił, a codzienność zamknęła się w czterech ścianach, pojawiła się potrzeba odnalezienia choć odrobiny radości.\n\nZaczęło się od bazy mydlanej, kilku olejków i barwników. W domowym zaciszu powstały kolorowe mydełka — małe, pachnące symbole nadziei. To doświadczenie uświadomiło nam, jak ogromną moc ma twórczość — nie dla efektu, ale dla procesu tworzenia i chwili oddechu.\n\nFundacja boryka się z brakiem finansowania, a zapotrzebowanie na bezpłatną terapię zajęciową rośnie. Mimo to nie poddajemy się. Krok po kroku, dzięki ludziom, którzy wierzą w sens pomagania, tworzymy przestrzeń, w której każdy — dziecko, dorosły, senior — może choć na chwilę zapomnieć o bólu, samotności czy lęku."],
+        'about_join_title' => ['about', 'Zaproszenie — nagłówek (H2)', 'line', 'Chcesz dołączyć do naszych wolontariuszy?'],
+        'about_join_text' => ['about', 'Zaproszenie — tekst', 'text', 'Napisz do nas — chętnie porozmawiamy o tym, jak możesz pomóc. Najświeższe relacje z warsztatów znajdziesz na naszych profilach.'],
+        'about_join_button' => ['about', 'Zaproszenie — przycisk', 'line', 'Napisz do nas'],
 
         // Kontakt
         'contact_title' => ['contact', 'Nagłówek (H2)', 'line', 'Masz pytania? Napisz do nas!'],

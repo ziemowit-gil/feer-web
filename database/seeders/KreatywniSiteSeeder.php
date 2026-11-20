@@ -97,7 +97,8 @@ class KreatywniSiteSeeder extends Seeder
     private function pages(): array
     {
         $offer = $this->page('Oferta', 1, $this->offerHtml(), 'Mobilne warsztaty kreatywne z dojazdem w Krakowie i okolicach: laleczki, biżuteria z filcu, świece sojowe, mydełka, miody smakowe i wiele innych. Cena od 30 zł za osobę.');
-        $about = $this->page('O nas', 2, $this->aboutHtml(), 'Poznaj osoby prowadzące warsztaty fundacji „Kreatywni na co dzień” i dowiedz się, dlaczego powstała fundacja.');
+        // „O nas” ma dedykowany układ z tekstów szablonu (Ustawienia → Szablon → Podstrona „O nas”), więc bez treści.
+        $about = $this->page('O nas', 2, '', 'Poznaj osoby prowadzące warsztaty fundacji „Kreatywni na co dzień” i dowiedz się, dlaczego powstała fundacja.');
         $gallery = $this->page('Galeria', 3, '<p>Zdjęcia z naszych warsztatów publikujemy na bieżąco w mediach społecznościowych — na Facebooku i Instagramie. Tutaj znajdziesz wybrane z nich.</p>', 'Zdjęcia z warsztatów fundacji „Kreatywni na co dzień”.');
         $foundation = $this->page('Fundacja', 4, $this->foundationHtml(), 'Statut, regulamin darowizn, polityka prywatności i standardy ochrony małoletnich fundacji „Kreatywni na co dzień”. Przekaż 1,5% podatku.');
 
@@ -139,7 +140,7 @@ class KreatywniSiteSeeder extends Seeder
             ]);
         }
 
-        if (blank(trim(strip_tags((string) $page->content)))) {
+        if ($html !== '' && blank(trim(strip_tags((string) $page->content)))) {
             $page->forceFill(['content' => $html] + (blank($page->meta_description) && $description ? ['meta_description' => $description] : []))->save();
             $this->created++;
         }
@@ -176,36 +177,6 @@ class KreatywniSiteSeeder extends Seeder
 {$list}
 <h2>Zamów warsztaty</h2>
 <p>Napisz albo zadzwoń — ustalimy temat, termin i miejsce zajęć. Z odpłatnych warsztatów finansujemy bezpłatne zajęcia w szpitalach i Domach Pomocy Społecznej.</p>
-HTML;
-    }
-
-    private function aboutHtml(): string
-    {
-        return <<<'HTML'
-<p>Wierzymy, że każdy ma w sobie ogromny potencjał — wystarczy stworzyć mu przestrzeń, by mógł go odkrywać. Naszą misją jest wspieranie rozwoju dzieci oraz dorosłych poprzez kreatywne, edukacyjne i pełne radości zajęcia, które pobudzają wyobraźnię, uczą współpracy i budują pewność siebie.</p>
-<h2>Anna Mossór-Koper</h2>
-<p><strong>Terapeuta zajęciowy, koordynator zajęć</strong></p>
-<p>Uwielbiam robić coś z „niczego”, eksperymentować, modyfikować, tworzyć, inspirując innych. Jako terapeuta zajęciowy prowadzę warsztaty w sposób rozwijający motorykę, sensorykę oraz sferę emocjonalną. Zależy mi na tym, aby uczestnicy zapomnieli o troskach i przenieśli się do świata twórczości, spokoju, harmonii i piękna. Stawiam na kreatywność, wzrost poczucia sprawstwa oraz kształtowanie zdrowych nawyków.</p>
-<h2>Sławomir Koper</h2>
-<p><strong>Instruktor zajęć, nauczyciel języków obcych</strong></p>
-<p>Z zamiłowania ogrodnik i miłośnik pszczół. Uświadamiam ludziom wartość pszczół oraz ryzyko związane z ich brakiem. Każde zajęcia projektuję tak, by były bezpieczne, angażujące i dostosowane do wieku oraz potrzeb uczestników. Stawiam na naukę poprzez zabawę. Posługuję się językiem angielskim, niemieckim, niderlandzkim oraz chorwackim i inspiruję uczestników do nauki języków.</p>
-<h2>Dlaczego powstała Fundacja „Kreatywni na co dzień”?</h2>
-<h3>Wsparcie pacjentów długoterminowych</h3>
-<ul><li>Aby podnosić na duchu.</li><li>Aby dodawać skrzydeł i siły do walki.</li><li>Aby choć na chwilę pomóc zapomnieć o chorobie.</li></ul>
-<h3>Integracja społeczna</h3>
-<ul><li>Aby przeciwdziałać marginalizacji.</li><li>Aby integrować różnorodne grupy społeczne.</li><li>Aby zwiększyć świadomość oraz poszanowanie dla neuroróżnorodności.</li></ul>
-<h3>Rozwój zmysłów</h3>
-<ul><li>Aby rozwijać zmysły za pomocą różnorodnych, angażujących aktywności.</li><li>Aby promować apiterapię oraz inne naturalne metody profilaktyczne.</li><li>Aby obcować z naturą i jej darami.</li></ul>
-<h3>Zdrowie psychiczne</h3>
-<ul><li>Aby wspierać dobrostan psychiczny i równowagę emocjonalną.</li><li>Aby zapobiegać wypaleniu zawodowemu oraz depresji.</li></ul>
-<h3>Edukacja ekologiczna</h3>
-<ul><li>Aby kształtować proekologiczne postawy.</li><li>Aby wspierać inicjatywy na rzecz ochrony środowiska naturalnego.</li><li>Aby chronić pszczoły, lasy i rzeki.</li></ul>
-<h2>Historia powstania Fundacji</h2>
-<p>Wszystko zaczęło się w 2020 roku — czasie, który dla wielu był pełen lęku, izolacji i niepewności. Gdy świat nagle zwolnił, a codzienność zamknęła się w czterech ścianach, pojawiła się potrzeba odnalezienia choć odrobiny radości.</p>
-<p>Zaczęło się od bazy mydlanej, kilku olejków i barwników. W domowym zaciszu powstały kolorowe mydełka — małe, pachnące symbole nadziei. To doświadczenie uświadomiło nam, jak ogromną moc ma twórczość — nie dla efektu, ale dla procesu tworzenia i chwili oddechu. I wtedy pojawiła się myśl: jeżeli nam to pomogło, dlaczego nie podzielić się tym z innymi — zwłaszcza z tymi, którzy przechodzą przez najtrudniejsze momenty swojego życia?</p>
-<p>Droga do realizacji tego marzenia nie była łatwa. Fundacja boryka się z brakiem finansowania, a zapotrzebowanie na bezpłatną terapię zajęciową rośnie z każdym miesiącem. Mimo to nie poddajemy się. Krok po kroku, dzięki ludziom, którzy wierzą w sens pomagania, tworzymy przestrzeń, w której każdy — dziecko, dorosły, senior — może choć na chwilę zapomnieć o bólu, samotności czy lęku.</p>
-<h2>Chcesz dołączyć do naszych wolontariuszy?</h2>
-<p>Napisz do nas przez stronę Kontakt — chętnie porozmawiamy.</p>
 HTML;
     }
 

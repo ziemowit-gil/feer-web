@@ -1,6 +1,7 @@
 {{--
     Slider na górze strony głównej: slajd 1 — powitanie (napis, H1, tekst, hasła, dwa przyciski, obrazek; domyślnie
-    logo), slajd 2 — „Naszą misją jest” z punktami misji (gdy są). Bez automatycznego przewijania (WCAG 2.2.2):
+    logo), slajd 2 — „Naszą misją jest” z punktami misji (gdy są), slajd 3 — zaproszenie na Facebooka i Instagram
+    z dużymi przyciskami profili (gdy są w Ustawienia → Media i BIP). Bez automatycznego przewijania (WCAG 2.2.2):
     po prawej licznik „01 / 02”, strzałki „Poprzedni / Następny” i kropki (aktywna wydłuża się w kreskę; nazwa slajdu
     dla czytników), strzałki ←/→ na kontrolkach. Nieaktywny slajd jest
     ukryty (visibility + inert), ale zajmuje miejsce, więc wysokość się nie zmienia. Bez JS widać pierwszy slajd.
@@ -16,7 +17,11 @@
     $kcImage = $kcImage && ! str_starts_with($kcImage, '#') ? $kcImage : null;
     $kcLogo = $siteSettings->logoUrl();
     $kcMission = $texts->rows('mission_items');
-    $kcSlides = $kcMission !== [] ? ['Warsztaty', $texts->get('mission_title')] : ['Warsztaty'];
+    $kcProfiles = $siteSettings->socialLinks();
+    $kcNet = fn (string $icon) => str_contains($icon, 'facebook') ? 'fb' : (str_contains($icon, 'instagram') ? 'ig' : (str_contains($icon, 'youtube') ? 'yt' : 'other'));
+    $kcSlides = ['Warsztaty'];
+    $kcMissionIdx = $kcMission !== [] ? array_push($kcSlides, $texts->get('mission_title')) - 1 : null;
+    $kcSocialIdx = $kcProfiles !== [] ? array_push($kcSlides, 'Social media') - 1 : null;
     $kcCount = count($kcSlides);
 @endphp
 <section class="kc-hero" aria-roledescription="karuzela" aria-label="Najważniejsze informacje"
@@ -63,9 +68,9 @@
             </div>
 
             {{-- Slajd 2: misja --}}
-            @if ($kcMission !== [])
-                <div class="kc-slide kc-hero-in is-off" role="group" aria-roledescription="slajd" aria-label="2 z {{ $kcCount }}"
-                     :class="{ 'is-off': active !== 1 }" :inert="active !== 1" inert>
+            @if ($kcMissionIdx !== null)
+                <div class="kc-slide kc-hero-in is-off" role="group" aria-roledescription="slajd" aria-label="{{ $kcMissionIdx + 1 }} z {{ $kcCount }}"
+                     :class="{ 'is-off': active !== {{ $kcMissionIdx }} }" :inert="active !== {{ $kcMissionIdx }}" inert>
                     <div>
                         <p class="kc-eyebrow kc-hand">{{ $kcKicker }}</p>
                         <h2 class="kc-slide-title">{{ $texts->get('mission_title') }}</h2>
@@ -78,6 +83,37 @@
                     <div class="kc-hero-art kc-hero-art-icons" aria-hidden="true">
                         <span class="kc-dot kc-dot-2"></span>
                         <span class="kc-art-icon"><i class="fa-solid fa-hands-holding-child"></i></span>
+                        <span class="kc-dot kc-dot-1"></span>
+                    </div>
+                </div>
+            @endif
+
+            {{-- Slajd 3: zaproszenie do social media (Facebook, Instagram…) --}}
+            @if ($kcSocialIdx !== null)
+                <div class="kc-slide kc-hero-in is-off" role="group" aria-roledescription="slajd" aria-label="{{ $kcSocialIdx + 1 }} z {{ $kcCount }}"
+                     :class="{ 'is-off': active !== {{ $kcSocialIdx }} }" :inert="active !== {{ $kcSocialIdx }}" inert>
+                    <div>
+                        <p class="kc-eyebrow kc-hand">{{ $texts->get('slide_social_kicker') }}</p>
+                        <h2 class="kc-slide-title">{{ $texts->get('slide_social_title') }}</h2>
+                        @foreach ($texts->paragraphs('slide_social_text') as $p)
+                            <p class="kc-lead">{{ $p }}</p>
+                        @endforeach
+                        <div class="kc-actions kc-slide-social">
+                            @foreach ($kcProfiles as [$sUrl, $sIcon, $sLabel])
+                                <a href="{{ $sUrl }}" class="kc-net-pill kc-net-pill-lg" target="_blank" rel="noopener">
+                                    <span class="kc-net kc-net-{{ $kcNet($sIcon) }}" aria-hidden="true"><i class="{{ $sIcon }}"></i></span>
+                                    <span>Obserwuj na {{ $sLabel === 'Facebook' ? 'Facebooku' : ($sLabel === 'Instagram' ? 'Instagramie' : ($sLabel === 'YouTube' ? 'YouTubie' : $sLabel)) }}</span><span class="kc-sr"> (otwiera się w nowej karcie)</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="kc-hero-art kc-hero-art-icons" aria-hidden="true">
+                        <span class="kc-dot kc-dot-2"></span>
+                        <span class="kc-art-nets">
+                            @foreach (array_slice($kcProfiles, 0, 2) as [, $sIcon])
+                                <span class="kc-net kc-net-{{ $kcNet($sIcon) }}"><i class="{{ $sIcon }}"></i></span>
+                            @endforeach
+                        </span>
                         <span class="kc-dot kc-dot-1"></span>
                     </div>
                 </div>

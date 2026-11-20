@@ -36,7 +36,7 @@
         </div>
     </fieldset>
 
-    @foreach (\App\Support\KreatywniTexts::SECTIONS as $kcKey => [$kcName])
+    @foreach (\App\Support\KreatywniTexts::SECTIONS + \App\Support\KreatywniTexts::PAGE_GROUPS as $kcKey => [$kcName])
         @php $kcFields = \App\Support\KreatywniTexts::fields($kcKey); @endphp
         @continue($kcFields === [])
         <details class="rounded border border-gray-300 bg-white">

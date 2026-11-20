@@ -25,6 +25,13 @@
     $kcEyebrow = $kcParent?->navLabel() ?: $siteSettings->site_name;
     $kcLead = trim((string) $page->meta_description);
     $kcStandard = $page->usesStandardLayout();
+    // Dedykowana podstrona „O nas” (adres o-nas / o-nas-2…): własny układ z tekstów szablonu (partials/about).
+    $kcAbout = $kcStandard && \App\Support\KreatywniMegaMenu::isAboutSlug((string) $page->slug);
+    $kcTexts = \App\Support\KreatywniTexts::for($siteSettings);
+    if ($kcAbout) {
+        $kcEyebrow = $kcTexts->get('about_kicker') ?: $kcEyebrow;
+        $kcLead = $kcTexts->get('about_lead');
+    }
     $kcSocial = $siteSettings->socialLinks();
     $kcContactUrl = $siteSettings->isModuleEnabled('contact') && \Illuminate\Support\Facades\Route::has('contact.show') ? site_route('contact.show') : null;
 @endphp
@@ -70,6 +77,10 @@
                     </div>
                 </header>
 
+                @if ($kcAbout)
+                    @include('templates.kreatywni.partials.about', ['texts' => $kcTexts, 'kcPageContent' => trim(strip_tags((string) $contentHtml)) !== '' ? $contentHtml : ''])
+                @endif
+
                 {{-- Strona „Oferta” (slug oferta / oferta-2…): na górze blok sprzedażowy, niżej opisy warsztatów z treści. --}}
                 @if (preg_match('/^oferta(-\d+)?$/', (string) $page->slug))
                     <div class="kc-wrap kc-offer-page">
@@ -77,6 +88,7 @@
                     </div>
                 @endif
 
+                @unless ($kcAbout)
                 <div class="kc-wrap kc-page-grid">
                     <div class="kc-page-main" x-data="{ etr: false }">
                         @include('partials.etr-toggle', ['etr' => $page->etr, 'title' => $page->title])
@@ -115,10 +127,11 @@
                         </div>
                     </div>
                 </div>
+                @endunless
             </article>
         @endif
 
-        @if ($kcSocial !== [] || $kcContactUrl)
+        @if (($kcSocial !== [] || $kcContactUrl) && ! ($kcAbout ?? false))
             <section class="kc-page-cta kc-dark" aria-labelledby="kc-page-cta-h">
                 <div class="kc-wrap kc-page-cta-in">
                     <div>

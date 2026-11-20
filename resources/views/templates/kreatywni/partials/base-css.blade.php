@@ -73,7 +73,7 @@
     .kc-nav-link[aria-current="page"]::after, .kc-nav-link.is-here::after, .kc-nav-link[aria-expanded="true"]::after { background: var(--kc-lime); }
     .kc-nav-link .kc-chev { color: var(--kc-green); }
     .kc-nav-item { position: static; }
-    .kc-mega { position: absolute; left: 0; right: 0; top: 100%; z-index: 45; max-height: calc(100vh - 8rem); overflow-y: auto; border-top: 1px solid var(--kc-line);
+    .kc-mega { white-space: normal; position: absolute; left: 0; right: 0; top: 100%; z-index: 45; max-height: calc(100vh - 8rem); overflow-y: auto; border-top: 1px solid var(--kc-line);
         background: #fff; box-shadow: 0 24px 40px rgba(27, 74, 7, .12); }
     .kc-mega-in { display: grid; gap: 2rem; padding-top: 2rem; padding-bottom: 2.25rem; }
     @media (min-width: 1024px) { .kc-mega-in { grid-template-columns: 17rem minmax(0, 1fr); gap: 3rem; } }
@@ -193,6 +193,12 @@
     .kc-steps-hero li { border-top-color: rgba(27, 74, 7, .15); font-size: 1.1rem; }
     .kc-hero-art-icons { display: grid; place-items: center; }
     .kc-art-icon { position: relative; display: inline-flex; align-items: center; justify-content: center; font-size: clamp(5rem, 3rem + 8vw, 9rem); color: var(--kc-green); }
+    .kc-slide-social { margin-top: 1.75rem; }
+    .kc-net-pill-lg { min-height: 3.25rem; padding: .4rem 1.3rem .4rem .4rem; font-size: 1.05rem; }
+    .kc-net-pill-lg .kc-net { width: 2.5rem; height: 2.5rem; font-size: 1.25rem; }
+    .kc-art-nets { position: relative; display: flex; gap: 1.25rem; }
+    .kc-art-nets .kc-net { width: clamp(5rem, 3rem + 6vw, 7.5rem); height: clamp(5rem, 3rem + 6vw, 7.5rem); border-radius: 1.75rem; font-size: clamp(2.5rem, 1.5rem + 3vw, 3.75rem); }
+    .kc-art-nets .kc-net:nth-child(2) { transform: translateY(1.5rem) rotate(6deg); }
     .kc-slider-nav { display: flex; align-items: center; justify-content: flex-end; gap: .5rem; margin-top: 1.75rem; }
     .kc-slider-count { margin: 0 .75rem 0 0; color: var(--kc-muted); font-size: .95rem; font-weight: 600; letter-spacing: .04em; }
     .kc-slider-count strong { color: var(--kc-forest); font-size: 1.15rem; font-weight: 800; }
@@ -348,6 +354,26 @@
     .kc-foot-bottom { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; align-items: center; justify-content: space-between; padding-top: 1.25rem; padding-bottom: 1.25rem; border-top: 1px solid rgba(255, 255, 255, .2); font-size: .92rem; }
     .kc-foot-bottom p { margin: 0; }
     .kc-foot-bottom ul { display: flex; flex-wrap: wrap; gap: 0 1.25rem; }
+
+    /* ── Podstrona „O nas” (partials/about) ──────────────────── */
+    .kc-about-mission-sec { padding: 3.5rem 0; }
+    .kc-about-mission { max-width: 58rem; margin: 0; padding: .25rem 0 .25rem 1.5rem; border-left: .4rem solid var(--kc-lime); }
+    .kc-about-mission p { margin: 0; color: var(--kc-forest); font-size: clamp(1.3rem, 1rem + 1.2vw, 1.85rem); font-weight: 700; line-height: 1.45; }
+    .kc-about-person { padding: 2rem; }
+    .kc-about-person-head { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.1rem; }
+    .kc-avatar-lg { width: 4.5rem; height: 4.5rem; font-size: 1.5rem; }
+    .kc-about-person h3 { margin: 0 0 .4rem; font-size: 1.3rem; }
+    .kc-about-role { display: inline-block; margin: 0 !important; padding: .2rem .75rem; border-radius: 999px; background: var(--kc-sun); color: var(--kc-forest); font-size: .85rem; font-weight: 700; line-height: 1.4; }
+    .kc-about-person > p { font-size: 1rem; line-height: 1.75; }
+    .kc-about-why .kc-card h3 { font-size: 1.12rem; }
+    .kc-about-points { display: grid; gap: .45rem; margin: .8rem 0 0; padding: 0; list-style: none; }
+    .kc-about-points li { display: flex; gap: .55rem; line-height: 1.5; }
+    .kc-about-points li::before { content: ''; width: .45rem; height: .45rem; flex: none; margin-top: .5rem; border-radius: 50%; background: var(--kc-green); }
+    .kc-about-story { display: grid; gap: 1.5rem; }
+    @media (min-width: 900px) { .kc-about-story { grid-template-columns: 19rem minmax(0, 1fr); gap: 3.5rem; align-items: start; } }
+    .kc-about-story-text { max-width: 50rem; }
+    .kc-about-story-text p { margin: 0 0 1.1rem; font-size: 1.06rem; line-height: 1.8; }
+    .kc-about-story-text p:first-child { color: var(--kc-forest); font-size: 1.22rem; font-weight: 600; line-height: 1.65; }
 
     /* ── Strona kontaktu (contact.blade.php) ─────────────────── */
     .kc-page-head { padding: 3rem 0 2.5rem; background: var(--kc-cream); }
