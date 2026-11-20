@@ -9,7 +9,7 @@
 --}}
 @once
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Montserrat:wght@800&display=swap">
 <style>
     .kc { --kc-forest: #1b4a07; --kc-green: #007a38; --kc-lime: #a2c523; --kc-sun: #fce98b; --kc-gold: #f2d600;
         --kc-cream: #f2f2eb; --kc-mint: #edf5ed; --kc-ink: #222; --kc-muted: #4a5a44; --kc-line: #d9e3d3;
@@ -67,7 +67,7 @@
     .kc-nav { margin: 0 auto; }
     .kc-nav > ul { display: flex; align-items: center; gap: .15rem; margin: 0; padding: 0; list-style: none; }
     .kc-nav-link { position: relative; display: inline-flex; align-items: center; gap: .4rem; min-height: 2.75rem; padding: .45rem 1rem; border: 0;
-        background: transparent; color: var(--kc-ink); font: inherit; font-size: .98rem; font-weight: 600; text-decoration: none; cursor: pointer; }
+        background: transparent; color: var(--kc-ink); font: inherit; font-size: 1.06rem; font-weight: 700; text-decoration: none; cursor: pointer; }
     .kc-nav-link::after { content: ''; position: absolute; left: 50%; bottom: .1rem; width: .45rem; height: .45rem; border-radius: 50%; background: transparent; transform: translateX(-50%); }
     .kc-nav-link:hover { color: var(--kc-forest); }
     .kc-nav-link:hover::after { background: var(--kc-gold); }
