@@ -12,6 +12,7 @@ use App\Models\SiteSetting;
 use App\Support\BlockRenderer;
 use App\Support\BlockSummary;
 use App\Support\ClassicInserts;
+use App\Support\EditorPermissions;
 use App\Support\NewsList;
 use App\Support\PageTypeFields;
 use App\Support\ShortcodeParser;
@@ -286,6 +287,7 @@ class BlockEditorController extends Controller
             fn ($b) => is_array($b) ? array_diff_key($b, array_flip(['hidden', 'from', 'until'])) : $b,
             $data['blocks'],
         ));
+        $blocks = EditorPermissions::enforceBlockTypes($blocks, [], $request->user()->allowedBlockTypes());
         // Wstawka innego bloku wspólnego w środku nie miałaby sensu (jeden poziom, bez pętli).
         $blocks = array_values(array_filter($blocks, fn ($b) => BlockSummary::sharedId($b) === null));
         if ($blocks === []) {
@@ -436,6 +438,8 @@ class BlockEditorController extends Controller
                 'classic' => ClassicInserts::forBlockEditor(),
                 // Edytujemy sam blok wspólny: bez wstawiania innych bloków wspólnych i bez „Zapisz jako blok wspólny”.
                 'shared' => $record instanceof ContentBlock ? ['id' => $record->id, 'pages' => $record->usedOnPages()->count()] : null,
+                // Uprawnienia grupy osoby: dozwolone typy bloków (null = wszystkie) i pola, których nie zmienia.
+                'permissions' => ['blocks' => auth()->user()->allowedBlockTypes(), 'locked' => auth()->user()->lockedFields()],
                 // Blok „Lista aktualności": kategorie do wyboru.
                 'newsCategories' => NewsList::categoryOptions(),
                 'materialGroups' => \App\Models\EducationalMaterial::TARGET_GROUPS,
@@ -488,6 +492,9 @@ class BlockEditorController extends Controller
         ]);
 
         $blocks = BlockRenderer::normalize($data['blocks']);
+        // Typy bloków spoza uprawnień grupy: nowy taki blok nie przechodzi, istniejący zostaje nietknięty.
+        $draftBlocks = $record instanceof Page && $request->boolean('robocza') && \Illuminate\Support\Facades\Schema::hasTable('page_drafts') ? $record->draft?->blocks : null;
+        $blocks = EditorPermissions::enforceBlockTypes($blocks, is_array($draftBlocks) ? $draftBlocks : (is_array($record->blocks) ? $record->blocks : []), $request->user()->allowedBlockTypes());
 
         // Blok wspólny: nazwa i bloki (zmiana od razu na wszystkich stronach; wersja trafia do historii).
         if ($record instanceof ContentBlock) {

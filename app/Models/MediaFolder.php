@@ -72,7 +72,8 @@ class MediaFolder extends Model
 
         /** @var Collection<int, MediaFolder> $folders */
         $folders = static::query()->with('userGroups:id')->get()->keyBy('id');
-        $groupId = $user?->user_group_id;
+        // Wszystkie grupy osoby (główna + dodatkowe): folder z grupami jest dostępny, gdy pasuje którakolwiek.
+        $groupIds = $user ? $user->groupIds() : [];
 
         $allowed = [];
         foreach ($folders as $folder) {
@@ -81,7 +82,7 @@ class MediaFolder extends Model
             $guard = 0;
             while ($node && $guard++ < 50) {
                 $groups = $node->userGroups->pluck('id');
-                if ($groups->isNotEmpty() && ! $groups->contains($groupId)) {
+                if ($groups->isNotEmpty() && $groups->intersect($groupIds)->isEmpty()) {
                     $ok = false;
                     break;
                 }

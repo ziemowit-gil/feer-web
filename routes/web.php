@@ -345,6 +345,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     // Osobny pulpit bloga „Wiem FEER” (dostęp do modułu weryfikowany w kontrolerze).
     Route::get('wiem/pulpit', [\App\Http\Controllers\Admin\BlogDashboardController::class, 'index'])->name('wiem.dashboard');
 
+    // Powrót z cudzego konta na własne (dostępny dla konta, na które przełączono — bez wymogu roli administratora).
+    Route::post('przelacz/wroc', [\App\Http\Controllers\Admin\ImpersonationController::class, 'stop'])->name('przelacz.wroc');
+
     // Historia zmian treści (dostęp weryfikowany per moduł w kontrolerze).
     Route::get('historia/{type}/{id}', [AdminRevisionController::class, 'index'])->name('historia.index');
     Route::get('historia/{type}/{id}/json', [AdminRevisionController::class, 'json'])->name('historia.json');
@@ -859,6 +862,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('uzytkownicy/podglad-menu', [AdminUserController::class, 'menuPreview'])->name('uzytkownicy.podglad-menu');
         Route::resource('uzytkownicy', AdminUserController::class)->parameters(['uzytkownicy' => 'user'])->except('show');
         Route::delete('uzytkownicy/{user}/microsoft', [AdminUserController::class, 'unlinkMicrosoft'])->name('uzytkownicy.microsoft.unlink');
+        // Przełączanie na konto redaktora (jak „Switch user” w TYPO3) — tylko administrator.
+        Route::post('uzytkownicy/{user}/przelacz', [\App\Http\Controllers\Admin\ImpersonationController::class, 'start'])->name('uzytkownicy.przelacz');
 
         Route::resource('zaproszenia-strefy', AdminMemberInvitationController::class)
             ->parameters(['zaproszenia-strefy' => 'zaproszenieStrefy'])

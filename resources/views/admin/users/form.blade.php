@@ -79,6 +79,24 @@
             </select>
             <p class="mt-1 text-xs text-muted">Decyduje, do których modułów panelu edytor ma dostęp. Dotyczy tylko roli Edytor (grupy).</p>
             @error('user_group_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+
+            {{-- Dodatkowe grupy (jak kilka be_groups w TYPO3): uprawnienia się sumują, wygrywa szersze. --}}
+            @if (\App\Models\User::supportsExtraGroups() && $groups->count() > 1)
+                @php $extraSel = array_map('intval', (array) old('extra_group_ids', $user->exists ? $user->extraGroups()->pluck('user_groups.id')->all() : [])); @endphp
+                <fieldset class="mt-4">
+                    <legend class="mb-1 text-sm font-bold">Dodatkowe grupy</legend>
+                    <p id="extra-groups-help" class="mb-2 text-xs text-muted">Np. „Redakcja aktualności” + „Koordynacja szkoleń”. Moduły, gałęzie stron i typy bloków z grup się sumują; publikować może, gdy pozwala na to którakolwiek grupa.</p>
+                    <div class="grid gap-x-4 rounded-md bg-gray-50 p-2 sm:grid-cols-2" aria-describedby="extra-groups-help">
+                        @foreach ($groups as $group)
+                            <label class="flex min-h-9 items-center gap-2 px-1 text-sm">
+                                <input type="checkbox" name="extra_group_ids[]" value="{{ $group->id }}" @checked(in_array($group->id, $extraSel, true)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                {{ $group->name }}
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('extra_group_ids.*') <p class="mt-1 text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
+                </fieldset>
+            @endif
         </div>
 
         {{-- Gałęzie stron tej osoby (jak „DB mounts” w TYPO3): widzi i edytuje w module Strony tylko zaznaczone strony z podstronami.
@@ -114,6 +132,30 @@
             @endif
             @error('page_mounts.*') <p class="mt-1 text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
         </fieldset>
+
+        {{-- Ważność konta (jak start/stop w TYPO3): praktykant, audytor dostępności, redakcja jednego wydarzenia. --}}
+        @if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'active_until'))
+            @php $warsaw = fn ($d) => $d ? $d->copy()->timezone('Europe/Warsaw')->format('Y-m-d\TH:i') : ''; @endphp
+            <fieldset>
+                <legend class="mb-1 text-sm font-bold">Ważność konta</legend>
+                <p id="account-window-help" class="mb-2 text-xs text-muted">Puste — konto bez ograniczeń. Poza tym czasem nie da się zalogować, a zalogowana osoba zostanie wylogowana. Czas polski.</p>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div>
+                        <label for="active_from" class="mb-1 block text-sm">Aktywne od</label>
+                        <input type="datetime-local" id="active_from" name="active_from" value="{{ old('active_from', $warsaw($user->active_from)) }}" aria-describedby="account-window-help" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    </div>
+                    <div>
+                        <label for="active_until" class="mb-1 block text-sm">Wygasa</label>
+                        <input type="datetime-local" id="active_until" name="active_until" value="{{ old('active_until', $warsaw($user->active_until)) }}" aria-describedby="account-window-help" class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                    </div>
+                </div>
+                @error('active_from') <p class="mt-1 text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
+                @error('active_until') <p class="mt-1 text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
+                @if ($user->exists && ($msg = $user->accountWindowState()))
+                    <p class="mt-2 text-sm font-bold text-red-700">{{ $msg === 'expired' ? 'Konto wygasło — osoba nie może się zalogować.' : 'Konto jeszcze nieaktywne.' }}</p>
+                @endif
+            </fieldset>
+        @endif
 
         <div>
             <label for="password" class="mb-1 block text-sm font-bold">

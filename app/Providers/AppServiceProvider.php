@@ -48,6 +48,39 @@ class AppServiceProvider extends ServiceProvider
     {
         // Krótkie adresy portali kategorii: {adres}.feer.org.pl → /portal/{adres} (przed resztą grupy „web”).
         $this->app['router']->prependMiddlewareToGroup('web', \App\Http\Middleware\RedirectPortalSubdomain::class);
+        // Ważność konta (od–do) i ograniczenia podczas przełączenia na cudze konto — dla każdej zalogowanej sesji.
+        $this->app['router']->pushMiddlewareToGroup('web', \App\Http\Middleware\GuardAccountSession::class);
+
+        // Pola zablokowane dla grupy (Użytkownicy → Grupy → „Pola, których grupa nie zmienia”): przy każdym zapisie
+        // strony, aktualności i działania zostają stare wartości — niezależnie od formularza, który je wysłał.
+        foreach ([\App\Models\Page::class, \App\Models\News::class, \App\Models\Project::class] as $lockedModel) {
+            $lockedModel::updating(fn ($model) => \App\Support\EditorPermissions::guardLocked($model));
+        }
+
+        // Dziennik logowań (jak sys_log w TYPO3): udane, nieudane i wylogowania, z adresem IP (App\Models\Activity).
+        // Przełączenie na cudze konto ma własne wpisy (ImpersonationController), więc jego logowania pomijamy.
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($event) {
+            if (\App\Http\Controllers\Admin\ImpersonationController::$switching || ! $event->user instanceof \App\Models\User) {
+                return;
+            }
+            activity('auth')->causedBy($event->user)->performedOn($event->user)->event('login')
+                ->withProperties(['label' => $event->user->name, 'remember' => (bool) $event->remember])->log('Logowanie');
+        });
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Failed::class, function ($event) {
+            $logger = activity('auth')->event('login_failed')
+                ->withProperties(['label' => mb_substr((string) ($event->credentials['email'] ?? ''), 0, 120)]);
+            if ($event->user instanceof \App\Models\User) {
+                $logger->performedOn($event->user);
+            }
+            $logger->log('Nieudane logowanie');
+        });
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Logout::class, function ($event) {
+            if (\App\Http\Controllers\Admin\ImpersonationController::$switching || ! $event->user instanceof \App\Models\User) {
+                return;
+            }
+            activity('auth')->causedBy($event->user)->performedOn($event->user)->event('logout')
+                ->withProperty('label', $event->user->name)->log('Wylogowanie');
+        });
 
         Blade::directive('shortcodes', fn ($expr) => "<?php echo \\App\\Support\\ShortcodeParser::render($expr); ?>");
 
@@ -108,8 +141,9 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with(
                 'navPages',
-                Page::forCurrentSite()->whereNull('parent_id')->whereNull('project_id')->where('is_published', true)->where('show_in_menu', true)->with('publishedChildren')
-                    ->orderBy('order')->orderBy('title')->get()
+                // „Menu podstron”: strony główne z „Dodaj do menu”, bez „Ukryj w menu” i folderów systemowych.
+                Page::excludeHiddenInMenu(Page::forCurrentSite()->whereNull('parent_id')->whereNull('project_id')->where('is_published', true)->where('show_in_menu', true)->where('type', '!=', 'sys_folder'))
+                    ->with('menuChildren')->orderBy('order')->orderBy('title')->get()
             );
 
             $siteSettings = SiteSetting::current();

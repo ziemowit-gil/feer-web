@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
 use App\Models\UserGroup;
+use App\Support\EditorPermissions;
 use App\Support\NewsletterPermissions;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -75,6 +76,14 @@ class UserGroupController extends Controller
             'project_category_ids.*' => ['integer', 'exists:categories,id'],
             'page_ids' => ['sometimes', 'array'],
             'page_ids.*' => ['integer', 'exists:pages,id'],
+            // Edytor treści: dozwolone typy bloków (wszystkie albo wybrane) i pola, których grupa nie zmienia.
+            'block_types_mode' => ['nullable', Rule::in(['all', 'some'])],
+            'block_types' => ['sometimes', 'array', Rule::requiredIf($request->input('block_types_mode') === 'some')],
+            'block_types.*' => ['string', Rule::in(array_keys(EditorPermissions::blockTypeOptions()))],
+            'locked_fields' => ['sometimes', 'array'],
+            'locked_fields.*' => ['string', Rule::in(array_keys(EditorPermissions::LOCKABLE_FIELDS))],
+        ], [
+            'block_types.required' => 'Zaznacz co najmniej jeden typ bloku albo wybierz „Wszystkie bloki”.',
         ]);
 
         $data['modules'] = $data['modules'] ?? [];
@@ -82,6 +91,13 @@ class UserGroupController extends Controller
         $data['own_content_only'] = $request->boolean('own_content_only');
         $data['project_category_ids'] = array_values(array_map('intval', $data['project_category_ids'] ?? [])) ?: null;
         $data['page_ids'] = array_values(array_map('intval', $data['page_ids'] ?? [])) ?: null;
+        if (\Illuminate\Support\Facades\Schema::hasColumn('user_groups', 'block_types')) {
+            $data['block_types'] = ($data['block_types_mode'] ?? 'all') === 'some' ? array_values($data['block_types'] ?? []) : null;
+            $data['locked_fields'] = array_values($data['locked_fields'] ?? []) ?: null;
+        } else {
+            unset($data['block_types'], $data['locked_fields']); // kod przed migracją
+        }
+        unset($data['block_types_mode']);
 
         return $data;
     }

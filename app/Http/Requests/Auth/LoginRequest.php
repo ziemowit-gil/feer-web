@@ -51,6 +51,16 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        // Konto poza okresem ważności (users.active_from / active_until) — bez logowania, z wyjaśnieniem.
+        $user = Auth::user();
+        if ($user instanceof \App\Models\User && ! $user->isAccountActive()) {
+            $message = $user->accountWindowMessage();
+            Auth::guard('web')->logout();
+            activity('auth')->causedBy($user)->event('login_refused')->withProperty('label', $user->name)->log('Odmowa logowania: konto poza okresem ważności');
+
+            throw ValidationException::withMessages(['email' => $message]);
+        }
     }
 
     /**

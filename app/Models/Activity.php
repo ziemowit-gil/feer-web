@@ -26,7 +26,58 @@ class Activity extends \Spatie\Activitylog\Models\Activity
         'password_reset'    => 'Reset hasła',
         'microsoft_unlinked'=> 'Odłączenie Microsoft 365',
         'invitation_sent'   => 'Wysłanie zaproszenia',
+        // Logowania i konta (dziennik „auth”).
+        'login'                 => 'Logowanie',
+        'login_failed'          => 'Nieudane logowanie',
+        'login_refused'         => 'Odmowa logowania (konto nieaktywne)',
+        'logout'                => 'Wylogowanie',
+        'logout_expired'        => 'Wylogowanie (konto wygasło)',
+        'account_expired'       => 'Wygaszenie konta',
+        'impersonation_started' => 'Przełączenie na cudze konto',
+        'impersonation_stopped' => 'Powrót na własne konto',
+        'groups_changed'        => 'Zmiana grup (uprawnień)',
+        'passkey_added'         => 'Dodanie klucza dostępu',
+        'passkey_removed'       => 'Usunięcie klucza dostępu',
     ];
+
+    /** Dzienniki do wyboru w panelu. */
+    public const LOGS = ['cms' => 'Treści i ustawienia', 'auth' => 'Logowania i konta', 'all' => 'Wszystko'];
+
+    /**
+     * Każde zdarzenie dostaje adres IP i — podczas przełączenia na cudze konto — numer administratora, który
+     * naprawdę działa (Admin\ImpersonationController). Bez żądania HTTP (cron, kolejka) bez tych danych.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (self $activity) {
+            if (app()->runningInConsole() && ! app()->runningUnitTests()) {
+                return;
+            }
+            $request = request();
+            $extra = array_filter([
+                'ip' => $request->ip(),
+                'impersonator_id' => $request->hasSession() ? $request->session()->get(\App\Http\Controllers\Admin\ImpersonationController::SESSION_KEY) : null,
+            ]);
+            if ($extra) {
+                $activity->properties = collect($activity->properties ?? [])->merge($extra);
+            }
+        });
+    }
+
+    /**
+     * Zmienione pola zdarzenia „Edycja” (LogsActivity zapisuje stare i nowe wartości).
+     *
+     * @return array<int, array{field: string, old: mixed, new: mixed}>
+     */
+    public function changes(): array
+    {
+        $old = (array) ($this->properties?->get('old') ?? []);
+        $new = (array) ($this->properties?->get('attributes') ?? []);
+
+        return collect(array_unique([...array_keys($old), ...array_keys($new)]))
+            ->map(fn ($field) => ['field' => (string) $field, 'old' => $old[$field] ?? null, 'new' => $new[$field] ?? null])
+            ->values()->all();
+    }
 
     public const SUBJECTS = [
         'App\\Models\\News'                 => 'Aktualność',

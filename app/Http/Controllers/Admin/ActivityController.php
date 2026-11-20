@@ -21,8 +21,11 @@ class ActivityController extends Controller
         $dateFrom = $request->query('date_from', '');
         $dateTo   = $request->query('date_to', '');
 
+        // Dziennik: treści (cms), logowania i konta (auth) albo wszystko.
+        $logName = array_key_exists((string) $request->query('log'), Activity::LOGS) ? (string) $request->query('log') : 'cms';
+
         $logs = Activity::with('causer')
-            ->where('log_name', 'cms')
+            ->when($logName !== 'all', fn ($q) => $q->where('log_name', $logName), fn ($q) => $q->whereIn('log_name', ['cms', 'auth']))
             ->when($event !== '', fn ($q) => $q->where('event', $event))
             ->when($subject !== '', fn ($q) => $q->where('subject_type', $subject))
             ->when($userName !== '', fn ($q) => $q->whereHasMorph(
@@ -38,7 +41,7 @@ class ActivityController extends Controller
 
         $users = User::orderBy('name')->pluck('name');
 
-        return view('admin.activity.index', compact('logs', 'event', 'subject', 'userName', 'dateFrom', 'dateTo', 'users'));
+        return view('admin.activity.index', compact('logs', 'logName', 'event', 'subject', 'userName', 'dateFrom', 'dateTo', 'users'));
     }
 
     /** Pobranie pliku archiwum dziennika (wpisy starsze niż 30 dni, App\Support\ActivityArchive). */

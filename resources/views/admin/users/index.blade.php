@@ -37,7 +37,14 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 text-muted">{{ $user->email }}</td>
+                        <td class="px-4 py-3 text-muted">
+                            {{ $user->email }}
+                            @if ($state = $user->accountWindowState())
+                                <span class="block text-xs font-bold text-red-700">{{ $state === 'expired' ? 'Konto wygasło '.$user->active_until->timezone('Europe/Warsaw')->format('j.m.Y') : 'Aktywne od '.$user->active_from->timezone('Europe/Warsaw')->format('j.m.Y') }}</span>
+                            @elseif ($user->active_until)
+                                <span class="block text-xs">Ważne do {{ $user->active_until->timezone('Europe/Warsaw')->format('j.m.Y') }}</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3">
                             <span class="text-xs font-bold
  {{ $user->isAdmin() ? 'text-brand-dark' : ($user->isBipEditor() ? 'text-ink' : 'text-muted') }}">
@@ -45,12 +52,26 @@
                             </span>
                         </td>
                         <td class="px-4 py-3 text-muted">
-                            {{ ($user->isAdmin() || $user->isBipEditor()) ? '—' : ($user->group->name ?? 'brak') }}
+                            @if ($user->isAdmin() || $user->isBipEditor())
+                                —
+                            @else
+                                {{ $user->group->name ?? 'brak' }}
+                                @if ($user->relationLoaded('extraGroups') && $user->extraGroups->isNotEmpty())
+                                    <span class="block text-xs">+ {{ $user->extraGroups->pluck('name')->join(', ') }}</span>
+                                @endif
+                            @endif
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex justify-end gap-3">
                                 <a href="{{ route('admin.uzytkownicy.podglad-menu', ['jako' => 'uzytkownik:'.$user->id]) }}" class="text-muted hover:text-brand-dark" title="Podgląd menu"><i class="fa-solid fa-eye" aria-hidden="true"></i><span class="sr-only">Podgląd menu: {{ $user->name }}</span></a>
                                 <a href="{{ route('admin.uzytkownicy.edit', $user) }}" class="text-muted hover:text-brand-dark" title="Edytuj"><i class="fa-solid fa-pen" aria-hidden="true"></i></a>
+                                {{-- Przełącz na to konto (jak „Switch user” w TYPO3): widok panelu tej osoby, do diagnozy uprawnień. --}}
+                                @if (! $user->isAdmin() && ! $user->is_super_admin && ! auth()->user()->is($user) && $user->isAccountActive() && ! session()->has(\App\Http\Controllers\Admin\ImpersonationController::SESSION_KEY))
+                                    <form method="POST" action="{{ route('admin.uzytkownicy.przelacz', $user) }}" onsubmit="return confirm('Przełączyć się na konto &quot;{{ $user->name }}&quot;? Zobaczysz panel tak jak ta osoba; wrócisz przyciskiem na dole ekranu.');">
+                                        @csrf
+                                        <button type="submit" class="text-muted hover:text-brand-dark" title="Przełącz na to konto"><i class="fa-solid fa-user-secret" aria-hidden="true"></i><span class="sr-only">Przełącz na konto: {{ $user->name }}</span></button>
+                                    </form>
+                                @endif
                                 @if ($user->microsoft_id)
                                     <form method="POST" action="{{ route('admin.uzytkownicy.microsoft.unlink', $user) }}" onsubmit="return confirm('Odłączyć konto Microsoft 365 od użytkownika &quot;{{ $user->name }}&quot;?');">
                                         @csrf

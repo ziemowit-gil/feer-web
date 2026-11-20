@@ -66,8 +66,8 @@ final class NewsletterPermissions
         }
 
         $granted = self::ROLE_PRESETS[$user->role]
-            ?? ($user->role === User::ROLE_EDITOR && $user->group
-                ? array_values(array_intersect(self::keys(), $user->group->modules ?? []))
+            ?? ($user->role === User::ROLE_EDITOR && $user->permissionGroup()
+                ? array_values(array_intersect(self::keys(), $user->permissionGroup()->modules ?? []))
                 : []);
 
         if ($granted !== [] && ! in_array(self::VIEW, $granted, true)) {

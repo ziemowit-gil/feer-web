@@ -29,7 +29,8 @@ trait ScopedByEditor
             }
 
             $model = $query->getModel();
-            $group = $user->group;
+            // Uprawnienia ze wszystkich grup osoby (grupa główna + dodatkowe, User::permissionGroup()).
+            $group = $user->permissionGroup();
 
             if ($group?->own_content_only) {
                 $query->where($model->getTable().'.created_by', $user->id);

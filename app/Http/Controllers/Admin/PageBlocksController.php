@@ -121,6 +121,9 @@ class PageBlocksController extends Controller
         if ($error) {
             return $error;
         }
+        if (! \App\Support\EditorPermissions::allowsType($request->user()->allowedBlockTypes(), 'shortcode')) {
+            return $this->back($page)->with('error', 'Twoja grupa nie może wstawiać bloków wspólnych ani innych wstawek.');
+        }
         $shared = ContentBlock::forCurrentSite()->where('type', ContentBlock::SHARED)->find((int) $request->input('blok'));
         if (! $shared) {
             return $this->back($page)->with('error', 'Wybierz blok wspólny z listy.');

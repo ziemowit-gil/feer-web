@@ -18,7 +18,16 @@
             class="p-4 rounded-md bg-white">
             <fieldset>
                 <legend class="sr-only">Filtry dziennika zdarzeń</legend>
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+
+                    <div>
+                        <label for="f-log" class="mb-1 block text-sm font-bold text-ink">Dziennik</label>
+                        <select id="f-log" name="log" class="w-full rounded-lg border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                            @foreach (\App\Models\Activity::LOGS as $key => $label)
+                                <option value="{{ $key }}" @selected(($logName ?? 'cms') === $key)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
                     <div>
                         <label for="f-event" class="mb-1 block text-sm font-bold text-ink">Zdarzenie</label>
@@ -70,7 +79,7 @@
                         class="inline-flex min-h-11 items-center rounded-lg bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                         Filtruj
                     </button>
-                    @if ($event || $subject || $userName || $dateFrom || $dateTo)
+                    @if ($event || $subject || $userName || $dateFrom || $dateTo || ($logName ?? 'cms') !== 'cms')
                         <a href="{{ route('admin.dziennik.index') }}"
                             class="inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline">Wyczyść filtry</a>
                     @endif
@@ -125,6 +134,30 @@
                                         </p>
                                         @if ($log->subject_label)
                                             <p class="mt-0.5 break-words text-sm text-ink">„{{ $log->subject_label }}”</p>
+                                        @endif
+                                        @php
+                                            $logChanges = $log->changes();
+                                            $logIp = $log->properties?->get('ip');
+                                            $logImp = $log->properties?->get('impersonator_id');
+                                        @endphp
+                                        @if ($logIp || $logImp)
+                                            <p class="mt-0.5 text-xs text-muted">
+                                                @if ($logIp)IP {{ $logIp }}@endif
+                                                @if ($logImp)<span class="font-bold text-ink"> · przez administratora na cudzym koncie ({{ \App\Models\User::find($logImp)?->name ?? '#'.$logImp }})</span>@endif
+                                            </p>
+                                        @endif
+                                        @if ($logChanges)
+                                            <details class="mt-1 text-sm">
+                                                <summary class="cursor-pointer font-bold text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Zmienione pola ({{ count($logChanges) }})</summary>
+                                                <dl class="mt-1 space-y-1 rounded-md bg-gray-50 p-3">
+                                                    @foreach ($logChanges as $ch)
+                                                        <div>
+                                                            <dt class="font-mono text-xs font-bold text-ink">{{ $ch['field'] }}</dt>
+                                                            <dd class="break-words text-xs text-ink"><span class="sr-only">Było: </span><span class="text-muted line-through" aria-hidden="true">{{ is_scalar($ch['old']) || $ch['old'] === null ? ($ch['old'] ?? '—') : json_encode($ch['old'], JSON_UNESCAPED_UNICODE) }}</span><span class="sr-only">{{ is_scalar($ch['old']) || $ch['old'] === null ? ($ch['old'] ?? 'puste') : json_encode($ch['old'], JSON_UNESCAPED_UNICODE) }}</span> → <span class="sr-only">jest: </span>{{ is_scalar($ch['new']) || $ch['new'] === null ? ($ch['new'] ?? '—') : json_encode($ch['new'], JSON_UNESCAPED_UNICODE) }}</dd>
+                                                        </div>
+                                                    @endforeach
+                                                </dl>
+                                            </details>
                                         @endif
                                     </div>
                                 </li>

@@ -206,6 +206,49 @@
                 </div>
             </section>
 
+            {{-- ── Edytor treści: typy bloków i pola zablokowane (jak „Allowed content types” i „Exclude fields” w TYPO3) ── --}}
+            @php
+                $blockOpts = \App\Support\EditorPermissions::blockTypeOptions();
+                $selBlocks = (array) old('block_types', $group->block_types ?? []);
+                $blockMode = old('block_types_mode', empty($group->block_types) ? 'all' : 'some');
+                $selLocked = (array) old('locked_fields', $group->locked_fields ?? []);
+            @endphp
+            <section class="p-6 rounded-md bg-white" aria-labelledby="g-editor" x-data="{ mode: @js($blockMode) }">
+                <h2 id="g-editor" class="text-base font-bold text-ink">Edytor treści: bloki i pola</h2>
+                <p class="mt-1 text-sm text-muted">Np. stażysta może dodawać tekst i galerię, ale nie „Własny HTML”, i nie zmieni adresu strony. Gdy osoba ma kilka grup, wygrywa szersze uprawnienie.</p>
+
+                <fieldset class="mt-4">
+                    <legend class="text-sm font-bold text-ink">Typy bloków w edytorze blokowym</legend>
+                    <div class="mt-2 flex flex-wrap gap-x-6 gap-y-2">
+                        <label class="flex min-h-9 items-center gap-2 text-sm"><input type="radio" name="block_types_mode" value="all" x-model="mode" class="border-gray-500 text-brand-dark focus:ring-brand-dark"> Wszystkie bloki</label>
+                        <label class="flex min-h-9 items-center gap-2 text-sm"><input type="radio" name="block_types_mode" value="some" x-model="mode" class="border-gray-500 text-brand-dark focus:ring-brand-dark"> Tylko wybrane</label>
+                    </div>
+                    <div x-show="mode === 'some'" x-cloak class="mt-2 grid gap-x-4 rounded-md bg-gray-50 p-3 sm:grid-cols-2" role="group" aria-label="Dozwolone typy bloków">
+                        @foreach ($blockOpts as $type => $label)
+                            <label class="flex min-h-9 items-center gap-2 text-sm">
+                                <input type="checkbox" name="block_types[]" value="{{ $type }}" @checked(in_array($type, $selBlocks, true)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                {{ $label }}
+                            </label>
+                        @endforeach
+                    </div>
+                    <p class="mt-2 text-xs text-muted">Bloku spoza listy nie ma we wstawianiu. Taki blok, który już jest na stronie, zostaje — redaktor może go przesunąć albo usunąć, ale nie zmieni jego treści.</p>
+                    @error('block_types') <p class="mt-1 text-sm text-red-700" role="alert">{{ $message }}</p> @enderror
+                </fieldset>
+
+                <fieldset class="mt-5">
+                    <legend class="text-sm font-bold text-ink">Pola, których grupa nie zmienia</legend>
+                    <div class="mt-2">
+                        @foreach (\App\Support\EditorPermissions::LOCKABLE_FIELDS as $key => [$label])
+                            <label class="flex min-h-9 items-center gap-2 text-sm">
+                                <input type="checkbox" name="locked_fields[]" value="{{ $key }}" @checked(in_array($key, $selLocked, true)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                {{ $label }}
+                            </label>
+                        @endforeach
+                    </div>
+                    <p class="mt-2 text-xs text-muted">Edytor blokowy ich nie pokazuje, a przy każdym zapisie strony, aktualności czy działania zostają dotychczasowe wartości.</p>
+                </fieldset>
+            </section>
+
             {{-- ── Zatwierdzanie ── --}}
             <section class="p-6 rounded-md bg-white" aria-labelledby="g-approve">
                 <h2 id="g-approve" class="mb-3 text-base font-bold text-ink">Publikowanie</h2>

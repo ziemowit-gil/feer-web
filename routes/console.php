@@ -35,6 +35,9 @@ Schedule::command('tasks:remind-due')->dailyAt('08:00');
 // Przypomnienia dla zatwierdzających o treściach czekających ponad 12 h.
 Schedule::command('approvals:notify-pending')->hourly();
 
+// Konta po terminie ważności (users.active_until): koniec sesji i wpis w dzienniku logowań.
+Schedule::command('users:wygas')->hourly()->withoutOverlapping();
+
 // Dosyłanie do SZO zgłoszeń formularzy, których nie udało się przekazać przy
 // zapisie (niedostępne SZO, timeout). Co 15 minut, żeby zaległość nie rosła.
 Schedule::command('szo:push-submissions')->everyFifteenMinutes()->withoutOverlapping();

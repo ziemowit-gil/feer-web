@@ -158,3 +158,6 @@
     </div>
     @include('admin.partials.nav-quick-script')
 @endif
+
+{{-- Przełączenie na cudze konto: pasek z „Wróć do swojego konta” także na stronie publicznej. --}}
+@include('partials.impersonation-bar')

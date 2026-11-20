@@ -522,5 +522,6 @@
 
     @stack('scripts')
     <script>requestAnimationFrame(function () { requestAnimationFrame(function () { document.documentElement.classList.add('admin-ready'); }); });</script>
+    @include('partials.impersonation-bar')
 </body>
 </html>

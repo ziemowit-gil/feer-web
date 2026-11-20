@@ -343,6 +343,18 @@ function start(config) {
         return !(isWrapper(src.type) && dstParent);
     }
     // Czy miejsce wstawiania leży w kontenerze (wtedy bez kolejnych kontenerów).
+    // ── Uprawnienia grupy (Użytkownicy → Grupy) ────────────────────────────
+    // Dozwolone typy bloków (null = wszystkie): reszty nie ma we wstawianiu, a istniejący taki blok jest tylko do
+    // przesunięcia albo usunięcia (serwer i tak nie przyjmie nowego). Pola zablokowane chowamy w panelu.
+    const ALLOWED = Array.isArray(config.permissions?.blocks) ? config.permissions.blocks : null;
+    const LOCKED = new Set(config.permissions?.locked || []);
+    const typeAllowed = (type) => { if (!ALLOWED) return true; const t = BLOCKS[type]?.as || type; return ALLOWED.includes(PART_OF[t] || t); };
+    const allowedDeep = (b) => typeAllowed(b.type) && (b.inner || []).every(allowedDeep);
+    // Bloki wklejone lub ze wzorca bez niedozwolonych: zwykły blok znika, kontener zostawia treść.
+    const permitted = (list) => list.flatMap((b) => (typeAllowed(b.type) ? [b.inner ? { ...b, inner: permitted(b.inner) } : b] : (b.inner ? permitted(PART_OF[b.type] || b.type === 'columns' || b.type === 'tabs' ? b.inner.flatMap((p) => p.inner || []) : b.inner) : [])));
+    if (ALLOWED) Object.keys(BLOCKS).forEach((t) => { if (!typeAllowed(t)) BLOCKS[t].hidden = true; });
+    const lockedNote = (what) => h('p', { class: 'be-help' }, icon('lock'), ` ${what} — tego Twoja grupa nie zmienia.`);
+
     function targetInContainer(target) {
         if (!target) return false;
         if (target.parentId) return true;
@@ -712,7 +724,7 @@ function start(config) {
     }
     function pasteBlocks(json, afterId) {
         let list;
-        try { list = hydrate(JSON.parse(json)); } catch (e) { list = []; }
+        try { list = permitted(hydrate(JSON.parse(json))); } catch (e) { list = []; }
         if (!list.length) return false;
         const r = find(afterId);
         insertBlocks(list, PART_OF[r?.block.type] ? { parentId: r.block.id } : (r ? { afterId } : null));
@@ -1379,7 +1391,7 @@ function start(config) {
         const draw = () => {
             const q = search.value.trim().toLowerCase();
             if (inserterTab === 'patterns') {
-                results.replaceChildren(...PATTERNS.filter((p) => (!q || (p.title + ' ' + p.desc).toLowerCase().includes(q)) && !(inContainer && p.build().some((x) => isWrapper(x.type)))).map((p) =>
+                results.replaceChildren(...PATTERNS.filter((p) => (!q || (p.title + ' ' + p.desc).toLowerCase().includes(q)) && !(inContainer && p.build().some((x) => isWrapper(x.type))) && p.build().every(allowedDeep)).map((p) =>
                     h('button', { type: 'button', class: 'be-pattern', onClick: () => insertFromPanel(p.build()) }, h('strong', {}, p.title), h('span', {}, p.desc))));
                 return;
             }
@@ -1666,7 +1678,14 @@ function start(config) {
                 active: `Widoczny${b.until ? ' do ' + fmtWhen(b.until) : ''} — ma ustawiony harmonogram.`,
             }[sched]));
         }
-        wrap.append(def.edit ? def.edit(b) : editors[b.type](b));
+        const body = def.edit ? def.edit(b) : editors[b.type](b);
+        // Blok typu spoza uprawnień grupy: widać go, można go przesunąć albo usunąć, ale nie zmienić treści.
+        if (!typeAllowed(b.type)) {
+            wrap.classList.add('is-hidden-block');
+            wrap.append(h('p', { class: 'be-hidden-note' }, icon('lock'), ` Tego bloku nie zmienisz — Twoja grupa nie używa bloków „${def.title}”. Możesz go przesunąć albo usunąć.`));
+            if (!def.container) body.inert = true;
+        }
+        wrap.append(body);
         // Szybkie wstawianie „w miejscu”: plus pod blokiem (tylko dla myszy; z klawiatury — „/”, menu bloku
         // „Wstaw blok po” i przycisk „Dodaj blok”, więc plus nie zwiększa liczby tabulatorów).
         if (!PART_OF[b.type]) {
@@ -2999,7 +3018,7 @@ function start(config) {
         const btn = (label, iconName, onClick, attrs = {}) => h('button', { type: 'button', class: 'be-tool', 'aria-label': label, title: label, onMousedown: keep, onClick, ...attrs }, icon(iconName));
         const groups = [];
 
-        const transforms = (def.transforms || []).filter((t) => t !== b.type);
+        const transforms = (def.transforms || []).filter((t) => t !== b.type && typeAllowed(t));
         groups.push(h('div', { class: 'be-tool-group' },
             transforms.length
                 ? dropdown(h('span', { class: 'be-tool-type' }, icon(def.icon), h('span', { class: 'be-sr-only' }, def.title + ' — zmień typ bloku')), transforms.map((t) => ({ label: BLOCKS[t].title, icon: BLOCKS[t].icon, onClick: () => transform(b, t) })), 'Zmień typ bloku: ' + def.title)
@@ -3041,12 +3060,12 @@ function start(config) {
         }
 
         groups.push(h('div', { class: 'be-tool-group' }, dropdown(icon('ellipsis-vertical'), [
-            { label: 'Duplikuj', icon: 'copy', shortcut: mod + '+Shift+D', onClick: () => duplicateBlock(b.id) },
-            ...(PART_OF[b.type] ? [] : [
+            ...(typeAllowed(b.type) ? [{ label: 'Duplikuj', icon: 'copy', shortcut: mod + '+Shift+D', onClick: () => duplicateBlock(b.id) }] : []),
+            ...(PART_OF[b.type] || !typeAllowed(b.type) ? [] : [
                 { label: 'Kopiuj blok', icon: 'copy', shortcut: mod + '+C', onClick: () => copyBlock(b.id) },
                 { label: 'Wytnij blok', icon: 'scissors', shortcut: mod + '+X', onClick: () => cutBlock(b.id) },
             ]),
-            ...(config.urls.shareBlock && !PART_OF[b.type] && !(b.type === 'shortcode' && /^\[blok:\d+\]$/i.test(b.attrs.code || ''))
+            ...(config.urls.shareBlock && typeAllowed('shortcode') && typeAllowed(b.type) && !PART_OF[b.type] && !(b.type === 'shortcode' && /^\[blok:\d+\]$/i.test(b.attrs.code || ''))
                 ? [{ label: 'Zapisz jako blok wspólny', icon: 'share-nodes', onClick: () => saveAsShared(b) }] : []),
             ...(blockClip ? [{ label: 'Wklej blok po', icon: 'paste', shortcut: mod + '+V', onClick: () => pasteBlocks(blockClip, b.id) }] : []),
             { label: 'Wstaw blok przed', icon: 'arrow-up', onClick: () => { const r = find(b.id); togglePanel('inserter', r.parent ? { parentId: r.parent.id, index: r.index } : { index: r.index }); } },
@@ -3308,8 +3327,8 @@ function start(config) {
             ...publicationSettings(),
             panelSection(null,
                 field(L.title, title),
-                field('Opis dla wyszukiwarek', meta, 'Jedno, dwa zdania o tym, czego dotyczy treść. Najlepiej do 160 znaków.'),
-                counter),
+                LOCKED.has('seo') ? lockedNote('Opis dla wyszukiwarek ustawia administrator') : field('Opis dla wyszukiwarek', meta, 'Jedno, dwa zdania o tym, czego dotyczy treść. Najlepiej do 160 znaków.'),
+                LOCKED.has('seo') ? null : counter),
             typeForm ? panelSection('Pola typu strony',
                 h('p', { class: 'be-help' }, 'Dane typu „' + config.typeFields.name + '” — pokazują się na stronie poza treścią.'),
                 h('button', { type: 'button', class: 'be-btn be-btn--secondary be-w-full', 'data-type-fields-open': true, 'aria-haspopup': 'dialog', onClick: openTypeFields }, icon('list-check'), ' Edytuj pola typu')) : null,
@@ -3341,7 +3360,7 @@ function start(config) {
         const dateKey = isPage ? 'publish_at' : (isNews ? 'published_at' : null);
         const pubBox = checkbox(L.publishedLong, v.is_published, (on) => change({ is_published: on }, true),
             v.pending_approval ? 'Czeka na zatwierdzenie przez osobę zatwierdzającą.' : (C.canApprove ? 'Treść jest dostępna publicznie.' : 'Po zapisie trafi do zatwierdzenia.'));
-        const date = dateKey && v.is_published ? field(isPage ? 'Opublikuj dopiero od (opcjonalnie)' : 'Data publikacji', (() => {
+        const date = dateKey && v.is_published && !(isPage && LOCKED.has('schedule')) ? field(isPage ? 'Opublikuj dopiero od (opcjonalnie)' : 'Data publikacji', (() => {
             const el = h('input', { type: 'datetime-local', class: 'be-input', value: v[dateKey] || '' });
             el.addEventListener('change', () => change({ [dateKey]: el.value || null }));
             return el;
@@ -3349,7 +3368,8 @@ function start(config) {
         const parts = [panelSection('Publikacja',
             tag(pubBox, 'is_published'),
             date,
-            'unpublish_at' in v ? field('Zdejmij z publikacji (opcjonalnie)', (() => {
+            LOCKED.has('schedule') ? lockedNote('Terminy publikacji ustawia administrator') : null,
+            'unpublish_at' in v && !LOCKED.has('schedule') ? field('Zdejmij z publikacji (opcjonalnie)', (() => {
                 const el = h('input', { type: 'datetime-local', class: 'be-input', value: v.unpublish_at || '' });
                 el.addEventListener('change', () => change({ unpublish_at: el.value || null }));
                 return el;
@@ -3408,7 +3428,7 @@ function start(config) {
         const typeSection = panelSection('Typ wpisu',
             tagSelect(select(pt, Object.entries(C.postTypes || {}), (x) => change({ post_type: x }, true)), 'post_type'),
             pt === 'announcement' ? [
-                field('Ważny do (wymagane)', expires, 'Po tej dacie komunikat zniknie z listy aktualności i trafi do archiwum.'),
+                LOCKED.has('schedule') ? lockedNote('Termin ważności komunikatu ustawia administrator') : field('Ważny do (wymagane)', expires, 'Po tej dacie komunikat zniknie z listy aktualności i trafi do archiwum.'),
                 checkbox('Ważny komunikat (wyróżniony na stronie wpisu)', v.important, (on) => change({ important: on })),
                 field('Przycisk CTA — napis (opcjonalnie)', ctaLabel, 'Powiedz, co się stanie: „Zapisz się na szkolenie”, nie „Kliknij tutaj”.'),
                 field('Przycisk CTA — adres', ctaUrl),
@@ -3440,13 +3460,14 @@ function start(config) {
     // Adres (slug) z informacją o przekierowaniu starego adresu i tytuł SEO.
     function addressSection(C, v, change) {
         const slug = textInput(v.slug, (x) => { v.slug = x.toLowerCase().replace(/\s+/g, '-'); S.settingsDirty = true; markDirty(); }, { placeholder: 'zostanie wygenerowany z tytułu' });
-        if (!v.slug_editable) slug.disabled = true;
+        const slugLocked = LOCKED.has('slug');
+        if (!v.slug_editable || slugLocked) slug.disabled = true;
         const metaTitle = textInput(v.meta_title, (x) => { v.meta_title = x; S.settingsDirty = true; markDirty(); }, { maxlength: '255', placeholder: 'domyślnie tytuł strony' });
         return panelSection('Adres i SEO',
-            field('Adres (slug)', slug, v.slug_editable ? 'Pełny adres: ' + C.publicBase + (v.slug || '…') : 'Adres nadawany automatycznie — nie można go zmienić tutaj.'),
-            C.wasPublished && v.slug_editable ? checkbox('Nie twórz przekierowania ze starego adresu', !!S.skipSlugRedirect, (on) => { S.skipSlugRedirect = on; },
+            field('Adres (slug)', slug, slugLocked ? 'Adres ustawia administrator — tego Twoja grupa nie zmienia.' : (v.slug_editable ? 'Pełny adres: ' + C.publicBase + (v.slug || '…') : 'Adres nadawany automatycznie — nie można go zmienić tutaj.')),
+            C.wasPublished && v.slug_editable && !slugLocked ? checkbox('Nie twórz przekierowania ze starego adresu', !!S.skipSlugRedirect, (on) => { S.skipSlugRedirect = on; },
                 'Po zmianie adresu stary (/' + (C.values.slug || '') + ') przekieruje na nowy (301). Zaznacz, jeśli stary adres ma pokazywać inną treść.') : null,
-            field('Tytuł SEO (opcjonalnie)', metaTitle, 'Tytuł w wynikach wyszukiwania i na karcie przeglądarki; najlepiej do 60 znaków.'));
+            LOCKED.has('seo') ? lockedNote('Tytuł SEO ustawia administrator') : field('Tytuł SEO (opcjonalnie)', metaTitle, 'Tytuł w wynikach wyszukiwania i na karcie przeglądarki; najlepiej do 60 znaków.'));
     }
     const countBlocks = () => { let n = 0; walk(S.blocks, () => n++); return n; };
 
@@ -3541,6 +3562,11 @@ function start(config) {
         }
         const set = (patch, opts) => updateAttrs(b, patch, opts);
         const typing = (patch) => updateAttrs(b, patch, { typing: true });
+        if (!typeAllowed(b.type)) {
+            parts.push(panelSection(null, lockedNote(`Blok „${def.title}” jest poza uprawnieniami Twojej grupy`),
+                h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => removeBlock(b.id) }, icon('trash'), ' Usuń')));
+            return h('div', {}, ...parts);
+        }
         switch (b.type) {
             case 'paragraph':
                 parts.push(panelSection('Wygląd', checkbox('Tekst wprowadzający (większy)', a.lead, (v) => set({ lead: v }), 'Dla pierwszego akapitu streszczającego stronę.')));

@@ -15,7 +15,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Revoltify\Subscriptionify\Concerns\InteractsWithSubscriptions;
 use Revoltify\Subscriptionify\Contracts\Subscribable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences', 'default_editor', 'admin_scheme', 'admin_nav_style', 'page_mounts'])]
+#[Fillable(['name', 'email', 'password', 'role', 'user_group_id', 'microsoft_id', 'google_id', 'avatar', 'local_login_allowed', 'notifications_seen_at', 'notification_preferences', 'default_editor', 'admin_scheme', 'admin_nav_style', 'page_mounts', 'active_from', 'active_until', 'expiry_handled_at'])]
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable implements Subscribable
 {
@@ -112,6 +112,9 @@ class User extends Authenticatable implements Subscribable
             'notifications_seen_at' => 'datetime',
             'notification_preferences' => 'array',
             'page_mounts' => 'array',
+            'active_from' => 'datetime',
+            'active_until' => 'datetime',
+            'expiry_handled_at' => 'datetime',
         ];
     }
 
@@ -157,6 +160,146 @@ class User extends Authenticatable implements Subscribable
     public function group(): BelongsTo
     {
         return $this->belongsTo(UserGroup::class, 'user_group_id');
+    }
+
+    /** Dodatkowe grupy osoby (user_group_user) — uprawnienia z nich sumują się z grupą główną. */
+    public function extraGroups(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(UserGroup::class, 'user_group_user')->withTimestamps();
+    }
+
+    /** Czy tabela dodatkowych grup już istnieje (push wdraża kod przed migracją). */
+    public static function supportsExtraGroups(): bool
+    {
+        static $has = null;
+
+        return $has ??= \Illuminate\Support\Facades\Schema::hasTable('user_group_user');
+    }
+
+    /** Wszystkie grupy osoby z roli Edytor (grupa główna + dodatkowe). @return \Illuminate\Support\Collection<int, UserGroup> */
+    public function allGroups(): \Illuminate\Support\Collection
+    {
+        if ($this->role !== self::ROLE_EDITOR) {
+            return collect();
+        }
+        $extra = self::supportsExtraGroups() && $this->exists ? $this->extraGroups : collect();
+
+        return collect([$this->group])->merge($extra)->filter()->unique('id')->values();
+    }
+
+    /** Numery wszystkich grup osoby (np. dostęp do stron dla wybranych grup). @return array<int> */
+    public function groupIds(): array
+    {
+        $ids = $this->allGroups()->pluck('id')->all();
+        if ($ids === [] && $this->user_group_id) {
+            $ids = [(int) $this->user_group_id];
+        }
+
+        return array_map('intval', $ids);
+    }
+
+    /** Zapamiętane połączone uprawnienia grup (na czas żądania). */
+    private ?UserGroup $permissionGroupCache = null;
+
+    private bool $permissionGroupResolved = false;
+
+    /**
+     * Uprawnienia z grup połączone w jedną (niezapisywaną) grupę — najszersza reguła wygrywa (jak be_groups w TYPO3):
+     * moduły i uprawnienia newslettera się sumują, publikować może, gdy pozwala na to którakolwiek grupa, „tylko
+     * własne wpisy”, gdy mają to wszystkie, gałęzie stron i kategorie działań się sumują (grupa z modułem bez
+     * ograniczenia znosi ograniczenie), typy bloków się sumują (grupa bez listy = wszystkie), a pole jest
+     * zablokowane, tylko gdy blokują je wszystkie grupy.
+     */
+    public function permissionGroup(): ?UserGroup
+    {
+        if ($this->permissionGroupResolved) {
+            return $this->permissionGroupCache;
+        }
+        $this->permissionGroupResolved = true;
+        $groups = $this->allGroups();
+        if ($groups->count() <= 1) {
+            return $this->permissionGroupCache = $groups->first();
+        }
+
+        $scope = function (string $module, string $key) use ($groups): ?array {
+            $granting = $groups->filter(fn (UserGroup $g) => $g->hasModule($module));
+            if ($granting->contains(fn (UserGroup $g) => empty($g->{$key}))) {
+                return null;
+            }
+            $ids = $groups->flatMap(fn (UserGroup $g) => (array) ($g->{$key} ?? []))->map(fn ($id) => (int) $id)->unique()->values()->all();
+
+            return $ids ?: null;
+        };
+        $blockTypes = $groups->contains(fn (UserGroup $g) => empty($g->block_types))
+            ? null
+            : $groups->flatMap(fn (UserGroup $g) => (array) $g->block_types)->unique()->values()->all();
+        $locked = array_values(array_intersect(...$groups->map(fn (UserGroup $g) => (array) ($g->locked_fields ?? []))->all()));
+
+        $merged = new UserGroup;
+        $merged->forceFill([
+            'name' => $groups->pluck('name')->join(' + '),
+            'modules' => $groups->flatMap(fn (UserGroup $g) => (array) ($g->modules ?? []))->unique()->values()->all(),
+            'can_approve' => $groups->contains(fn (UserGroup $g) => (bool) $g->can_approve),
+            'own_content_only' => $groups->every(fn (UserGroup $g) => (bool) $g->own_content_only),
+            'project_category_ids' => $scope('projects', 'project_category_ids'),
+            'page_ids' => $scope('pages', 'page_ids'),
+            'block_types' => $blockTypes,
+            'locked_fields' => $locked ?: null,
+        ]);
+
+        return $this->permissionGroupCache = $merged;
+    }
+
+    /** Typy bloków edytora, których osoba może używać (null = wszystkie). @return array<int, string>|null */
+    public function allowedBlockTypes(): ?array
+    {
+        if ($this->isAdmin() || $this->role !== self::ROLE_EDITOR) {
+            return null;
+        }
+        $types = $this->permissionGroup()?->block_types;
+
+        return empty($types) ? null : array_values((array) $types);
+    }
+
+    /** Pola, których osoba nie zmienia (klucze z EditorPermissions::LOCKABLE_FIELDS). @return array<int, string> */
+    public function lockedFields(): array
+    {
+        if ($this->isAdmin() || $this->role !== self::ROLE_EDITOR) {
+            return [];
+        }
+
+        return array_values(array_intersect((array) ($this->permissionGroup()?->locked_fields ?? []), array_keys(\App\Support\EditorPermissions::LOCKABLE_FIELDS)));
+    }
+
+    // ── Okno ważności konta (jak start/stop w TYPO3) ───────────────────────
+
+    /** 'pending' (jeszcze nieaktywne), 'expired' (wygasło) albo null (aktywne). */
+    public function accountWindowState(?\Carbon\CarbonInterface $now = null): ?string
+    {
+        $now ??= now();
+        if ($this->active_from && $now->lt($this->active_from)) {
+            return 'pending';
+        }
+        if ($this->active_until && $now->gte($this->active_until)) {
+            return 'expired';
+        }
+
+        return null;
+    }
+
+    public function isAccountActive(): bool
+    {
+        return $this->accountWindowState() === null;
+    }
+
+    /** Komunikat dla osoby, której konto jest poza oknem ważności. */
+    public function accountWindowMessage(): ?string
+    {
+        return match ($this->accountWindowState()) {
+            'pending' => 'Twoje konto będzie aktywne od '.$this->active_from->timezone('Europe/Warsaw')->format('j.m.Y H:i').'. Skontaktuj się z administratorem, jeśli potrzebujesz dostępu wcześniej.',
+            'expired' => 'Twoje konto wygasło '.$this->active_until->timezone('Europe/Warsaw')->format('j.m.Y H:i').'. Skontaktuj się z administratorem, jeśli potrzebujesz dalszego dostępu.',
+            default => null,
+        };
     }
 
     /**
@@ -209,11 +352,12 @@ class User extends Authenticatable implements Subscribable
         if ($this->personalPageMounts() !== []) {
             return true;
         }
-        if ($this->role !== self::ROLE_EDITOR || ! $this->group) {
+        $group = $this->role === self::ROLE_EDITOR ? $this->permissionGroup() : null;
+        if (! $group) {
             return false;
         }
 
-        return $this->group->own_content_only || ! empty($this->group->project_category_ids) || ! empty($this->group->page_ids);
+        return $group->own_content_only || ! empty($group->project_category_ids) || ! empty($group->page_ids);
     }
 
     /** Dozwolone kategorie działań edytora (null = bez ograniczenia). */
@@ -232,7 +376,7 @@ class User extends Authenticatable implements Subscribable
             return null;
         }
         // Gałęzie z grupy (rola Edytor) i przypisane osobie — sumują się.
-        $groupRoots = $this->role === self::ROLE_EDITOR ? (array) ($this->group?->page_ids ?? []) : [];
+        $groupRoots = $this->role === self::ROLE_EDITOR ? (array) ($this->permissionGroup()?->page_ids ?? []) : [];
         $roots = array_values(array_unique(array_filter(array_map('intval', [...$groupRoots, ...$this->personalPageMounts()]))));
         if ($roots === []) {
             return null;
@@ -268,7 +412,7 @@ class User extends Authenticatable implements Subscribable
         if ($this->isAdmin() || $this->role !== self::ROLE_EDITOR) {
             return null;
         }
-        $ids = array_map('intval', (array) ($this->group?->project_category_ids ?? []));
+        $ids = array_map('intval', (array) ($this->permissionGroup()?->project_category_ids ?? []));
 
         return $ids === [] ? null : $ids;
     }
@@ -290,7 +434,7 @@ class User extends Authenticatable implements Subscribable
             self::ROLE_PR_EDITOR       => in_array($module, ['news', 'blog', 'landing', 'projects', 'polls', 'podcasts'], true),
             self::ROLE_BIP_EDITOR_PLUS => in_array($module, ['bip', 'reports'], true),
             self::ROLE_BIP_EDITOR      => $module === 'bip',
-            self::ROLE_EDITOR          => $this->group && $this->group->hasModule($module),
+            self::ROLE_EDITOR          => (bool) $this->permissionGroup()?->hasModule($module),
             default                    => false,
         };
     }
@@ -308,7 +452,7 @@ class User extends Authenticatable implements Subscribable
      */
     public function canApproveContent(): bool
     {
-        return $this->isAdmin() || ($this->group && $this->group->can_approve);
+        return $this->isAdmin() || (bool) $this->permissionGroup()?->can_approve;
     }
 
     /**
@@ -321,6 +465,9 @@ class User extends Authenticatable implements Subscribable
         return $query->where(function (\Illuminate\Database\Eloquent\Builder $q) {
             $q->where('role', self::ROLE_ADMIN)
                 ->orWhereHas('group', fn ($g) => $g->where('can_approve', true));
+            if (self::supportsExtraGroups()) {
+                $q->orWhere(fn ($e) => $e->where('role', self::ROLE_EDITOR)->whereHas('extraGroups', fn ($g) => $g->where('can_approve', true)));
+            }
         });
     }
 
