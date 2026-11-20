@@ -65,11 +65,14 @@
     .kc-brand-kind { font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--kc-muted); }
     .kc-brand-name { font-size: 1.15rem; font-weight: 800; color: var(--kc-forest); }
     .kc-nav { margin: 0 auto; }
-    .kc-nav > ul { display: flex; align-items: center; gap: .15rem; margin: 0; padding: .3rem; border-radius: 999px; background: var(--kc-cream); list-style: none; }
-    .kc-nav-link { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.6rem; padding: .45rem 1.05rem; border: 0; border-radius: 999px;
-        background: transparent; color: var(--kc-ink); font: inherit; font-size: .98rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: background-color .15s; }
-    .kc-nav-link:hover { background: rgba(255, 255, 255, .7); color: var(--kc-forest); }
-    .kc-nav-link[aria-current="page"], .kc-nav-link.is-here, .kc-nav-link[aria-expanded="true"] { background: #fff; color: var(--kc-forest); font-weight: 800; }
+    .kc-nav > ul { display: flex; align-items: center; gap: .15rem; margin: 0; padding: 0; list-style: none; }
+    .kc-nav-link { position: relative; display: inline-flex; align-items: center; gap: .4rem; min-height: 2.75rem; padding: .45rem 1rem; border: 0;
+        background: transparent; color: var(--kc-ink); font: inherit; font-size: .98rem; font-weight: 600; text-decoration: none; cursor: pointer; }
+    .kc-nav-link::after { content: ''; position: absolute; left: 50%; bottom: .1rem; width: .45rem; height: .45rem; border-radius: 50%; background: transparent; transform: translateX(-50%); }
+    .kc-nav-link:hover { color: var(--kc-forest); }
+    .kc-nav-link:hover::after { background: var(--kc-gold); }
+    .kc-nav-link[aria-current="page"], .kc-nav-link.is-here, .kc-nav-link[aria-expanded="true"] { color: var(--kc-forest); font-weight: 800; }
+    .kc-nav-link[aria-current="page"]::after, .kc-nav-link.is-here::after, .kc-nav-link[aria-expanded="true"]::after { background: var(--kc-lime); }
     .kc-nav-link .kc-chev { color: var(--kc-green); }
     .kc-nav-item { position: static; }
     .kc-mega { position: absolute; left: 0; right: 0; top: 100%; z-index: 45; max-height: calc(100vh - 8rem); overflow-y: auto; border-top: 1px solid var(--kc-line);

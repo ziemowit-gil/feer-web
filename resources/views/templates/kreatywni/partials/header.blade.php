@@ -5,8 +5,8 @@
        przyciski data-a11y-* obsługuje resources/js/app.js tak samo jak w panelu;
     2) przyklejona belka: logo i nazwa, mega menu z Menu nawigacji (App\Support\KreatywniMegaMenu: pozycja z
        podmenu — podstrony i sekcje strony, czyli dawny spis „Na tej stronie” — otwiera panel na całą szerokość po
-       kliknięciu, Enter albo najechaniu; Esc zamyka i wraca na przycisk, klik obok i wyjście fokusem zamykają) wyśrodkowane
-       w kremowej „szynie” (bieżąca/otwarta pozycja — biała pigułka z pogrubieniem, bez cienia), „Kontakt” po prawej; na wąskim ekranie „Menu” rozwija listę pozycji z podstronami
+       kliknięciu, Enter albo najechaniu; Esc zamyka i wraca na przycisk, klik obok i wyjście fokusem zamykają) wyśrodkowane,
+       bez tła (bieżąca/otwarta pozycja — pogrubienie i limonkowa kropka pod napisem), „Kontakt” po prawej; na wąskim ekranie „Menu” rozwija listę pozycji z podstronami
        i sekcjami H2. Style: partials/base-css (prefiks kc-).
 --}}
 @php
