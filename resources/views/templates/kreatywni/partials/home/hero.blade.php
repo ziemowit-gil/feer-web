@@ -1,7 +1,8 @@
 {{--
     Slider na górze strony głównej: slajd 1 — powitanie (napis, H1, tekst, hasła, dwa przyciski, obrazek; domyślnie
     logo), slajd 2 — „Naszą misją jest” z punktami misji (gdy są). Bez automatycznego przewijania (WCAG 2.2.2):
-    strzałki „Poprzedni / Następny” i kropki z nazwą slajdu, strzałki ←/→ na kontrolkach. Nieaktywny slajd jest
+    po prawej licznik „01 / 02”, strzałki „Poprzedni / Następny” i kropki (aktywna wydłuża się w kreskę; nazwa slajdu
+    dla czytników), strzałki ←/→ na kontrolkach. Nieaktywny slajd jest
     ukryty (visibility + inert), ale zajmuje miejsce, więc wysokość się nie zmienia. Bez JS widać pierwszy slajd.
 --}}
 @php
@@ -85,6 +86,7 @@
 
         @if ($kcCount > 1)
             <div class="kc-slider-nav" x-cloak @keydown.arrow-right.prevent="go(active + 1)" @keydown.arrow-left.prevent="go(active - 1)">
+                <p class="kc-slider-count" aria-hidden="true"><strong x-text="String(active + 1).padStart(2, '0')">01</strong> / {{ str_pad((string) $kcCount, 2, '0', STR_PAD_LEFT) }}</p>
                 <button type="button" class="kc-icon-btn kc-slider-arrow" @click="go(active - 1)">
                     <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span class="kc-sr">Poprzedni slajd</span>
                 </button>
@@ -93,7 +95,7 @@
                         <li>
                             <button type="button" @click="go({{ $i }})" :aria-current="active === {{ $i }} ? 'true' : null"
                                     :class="{ 'is-on': active === {{ $i }} }" @if ($i === 0) aria-current="true" class="is-on" @endif>
-                                <span class="kc-sr">Slajd {{ $i + 1 }}: </span><span class="kc-dot-label">{{ $label }}</span>
+                                <span class="kc-sr">Slajd {{ $i + 1 }}: {{ $label }}</span>
                             </button>
                         </li>
                     @endforeach

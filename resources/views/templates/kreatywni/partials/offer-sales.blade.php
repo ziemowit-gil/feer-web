@@ -46,7 +46,6 @@
                 <div @class(['kc-collection', 'is-main' => $loop->first])>
                     <{{ $kcH }} class="kc-collection-head">
                         <span class="kc-badge" aria-hidden="true"><i class="{{ $kcGroupIcon($group) }}"></i></span>{{ $group }}
-                        <span class="kc-collection-count">{{ count($titles) }} {{ count($titles) === 1 ? 'warsztat' : (in_array(count($titles) % 10, [2, 3, 4], true) && ! in_array(count($titles) % 100, [12, 13, 14], true) ? 'warsztaty' : 'warsztatów') }}</span>
                     </{{ $kcH }}>
                     <ul class="kc-chips">
                         @foreach ($titles as $title)
