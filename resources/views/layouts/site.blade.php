@@ -118,6 +118,11 @@
         Przejdź do treści
     </a>
 
+    {{-- Instalacja podglądowa (APP_PREVIEW_BAR / APP_WATERMARK w .env): pasek „Wersja podglądowa” i znak wodny. --}}
+    @if (filled(config('app.preview_bar')) || filled(config('app.watermark')))
+        @include('partials.dev-environment')
+    @endif
+
     {{-- Zalogowana redakcja: pasek panelu (jak w panelu w stylu Metro) na samej górze strony. --}}
     @include('partials.site-admin-bar')
 

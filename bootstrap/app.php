@@ -81,6 +81,14 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
+            // Niezalogowany (przekierowanie do logowania), błędy walidacji (powrót do formularza) i gotowe odpowiedzi
+            // obsługuje framework — także przy APP_DEBUG=false. Wcześniej trafiały niżej jako „nie-HTTP” i dawały 500.
+            if ($e instanceof \Illuminate\Auth\AuthenticationException
+                || $e instanceof \Illuminate\Validation\ValidationException
+                || $e instanceof \Illuminate\Http\Exceptions\HttpResponseException) {
+                return null;
+            }
+
             $adminPrefix = config('app.admin_prefix', 'admin');
 
             if (! $request->is($adminPrefix, $adminPrefix.'/*')) {

@@ -127,4 +127,12 @@ return [
     // Zmień ADMIN_PREFIX w .env, aby ukryć panel pod innym adresem.
     'admin_prefix' => env('ADMIN_PREFIX', 'admin'),
 
+    /*
+    | Oznaczenie instalacji podglądowej (np. kopia dev dla klienta): pasek na górze strony z tym napisem
+    | i znak wodny powtarzany na całej stronie (partials/dev-environment). Puste = nic nie pokazujemy
+    | (produkcja i lokalnie).
+    */
+    'preview_bar' => env('APP_PREVIEW_BAR'),
+    'watermark' => env('APP_WATERMARK'),
+
 ];
