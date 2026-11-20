@@ -147,6 +147,33 @@ class PageDoktypesNavigationTest extends TestCase
         $this->assertArrayNotHasKey('banner_image', $page->layout_data);
     }
 
+    public function test_edytor_blokowy_pokazuje_i_zapisuje_tytul_w_nawigacji_i_ukrycie_w_menu(): void
+    {
+        $page = $this->page('Sprawozdania finansowe', ['nav_title' => 'Sprawozdania']);
+        $admin = $this->admin();
+
+        $html = $this->actingAs($admin)->get(route('admin.podstrony.bloki.edit', $page))->assertOk()->getContent();
+        $this->assertStringContainsString('"nav_title":"Sprawozdania"', $html);
+        $this->assertStringContainsString('"hide_in_menu":false', $html);
+
+        $this->actingAs($admin)->putJson(route('admin.podstrony.bloki.update', $page), [
+            'title' => 'Sprawozdania finansowe', 'blocks' => [],
+            'settings' => ['is_published' => true, 'nav_title' => '  Raporty  ', 'hide_in_menu' => true],
+        ])->assertOk();
+        $page->refresh();
+        $this->assertSame(['Raporty', true], [$page->nav_title, $page->hide_in_menu]);
+
+        // Zapis bez tych kluczy (starszy edytor) nie zeruje tytułu w nawigacji; puste pole go czyści.
+        $this->actingAs($admin)->putJson(route('admin.podstrony.bloki.update', $page), [
+            'title' => 'Sprawozdania finansowe', 'blocks' => [], 'settings' => ['is_published' => true],
+        ])->assertOk();
+        $this->assertSame(['Raporty', true], [$page->fresh()->nav_title, $page->fresh()->hide_in_menu]);
+        $this->actingAs($admin)->putJson(route('admin.podstrony.bloki.update', $page), [
+            'title' => 'Sprawozdania finansowe', 'blocks' => [], 'settings' => ['is_published' => true, 'nav_title' => '', 'hide_in_menu' => false],
+        ])->assertOk();
+        $this->assertSame([null, false], [$page->fresh()->nav_title, $page->fresh()->hide_in_menu]);
+    }
+
     public function test_formularz_skrotu_wymaga_strony_w_trybie_wskazanej_strony(): void
     {
         $page = $this->page('Skrót', ['type' => 'shortcut']);

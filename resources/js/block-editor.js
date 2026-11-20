@@ -3400,7 +3400,12 @@ function start(config) {
                 v.project_id ? field('Jak pokazać na stronie działania', select(v.project_display, Object.entries(C.projectDisplays), (x) => change({ project_display: x }))) : null,
                 field('Kolejność', order, 'Mniejsza liczba = wyżej w menu i na listach podstron.')),
             panelSection('Menu i nawigacja',
+                // Tytuł w nawigacji (nav_title w TYPO3): krótka nazwa w menu i okruszkach; nagłówek strony to dalej tytuł.
+                'nav_title' in v ? field('Tytuł w nawigacji (opcjonalnie)',
+                    textInput(v.nav_title, (x) => { v.nav_title = x; S.settingsDirty = true; markDirty(); }, { maxlength: '120', placeholder: S.title || 'jak tytuł strony' }),
+                    'Krótka nazwa w menu, okruszkach, menu bocznym i listach podstron. Puste = tytuł strony.') : null,
                 checkbox('Dodaj do menu', v.show_in_menu, (on) => change({ show_in_menu: on }), 'Tylko strony główne (bez rodzica i działania) trafiają do nawigacji.'),
+                'hide_in_menu' in v ? checkbox('Ukryj w menu', v.hide_in_menu, (on) => change({ hide_in_menu: on }), 'Strona jest opublikowana i działa pod adresem, ale nie ma jej w menu, menu bocznym, drzewie działu ani w listach podstron.') : null,
                 checkbox('Ukryj na mapie strony', v.hide_in_sitemap, (on) => change({ hide_in_sitemap: on }), 'Strona działa pod adresem, ale nie ma jej na mapie strony ani w sitemap.xml.'),
                 checkbox('Pokaż menu podstron działu', v.show_side_nav, (on) => change({ show_side_nav: on }, true)),
                 v.show_side_nav ? field('Wygląd menu podstron', select(v.side_nav_style, Object.entries(C.sideNavStyles || {}), (x) => change({ side_nav_style: x })), 'O wyglądzie decyduje strona nadrzędna działu.') : null));

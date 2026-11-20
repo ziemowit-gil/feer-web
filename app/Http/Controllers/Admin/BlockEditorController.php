@@ -567,6 +567,9 @@ class BlockEditorController extends Controller
                 'hide_in_sitemap' => ['nullable', 'boolean'],
                 'show_side_nav' => ['nullable', 'boolean'],
                 'side_nav_style' => ['nullable', \Illuminate\Validation\Rule::in(array_keys(Page::SIDE_NAV_STYLES))],
+                // Tytuł w nawigacji i „Ukryj w menu” (jak w formularzu strony; kolumny z migracji 2026_11_20_140000).
+                'nav_title' => ['nullable', 'string', 'max:120'],
+                'hide_in_menu' => ['nullable', 'boolean'],
             ];
         } elseif ($record instanceof News) {
             $rules += [
@@ -626,6 +629,13 @@ class BlockEditorController extends Controller
                 'hide_in_sitemap' => (bool) ($v['hide_in_sitemap'] ?? $record->hide_in_sitemap),
                 'show_side_nav' => (bool) ($v['show_side_nav'] ?? $record->show_side_nav),
             ];
+            if (Page::hasNavigationColumns()) {
+                // Starszy edytor bez tych pól nie wysyła klucza — wtedy tytuł w nawigacji zostaje bez zmian.
+                if (array_key_exists('nav_title', $v)) {
+                    $data['nav_title'] = trim((string) $v['nav_title']) ?: null;
+                }
+                $data['hide_in_menu'] = (bool) ($v['hide_in_menu'] ?? $record->hide_in_menu);
+            }
             // Styl ukryty w Ustawienia → Moduły nie przejdzie — zostaje bieżący (jak w formularzu).
             $style = $v['side_nav_style'] ?? $record->side_nav_style ?? 'sidebar';
             $data['side_nav_style'] = in_array($style, SiteSetting::current()->blockedOptionsExcept('side_nav_styles', $record->side_nav_style), true)
@@ -708,6 +718,10 @@ class BlockEditorController extends Controller
                 'hide_in_sitemap' => (bool) $record->hide_in_sitemap,
                 'show_side_nav' => (bool) ($record->show_side_nav ?? true),
                 'side_nav_style' => $record->side_nav_style ?: 'sidebar',
+            ] + (Page::hasNavigationColumns() ? [
+                'nav_title' => (string) $record->nav_title,
+                'hide_in_menu' => $record->isHiddenInMenu(),
+            ] : []) + [
                 'slug' => (string) $record->slug,
                 'slug_editable' => ! $record->isAboutPerson() && ! $record->is_system,
                 'meta_title' => (string) $record->meta_title,
