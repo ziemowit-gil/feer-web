@@ -18,7 +18,8 @@
     @php
         $currentType = old('type', $page->type ?? 'standard');
         // Typy-pozycje menu (przekierowanie, własny link, nagłówek) nie mają treści — w formularzu tylko niezbędne pola.
-        $linkTypes = ['redirect', 'menu_link', 'menu_heading'];
+        // (także skrót i folder systemowy — doktypy jak w TYPO3, Page::NON_CONTENT_TYPES)
+        $linkTypes = \App\Models\Page::NON_CONTENT_TYPES;
         $isLinkType = in_array($currentType, $linkTypes, true);
         // Pola bez znaczenia w danym układzie strony (widok układu ich nie używa) — ukrywane, patrz data-hide-for-templates.
         $tplHides = fn (string $list) => in_array(old('page_template', $page->page_template ?? 'default'), explode(' ', $list), true) ? 'hidden' : '';
@@ -140,6 +141,16 @@
                             </div>
                             @error('slug') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             @include('admin.partials.slug-redirect-note', ['model' => $page])
+                        </div>
+
+                        {{-- Tytuł w nawigacji (nav_title w TYPO3): krótka nazwa w menu i okruszkach; H1 to tytuł, <title> — tytuł SEO. --}}
+                        <div>
+                            <label for="nav_title" class="mb-1 block text-sm font-bold">Tytuł w nawigacji <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                            <input type="text" id="nav_title" name="nav_title" value="{{ old('nav_title', $page->nav_title) }}" maxlength="120" aria-describedby="nav_title_hint"
+                                placeholder="{{ $page->title ?: 'jak tytuł' }}"
+                                class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark">
+                            <p id="nav_title_hint" class="mt-1 text-xs text-muted">Krótka nazwa w menu, okruszkach, menu bocznym i listach podstron. Puste = tytuł strony. Nagłówek strony to tytuł, a tytuł w karcie przeglądarki ustawisz w „SEO i udostępnianie”.</p>
+                            @error('nav_title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
@@ -479,6 +490,7 @@
                     </div>
                 </details>
                 @include('admin.pages.partials.metka')
+                @include('admin.pages.partials.inherited-settings')
                 @include('admin.pages.partials.attachments-visibility')
                 @if ($siteSettings->themeVariant() === 'feer_is' || $siteSettings->site_template === 'bu2')
                     @include('admin.pages.partials.service-icon')
@@ -761,6 +773,10 @@
                             <label class="{{ $row }}">
                                 <input type="checkbox" name="show_in_menu" value="1" {{ old('show_in_menu', $page->show_in_menu ?? true) ? 'checked' : '' }}>
                                 <span><span class="{{ $rowTitle }}">Dodaj do menu</span><span class="{{ $rowHint }}">Tylko strony główne (bez rodzica i działania) trafiają do nawigacji.</span></span>
+                            </label>
+                            <label class="{{ $row }}">
+                                <input type="checkbox" name="hide_in_menu" value="1" {{ old('hide_in_menu', $page->hide_in_menu ?? false) ? 'checked' : '' }}>
+                                <span><span class="{{ $rowTitle }}">Ukryj w menu</span><span class="{{ $rowHint }}">Strona jest opublikowana i działa pod swoim adresem, ale nie ma jej w menu głównym, menu bocznym, drzewie działu ani w listach podstron.</span></span>
                             </label>
                             <label class="{{ $row }}">
                                 <input type="checkbox" name="hide_in_sitemap" value="1" {{ old('hide_in_sitemap', $page->hide_in_sitemap ?? false) ? 'checked' : '' }}>

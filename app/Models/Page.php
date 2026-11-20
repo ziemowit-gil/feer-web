@@ -41,7 +41,8 @@ class Page extends Model
 
     public function shouldBeSearchable(): bool
     {
-        return (bool) $this->is_published && ! $this->trashed();
+        // Skróty, linki, nagłówki menu i foldery systemowe nie mają własnej treści — nie trafiają do wyszukiwarki.
+        return (bool) $this->is_published && ! $this->trashed() && ! in_array($this->type, self::NON_CONTENT_TYPES, true);
     }
 
     /** Wersja robocza zmian tej (opublikowanej) strony — Workspaces w TYPO3. */
@@ -338,7 +339,7 @@ class Page extends Model
     protected $fillable = [
         'unpublish_at', 'reviewed_at',
         'metka_author', 'published_by_id',
-        'site_id', 'is_global', 'created_by', 'parent_id', 'project_id', 'project_display', 'title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'hide_in_sitemap', 'show_side_nav', 'side_nav_style', 'is_system', 'is_locked', 'order',
+        'site_id', 'is_global', 'created_by', 'parent_id', 'project_id', 'project_display', 'title', 'nav_title', 'slug', 'content', 'is_published', 'publish_at', 'is_featured', 'is_archived', 'show_in_menu', 'hide_in_menu', 'hide_in_sitemap', 'show_side_nav', 'side_nav_style', 'is_system', 'is_locked', 'order',
         'meta_title', 'meta_description', 'pending_approval', 'submitted_by_id',
         'is_disabled', 'disabled_message', 'wip_mode', 'wip_message',
         'type', 'event_mode', 'event_when', 'event_location', 'event_how_to_join', 'event_registration_url',
@@ -367,6 +368,7 @@ class Page extends Model
         'pending_approval' => 'boolean',
         'is_disabled' => 'boolean',
         'show_in_menu' => 'boolean',
+        'hide_in_menu' => 'boolean',
         'hide_in_sitemap' => 'boolean',
         'show_side_nav' => 'boolean',
         'is_system' => 'boolean',
@@ -419,6 +421,9 @@ class Page extends Model
                 $page->published_by_id ??= auth()->id() ?? $page->created_by;
             }
         });
+
+        // Adresy stron osób ({rodzic}/osoba/…) nadążają za zmianą adresu i przeniesieniem w drzewie (z przekierowaniem 301).
+        static::updated(fn (Page $page) => \App\Support\PagePaths::afterUpdate($page));
     }
 
     public function publishedBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -686,17 +691,114 @@ class Page extends Model
     }
 
     /**
+     * Typy bez własnej treści (doktypy TYPO3: skrót, link zewnętrzny, folder systemowy…): nie trafiają
+     * do sitemap.xml ani wyszukiwarki; w menu prowadzą od razu pod swój cel (navUrl()).
+     */
+    public const NON_CONTENT_TYPES = ['redirect', 'menu_link', 'menu_heading', 'shortcut', 'sys_folder'];
+
+    /** Tryby „Skrótu”: dokąd przenosi strona. */
+    public const SHORTCUT_MODES = [
+        'first_child' => 'Do pierwszej podstrony',
+        'page' => 'Do wskazanej strony',
+        'parent' => 'Do strony nadrzędnej',
+    ];
+
+    /** „Skrót” (doktyp shortcut w TYPO3): wejście na stronę przenosi do pierwszej podstrony, wskazanej strony albo rodzica. */
+    public function isShortcut(): bool
+    {
+        return $this->type === 'shortcut';
+    }
+
+    /** „Folder systemowy” (sysfolder w TYPO3): porządkuje drzewo w panelu, na stronie publicznej go nie ma. */
+    public function isSysFolder(): bool
+    {
+        return $this->type === 'sys_folder';
+    }
+
+    /** Czy strona jest opublikowana i jej data publikacji już minęła. */
+    public function isLiveNow(): bool
+    {
+        return (bool) $this->is_published && ($this->publish_at === null || $this->publish_at->isPast());
+    }
+
+    /**
+     * Strona docelowa skrótu (opublikowana) albo null, gdy celu brak. Skrót na skrót idzie dalej
+     * (jak w TYPO3), z ograniczeniem głębokości przeciw pętlom.
+     */
+    public function shortcutTarget(int $depth = 0): ?self
+    {
+        if (! $this->isShortcut() || $depth > 5) {
+            return null;
+        }
+        $data = $this->typeData();
+        $target = match ($data['shortcut_mode'] ?? 'first_child') {
+            'page' => ($id = (int) ($data['target_page_id'] ?? 0)) && $id !== $this->id
+                ? static::query()->withoutGlobalScope('editor_scope')->live()->find($id)
+                : null,
+            'parent' => $this->parent?->isLiveNow() ? $this->parent : null,
+            default => $this->menuChildren()->withoutGlobalScope('editor_scope')->live()->first(),
+        };
+
+        if ($target?->isSysFolder()) {
+            return null;
+        }
+
+        return $target?->isShortcut() ? $target->shortcutTarget($depth + 1) : $target;
+    }
+
+    /**
      * Adres pozycji menu: „Własny link w menu” i „Przekierowanie” prowadzą od razu pod swój
      * adres docelowy (w menu bocznym, drzewie działu, menu rozwijanym i zakładkach działania),
-     * reszta — na stronę.
+     * „Skrót” — pod adres strony docelowej, reszta — na stronę.
      */
     public function navUrl(): string
     {
         if (($this->isMenuLink() || $this->isRedirect()) && ($target = $this->redirectTarget())) {
             return $target;
         }
+        if ($this->isShortcut() && ($target = once(fn () => $this->shortcutTarget()))) {
+            return $target->navUrl();
+        }
 
         return $this->publicUrl();
+    }
+
+    /** Czy kolumny nawigacji (nav_title, hide_in_menu) już są — kod działa też przed migracją. */
+    public static function hasNavigationColumns(): bool
+    {
+        return once(fn () => \Illuminate\Support\Facades\Schema::hasColumn('pages', 'hide_in_menu'));
+    }
+
+    /** Tytuł w nawigacji (menu, okruszki, menu boczne, listy podstron): krótka nazwa albo — gdy pusta — tytuł strony. */
+    public function navLabel(): string
+    {
+        $short = trim((string) ($this->attributes['nav_title'] ?? ''));
+
+        return $short !== '' ? $short : (string) $this->title;
+    }
+
+    /** „Ukryj w menu”: strona działa pod swoim adresem, ale nie ma jej w menu, menu bocznym ani listach podstron. */
+    public function isHiddenInMenu(): bool
+    {
+        return (bool) ($this->attributes['hide_in_menu'] ?? false);
+    }
+
+    /** Adres strony w okruszkach: folder systemowy nie ma adresu publicznego (sama nazwa, bez linku). */
+    public function crumbUrl(): ?string
+    {
+        return $this->isSysFolder() ? null : $this->navUrl();
+    }
+
+    /**
+     * Okruszki z drzewa (rootline): strony nadrzędne tytułami w nawigacji, bez folderów systemowych
+     * (nie mają adresu ani miejsca w strukturze widocznej dla odwiedzających).
+     *
+     * @return array<int, array{label: string, url: ?string}>
+     */
+    public function rootlineCrumbs(): array
+    {
+        return $this->ancestors()->reject(fn (Page $a) => $a->isSysFolder())
+            ->map(fn (Page $a) => ['label' => $a->navLabel(), 'url' => $a->crumbUrl()])->values()->all();
     }
 
     /** Atrybuty linku w menu (nowa karta dla linku/przekierowania z zaznaczoną opcją). */
@@ -1183,7 +1285,7 @@ class Page extends Model
         $palette = ['blue', 'green', 'purple', 'orange', 'red', 'dark'];
         $offset = $manual->count();
 
-        $auto = $this->publishedChildren->reject(fn (Page $c) => in_array($path($c->publicUrl()), $linked, true))
+        $auto = $this->menuChildren->reject(fn (Page $c) => in_array($path($c->navUrl()), $linked, true))
             ->values()
             ->map(function (Page $c, int $i) use ($palette, $offset) {
                 $text = trim((string) $c->meta_description);
@@ -1192,8 +1294,8 @@ class Page extends Model
                 }
 
                 return [
-                    'label' => $c->title,
-                    'url' => $c->publicUrl(),
+                    'label' => $c->navLabel(),
+                    'url' => $c->navUrl(),
                     'description' => $text,
                     'icon' => 'fa-solid '.(self::typeIcons()[$c->type] ?? 'fa-file-lines'),
                     'color' => $palette[($offset + $i) % count($palette)],
@@ -1207,7 +1309,25 @@ class Page extends Model
 
     public function publishedChildren(): HasMany
     {
-        return $this->children()->where('is_published', true)->where('type', '!=', 'about_person');
+        // Strony osób mają własne listy, folder systemowy nie ma widoku publicznego.
+        return $this->children()->where('is_published', true)->whereNotIn('type', ['about_person', 'sys_folder']);
+    }
+
+    /** Podstrony w menu (menu główne, rozwijane, boczne, drzewo działu, zakładki): opublikowane, bez „Ukryj w menu”. */
+    public function menuChildren(): HasMany
+    {
+        return self::excludeHiddenInMenu($this->publishedChildren());
+    }
+
+    /** Zawęża zapytanie do stron widocznych w menu (pomija „Ukryj w menu”; przed migracją bez zmian). */
+    public static function excludeHiddenInMenu($query)
+    {
+        if (! self::hasNavigationColumns()) {
+            return $query;
+        }
+        $table = $query->getModel()->getTable();
+
+        return $query->where(fn ($q) => $q->whereNull($table.'.hide_in_menu')->orWhere($table.'.hide_in_menu', false));
     }
 
     /**
@@ -1266,20 +1386,94 @@ class Page extends Model
         return $this->ancestors()->first() ?? $this;
     }
 
+    /**
+     * Ustawienia dziedziczone w głąb drzewa (slide w TYPO3): klucz w `layout_data` => [pola wartości, klucz „bez…”].
+     * Pierwsza niepusta wartość w górę po rodzicach wygrywa; „bez…” na stronie zatrzymuje dziedziczenie
+     * dla niej i jej podstron bez własnej wartości.
+     */
+    public const INHERITED_SETTINGS = [
+        'banner' => ['label' => 'Baner sekcji', 'fields' => ['banner_image', 'banner_alt'], 'value' => 'banner_image', 'off' => 'banner_off'],
+        'contact' => ['label' => 'Kontakt opiekuna działu', 'fields' => ['contact_name', 'contact_role', 'contact_email', 'contact_phone'], 'value' => 'contact_name', 'off' => 'contact_off'],
+    ];
+
+    /**
+     * Wartość ustawienia dziedziczonego ze ścieżki strony (ta strona → rodzic → … → korzeń) albo null.
+     *
+     * @return array{values: array<string, ?string>, source: Page, inherited: bool}|null
+     */
+    public function inheritedSetting(string $key): ?array
+    {
+        $def = self::INHERITED_SETTINGS[$key] ?? null;
+        if (! $def) {
+            return null;
+        }
+
+        foreach ($this->ancestors()->reverse()->prepend($this) as $node) {
+            $layout = (array) ($node->layout_data ?? []);
+            if (filled($layout[$def['value']] ?? null)) {
+                $values = [];
+                foreach ($def['fields'] as $field) {
+                    $values[$field] = filled($layout[$field] ?? null) ? trim((string) $layout[$field]) : null;
+                }
+
+                return ['values' => $values, 'source' => $node, 'inherited' => ! $node->is($this)];
+            }
+            if (! empty($layout[$def['off']])) {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Porządkuje pola ustawień dziedziczonych w `layout_data` z formularza: puste teksty i niezaznaczone „Bez…”
+     * usuwa (wtedy podstrona dziedziczy po rodzicu), teksty przycina.
+     */
+    public static function normalizeInheritedLayout(array $layout): array
+    {
+        foreach (self::INHERITED_SETTINGS as $def) {
+            foreach ($def['fields'] as $field) {
+                if (! array_key_exists($field, $layout)) {
+                    continue;
+                }
+                $value = trim((string) $layout[$field]);
+                if ($value === '') {
+                    unset($layout[$field]);
+                } else {
+                    $layout[$field] = $value;
+                }
+            }
+            if (array_key_exists($def['off'], $layout)) {
+                if (filter_var($layout[$def['off']], FILTER_VALIDATE_BOOLEAN)) {
+                    $layout[$def['off']] = true;
+                } else {
+                    unset($layout[$def['off']]);
+                }
+            }
+        }
+
+        return $layout;
+    }
+
+    /** Wartość dziedziczona z rodziców (bez własnej wartości tej strony) — do podpowiedzi w formularzu. */
+    public function inheritedFromAncestors(string $key): ?array
+    {
+        return $this->parent?->inheritedSetting($key);
+    }
+
     public function menuSiblings()
     {
+        // Menu lokalne działu: bez stron „Ukryj w menu” i folderów systemowych.
         if ($this->parent_id) {
-            return $this->parent->children()
-                ->where('is_published', true)
-                ->where('type', '!=', 'about_person')
-                ->get();
+            return $this->parent->menuChildren()->get();
         }
 
         if ($this->project_id) {
-            return $this->project->publishedPages()->get();
+            return self::excludeHiddenInMenu($this->project->publishedPages())->where('type', '!=', 'sys_folder')->get();
         }
 
-        return $this->publishedChildren()->get();
+        return $this->menuChildren()->get();
     }
 
     /** Publiczny adres — cel przekierowania 301 ze starego adresu po zmianie sluga (RedirectsOldSlug). */

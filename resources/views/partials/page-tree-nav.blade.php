@@ -23,11 +23,11 @@
     $treeRootIsProject = (bool) ($page->project && ! $page->parent_id);
     $treeRoot = $treeRootIsProject ? null : $page->sectionRoot();
 
-    $treeRootLabel = $treeRootIsProject ? $page->project->title : $treeRoot->title;
-    $treeRootUrl = $treeRootIsProject ? route('projects.show', $page->project) : $treeRoot->publicUrl();
+    $treeRootLabel = $treeRootIsProject ? $page->project->title : $treeRoot->navLabel();
+    $treeRootUrl = $treeRootIsProject ? route('projects.show', $page->project) : $treeRoot->crumbUrl(); // folder systemowy: bez linku
     $treeRootCurrent = ! $treeRootIsProject && $treeRoot->is($page);
 
-    $treeNodes = $treeRootIsProject ? $menuSiblings : $treeRoot->publishedChildren;
+    $treeNodes = $treeRootIsProject ? $menuSiblings : $treeRoot->menuChildren;
 
     // Identyfikatory stron na ścieżce korzeń → bieżąca (łącznie z bieżącą):
     // te gałęzie są rozwinięte domyślnie.
@@ -35,7 +35,7 @@
 
     $treeCrumbs = $treeRootIsProject
         ? collect([['label' => $page->project->title, 'url' => route('projects.show', $page->project)]])
-        : $page->ancestors()->map(fn ($a) => ['label' => $a->title, 'url' => $a->publicUrl()]);
+        : collect($page->rootlineCrumbs());
 @endphp
 
 <nav aria-label="Podstrony w tym dziale" class="page-tree-nav rounded-md bg-gray-50 p-4 text-sm">
@@ -51,17 +51,24 @@
                 <a href="{{ $crumb['url'] }}" class="rounded font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $crumb['label'] }}</a>
                 <span aria-hidden="true" class="mx-0.5 text-muted">›</span>
             @endforeach
-            <span class="font-semibold text-ink" aria-current="page">{{ $page->title }}</span>
+            <span class="font-semibold text-ink" aria-current="page">{{ $page->navLabel() }}</span>
         </p>
     @endif
 
     <ul role="list" class="space-y-0.5">
         <li>
+            @if ($treeRootUrl)
             <a href="{{ $treeRootUrl }}" @if ($treeRootCurrent) aria-current="page" @endif
                 class="flex min-h-11 items-center gap-2 rounded-md px-3 py-2 font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark {{ $treeRootCurrent ? 'bg-brand-light text-brand-dark' : 'text-ink hover:bg-white hover:text-brand-dark hover:underline hover:underline-offset-4' }}">
                 <i class="fa-solid {{ $treeRootIsProject ? 'fa-diagram-project' : 'fa-house' }} w-4 text-center text-xs text-brand-dark" aria-hidden="true"></i>
                 <span class="min-w-0 flex-1">{{ $treeRootLabel }}</span>
             </a>
+            @else
+            <p class="flex min-h-11 items-center gap-2 px-3 py-2 font-bold text-ink">
+                <i class="fa-solid fa-house w-4 text-center text-xs text-brand-dark" aria-hidden="true"></i>
+                <span class="min-w-0 flex-1">{{ $treeRootLabel }}</span>
+            </p>
+            @endif
 
             @if ($treeNodes->isNotEmpty())
                 @include('partials.page-tree-nav-branch', [

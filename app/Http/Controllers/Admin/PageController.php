@@ -1067,8 +1067,19 @@ class PageController extends Controller
                 $clone->save();
             }
             $map = [$page->id => $clone->id];
+            $copies = [$clone];
             foreach ($tree as $child) {               // rodzice zawsze przed dziećmi (kolejność przejścia)
-                $map[$child->id] = $this->draftCopy($child, $map[$child->parent_id], $child->title, $clone->project_id)->id;
+                $copy = $this->draftCopy($child, $map[$child->parent_id], $child->title, $clone->project_id);
+                $map[$child->id] = $copy->id;
+                $copies[] = $copy;
+            }
+            // Skróty wskazujące stronę z kopiowanej gałęzi prowadzą do jej kopii (nie do oryginału).
+            foreach ($copies as $copy) {
+                $target = (int) (($copy->type_data ?? [])['target_page_id'] ?? 0);
+                if ($copy->isShortcut() && isset($map[$target])) {
+                    $copy->type_data = ['target_page_id' => $map[$target]] + (array) $copy->type_data;
+                    $copy->save();
+                }
             }
 
             return $clone;
@@ -1085,10 +1096,15 @@ class PageController extends Controller
     /** Największa gałąź kopiowana razem z podstronami jednym wklejeniem. */
     private const MAX_TREE_COPY = 200;
 
-    /** Kopia strony jako szkic (bez flagi systemowej i blokady) pod wskazaną stroną nadrzędną, z kolejnością oryginału. */
+    /**
+     * Kopia strony jako szkic (bez flagi systemowej i blokady) pod wskazaną stroną nadrzędną, z kolejnością oryginału.
+     * Kopiuje treść, bloki i wszystkie ustawienia (kolumny strony, layout_data, type_data) oraz wersję ETR;
+     * metryczka publikacji i zgłoszenie do akceptacji zaczynają się od nowa. Galeria i załączniki (pliki)
+     * zostają przy oryginale, strony osób też (drzewo ich nie obejmuje — to profile z modułu „Osoby”).
+     */
     private function draftCopy(Page $page, ?int $parentId, string $title, ?int $projectId = null): Page
     {
-        $copy = $page->replicate();
+        $copy = $page->replicate(['first_published_at', 'published_by_id', 'reviewed_at']);
         $copy->title = $title;
         $copy->slug = $this->uniqueSlug($title);
         $copy->parent_id = $parentId;
@@ -1098,7 +1114,15 @@ class PageController extends Controller
         $copy->is_published = false;
         $copy->is_system = false;
         $copy->is_locked = false;
+        $copy->pending_approval = false;
+        $copy->submitted_by_id = null;
+        $copy->created_by = auth()->id() ?? $page->created_by;
         $copy->save();
+
+        // Wersja łatwa do czytania (ETR) to wersja tej samej treści — idzie razem z kopią.
+        if ($etr = $page->etr()->first()) {
+            $copy->etr()->save($etr->replicate());
+        }
 
         return $copy;
     }
@@ -1209,6 +1233,7 @@ class PageController extends Controller
             'project_id' => ['nullable', 'exists:projects,id'],
             'project_display' => ['nullable', Rule::in(array_keys(Page::PROJECT_DISPLAYS))],
             'title' => ['required', 'string', 'max:255'],
+            'nav_title' => ['nullable', 'string', 'max:120'],
             'slug' => ['nullable', 'string', 'max:255'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:300'],
@@ -1257,6 +1282,15 @@ class PageController extends Controller
             'layout_data.newsletter_title' => ['nullable', 'string', 'max:120'],
             'layout_data.newsletter_text' => ['nullable', 'string', 'max:400'],
             'layout_data.newsletter_button' => ['nullable', 'string', 'max:60'],
+            // Ustawienia dziedziczone przez podstrony (Page::INHERITED_SETTINGS): baner sekcji, kontakt opiekuna działu.
+            'layout_data.banner_image' => ['nullable', 'string', 'max:1000', 'regex:~^(https?://|/)~i'],
+            'layout_data.banner_alt' => ['nullable', 'string', 'max:255'],
+            'layout_data.banner_off' => ['nullable', 'boolean'],
+            'layout_data.contact_name' => ['nullable', 'string', 'max:120'],
+            'layout_data.contact_role' => ['nullable', 'string', 'max:120'],
+            'layout_data.contact_email' => ['nullable', 'email', 'max:190'],
+            'layout_data.contact_phone' => ['nullable', 'string', 'max:40'],
+            'layout_data.contact_off' => ['nullable', 'boolean'],
             'access_mode' => ['nullable', Rule::in(array_keys(Page::ACCESS_MODES))],
             'access_password' => ['nullable', 'string', 'max:255'],
             'access_level' => ['nullable', Rule::in(array_keys(Page::ACCESS_LEVELS))],
@@ -1346,6 +1380,16 @@ class PageController extends Controller
         }
         $data['show_in_menu'] = $request->boolean('show_in_menu');
         $data['hide_in_sitemap'] = $request->boolean('hide_in_sitemap');
+        // Tytuł w nawigacji i „Ukryj w menu” (kolumny z migracji 2026_11_20_140000 — bez niej pomijamy).
+        if (Page::hasNavigationColumns()) {
+            $data['nav_title'] = trim((string) ($data['nav_title'] ?? '')) ?: null;
+            $data['hide_in_menu'] = $request->boolean('hide_in_menu');
+        } else {
+            unset($data['nav_title']);
+        }
+        if (isset($data['layout_data']) && is_array($data['layout_data'])) {
+            $data['layout_data'] = Page::normalizeInheritedLayout($data['layout_data']);
+        }
         $data['show_side_nav'] = $request->boolean('show_side_nav');
         $data['side_nav_style'] = array_key_exists((string) $request->input('side_nav_style'), Page::SIDE_NAV_STYLES)
             ? $request->input('side_nav_style')

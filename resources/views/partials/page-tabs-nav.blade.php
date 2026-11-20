@@ -12,17 +12,19 @@
 --}}
 @php
     $tabsUp = null;
-    $tabsHeading = $page->title;
+    $tabsHeading = $page->navLabel();
 
     if ($page->project) {
         $tabsHeading = $page->project->title;
         $tabsUp = ['label' => $page->project->title, 'url' => route('projects.show', $page->project), 'current' => false];
+    } elseif ($page->parent && $page->parent->isSysFolder()) {
+        // Folder systemowy nie ma strony publicznej — zakładki to same podstrony folderu.
     } elseif ($page->parent) {
-        $tabsHeading = $page->parent->title;
-        $tabsUp = ['label' => $page->parent->title, 'url' => route('page.show', $page->parent), 'current' => $page->parent->is($page)];
+        $tabsHeading = $page->parent->navLabel();
+        $tabsUp = ['label' => $page->parent->navLabel(), 'url' => $page->parent->navUrl(), 'current' => $page->parent->is($page)];
     } else {
         // Strona główna działu: sama jest pierwszą zakładką.
-        $tabsUp = ['label' => $page->title, 'url' => $page->publicUrl(), 'current' => true];
+        $tabsUp = ['label' => $page->navLabel(), 'url' => $page->publicUrl(), 'current' => true];
     }
 
     // Zakładki dziedziczą substyl paska menu głównego (Ustawienia → Nagłówek):
@@ -54,7 +56,7 @@
             @php $tabCurrent = $sibling->is($page) || $sibling->publishedChildren->contains(fn ($c) => $c->is($page)); @endphp
             <li class="flex-none">
                 <a href="{{ $sibling->navUrl() }}" {!! $sibling->navLinkAttributes() !!} @if ($sibling->is($page)) aria-current="page" @endif class="{{ $tabClass($tabCurrent) }}">
-                    {{ $sibling->title }}{!! $sibling->navNewTabNotice() !!}
+                    {{ $sibling->navLabel() }}{!! $sibling->navNewTabNotice() !!}
                     @if (! $tabsPills && $tabCurrent)<span class="absolute inset-x-4 bottom-1 block h-1 bg-brand" aria-hidden="true"></span>@endif
                 </a>
             </li>

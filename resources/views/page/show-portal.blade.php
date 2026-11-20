@@ -14,8 +14,8 @@
         // Działanie z kategorii z portalem: ścieżka przez portal (Category::breadcrumbTrail).
         ...($page->project ? ($page->project->category ? $page->project->category->breadcrumbTrail() : [['label' => 'Działania', 'url' => route('projects.index')]]) : []),
         $page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)]
-            : ($page->parent ? ['label' => $page->parent->title, 'url' => route('page.show', $page->parent)] : null),
-        ['label' => $page->title, 'url' => null],
+            : ($page->parent && ! $page->parent->isSysFolder() ? ['label' => $page->parent->navLabel(), 'url' => $page->parent->navUrl()] : null),
+        ['label' => $page->navLabel(), 'url' => null],
     ])])
 @endsection
 

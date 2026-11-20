@@ -298,6 +298,7 @@
                         <li class="{{ $legendRow }}"><span class="inline-flex h-4 w-4 flex-none items-center justify-center rounded-sm text-[10px] font-bold" style="background:#166534;color:#fff" aria-hidden="true">D</span> Podstrona działania</li>
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-amber-500"><i class="fa-solid fa-star" aria-hidden="true"></i></span> Wyróżniona</li>
                         <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-lock" aria-hidden="true"></i></span> Strona systemowa — nie można jej usunąć</li>
+                        <li class="{{ $legendRow }}"><span class="{{ $legendIcon }} text-gray-500"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i></span> Ukryta w menu — działa pod swoim adresem, ale nie ma jej w menu i listach podstron</li>
                     </ul>
                     @if ($usedTypes->isNotEmpty())
                         <h3 class="mb-1.5 mt-3 font-bold">Typy stron</h3>
@@ -410,8 +411,9 @@
                                     <i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj
                                 </a>
                             @endif
-                            <a href="{{ $selectedLive ? $selected->publicUrl() : $selected->previewUrl() }}" target="_blank" rel="noopener" class="{{ $btn }}">
-                                <i class="fa-solid fa-eye" aria-hidden="true"></i> {{ $selectedLive ? 'Podgląd publiczny' : 'Podgląd roboczy' }}<span class="sr-only"> (nowa karta)</span>
+                            @php $selectedPublic = $selectedLive && ! $selected->isSysFolder(); @endphp
+                            <a href="{{ $selectedPublic ? $selected->publicUrl() : $selected->previewUrl() }}" target="_blank" rel="noopener" class="{{ $btn }}">
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i> {{ $selectedPublic ? 'Podgląd publiczny' : 'Podgląd roboczy' }}<span class="sr-only"> (nowa karta)</span>
                             </a>
                         </div>
                     </div>
@@ -423,6 +425,39 @@
                             Ta strona jest niedostępna dla odwiedzających, bo wyłączono stronę nadrzędną
                             @if ($disabledParent)„<a href="{{ route('admin.podstrony.index', ['wybrana' => $disabledParent->id]) }}" class="font-bold underline">{{ $disabledParent->title }}</a>”@endif.
                             Włącz ją, aby przywrócić dostęp do podstron.
+                        </p>
+                    @endif
+
+                    {{-- Doktypy jak w TYPO3 (skrót, link, folder systemowy) i „Ukryj w menu”: dokąd prowadzi strona i gdzie jej nie ma. --}}
+                    @php
+                        $selectedShortcut = $selected->isShortcut() ? $selected->shortcutTarget() : null;
+                        $selectedLinkTarget = ($selected->isMenuLink() || $selected->isRedirect()) ? $selected->redirectTarget() : null;
+                    @endphp
+                    @if ($selected->isShortcut())
+                        <p class="mt-3 rounded-md bg-gray-50 px-3 py-2 text-xs text-ink" data-doktype-note>
+                            <i class="fa-solid fa-diamond-turn-right mr-1 text-brand-dark" aria-hidden="true"></i>
+                            Skrót — {{ \Illuminate\Support\Str::lower(\App\Models\Page::SHORTCUT_MODES[$selected->typeData()['shortcut_mode'] ?? 'first_child'] ?? '') }}:
+                            @if ($selectedShortcut)
+                                odwiedzający trafiają na „<a href="{{ route('admin.podstrony.index', ['wybrana' => $selectedShortcut->id]) }}" class="font-bold text-brand-dark underline">{{ $selectedShortcut->title }}</a>” <span class="font-mono">({{ parse_url($selectedShortcut->navUrl(), PHP_URL_PATH) ?: '/' }})</span>.
+                            @else
+                                <strong>brak celu</strong> (nie ma opublikowanej podstrony albo wskazanej strony) — odwiedzający trafią na stronę nadrzędną.
+                            @endif
+                        </p>
+                    @elseif ($selected->isMenuLink() || $selected->isRedirect())
+                        <p class="mt-3 rounded-md bg-gray-50 px-3 py-2 text-xs text-ink" data-doktype-note>
+                            <i class="fa-solid {{ $selected->isMenuLink() ? 'fa-link' : 'fa-share' }} mr-1 text-brand-dark" aria-hidden="true"></i>
+                            @if ($selectedLinkTarget) Prowadzi do: <span class="break-all font-mono">{{ $selectedLinkTarget }}</span>@else <strong>Adres docelowy nie jest ustawiony.</strong>@endif
+                        </p>
+                    @elseif ($selected->isSysFolder())
+                        <p class="mt-3 rounded-md bg-gray-50 px-3 py-2 text-xs text-ink" data-doktype-note>
+                            <i class="fa-solid fa-box-archive mr-1 text-brand-dark" aria-hidden="true"></i>
+                            Folder systemowy — porządkuje strony w panelu. Nie ma strony publicznej (adres daje „Nie znaleziono”), nie ma go w menu, na mapie strony ani w listach podstron; podstrony w środku działają pod swoimi adresami.
+                        </p>
+                    @endif
+                    @if ($selected->isHiddenInMenu())
+                        <p class="mt-3 rounded-md bg-gray-50 px-3 py-2 text-xs text-ink" data-hidden-in-menu-note>
+                            <i class="fa-solid fa-eye-slash mr-1 text-gray-600" aria-hidden="true"></i>
+                            Ukryta w menu — strona działa pod swoim adresem, ale nie ma jej w menu głównym, menu bocznym, drzewie działu ani w listach podstron.
                         </p>
                     @endif
 
@@ -508,6 +543,20 @@
                             </dd>
                         </div>
                         <div><dt class="text-xs font-semibold text-muted">Nawigacja po podstronach</dt><dd class="mt-0.5">{{ $selected->show_side_nav ? (\App\Models\Page::SIDE_NAV_STYLES[$selected->side_nav_style] ?? 'Boczne drzewo') : 'Wyłączona' }}</dd></div>
+                        <div><dt class="text-xs font-semibold text-muted">Tytuł w nawigacji</dt><dd class="mt-0.5">@if (filled($selected->nav_title)){{ $selected->nav_title }}@else<span class="text-muted">jak tytuł strony</span>@endif</dd></div>
+                        {{-- Ustawienia dziedziczone w głąb drzewa (slide w TYPO3): własne, z której strony nadrzędnej albo brak. --}}
+                        @foreach (\App\Models\Page::INHERITED_SETTINGS as $inhKey => $inhDef)
+                            @php $inh = $selected->inheritedSetting($inhKey); @endphp
+                            <div data-inherited="{{ $inhKey }}"><dt class="text-xs font-semibold text-muted">{{ $inhDef['label'] }}</dt><dd class="mt-0.5">
+                                @if (! $inh)
+                                    <span class="text-muted">{{ ! empty(($selected->layout_data ?? [])[$inhDef['off']]) ? 'wyłączony na tej stronie' : 'brak' }}</span>
+                                @elseif ($inh['inherited'])
+                                    dziedziczony z „<a href="{{ route('admin.podstrony.index', ['wybrana' => $inh['source']->id]) }}" class="text-brand-dark hover:underline">{{ $inh['source']->title }}</a>”
+                                @else
+                                    własny{{ $inhKey === 'contact' ? ': '.$inh['values']['contact_name'] : '' }}
+                                @endif
+                            </dd></div>
+                        @endforeach
                         @if ($selected->publish_at && ! $selectedLive && $selected->is_published)
                             <div><dt class="text-xs font-semibold text-muted">Publikacja</dt><dd class="mt-0.5">{{ $selected->publish_at->format('d.m.Y H:i') }}</dd></div>
                         @endif

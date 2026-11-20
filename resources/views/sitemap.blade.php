@@ -63,7 +63,7 @@
                         <div class="mb-6 break-inside-avoid rounded-md border border-solid border-gray-200 bg-white p-5" data-sm-group>
                             <ul role="list">
                                 <li data-sm-item>
-                                    <a href="{{ $node['page']->publicUrl() }}" class="text-lg font-bold {{ $link }}">{{ $node['page']->title }}</a>
+                                    <a href="{{ $node['page']->navUrl() }}" class="text-lg font-bold {{ $link }}">{{ $node['page']->navLabel() }}</a>
                                     @include('partials.sitemap-tree', ['nodes' => $node['children']])
                                 </li>
                             </ul>
@@ -74,7 +74,7 @@
                             <h3 class="text-lg font-bold text-ink">{{ $roots->isNotEmpty() ? 'Pozostałe strony' : 'Strony' }}</h3>
                             <ul class="mt-2 space-y-1.5" role="list">
                                 @foreach ($singles as $node)
-                                    <li data-sm-item><a href="{{ $node['page']->publicUrl() }}" class="{{ $link }}">{{ $node['page']->title }}</a></li>
+                                    <li data-sm-item><a href="{{ $node['page']->navUrl() }}" class="{{ $link }}">{{ $node['page']->navLabel() }}</a></li>
                                 @endforeach
                             </ul>
                         </div>

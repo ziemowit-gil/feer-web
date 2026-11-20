@@ -72,7 +72,9 @@ class SitemapController extends Controller
         }
 
         if ($settings->isModuleEnabled('pages')) {
-            Page::query()->where('is_published', true)->where(fn ($q) => $q->whereNull('hide_in_sitemap')->orWhere('hide_in_sitemap', false))->get()
+            // Bez skrótów, linków, nagłówków menu i folderów systemowych — to przekierowania albo adresy bez strony (Page::NON_CONTENT_TYPES).
+            Page::query()->where('is_published', true)->where(fn ($q) => $q->whereNull('hide_in_sitemap')->orWhere('hide_in_sitemap', false))
+                ->whereNotIn('type', Page::NON_CONTENT_TYPES)->get()
                 ->each(fn (Page $page) => $sitemap->add(
                     Url::create(route('page.show', $page))->setLastModificationDate($page->updated_at)
                 ));
@@ -119,7 +121,8 @@ class SitemapController extends Controller
                 ->orderBy('order')->orderBy('title')
                 ->get();
             $disabledByAncestor = Page::inheritedDisabledMap(Page::query()->forCurrentSite()->get(['id', 'parent_id', 'is_disabled']));
-            $visible = $all->reject(fn (Page $p) => $p->hide_in_sitemap || $p->is_disabled || isset($disabledByAncestor[$p->id]) || $p->requiresAccess());
+            // Folder systemowy nie ma strony publicznej — na mapie go nie ma (jego podstrony trafiają poziom wyżej).
+            $visible = $all->reject(fn (Page $p) => $p->hide_in_sitemap || $p->isSysFolder() || $p->is_disabled || isset($disabledByAncestor[$p->id]) || $p->requiresAccess());
 
             [$people, $pages] = $visible->partition(fn (Page $p) => $p->isAboutPerson());
             $people = $people->sortBy('title', SORT_NATURAL | SORT_FLAG_CASE)->values();

@@ -110,7 +110,7 @@ class ContentA11yController extends Controller
     private function records(string $key): Collection
     {
         $query = match ($key) {
-            'pages' => Page::query()->forCurrentSite()->whereNotIn('type', ['redirect', 'menu_link', 'menu_heading']),
+            'pages' => Page::query()->forCurrentSite()->whereNotIn('type', Page::NON_CONTENT_TYPES),
             'news' => News::query()->forCurrentSite(),
             'projects' => Project::query()->forCurrentSite(),
         };

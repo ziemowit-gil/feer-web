@@ -7,14 +7,15 @@
     // attached to takes precedence, then a parent page. $menuSiblings is passed
     // in by the caller (App\Models\Page::menuSiblings()).
     $localUp = null;
-    $localHeading = $page->title;
+    $localHeading = $page->navLabel();
 
     if ($page->project) {
         $localHeading = $page->project->title;
         $localUp = ['label' => $page->project->title, 'url' => route('projects.show', $page->project)];
-    } elseif ($page->parent) {
-        $localHeading = $page->parent->title;
-        $localUp = ['label' => $page->parent->title, 'url' => route('page.show', $page->parent), 'current' => $page->parent->is($page)];
+    } elseif ($page->parent && ! $page->parent->isSysFolder()) {
+        // (folder systemowy nie ma strony publicznej — wtedy bez nagłówka i linku w górę)
+        $localHeading = $page->parent->navLabel();
+        $localUp = ['label' => $page->parent->navLabel(), 'url' => $page->parent->navUrl(), 'current' => $page->parent->is($page)];
     }
 
     // Płaski styl menu działu: pozycje jako pełnej szerokości linki z szewronem,
@@ -44,15 +45,15 @@
             </li>
         @endif
         @foreach ($menuSiblings as $sibling)
-            @php $kids = $sibling->publishedChildren; @endphp
+            @php $kids = $sibling->menuChildren; @endphp
             <li>
                 {{-- „Nagłówek w menu”: niklikalny tytuł grupy, jego podstrony zawsze widoczne. --}}
                 @if ($sibling->isMenuHeading())
-                    <p class="px-3 pb-1 pt-3 text-sm font-bold uppercase tracking-wide text-muted">{{ $sibling->title }}</p>
+                    <p class="px-3 pb-1 pt-3 text-sm font-bold uppercase tracking-wide text-muted">{{ $sibling->navLabel() }}</p>
                 @else
                 <a href="{{ $sibling->navUrl() }}" {!! $sibling->navLinkAttributes() !!} @if ($sibling->is($page)) aria-current="page" @endif
                     class="{{ $localItem($sibling->is($page)) }}">
-                    <span class="min-w-0">{{ $sibling->title }}{!! $sibling->navNewTabNotice() !!}</span>
+                    <span class="min-w-0">{{ $sibling->navLabel() }}{!! $sibling->navNewTabNotice() !!}</span>
                     <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
                 </a>
                 @endif
@@ -62,7 +63,7 @@
                             <li>
                                 <a href="{{ $child->navUrl() }}" {!! $child->navLinkAttributes() !!} @if ($child->is($page)) aria-current="page" @endif
                                     class="{{ $localChild($child->is($page)) }}">
-                                    <span class="min-w-0">{{ $child->title }}{!! $child->navNewTabNotice() !!}</span>
+                                    <span class="min-w-0">{{ $child->navLabel() }}{!! $child->navNewTabNotice() !!}</span>
                                     <i class="fa-solid fa-chevron-right flex-none text-[0.625rem]" aria-hidden="true"></i>
                                 </a>
                             </li>
@@ -91,18 +92,18 @@
         @foreach ($menuSiblings as $sibling)
             <li>
                 @if ($sibling->isMenuHeading())
-                    <p class="px-3 pb-1 pt-3 text-sm font-bold uppercase tracking-wide text-muted">{{ $sibling->title }}</p>
+                    <p class="px-3 pb-1 pt-3 text-sm font-bold uppercase tracking-wide text-muted">{{ $sibling->navLabel() }}</p>
                 @else
                 <a href="{{ $sibling->navUrl() }}" {!! $sibling->navLinkAttributes() !!}
                     {{ $sibling->is($page) ? 'aria-current=page' : '' }}
                     class="{{ $localItem($sibling->is($page)) }}">
-                    <span class="min-w-0">{{ $sibling->title }}{!! $sibling->navNewTabNotice() !!}</span>
+                    <span class="min-w-0">{{ $sibling->navLabel() }}{!! $sibling->navNewTabNotice() !!}</span>
                     <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
                 </a>
                 @endif
 
                 {{-- Drzewo: opublikowane podstrony rodzeństwa jako zagnieżdżona gałąź (wcięcie zamiast linii). --}}
-                @php $childBranch = $sibling->publishedChildren; @endphp
+                @php $childBranch = $sibling->menuChildren; @endphp
                 @if ($childBranch->isNotEmpty())
                     <ul role="list" class="side-sub mt-1 space-y-1">
                         @foreach ($childBranch as $child)
@@ -110,7 +111,7 @@
                                 <a href="{{ $child->navUrl() }}" {!! $child->navLinkAttributes() !!}
                                     {{ $child->is($page) ? 'aria-current=page' : '' }}
                                     class="{{ $localChild($child->is($page)) }}">
-                                    <span class="min-w-0">{{ $child->title }}{!! $child->navNewTabNotice() !!}</span>
+                                    <span class="min-w-0">{{ $child->navLabel() }}{!! $child->navNewTabNotice() !!}</span>
                                     <i class="fa-solid fa-chevron-right flex-none text-[0.625rem]" aria-hidden="true"></i>
                                 </a>
                             </li>

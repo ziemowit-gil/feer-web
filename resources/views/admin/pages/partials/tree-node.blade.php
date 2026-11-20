@@ -64,6 +64,7 @@
                         @php $nodeMenu = collect(($menuPositions ?? [])[$node->id])->map(fn ($p) => $p['location_label'].($p['parent'] ? ' › '.$p['parent'] : ''))->unique()->implode(', '); @endphp
                         <i class="fa-solid fa-bars text-[10px] text-brand-dark" title="W menu: {{ $nodeMenu }}" aria-hidden="true"></i><span class="sr-only">(w menu: {{ $nodeMenu }})</span>
                     @endif
+                    @if ($node->isHiddenInMenu())<i class="fa-solid fa-eye-slash text-[10px] text-gray-500" title="Ukryta w menu" aria-hidden="true"></i><span class="sr-only">(ukryta w menu)</span>@endif
                     @if ($node->is_featured)<i class="fa-solid fa-star text-[10px] text-amber-500" aria-hidden="true"></i><span class="sr-only">(wyróżniona)</span>@endif
                     <span class="sr-only">({{ $ovLabel }}){{ $isSel ? ' Wybrana strona.' : '' }}</span>
                     @if ($kids->isNotEmpty())

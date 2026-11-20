@@ -8,7 +8,7 @@
 @php
     $navSections = \Modules\Contact\Support\ContactSections::available($siteSettings, $showMeetings, $showShipping);
     $navBook = \Modules\Contact\Support\ContactSections::phoneBook($siteSettings);
-    $navSubpages = ($metkaPage ?? null)?->publishedChildren()->get() ?? collect();
+    $navSubpages = ($metkaPage ?? null)?->menuChildren()->get() ?? collect();
     // Książka będąca podstroną kontaktu (typ „Kontakt — książka”) jest już na liście podstron — nie powtarzamy jej.
     if ($navBook && ($navBook['page_id'] ?? null) && $navSubpages->contains('id', $navBook['page_id'])) {
         $navBook = null;
@@ -48,8 +48,8 @@
             @endif
             @foreach ($navSubpages as $sub)
                 <li>
-                    <a href="{{ $sub->publicUrl() }}" class="{{ $navItem }}{{ $navIdle }}">
-                        <span class="min-w-0">{{ $sub->title }}</span>
+                    <a href="{{ $sub->navUrl() }}" class="{{ $navItem }}{{ $navIdle }}">
+                        <span class="min-w-0">{{ $sub->navLabel() }}</span>
                         <i class="fa-solid fa-chevron-right flex-none text-xs" aria-hidden="true"></i>
                     </a>
                 </li>

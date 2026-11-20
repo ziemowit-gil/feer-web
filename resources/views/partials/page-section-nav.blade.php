@@ -10,7 +10,7 @@
     (Page::publishedChildren / menuSiblings).
 --}}
 @php
-    $sectionChildren = $page->publishedChildren;
+    $sectionChildren = $page->menuChildren;
     $typeIcons = \App\Models\Page::typeIcons();
     $excerptOf = function (\App\Models\Page $p): string {
         $text = trim((string) $p->meta_description);
@@ -34,7 +34,7 @@
         }
         $sectionParent = $page->project
             ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)]
-            : ($page->parent ? ['label' => $page->parent->title, 'url' => $page->parent->publicUrl()] : null);
+            : ($page->parent && ! $page->parent->isSysFolder() ? ['label' => $page->parent->navLabel(), 'url' => $page->parent->navUrl()] : null);
     }
 @endphp
 
@@ -48,13 +48,13 @@
                 <li class="group relative flex gap-4 rounded-md bg-gray-50 p-4 transition hover:bg-brand-light focus-within:ring-2 focus-within:ring-brand-dark">
                     <i class="fa-solid {{ $typeIcons[$child->type] ?? 'fa-file-lines' }} mt-1 w-5 flex-none text-center text-lg text-brand-dark" aria-hidden="true"></i>
                     <span class="min-w-0 flex-1">
-                        <a href="{{ $child->publicUrl() }}" class="stretched-link text-base font-bold text-brand-dark underline underline-offset-4 group-hover:no-underline focus-visible:outline-none">{{ $child->title }}</a>
+                        <a href="{{ $child->navUrl() }}" class="stretched-link text-base font-bold text-brand-dark underline underline-offset-4 group-hover:no-underline focus-visible:outline-none">{{ $child->navLabel() }}</a>
                         @php $excerpt = $excerptOf($child); @endphp
                         @if ($excerpt !== '')
                             <span class="mt-1 block text-sm leading-snug text-muted">{{ $excerpt }}</span>
                         @endif
-                        @if ($child->publishedChildren->isNotEmpty())
-                            <span class="mt-2 block text-sm font-bold text-ink">{{ $child->publishedChildren->count() }} {{ trans_choice('podstrona|podstrony|podstron', $child->publishedChildren->count()) }}</span>
+                        @if ($child->menuChildren->isNotEmpty())
+                            <span class="mt-2 block text-sm font-bold text-ink">{{ $child->menuChildren->count() }} {{ trans_choice('podstrona|podstrony|podstron', $child->menuChildren->count()) }}</span>
                         @endif
                     </span>
                     <i class="fa-solid fa-chevron-right mt-1.5 flex-none text-xs text-brand-dark" aria-hidden="true"></i>
@@ -72,16 +72,16 @@
         @endif
         <div class="grid gap-3 sm:grid-cols-2">
             @if ($prev)
-                <a href="{{ $prev->publicUrl() }}" rel="prev" class="group flex min-h-16 items-center gap-3 rounded-md bg-gray-50 px-4 py-3 transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                <a href="{{ $prev->navUrl() }}" rel="prev" class="group flex min-h-16 items-center gap-3 rounded-md bg-gray-50 px-4 py-3 transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
                     <i class="fa-solid fa-arrow-left flex-none text-brand-dark" aria-hidden="true"></i>
-                    <span class="min-w-0"><span class="block text-xs font-bold uppercase tracking-wide text-muted">Poprzednia</span><span class="block truncate font-bold text-brand-dark underline underline-offset-4 group-hover:no-underline">{{ $prev->title }}</span></span>
+                    <span class="min-w-0"><span class="block text-xs font-bold uppercase tracking-wide text-muted">Poprzednia</span><span class="block truncate font-bold text-brand-dark underline underline-offset-4 group-hover:no-underline">{{ $prev->navLabel() }}</span></span>
                 </a>
             @else
                 <span aria-hidden="true"></span>
             @endif
             @if ($next)
-                <a href="{{ $next->publicUrl() }}" rel="next" class="group flex min-h-16 items-center justify-end gap-3 rounded-md bg-gray-50 px-4 py-3 text-right transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                    <span class="min-w-0"><span class="block text-xs font-bold uppercase tracking-wide text-muted">Następna</span><span class="block truncate font-bold text-brand-dark underline underline-offset-4 group-hover:no-underline">{{ $next->title }}</span></span>
+                <a href="{{ $next->navUrl() }}" rel="next" class="group flex min-h-16 items-center justify-end gap-3 rounded-md bg-gray-50 px-4 py-3 text-right transition hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                    <span class="min-w-0"><span class="block text-xs font-bold uppercase tracking-wide text-muted">Następna</span><span class="block truncate font-bold text-brand-dark underline underline-offset-4 group-hover:no-underline">{{ $next->navLabel() }}</span></span>
                     <i class="fa-solid fa-arrow-right flex-none text-brand-dark" aria-hidden="true"></i>
                 </a>
             @endif

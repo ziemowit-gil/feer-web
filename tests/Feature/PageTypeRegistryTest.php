@@ -69,9 +69,12 @@ class PageTypeRegistryTest extends TestCase
             'team' => 'Zespół (osoby z rolą i krótkim opisem)',
             'documents' => 'Dokumenty (grupy odnośników do plików i stron)',
             'regulation' => 'Regulamin lub dokument (data obowiązywania, spis treści)',
+            // Doktypy jak w TYPO3: skrót i folder systemowy (2026-11-20).
+            'shortcut' => 'Skrót (przenosi do pierwszej podstrony albo wskazanej strony)',
             'redirect' => 'Przekierowanie (strona przenosi na inny adres)',
             'menu_link' => 'Własny link w menu (pozycja prowadzi pod wskazany adres)',
             'menu_heading' => 'Nagłówek w menu (grupuje podstrony, bez własnej treści)',
+            'sys_folder' => 'Folder systemowy (porządkuje strony w panelu, niewidoczny na stronie)',
             'reports' => 'Sprawozdania roczne (tabela z modułu Sprawozdania — np. do BIP)',
             'partners' => 'Partnerzy i sponsorzy (logotypy w grupach, z modułu Partnerzy lub własne)',
             'recruitment' => 'Rekrutacja do projektu (status naboru, terminy, kryteria, dokumenty, zgłoszenie)',
@@ -87,14 +90,14 @@ class PageTypeRegistryTest extends TestCase
             'Kafelki i nawigacja' => ['links_hub', 'tiles_grid'],
             // Dawny typ „Książka telefoniczna” (phone_book) jest wycofany z wyboru — zastąpił go „Kontakt — książka” z modułu Kontakt.
             'Kontakt i wydarzenia' => ['contact', 'contact_book', 'form_page', 'event', 'schedule'],
-            'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move', 'redirect', 'menu_link', 'menu_heading'],
+            'Wewnętrzne i przekierowania' => ['internal', 'internal_hub', 'bip_move', 'shortcut', 'redirect', 'menu_link', 'menu_heading', 'sys_folder'],
         ], Page::typeGroups());
 
         // Dawne TYPE_ICONS + ikona instytucji szkoleniowej (wcześniej tylko w drzewie stron).
         $icons = Page::typeIcons();
         ksort($icons);
         $expected = [
-            'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced', 'redirect' => 'fa-share', 'menu_link' => 'fa-link', 'menu_heading' => 'fa-heading', 'reports' => 'fa-file-invoice', 'partners' => 'fa-handshake',
+            'pricing' => 'fa-coins', 'team' => 'fa-people-group', 'documents' => 'fa-folder-open', 'regulation' => 'fa-scale-balanced', 'redirect' => 'fa-share', 'menu_link' => 'fa-link', 'menu_heading' => 'fa-heading', 'shortcut' => 'fa-diamond-turn-right', 'sys_folder' => 'fa-box-archive', 'reports' => 'fa-file-invoice', 'partners' => 'fa-handshake',
             'recruitment' => 'fa-user-plus', 'tyflo_consultations' => 'fa-eye-low-vision', 'tyflo_trainings' => 'fa-chalkboard-user', 'tender' => 'fa-file-signature', 'service' => 'fa-briefcase', 'guide' => 'fa-list-ol', 'glossary' => 'fa-book', 'case_study' => 'fa-chart-line',
             'faq' => 'fa-circle-question', 'event' => 'fa-calendar', 'schedule' => 'fa-calendar-days', 'links_hub' => 'fa-table-cells-large',
             'tiles_grid' => 'fa-table-cells', 'internal' => 'fa-lock', 'internal_hub' => 'fa-user-lock', 'bip_move' => 'fa-landmark',
@@ -106,7 +109,7 @@ class PageTypeRegistryTest extends TestCase
         $this->assertSame($expected, $icons);
 
         $this->assertSame(
-            ['contact_book', 'form_page', 'phone_book', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'training_offer', 'training_catalog', 'trainer_profile', 'training_accreditations', 'team', 'documents', 'regulation', 'redirect', 'menu_link', 'reports', 'partners', 'recruitment', 'tender', 'tyflo_consultations', 'tyflo_trainings'],
+            ['contact_book', 'form_page', 'phone_book', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'training_offer', 'training_catalog', 'trainer_profile', 'training_accreditations', 'team', 'documents', 'regulation', 'shortcut', 'redirect', 'menu_link', 'reports', 'partners', 'recruitment', 'tender', 'tyflo_consultations', 'tyflo_trainings'],
             Page::typeDataTypes(),
         );
 

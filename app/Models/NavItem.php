@@ -126,7 +126,7 @@ class NavItem extends Model
 
         if ($this->type === 'link') {
             return $this->children->isNotEmpty()
-                || (($page = $this->linkedPage()) && $page->publishedChildren->isNotEmpty());
+                || (($page = $this->linkedPage()) && $page->menuChildren->isNotEmpty());
         }
 
         // Menu działań: kolumny = kategorie z działaniami (partial sprawdza, czy są kategorie).
@@ -213,7 +213,7 @@ class NavItem extends Model
         }
 
         return Page::where('slug', $path)->where('is_published', true)
-            ->with('publishedChildren.publishedChildren')
+            ->with('menuChildren.menuChildren')
             ->first();
     }
 
@@ -292,15 +292,16 @@ class NavItem extends Model
         if ($page) {
             $loose = [];
             $groups = [];
-            foreach ($page->publishedChildren as $child) {
-                $grandchildren = $child->publishedChildren;
+            // Podstrony w menu: bez „Ukryj w menu” i folderów systemowych, tytułami w nawigacji (nav_title).
+            foreach ($page->menuChildren as $child) {
+                $grandchildren = $child->menuChildren;
                 if ($grandchildren->isNotEmpty()) {
                     $groups[] = [
-                        'heading' => ['url' => $child->publicUrl(), 'label' => $child->title, 'description' => null, 'icon' => null, 'current' => $currentPageId === $child->id],
-                        'links' => $grandchildren->map(fn (Page $g) => [$g->publicUrl(), $g->title, null, null, $currentPageId === $g->id])->all(),
+                        'heading' => ['url' => $child->navUrl(), 'label' => $child->navLabel(), 'description' => null, 'icon' => null, 'current' => $currentPageId === $child->id],
+                        'links' => $grandchildren->map(fn (Page $g) => [$g->navUrl(), $g->navLabel(), null, null, $currentPageId === $g->id])->all(),
                     ];
                 } else {
-                    $loose[] = [$child->publicUrl(), $child->title, null, null, $currentPageId === $child->id];
+                    $loose[] = [$child->navUrl(), $child->navLabel(), null, null, $currentPageId === $child->id];
                 }
             }
 

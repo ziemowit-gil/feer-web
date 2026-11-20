@@ -50,8 +50,8 @@ class SubpageList
     /** Maksymalna liczba ręcznie wybranych stron. */
     public const MAX_PICKED = 60;
 
-    /** Typy stron, które nie trafiają na listę (osoby, nagłówki menu, strony wewnętrzne). */
-    private const SKIPPED_TYPES = ['about_person', 'menu_heading', 'internal', 'internal_hub', 'brand_assets'];
+    /** Typy stron, które nie trafiają na listę (osoby, nagłówki menu, strony wewnętrzne, foldery systemowe — te mogą być tylko źródłem listy). */
+    private const SKIPPED_TYPES = ['about_person', 'menu_heading', 'internal', 'internal_hub', 'brand_assets', 'sys_folder'];
 
     /** Bieżąca strona — źródło domyślne; ustawia ją PageController przed renderowaniem. */
     private static ?Page $contextPage = null;
@@ -180,15 +180,15 @@ class SubpageList
         }
 
         $source = $o['picked'] === [] ? ($o['page'] ? static::query()->find($o['page']) : $context) : null;
-        $label = $source ? 'Podstrony: '.$source->title : 'Powiązane strony';
+        $label = $source ? 'Podstrony: '.$source->navLabel() : 'Powiązane strony';
 
         return View::make('partials.content-link-list', [
             'items' => $items->map(fn (array $item) => [
-                'title' => $item['page']->title,
+                'title' => $item['page']->navLabel(),
                 'url' => $item['page']->navUrl(),
                 'excerpt' => $o['layout'] === 'lista' ? null : static::excerpt($item['page']),
                 'date' => null,
-                'children' => $item['children']->map(fn (Page $c) => ['title' => $c->title, 'url' => $c->navUrl()])->all(),
+                'children' => $item['children']->map(fn (Page $c) => ['title' => $c->navLabel(), 'url' => $c->navUrl()])->all(),
             ])->all(),
             'layout' => $o['layout'],
             'label' => $label,
@@ -247,7 +247,8 @@ class SubpageList
     /** @return Collection<int, Collection<int, Page>> dzieci pogrupowane po parent_id */
     private static function childrenOf(Collection $parentIds, string $sort): Collection
     {
-        $children = static::visible(static::query()->whereIn('parent_id', $parentIds->all())->orderBy('order')->orderBy('title')->get());
+        // Lista podstron to menu: strony z „Ukryj w menu” pomijamy (ręcznie wybrane zostają — redaktor wskazał je wprost).
+        $children = static::visible(Page::excludeHiddenInMenu(static::query()->whereIn('parent_id', $parentIds->all()))->orderBy('order')->orderBy('title')->get());
 
         return $children->groupBy('parent_id')->map(fn (Collection $group) => $sort === 'alfabet' ? static::sortAlpha($group) : $group->values());
     }
@@ -257,8 +258,8 @@ class SubpageList
         $collator = class_exists(\Collator::class) ? new \Collator('pl_PL') : null;
 
         return $pages->sort(fn (Page $a, Page $b) => $collator
-            ? $collator->compare((string) $a->title, (string) $b->title)
-            : strcasecmp((string) $a->title, (string) $b->title))->values();
+            ? $collator->compare($a->navLabel(), $b->navLabel())
+            : strcasecmp($a->navLabel(), $b->navLabel()))->values();
     }
 
     private static function visible(Collection $pages, bool $allowSkippedTypes = false): Collection

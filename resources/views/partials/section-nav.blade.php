@@ -12,9 +12,9 @@
     <nav class="rounded-md bg-gray-50 p-5" aria-labelledby="{{ $navId }}">
         <h2 id="{{ $navId }}" class="text-lg font-bold text-ink">
             @if ($sectionRoot->is($page))
-                {{ $sectionRoot->title }}
+                {{ $sectionRoot->navLabel() }}
             @else
-                <a href="{{ $sectionRoot->publicUrl() }}" class="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $sectionRoot->title }}</a>
+                <a href="{{ $sectionRoot->navUrl() }}" class="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">{{ $sectionRoot->navLabel() }}</a>
             @endif
         </h2>
         <span class="mb-4 mt-2 block h-1 w-14 bg-brand" aria-hidden="true"></span>
@@ -24,7 +24,7 @@
                 <li>
                     <a href="{{ $item->navUrl() }}" {!! $item->navLinkAttributes() !!} @if ($current) aria-current="page" @endif
                         class="flex items-center justify-between gap-3 rounded-md px-3 py-2.5 text-ink transition hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark {{ $current ? 'bg-brand-light font-bold' : 'font-semibold' }}">
-                        <span>{{ $item->title }}{!! $item->navNewTabNotice() !!}</span>
+                        <span>{{ $item->navLabel() }}{!! $item->navNewTabNotice() !!}</span>
                         <i class="fa-solid fa-chevron-right shrink-0 text-xs text-brand-dark" aria-hidden="true"></i>
                     </a>
                 </li>

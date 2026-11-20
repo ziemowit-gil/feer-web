@@ -52,6 +52,21 @@ class PageController extends Controller
             return redirect()->to($first?->navUrl() ?? $page->parent?->publicUrl() ?? url('/'));
         }
 
+        // „Folder systemowy” porządkuje drzewo w panelu — na stronie publicznej go nie ma (podgląd z panelu pokazuje informację).
+        if ($page->isSysFolder()) {
+            abort_unless($preview, 404);
+
+            return response()->view('page.sys-folder', ['page' => $page, 'preview' => true]);
+        }
+
+        // „Skrót” przenosi do pierwszej podstrony, wskazanej strony albo rodzica. 302, bo cel może się zmienić
+        // (nowa pierwsza podstrona, inny wybór redaktora) — przeglądarki nie zapamiętują go na stałe.
+        if ($page->isShortcut() && ! $preview) {
+            $target = $page->shortcutTarget();
+
+            return redirect()->to($target?->navUrl() ?? $page->parent?->publicUrl() ?? url('/'), 302);
+        }
+
         // Strona typu „Kontakt” ma stały układ i własny kontroler.
         if ($page->type === 'contact') {
             return app(ContactController::class)->render($page);

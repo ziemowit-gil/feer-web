@@ -55,7 +55,7 @@ class ContentReview
                 ->where('updated_at', '<', $cutoff)
                 ->where(fn ($q) => $q->whereNull('reviewed_at')->orWhere('reviewed_at', '<', $cutoff));
             if ($key === 'pages') {
-                $query->whereNotIn('type', ['redirect', 'menu_link', 'menu_heading'])->where('is_system', false);
+                $query->whereNotIn('type', Page::NON_CONTENT_TYPES)->where('is_system', false);
             }
             if ($key === 'news') {
                 $query->where('is_archived', false); // archiwalne mają baner „treść może być nieaktualna”
@@ -82,7 +82,7 @@ class ContentReview
     public static function pageDue(Page $page, int $months = self::DEFAULT_MONTHS): bool
     {
         if (! self::available() || ! $page->is_published || $page->is_system
-            || in_array($page->type, ['redirect', 'menu_link', 'menu_heading'], true) || ! $page->updated_at) {
+            || in_array($page->type, Page::NON_CONTENT_TYPES, true) || ! $page->updated_at) {
             return false;
         }
         $cutoff = now()->subMonths($months);

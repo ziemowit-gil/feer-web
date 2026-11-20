@@ -1,4 +1,4 @@
-@php $mobile ??= false; $transparent ??= false; $label ??= $page->title; @endphp
+@php $mobile ??= false; $transparent ??= false; $label ??= $page->navLabel(); @endphp
 
 <li class="relative" x-data="{ open: false }" x-id="['dropdown']"
     @mouseenter="if (!{{ $mobile ? 'true' : 'false' }}) open = true" @mouseleave="if (!{{ $mobile ? 'true' : 'false' }}) open = false"
@@ -18,7 +18,7 @@
     <div class="flex items-center gap-1 border-b-2 transition-colors {{ $triggerCurrent ? $activeBdr : 'border-transparent' }} {{ $mobile ? 'w-full justify-between' : 'pb-1' }}"
         :class="open ? '{{ $activeBdr }}' : ''">
         {{-- Nagłówek działa jak zwykły link w headerze — klik prowadzi do strony. --}}
-        <a href="{{ route('page.show', $page) }}" x-ref="pageTrigger"
+        <a href="{{ $page->navUrl() }}" x-ref="pageTrigger"
             class="uppercase transition-colors {{ $hoverTxtCls }} focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current {{ $mobile ? 'py-2' : 'pt-2' }}">
             {{ $label }}
         </a>
@@ -38,22 +38,22 @@
             'absolute left-0 top-full mt-1 w-72' => ! $mobile,
             'static mt-1 w-full' => $mobile,
         ])>
-        @foreach ($page->publishedChildren as $child)
+        @foreach ($page->menuChildren as $child)
             @php $isCurrentChild = request()->routeIs('page.show') && request()->route('page')?->id === $child->id; @endphp
             <li>
                 @if ($child->isMenuHeading())
                     {{-- „Nagłówek w menu”: tytuł grupy (bez linku) i jego podstrony. --}}
-                    <p class="px-5 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-muted">{{ $child->title }}</p>
-                    @foreach ($child->publishedChildren as $grandchild)
+                    <p class="px-5 pb-1 pt-3 text-xs font-bold uppercase tracking-wide text-muted">{{ $child->navLabel() }}</p>
+                    @foreach ($child->menuChildren as $grandchild)
                         <a href="{{ $grandchild->navUrl() }}" {!! $grandchild->navLinkAttributes() !!}
                             class="block px-5 py-3 text-base font-medium normal-case text-ink hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
-                            {{ $grandchild->title }}{!! $grandchild->navNewTabNotice() !!}
+                            {{ $grandchild->navLabel() }}{!! $grandchild->navNewTabNotice() !!}
                         </a>
                     @endforeach
                 @else
                 <a href="{{ $child->navUrl() }}" {!! $child->navLinkAttributes() !!} @if ($isCurrentChild) aria-current="page" @endif
                     class="block px-5 py-3 text-base font-medium normal-case {{ $isCurrentChild ? 'text-brand-dark' : 'text-ink' }} hover:bg-gray-50 hover:text-brand-dark focus-visible:bg-gray-50">
-                    {{ $child->title }}{!! $child->navNewTabNotice() !!}
+                    {{ $child->navLabel() }}{!! $child->navNewTabNotice() !!}
                 </a>
                 @endif
             </li>

@@ -15,8 +15,8 @@
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => array_filter([
-        $page->parent ? ['label' => $page->parent->title, 'url' => $page->parent->publicUrl()] : null,
-        ['label' => $page->title, 'url' => null],
+        $page->parent && ! $page->parent->isSysFolder() ? ['label' => $page->parent->navLabel(), 'url' => $page->parent->navUrl()] : null,
+        ['label' => $page->navLabel(), 'url' => null],
     ])])
 @endsection
 
@@ -27,7 +27,7 @@
 
     @php
         // Strona działu z podstronami pokazuje własne podstrony; podstrona w tym szablonie — rodzeństwo.
-        $ownChildren = $page->publishedChildren()->where('type', '!=', 'about_person')->get();
+        $ownChildren = $page->menuChildren()->get(); // bez „Ukryj w menu” i folderów systemowych
         $sectionRoot = $ownChildren->isNotEmpty() ? $page : ($page->parent ?: $page);
         $menuSiblings = $ownChildren->isNotEmpty() ? $ownChildren : $page->menuSiblings();
         // Menu działu w prawej kolumnie = „Nawigacja po podstronach” (to samo ustawienie co w innych szablonach).

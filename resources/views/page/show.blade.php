@@ -20,8 +20,9 @@
         $page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)] : null,
         // Pełna ścieżka działu (rootline): wszystkie strony nadrzędne, nie tylko bezpośredni rodzic.
         ...($page->ancestors()->isNotEmpty() ? [] : $page->menuTrail()),
-        ...$page->ancestors()->map(fn ($a) => ['label' => $a->title, 'url' => $a->publicUrl()])->all(),
-        ['label' => $page->title, 'url' => null],
+        // Tytuły w nawigacji (nav_title), bez folderów systemowych — Page::rootlineCrumbs().
+        ...$page->rootlineCrumbs(),
+        ['label' => $page->navLabel(), 'url' => null],
     ])])
 @endsection
 
@@ -52,9 +53,9 @@
         @php
             $menuSiblings = $page->menuSiblings();
             // „Nawigacja kafelkowa": podstrony jako kafelki pod treścią (lista boczna byłaby duplikatem).
-            $tilesNav     = $page->sideNavStyle() === 'tiles' && $page->publishedChildren->isNotEmpty();
+            $tilesNav     = $page->sideNavStyle() === 'tiles' && $page->menuChildren->isNotEmpty();
             // „Akordeon": podstrony działu jako rozwijane sekcje pod treścią strony działu (lista boczna byłaby duplikatem).
-            $accordionNav = $page->sideNavStyle() === 'accordion' && $page->publishedChildren->isNotEmpty();
+            $accordionNav = $page->sideNavStyle() === 'accordion' && $page->menuChildren->isNotEmpty();
             $showLocalNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty() && ! $tilesNav && ! $accordionNav;
             $showTabsNav  = $showLocalNav && $page->sideNavStyle() === 'tabs';
             $showSideNav  = $showLocalNav && ! $showTabsNav;
@@ -70,8 +71,8 @@
             $hasAside = $showSideNav || $toc !== [];
 
             // Nagłówek w stylu portalu: dział nad tytułem, data aktualizacji, czas czytania.
-            $ppSection = $page->parent
-                ? ['label' => $page->parent->title, 'url' => $page->parent->publicUrl()]
+            $ppSection = $page->parent && ! $page->parent->isSysFolder()
+                ? ['label' => $page->parent->navLabel(), 'url' => $page->parent->navUrl()]
                 : ($page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)] : null);
             $ppFeer = ($siteSettings->site_template ?? 'default') === 'feer';
             $ppWords = count(preg_split('/\s+/u', trim(strip_tags(str_replace('<', ' <', (string) $page->content))), -1, PREG_SPLIT_NO_EMPTY));
@@ -108,6 +109,7 @@
             @endif
 
             <section class="mx-auto max-w-6xl px-4 py-10" x-data="{ etr: false }">
+                @include('page.partials.section-banner')
                 @if ($showTabsNav)
                     @include('partials.page-tabs-nav', ['menuSiblings' => $menuSiblings])
                 @endif
@@ -209,14 +211,16 @@
                         @endif
 
                         @if ($accordionNav)
-                            @include('partials.page-children-accordion', ['children' => $page->publishedChildren()->orderBy('order')->orderBy('title')->get(), 'page' => $page])
+                            @include('partials.page-children-accordion', ['children' => $page->menuChildren()->get(), 'page' => $page])
                         @endif
 
                         @if ($tilesNav)
-                            @include('partials.page-tiles-nav', ['tiles' => $page->publishedChildren()->orderBy('order')->orderBy('title')->get()])
+                            @include('partials.page-tiles-nav', ['tiles' => $page->menuChildren()->get()])
                         @endif
 
                         @include('partials.attachments-list', ['attachments' => $page->attachments])
+
+                        @include('page.partials.section-contact')
 
                         {{-- Blok „W tym dziale" dubluje boczne menu, więc pokazujemy go tylko, gdy menu nie ma. --}}
                         @unless ($showSideNav)

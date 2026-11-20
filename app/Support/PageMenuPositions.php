@@ -54,7 +54,7 @@ final class PageMenuPositions
         // tylko wtedy to ustawienie strony coś znaczy (domyślnie jest włączone dla każdej strony).
         foreach ($items->where('type', 'pages') as $pagesItem) {
             foreach ($pages as $page) {
-                if ($page->show_in_menu && ! $page->parent_id && ! $page->project_id && $page->is_published) {
+                if ($page->show_in_menu && ! $page->isHiddenInMenu() && ! $page->isSysFolder() && ! $page->parent_id && ! $page->project_id && $page->is_published) {
                     $positions[$page->id][] = [
                         'item' => null, 'location' => (string) $pagesItem->location,
                         'location_label' => self::locationLabel((string) $pagesItem->location),

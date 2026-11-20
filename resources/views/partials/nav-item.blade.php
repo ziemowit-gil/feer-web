@@ -16,7 +16,7 @@
     </a>
 @elseif (! $item->is_button && (
         $item->children->isNotEmpty()
-        || (($linkedPage = $item->linkedPage()) && ($linkedPage->publishedChildren->isNotEmpty() || ($linkedPage->type === 'about' && $siteSettings->isModuleEnabled('faq'))))
+        || (($linkedPage = $item->linkedPage()) && ($linkedPage->menuChildren->isNotEmpty() || ($linkedPage->type === 'about' && $siteSettings->isModuleEnabled('faq'))))
     ))
     {{-- Link z podmenu: ręcznie dodane podpozycje + automatyczne podstrony
          powiązanej strony + (dla „O organizacji") pozycja FAQ. --}}

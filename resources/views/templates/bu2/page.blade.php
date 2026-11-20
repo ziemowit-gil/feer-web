@@ -14,8 +14,8 @@
         ...($page->project ? ($page->project->category ? $page->project->category->breadcrumbTrail() : [['label' => 'Działania', 'url' => route('projects.index')]]) : []),
         $page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)] : null,
         ...($page->ancestors()->isNotEmpty() ? [] : $page->menuTrail()),
-        ...$page->ancestors()->map(fn ($a) => ['label' => $a->title, 'url' => $a->publicUrl()])->all(),
-        ['label' => $page->title, 'url' => null],
+        ...$page->rootlineCrumbs(),
+        ['label' => $page->navLabel(), 'url' => null],
     ])])
 @endsection
 
@@ -33,8 +33,8 @@
                 $menuNode = \App\Support\Bu2Menu::currentNode();
                 $tiles = $menuNode && $menuNode['children'] !== []
                     ? $menuNode['children']
-                    : $page->publishedChildren()->orderBy('order')->orderBy('title')->get()
-                        ->map(fn ($c) => ['label' => $c->title, 'url' => $c->publicUrl(), 'icon' => ($c->layout_data ?? [])['icon'] ?? null])->all();
+                    : $page->menuChildren()->get()
+                        ->map(fn ($c) => ['label' => $c->navLabel(), 'url' => $c->navUrl(), 'icon' => ($c->layout_data ?? [])['icon'] ?? null])->all();
                 $pageTiles = (! $page->isTilesGrid() && $page->showsTiles())
                     ? collect($page->tiles ?? [])->filter(fn ($t) => filled($t['heading'] ?? null) || (filled($t['label'] ?? null) && filled($t['url'] ?? null)))->values()
                     : collect();

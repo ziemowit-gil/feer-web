@@ -14,8 +14,8 @@
         // Działanie z kategorii z portalem: ścieżka przez portal (Category::breadcrumbTrail).
         ...($page->project ? ($page->project->category ? $page->project->category->breadcrumbTrail() : [['label' => 'Działania', 'url' => route('projects.index')]]) : []),
         $page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)]
-            : ($page->parent ? ['label' => $page->parent->title, 'url' => route('page.show', $page->parent)] : null),
-        ['label' => $page->title, 'url' => null],
+            : ($page->parent && ! $page->parent->isSysFolder() ? ['label' => $page->parent->navLabel(), 'url' => $page->parent->navUrl()] : null),
+        ['label' => $page->navLabel(), 'url' => null],
     ])])
 @endsection
 
@@ -29,8 +29,8 @@
         @php
             $canInlineEdit = auth('web')->check() && auth('web')->user()->canAccessModule('pages');
             $contentHasShortcode = \App\Support\ShortcodeParser::has($page->content);
-            $ppSection = $page->parent
-                ? ['label' => $page->parent->title, 'url' => $page->parent->publicUrl()]
+            $ppSection = $page->parent && ! $page->parent->isSysFolder()
+                ? ['label' => $page->parent->navLabel(), 'url' => $page->parent->navUrl()]
                 : ($page->project ? ['label' => $page->project->title, 'url' => route('projects.show', $page->project)] : null);
         @endphp
         <div data-page-template="wide" @if ($canInlineEdit) x-data="inlineContentEditor('page', {{ $page->id }}, '{{ route('admin.inline-edit.update') }}', { engine: '{{ $siteSettings->contentEditorValue() }}', uploadUrl: '{{ route('admin.multimedia.upload-ajax') }}' })" @endif>
@@ -39,6 +39,7 @@
             @endif
 
             <article class="mx-auto max-w-6xl px-4 py-10">
+                @include('page.partials.section-banner')
                 <header class="mb-8">
                     @if ($ppSection)
                         <p class="text-sm font-bold uppercase tracking-widest">
@@ -75,6 +76,8 @@
                 @include('partials.page-gallery', ['page' => $page])
 
                 @include('partials.attachments-list', ['attachments' => $page->attachments])
+
+                @include('page.partials.section-contact')
             </article>
         </div>
         @endif
