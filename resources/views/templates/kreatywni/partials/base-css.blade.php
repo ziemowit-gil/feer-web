@@ -45,7 +45,11 @@
     .kc-top-btn sup { font-size: .7em; }
     .kc-top-btn:hover, .kc-top-btn[aria-pressed="true"], .kc-top-btn[aria-expanded="true"] { background: var(--kc-sun); border-color: var(--kc-sun); color: var(--kc-forest); }
     .kc-top-btn[aria-disabled="true"] { opacity: 1; border-style: dashed; cursor: not-allowed; }
-    .kc-topbar-contact { display: flex; flex-wrap: wrap; gap: 0 1.25rem; margin: 0 0 0 auto; padding: 0; list-style: none; }
+    .kc-topbar-contact { display: flex; flex-wrap: wrap; align-items: center; gap: 0 1.25rem; margin: 0 0 0 auto; padding: 0; list-style: none; }
+    .kc-topbar-contact a.kc-top-social { justify-content: center; width: 2.25rem; padding: 0; border-radius: 50%; font-size: 1rem; }
+    .kc-topbar-contact li:has(.kc-top-social) { margin-left: -.85rem; }
+    .kc-topbar-contact a.kc-top-social:hover { background: var(--kc-sun); color: var(--kc-forest); text-decoration: none; }
+    .kc-topbar-contact a.kc-top-social i { color: inherit; }
     .kc-topbar-contact a { display: inline-flex; align-items: center; gap: .45rem; min-height: 2.25rem; color: #fff; font-size: .88rem; font-weight: 600; text-decoration: none; }
     .kc-topbar-contact a:hover { text-decoration: underline; text-underline-offset: 4px; }
     .kc-topbar-contact i { color: var(--kc-sun); }
@@ -60,12 +64,13 @@
     .kc-brand-text { display: flex; flex-direction: column; line-height: 1.1; }
     .kc-brand-kind { font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--kc-muted); }
     .kc-brand-name { font-size: 1.15rem; font-weight: 800; color: var(--kc-forest); }
-    .kc-nav { margin-left: auto; }
-    .kc-nav > ul { display: flex; align-items: center; gap: .25rem; margin: 0; padding: 0; list-style: none; }
-    .kc-nav-link { display: inline-flex; align-items: center; gap: .35rem; min-height: 2.75rem; padding: .5rem .9rem; border: 0; border-radius: 999px;
-        background: transparent; color: var(--kc-ink); font: inherit; font-size: .98rem; font-weight: 600; text-decoration: none; cursor: pointer; }
-    .kc-nav-link:hover { background: var(--kc-mint); color: var(--kc-forest); }
-    .kc-nav-link[aria-current="page"], .kc-nav-link.is-here { color: var(--kc-forest); box-shadow: inset 0 -3px 0 var(--kc-lime); border-radius: .75rem .75rem .25rem .25rem; }
+    .kc-nav { margin: 0 auto; }
+    .kc-nav > ul { display: flex; align-items: center; gap: .15rem; margin: 0; padding: .3rem; border-radius: 999px; background: var(--kc-cream); list-style: none; }
+    .kc-nav-link { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.6rem; padding: .45rem 1.05rem; border: 0; border-radius: 999px;
+        background: transparent; color: var(--kc-ink); font: inherit; font-size: .98rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: background-color .15s; }
+    .kc-nav-link:hover { background: rgba(255, 255, 255, .7); color: var(--kc-forest); }
+    .kc-nav-link[aria-current="page"], .kc-nav-link.is-here, .kc-nav-link[aria-expanded="true"] { background: #fff; color: var(--kc-forest); font-weight: 800; }
+    .kc-nav-link .kc-chev { color: var(--kc-green); }
     .kc-nav-item { position: static; }
     .kc-mega { position: absolute; left: 0; right: 0; top: 100%; z-index: 45; max-height: calc(100vh - 8rem); overflow-y: auto; border-top: 1px solid var(--kc-line);
         background: #fff; box-shadow: 0 24px 40px rgba(27, 74, 7, .12); }
@@ -92,7 +97,7 @@
     .kc-drop a:hover, .kc-drop a[aria-current="page"] { background: var(--kc-mint); color: var(--kc-forest); }
     .kc-chev { display: inline-block; width: .45rem; height: .45rem; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-.15rem) rotate(45deg); transition: transform .15s; }
     [aria-expanded="true"] > .kc-chev { transform: translateY(.1rem) rotate(-135deg); }
-    .kc-tools { display: flex; align-items: center; gap: .35rem; margin-left: .5rem; }
+    .kc-tools { display: flex; align-items: center; gap: .35rem; }
     .kc-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; flex: none; border: 0; border-radius: 999px;
         background: var(--kc-mint); color: var(--kc-forest); font-size: 1.1rem; text-decoration: none; cursor: pointer; transition: background-color .15s, color .15s; }
     .kc-icon-btn:hover, .kc-icon-btn[aria-expanded="true"] { background: var(--kc-forest); color: #fff; }

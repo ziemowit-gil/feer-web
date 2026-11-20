@@ -1,12 +1,12 @@
 {{--
     Nagłówek szablonu „kreatywni” (wizytówka fundacji), dwie części:
     1) pasek dostępności na samej górze (przewija się ze stroną): rozmiar tekstu A− / bieżący / A+, kontrast,
-       „Więcej ustawień” (otwiera wspólny panel ułatwień partials/a11y-panel) oraz telefon i e-mail z ustawień;
+       „Więcej ustawień” (otwiera wspólny panel ułatwień partials/a11y-panel), telefon, e-mail i profile social media;
        przyciski data-a11y-* obsługuje resources/js/app.js tak samo jak w panelu;
     2) przyklejona belka: logo i nazwa, mega menu z Menu nawigacji (App\Support\KreatywniMegaMenu: pozycja z
        podmenu — podstrony i sekcje strony, czyli dawny spis „Na tej stronie” — otwiera panel na całą szerokość po
-       kliknięciu, Enter albo najechaniu; Esc zamyka i wraca na przycisk, klik obok i wyjście fokusem zamykają), ikony
-       social media (do trzech profili), „Kontakt”; na wąskim ekranie „Menu” rozwija listę pozycji z podstronami
+       kliknięciu, Enter albo najechaniu; Esc zamyka i wraca na przycisk, klik obok i wyjście fokusem zamykają) wyśrodkowane
+       w kremowej „szynie” (bieżąca/otwarta pozycja — biała pigułka z pogrubieniem, bez cienia), „Kontakt” po prawej; na wąskim ekranie „Menu” rozwija listę pozycji z podstronami
        i sekcjami H2. Style: partials/base-css (prefiks kc-).
 --}}
 @php
@@ -51,14 +51,17 @@
             <i class="fa-solid fa-universal-access" aria-hidden="true"></i><span>Więcej ustawień<span class="kc-sr"> dostępności</span></span>
         </button>
 
-        @if ($kcPhone !== '' || $kcEmail !== '')
-            <ul class="kc-topbar-contact" aria-label="Kontakt">
+        @if ($kcPhone !== '' || $kcEmail !== '' || $kcSocial !== [])
+            <ul class="kc-topbar-contact" aria-label="Kontakt i profile">
                 @if ($kcPhone !== '')
                     <li><a href="tel:{{ preg_replace('/[^0-9+]/', '', $kcPhone) }}"><i class="fa-solid fa-phone" aria-hidden="true"></i>{{ $kcPhone }}</a></li>
                 @endif
                 @if ($kcEmail !== '')
                     <li class="kc-hide-md"><a href="mailto:{{ $kcEmail }}"><i class="fa-solid fa-envelope" aria-hidden="true"></i>{{ $kcEmail }}</a></li>
                 @endif
+                @foreach ($kcSocial as [$sUrl, $sIcon, $sLabel])
+                    <li><a href="{{ $sUrl }}" class="kc-top-social" target="_blank" rel="noopener"><i class="{{ $sIcon }}" aria-hidden="true"></i><span class="kc-sr">{{ $sLabel }} (otwiera się w nowej karcie)</span></a></li>
+                @endforeach
             </ul>
         @endif
     </div>
@@ -137,13 +140,8 @@
         @endif
 
         <div class="kc-tools">
-            @foreach ($kcSocial as [$sUrl, $sIcon, $sLabel])
-                <a href="{{ $sUrl }}" class="kc-icon-btn kc-hide-sm" target="_blank" rel="noopener">
-                    <i class="{{ $sIcon }}" aria-hidden="true"></i><span class="kc-sr">{{ $sLabel }} (otwiera się w nowej karcie)</span>
-                </a>
-            @endforeach
             @if ($kcContactUrl)
-                <a href="{{ $kcContactUrl }}" class="kc-btn kc-hide-sm" @if (request()->routeIs('contact.*')) aria-current="page" @endif>Kontakt</a>
+                <a href="{{ $kcContactUrl }}" class="kc-btn kc-hide-sm" @if (request()->routeIs('contact.*')) aria-current="page" @endif><i class="fa-solid fa-envelope" aria-hidden="true"></i>Kontakt</a>
             @endif
             <button type="button" class="kc-icon-btn kc-burger" x-ref="mnavToggle" @click="mnav = ! mnav"
                     aria-expanded="false" :aria-expanded="mnav.toString()" aria-controls="kc-mnav">
