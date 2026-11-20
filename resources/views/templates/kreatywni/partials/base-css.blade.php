@@ -53,6 +53,12 @@
     @media (min-width: 768px) { .kc-topbar-in { flex-wrap: nowrap; } .kc-top-btn { white-space: nowrap; } }
     @media (max-width: 1199px) { .kc-hide-md { display: none; } }
     @media (max-width: 1023px) { .kc-topbar-label { display: none; } }
+    .kc-lbl-short { display: none; }
+    @media (max-width: 767px) {
+        .kc-hide-xs { display: none !important; }
+        .kc-lbl-long { display: none; } .kc-lbl-short { display: inline; }
+        .kc-topbar-in { flex-wrap: nowrap; }
+    }
 
     /* ── Nagłówek ─────────────────────────────────────────────── */
     .kc-header { position: sticky; top: 0; z-index: 40; background: rgba(255, 255, 255, .97); border-bottom: 1px solid var(--kc-line); }
@@ -376,7 +382,7 @@
     .kc-about-story-text p:first-child { color: var(--kc-forest); font-size: 1.22rem; font-weight: 600; line-height: 1.65; }
 
     /* ── Strona kontaktu (contact.blade.php) ─────────────────── */
-    .kc-page-head { padding: 3rem 0 2.5rem; background: var(--kc-cream); }
+    .kc-page-head { padding: 1.5rem 0 2.75rem; background: var(--kc-cream); }
     .kc-page-head h1 { margin: 0 0 .75rem; font-size: clamp(2rem, 1.4rem + 2.4vw, 3.2rem); font-weight: 800; line-height: 1.1; color: var(--kc-forest); }
     .kc-page-head .kc-lead { margin-bottom: 0; }
     .kc-contact-cards h2 { margin: 0 0 .15rem; font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--kc-green); }
@@ -391,6 +397,15 @@
     .kc-social-compact .kc-social-name { font-size: 1rem; }
     .kc-form-card { padding: 1.75rem; border-radius: var(--kc-radius); background: var(--kc-cream); }
     .kc-form-card h2 { margin: 0 0 1rem; font-size: 1.5rem; font-weight: 800; color: var(--kc-forest); }
+
+    /* ── Okruszki (partials/breadcrumbs): w kremowym pasie razem z tytułem podstrony ── */
+    .kc-crumbs { background: var(--kc-cream); }
+    .kc-crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem .5rem; margin: 0; padding: 1rem 0 0; list-style: none; font-size: .85rem; }
+    .kc-crumbs li { display: inline-flex; align-items: center; gap: .5rem; }
+    .kc-crumbs li + li::before { content: '/'; color: var(--kc-muted); }
+    .kc-crumbs a { display: inline-flex; align-items: center; min-height: 2rem; color: var(--kc-forest); font-weight: 600; text-decoration: underline; text-decoration-color: var(--kc-lime); text-underline-offset: 4px; }
+    .kc-crumbs a:hover { text-decoration-color: var(--kc-forest); }
+    .kc-crumbs [aria-current="page"] { color: var(--kc-muted); font-weight: 600; }
 
     /* ── Podstrona (page.blade.php) ──────────────────────────── */
     .kc-page-head { position: relative; overflow: hidden; }

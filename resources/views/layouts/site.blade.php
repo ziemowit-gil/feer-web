@@ -85,7 +85,13 @@
     <link rel="manifest" href="{{ route('pwa.manifest') }}">
     <meta name="theme-color" content="{{ $brandPalette['color'] }}">
     <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
-    <link rel="apple-touch-icon" href="/img/pwa-icon-192.png">
+    @if (($siteSettings->site_template ?? 'default') === 'kreatywni' && $siteSettings->logoUrl())
+        {{-- Szablon „kreatywni”: ikona karty i ikona na ekranie głównym telefonu z logo fundacji. --}}
+        <link rel="icon" href="{{ $siteSettings->logoUrl() }}">
+        <link rel="apple-touch-icon" href="{{ $siteSettings->logoUrl() }}">
+    @else
+        <link rel="apple-touch-icon" href="/img/pwa-icon-192.png">
+    @endif
     <style media="print">
         /* Wydruk: sama treść. Bez nagłówka, menu, stopki, paneli bocznych i przycisków; czarny tekst na białym tle; adresy linków w nawiasach. */
         @page { margin: 1.5cm; }

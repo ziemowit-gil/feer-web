@@ -1,6 +1,6 @@
 {{--
     Nagłówek szablonu „kreatywni” (wizytówka fundacji), dwie części:
-    1) pasek dostępności na samej górze (przewija się ze stroną): rozmiar tekstu A− / bieżący / A+, kontrast,
+    1) pasek dostępności na samej górze (przewija się ze stroną; na telefonie tylko „Dostępność” i telefon): rozmiar tekstu A− / bieżący / A+, kontrast,
        „Więcej ustawień” (otwiera wspólny panel ułatwień partials/a11y-panel), telefon i e-mail;
        przyciski data-a11y-* obsługuje resources/js/app.js tak samo jak w panelu;
     2) przyklejona belka: logo i nazwa, mega menu z Menu nawigacji (App\Support\KreatywniMegaMenu: pozycja z
@@ -40,18 +40,18 @@
      @keydown.escape.window="if (open) { open = false; $refs.a11yToggle.focus() }"
      @a11y-open.window="open = true; $nextTick(() => $refs.a11yToggle.focus())">
     <div class="kc-wrap kc-topbar-in">
-        <div class="kc-topbar-group" role="group" aria-label="Rozmiar tekstu">
+        <div class="kc-topbar-group kc-hide-xs" role="group" aria-label="Rozmiar tekstu">
             <span class="kc-topbar-label" aria-hidden="true">Tekst</span>
             <button type="button" class="kc-top-btn" data-a11y-font="down" aria-label="Zmniejsz tekst">A<sup aria-hidden="true">−</sup></button>
             <button type="button" class="kc-top-btn kc-top-btn-wide" data-a11y-font="reset" aria-label="Rozmiar tekstu 100% — przywróć domyślny"><span data-a11y-font-value>100%</span></button>
             <button type="button" class="kc-top-btn" data-a11y-font="up" aria-label="Powiększ tekst">A<sup aria-hidden="true">+</sup></button>
         </div>
-        <button type="button" class="kc-top-btn kc-top-btn-wide" data-a11y-contrast="contrast" aria-pressed="false">
+        <button type="button" class="kc-top-btn kc-top-btn-wide kc-hide-xs" data-a11y-contrast="contrast" aria-pressed="false">
             <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i><span>Kontrast</span>
         </button>
         <button type="button" class="kc-top-btn kc-top-btn-wide" x-ref="a11yToggle" @click="open = ! open"
                 aria-expanded="false" :aria-expanded="open.toString()" aria-controls="a11y-panel">
-            <i class="fa-solid fa-universal-access" aria-hidden="true"></i><span>Więcej ustawień<span class="kc-sr"> dostępności</span></span>
+            <i class="fa-solid fa-universal-access" aria-hidden="true"></i><span class="kc-lbl-long">Więcej ustawień<span class="kc-sr"> dostępności</span></span><span class="kc-lbl-short">Dostępność</span>
         </button>
 
         @if ($kcPhone !== '' || $kcEmail !== '')

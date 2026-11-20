@@ -57,6 +57,7 @@ class TemplateKreatywniTest extends TestCase
         $this->assertStringContainsString('aria-roledescription="karuzela"', $html);
         $this->assertStringContainsString('Naszą misją jest', $html); // slajd 2 slidera
         $this->assertStringContainsString('data-a11y-font="up"', $html); // pasek dostępności na górze
+        $this->assertStringContainsString('<span class="kc-lbl-short">Dostępność</span>', $html); // krótka etykieta na telefonie
         $this->assertStringContainsString('W czym pomagamy', $html);
         $this->assertStringContainsString('Laleczki motanki', $html);
         $this->assertStringContainsString('<strong>od 30 zł</strong> <span>za osobę</span>', $html);
@@ -79,7 +80,7 @@ class TemplateKreatywniTest extends TestCase
         $this->useTemplate(['facebook_url' => 'https://www.facebook.com/profile.php?id=1', 'instagram_url' => 'https://www.instagram.com/fundacja.kreatywni/']);
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('id="social"', $html);
+        $this->assertStringContainsString('id="social" class="kc-sec kc-sec-cream"', $html, 'Social media na jasnym tle.');
         $this->assertStringContainsString('@fundacja.kreatywni', $html);
         // Główny przycisk powitania prowadzi do Facebooka i zapowiada nową kartę.
         $this->assertMatchesRegularExpression('#href="https://www\.facebook\.com/profile\.php\?id=1" class="kc-btn" +target="_blank"#', $html);
@@ -193,6 +194,7 @@ class TemplateKreatywniTest extends TestCase
 
         $page = $this->get('/oferta')->assertOk()->getContent();
         $this->assertStringContainsString('class="kc-page-head"', $page);
+        $this->assertStringContainsString('class="kc kc-crumbs"', $page, 'Okruszki w kremowym pasie szablonu.');
         $this->assertStringContainsString('id="laleczki-motanki"', $page);
         $this->assertStringNotContainsString('Na tej stronie', $page);
         $this->assertStringContainsString('Bądźmy w kontakcie', $page);

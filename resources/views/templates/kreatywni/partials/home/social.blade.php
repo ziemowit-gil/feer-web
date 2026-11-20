@@ -11,7 +11,7 @@
     };
 @endphp
 @if ($kcProfiles !== [])
-<section id="social" class="kc-sec kc-dark" aria-labelledby="kc-social-title">
+<section id="social" class="kc-sec kc-sec-cream" aria-labelledby="kc-social-title">
     <div class="kc-wrap">
         <div class="kc-center">
             <h2 id="kc-social-title" class="kc-h2">{{ $texts->get('social_title') }}</h2>

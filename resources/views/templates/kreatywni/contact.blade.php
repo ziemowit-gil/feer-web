@@ -21,6 +21,10 @@
 @section('title', ($kcPage?->meta_title ?: $kcTitle) . ' — ' . $siteSettings->site_name)
 @section('meta_description', $kcPage?->meta_description ?: 'Skontaktuj się z ' . $siteSettings->site_name . '.')
 
+@section('breadcrumbs')
+    @include('partials.breadcrumbs', ['items' => [['label' => $kcTitle, 'url' => null]]])
+@endsection
+
 @section('content')
     @include('templates.kreatywni.partials.base-css')
     <div class="kc">

@@ -83,13 +83,19 @@ class KreatywniSiteSeeder extends Seeder
     private function logo(): void
     {
         $path = database_path('seeders/assets/kreatywni/logo.webp');
-        if ($this->site->getFirstMedia('logo') || ! is_file($path)) {
+        if (! is_file($path)) {
             return;
         }
-        try {
-            $this->site->addMedia($path)->preservingOriginal()->usingFileName('kreatywni-logo.webp')->toMediaCollection('logo');
-        } catch (\Throwable $e) {
-            $this->command?->warn('Logo nie zostało dodane: '.$e->getMessage());
+        // Logo (gdy witryna go nie ma) i ten sam znak jako domyślny obrazek przy udostępnianiu linków (og:image).
+        foreach (['logo' => 'kreatywni-logo.webp', 'og_image' => 'kreatywni-udostepnianie.webp'] as $collection => $fileName) {
+            if ($this->site->getFirstMedia($collection)) {
+                continue;
+            }
+            try {
+                $this->site->addMedia($path)->preservingOriginal()->usingFileName($fileName)->toMediaCollection($collection);
+            } catch (\Throwable $e) {
+                $this->command?->warn('Nie dodano obrazka ('.$collection.'): '.$e->getMessage());
+            }
         }
     }
 
