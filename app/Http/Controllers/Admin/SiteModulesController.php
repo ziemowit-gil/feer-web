@@ -22,20 +22,31 @@ class SiteModulesController extends Controller
 
     public const OPTION_ACTIONS = ['show' => 'Udostępniono', 'hide' => 'Ukryto'];
 
-    /** Włącz / Wyłącz zaznaczone moduły (albo jeden — przycisk w wierszu). */
+    /**
+     * Włącz / Wyłącz zaznaczone moduły (albo jeden — przycisk w wierszu). Przycisk spoza tabeli (np. „Wyłącz
+     * działania” w Ustawienia → Szablon) wysyła `return_to=template` i `anchor` — wracamy wtedy do zakładki Szablon,
+     * a komunikat trafia do zwykłego paska stanu panelu.
+     */
     public function modules(Request $request): RedirectResponse
     {
-        $back = route('admin.ustawienia.edit', ['tab' => 'modules']).'#tabela-modulow';
+        $fromTemplate = $request->input('return_to') === 'template';
+        $anchor = preg_match('/^[a-z0-9-]{1,40}$/', (string) $request->input('anchor')) ? (string) $request->input('anchor') : 'szablon';
+        $back = $fromTemplate
+            ? route('admin.ustawienia.edit', ['tab' => 'template']).'#'.$anchor
+            : route('admin.ustawienia.edit', ['tab' => 'modules']).'#tabela-modulow';
+        $fail = fn (string $message) => $fromTemplate
+            ? redirect()->to($back)->with('error', $message)
+            : redirect()->to($back)->withErrors(['modules' => $message], 'modulesTable');
 
         [$action, $keys] = $this->moduleSelection($request);
 
         if (! isset(self::MODULE_ACTIONS[$action])) {
-            return redirect()->to($back)->withErrors(['modules' => 'Wybierz akcję: Włącz albo Wyłącz zaznaczone.'], 'modulesTable');
+            return $fail('Wybierz akcję: Włącz albo Wyłącz zaznaczone.');
         }
 
         $keys = array_values(array_intersect(array_keys(SiteSetting::MODULES), $keys));
         if ($keys === []) {
-            return redirect()->to($back)->withErrors(['modules' => 'Zaznacz co najmniej jeden moduł, a potem wybierz akcję.'], 'modulesTable');
+            return $fail('Zaznacz co najmniej jeden moduł, a potem wybierz akcję.');
         }
 
         $site = SiteSetting::current();
@@ -63,7 +74,7 @@ class SiteModulesController extends Controller
             $message .= ' Bez zmian (już '.($action === 'enable' ? 'włączone' : 'wyłączone').'): '.implode(', ', array_map($label, $unchanged)).'.';
         }
 
-        return redirect()->to($back)->with('modules_table_status', $message);
+        return redirect()->to($back)->with($fromTemplate ? 'status' : 'modules_table_status', $message);
     }
 
     /** Udostępnij / Ukryj zaznaczone typy treści i układy (albo jeden — przycisk w wierszu). */
