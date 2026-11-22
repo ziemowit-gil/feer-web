@@ -327,6 +327,46 @@ class TemplateKreatywniTest extends TestCase
         $this->assertStringNotContainsString('Pracujemy zdalnie', $html);
     }
 
+    public function test_sekcja_aktualnosci_trzy_najnowsze_z_przelacznikiem(): void
+    {
+        $this->useTemplate();
+        // Bez aktualności sekcji nie ma.
+        $this->get('/')->assertOk()->assertDontSee('kc-news-title', false);
+
+        foreach (['Pierwsza' => 4, 'Druga' => 3, 'Trzecia' => 2, 'Czwarta' => 1] as $title => $daysAgo) {
+            \App\Models\News::create(['title' => $title.' wiadomość', 'slug' => \Illuminate\Support\Str::slug($title), 'content' => '<p>x</p>',
+                'excerpt' => 'Opis '.$title, 'published_at' => now()->subDays($daysAgo), 'is_published' => true]);
+        }
+        \App\Models\News::create(['title' => 'Szkic wiadomość', 'slug' => 'szkic', 'content' => '<p>x</p>', 'published_at' => now(), 'is_published' => false]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('<h2 id="kc-news-title" class="kc-h2">Aktualności</h2>', $html);
+        foreach (['Czwarta', 'Trzecia', 'Druga'] as $title) {
+            $this->assertStringContainsString($title.' wiadomość', $html);
+        }
+        $this->assertStringNotContainsString('Pierwsza wiadomość', $html, 'tylko trzy najnowsze');
+        $this->assertStringNotContainsString('Szkic wiadomość', $html);
+        $this->assertTrue(strpos($html, 'Czwarta wiadomość') < strpos($html, 'Druga wiadomość'), 'najnowsza pierwsza');
+        $this->assertStringContainsString('Wszystkie aktualności', $html);
+        $this->assertStringContainsString('<time class="kc-child-text" datetime="', $html);
+
+        // Przełącznik w Ustawienia → Szablon i wyłączony moduł chowają sekcję.
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->actingAs($admin)->get(route('admin.ustawienia.edit'))->assertOk()
+            ->assertSee('name="kreatywni_texts[_shown][]" value="news" class="mt-1" checked', false)
+            ->assertSee('name="kreatywni_texts[news_title]"', false);
+        $this->put(route('admin.ustawienia.update'), $this->settingsPayload(['_sections' => '1', '_shown' => ['hero', 'offer']]))->assertSessionHasNoErrors();
+        $this->resetCache();
+        auth()->logout();
+        $this->get('/')->assertOk()->assertDontSee('kc-news-title', false);
+
+        $site = $this->useTemplate(['kreatywni_texts' => null]);
+        $this->get('/')->assertOk()->assertSee('kc-news-title', false);
+        $site->forceFill(['disabled_modules' => ['news']])->save();
+        $this->resetCache();
+        $this->get('/')->assertOk()->assertDontSee('kc-news-title', false);
+    }
+
     /** Działanie w module Działania (kategoria jest wymagana). */
     private function project(string $title, array $extra = []): Project
     {

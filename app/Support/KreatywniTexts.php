@@ -24,6 +24,7 @@ final class KreatywniTexts
         'offer' => ['Oferta warsztatów', 'Lista warsztatów z ceną i przyciskiem do zapytania o termin.'],
         'why' => ['Dlaczego my', 'Wyróżniki i opis, jak pracujemy.'],
         'projects' => ['Działania', 'Działania z modułu Działania: zaznaczone „Pokaż na stronie głównej” (do 6), a gdy żadne nie jest zaznaczone — trzy ostatnio dodane trwające. Bez działań sekcja się nie pokazuje.'],
+        'news' => ['Aktualności', 'Trzy najnowsze aktualności tej witryny z modułu Aktualności i przycisk do pełnej listy. Bez aktualności albo przy wyłączonym module sekcja się nie pokazuje.'],
         'gallery' => ['Galeria', 'Zdjęcia z modułu Galeria (do 8). Bez zdjęć sekcja się nie pokazuje.'],
         'team' => ['Zespół', 'Osoby prowadzące warsztaty.'],
         'reviews' => ['Opinie', 'Opinie uczestników.'],
@@ -102,6 +103,11 @@ final class KreatywniTexts
         'projects_title' => ['projects', 'Nagłówek (H2; także tytuł strony Działania)', 'line', 'Nasze działania'],
         'projects_text' => ['projects', 'Tekst wstępu (także na stronie Działania)', 'text', 'Projekty, akcje i cykle warsztatów, które prowadzimy.'],
         'projects_button' => ['projects', 'Przycisk do listy działań — napis', 'line', 'Wszystkie działania'],
+
+        // Aktualności
+        'news_title' => ['news', 'Nagłówek (H2)', 'line', 'Aktualności'],
+        'news_text' => ['news', 'Tekst wstępu', 'text', 'Relacje z warsztatów, zapowiedzi i wieści z Fundacji.'],
+        'news_button' => ['news', 'Przycisk do listy aktualności — napis', 'line', 'Wszystkie aktualności'],
 
         // Social media
         'social_title' => ['social', 'Nagłówek (H2)', 'line', 'Zobacz, co ostatnio tworzyliśmy'],

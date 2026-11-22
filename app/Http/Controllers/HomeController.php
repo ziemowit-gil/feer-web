@@ -304,7 +304,8 @@ class HomeController extends Controller
 
     /**
      * Strona główna szablonu „kreatywni” (wizytówka fundacji): sekcje z tekstami z App\Support\KreatywniTexts,
-     * profile social media z ustawień i do ośmiu zdjęć z modułu Galeria. Pusta lub ukryta sekcja się nie pokazuje.
+     * profile social media z ustawień, do ośmiu zdjęć z modułu Galeria i trzy najnowsze aktualności tej witryny.
+     * Pusta lub ukryta sekcja się nie pokazuje.
      */
     private function kreatywniHome(SiteSetting $settings, Collection $gallery)
     {
@@ -312,6 +313,9 @@ class HomeController extends Controller
             'texts' => \App\Support\KreatywniTexts::for($settings),
             'gallery' => $gallery->take(8)->values(),
             'projects' => $this->kreatywniProjects($settings),
+            'newsItems' => $settings->isModuleEnabled('news')
+                ? News::published()->forCurrentSite()->orderByDesc('published_at')->limit(3)->get()
+                : collect(),
         ]);
     }
 
