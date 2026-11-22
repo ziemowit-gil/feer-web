@@ -18,6 +18,12 @@
         Menu w nagłówku to <span class="font-bold">Menu nawigacji → Menu główne</span>. Listy wpisujesz po jednej pozycji
         w wierszu, części rozdzielasz znakiem „|”. Puste pole przywraca tekst domyślny.
     </p>
+    <p class="text-xs text-muted">
+        Stopka: tekst praw autorskich i linki w dolnym pasku (mapa serwisu, deklaracja dostępności, cookies, strefa
+        współpracownika, panel) ustawiasz w
+        <a href="{{ route('admin.ustawienia.edit', ['tab' => 'general', 'karta' => 'stopka']) }}" class="font-bold text-brand-dark underline underline-offset-2">Ogólne → Stopka</a>,
+        linki w kolumnie „Na skróty” w <a href="{{ route('admin.pozycje-menu.index', ['location' => 'footer']) }}" class="font-bold text-brand-dark underline underline-offset-2">Menu nawigacji → Stopka</a>.
+    </p>
 
     <fieldset>
         <legend class="mb-1 text-sm font-bold">Sekcje strony głównej</legend>

@@ -2,7 +2,9 @@
     Stopka szablonu „kreatywni”: ciemna zieleń. Logo, nazwa i hasło witryny; kontakt (telefon, e-mail, adres z
     Ustawienia → Kontakt); linki z Menu nawigacji → Stopka (a gdy ich nie ma — menu główne); profile social media;
     dolny pas z prawami autorskimi, deklaracją dostępności, ustawieniami cookies i linkiem do panelu według
-    Ustawienia → Ogólne → Stopka. Style: partials/base-css (prefiks kc-).
+    Ustawienia → Ogólne → Stopka, a po prawej podpis wykonawcy z ikonką weCMS (przełącznik „Pokaż nazwę CMS w stopce”,
+    poza feer.org.pl zawsze włączony). Tekst praw zaczynający się od „© rok” nie powtarza „©” po nazwie organizacji.
+    Style: partials/base-css (prefiks kc-).
 --}}
 @php
     $footerNavItems ??= collect();
@@ -16,6 +18,8 @@
     $kcEmail = trim((string) $siteSettings->contact_email);
     $kcAddress = trim(implode(', ', array_filter([trim((string) $siteSettings->contact_address), trim((string) $siteSettings->contact_city)])));
     $kcLogo = $siteSettings->logoUrl();
+    // Domyślny tekst praw to „© {rok} Wszystkie prawa zastrzeżone” — „© rok” jest już przed nazwą organizacji.
+    $kcCopyright = trim((string) preg_replace('/^(©|\(c\)|&copy;)\s*(\d{4}\s*)?[·\-–—,]?\s*/iu', '', $fo['copyright_text']));
 @endphp
 @include('templates.kreatywni.partials.base-css')
 <footer class="kc kc-dark kc-footer">
@@ -72,7 +76,7 @@
     </div>
 
     <div class="kc-wrap kc-foot-bottom">
-        <p>© {{ now()->year }} {{ $siteSettings->site_name }}@if ($fo['copyright_text'] !== '') · {{ $fo['copyright_text'] }}@endif</p>
+        <p>© {{ now()->year }} {{ $siteSettings->site_name }}@if ($kcCopyright !== '') · {{ $kcCopyright }}@endif</p>
         <ul>
             @if ($fo['show_sitemap'] && \Illuminate\Support\Facades\Route::has('sitemap.page'))
                 <li><a href="{{ route('sitemap.page') }}">Mapa serwisu</a></li>
@@ -90,5 +94,11 @@
                 <li><a href="{{ route('admin.dashboard') }}">Panel administracyjny</a></li>
             @endif
         </ul>
+        @if ($siteSettings->show_cms_credit ?? true)
+            <p class="kc-foot-credit">
+                @include('partials.wecms-mark')
+                <a href="https://ziemowitgil.pl" target="_blank" rel="noopener">Projekt i wykonanie: Ziemowit Gil<span class="kc-sr"> (otwiera się w nowej karcie)</span></a>
+            </p>
+        @endif
     </div>
 </footer>

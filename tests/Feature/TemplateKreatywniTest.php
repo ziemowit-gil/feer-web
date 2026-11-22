@@ -151,7 +151,9 @@ class TemplateKreatywniTest extends TestCase
 
         $this->actingAs($admin)->get(route('admin.ustawienia.edit'))->assertOk()
             ->assertSee('Ustawienia szablonu: Kreatywni na co dzień')
-            ->assertSee('name="kreatywni_texts[hero_title]"', false);
+            ->assertSee('name="kreatywni_texts[hero_title]"', false)
+            ->assertSee('karta=stopka', false)->assertSee('Ogólne → Stopka')
+            ->assertDontSee('(szablony FEER i Kreatywni)');
 
         $this->put(route('admin.ustawienia.update'), $this->settingsPayload([
             'hero_title' => 'Nowy nagłówek', '_sections' => '1', '_shown' => ['hero', 'offer'],
@@ -306,6 +308,29 @@ class TemplateKreatywniTest extends TestCase
         $this->get(route('projects.show', 'warsztaty-w-dps'))->assertOk()->assertSee('Warsztaty w DPS');
     }
 
+
+    public function test_stopka_bez_podwojnego_copyright_z_podpisem_wykonawcy_i_ikonka_wecms(): void
+    {
+        $site = $this->useTemplate(['site_name' => 'Fundacja Testowa']);
+        $year = now()->year;
+
+        $this->get('/')->assertOk()
+            ->assertSee('© '.$year.' Fundacja Testowa · Wszystkie prawa zastrzeżone')
+            ->assertDontSee('· © '.$year, false)
+            ->assertSee('<span class="wecms-mark">', false)
+            ->assertSee('<a href="https://ziemowitgil.pl" target="_blank" rel="noopener">Projekt i wykonanie: Ziemowit Gil', false)
+            ->assertSee('Mapa serwisu')->assertSee('Panel administracyjny');
+
+        // Własny tekst praw i wyłączone linki z Ustawienia → Ogólne → Stopka; podpis CMS wyłączony (tylko na feer.org.pl).
+        $site->forceFill(['footer_options' => ['copyright' => 'Działamy od 2020 roku', 'show_sitemap' => false, 'show_admin_link' => false], 'show_cms_credit' => false])->save();
+        $this->resetCache();
+
+        $this->get('/')->assertOk()
+            ->assertSee('© '.$year.' Fundacja Testowa · Działamy od 2020 roku')
+            ->assertDontSee('Mapa serwisu')->assertDontSee('Panel administracyjny')
+            ->assertDontSee('Projekt i wykonanie: Ziemowit Gil')->assertDontSee('<span class="wecms-mark">', false);
+    }
+
     public function test_seeder_zaklada_strony_menu_i_ustawienia_tylko_dla_wskazanej_witryny(): void
     {
         \Illuminate\Support\Facades\Storage::fake('public');
@@ -331,6 +356,7 @@ class TemplateKreatywniTest extends TestCase
         $this->assertSame(1, (clone $pages)->where('title', 'Oferta')->count());
         $this->assertTrue((clone $pages)->where('title', 'Oferta')->value('is_published'));
         $this->assertFalse((bool) (clone $pages)->where('title', 'Statut Fundacji')->value('is_published'), 'Dokumenty są szkicami.');
+        $this->assertFalse($fresh->footerOptions()['staff_link'], 'Bez linku do strefy współpracownika FEER.');
         $this->assertSame(['Oferta', 'Działania', 'O nas', 'Galeria', 'Fundacja'],
             NavItem::withoutGlobalScopes()->where('site_id', $site->id)->where('location', 'main')->orderBy('order')->pluck('label')->all());
     }

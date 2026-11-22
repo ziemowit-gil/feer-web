@@ -360,6 +360,14 @@
     .kc-foot-bottom { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; align-items: center; justify-content: space-between; padding-top: 1.25rem; padding-bottom: 1.25rem; border-top: 1px solid rgba(255, 255, 255, .2); font-size: .92rem; }
     .kc-foot-bottom p { margin: 0; }
     .kc-foot-bottom ul { display: flex; flex-wrap: wrap; gap: 0 1.25rem; }
+    /* Podpis wykonawcy z ikonką weCMS (partials/wecms-mark) — w prawym dolnym rogu, na telefonie pod linkami. */
+    .kc-foot-credit { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; margin-left: auto !important; }
+    .kc-foot-credit .wecms-mark { display: inline-flex; align-items: center; gap: .45rem; font-weight: 600; }
+    .kc-foot-credit .wecms-mark svg { flex: none; }
+    .kc-foot-credit .wecms-mark-name b { font-weight: 800; }
+    .kc-foot-credit a { display: inline-flex; align-items: center; min-height: 2.75rem; color: #fff; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, .45); text-underline-offset: 4px; }
+    .kc-foot-credit a:hover { text-decoration-color: var(--kc-sun); }
+    .kc-foot-credit a:focus-visible { outline: 3px solid var(--kc-sun); outline-offset: 2px; }
 
     /* ── Podstrona „O nas” (partials/about) ──────────────────── */
     .kc-about-mission-sec { padding: 3.5rem 0; }

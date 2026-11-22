@@ -140,7 +140,7 @@
     <section aria-labelledby="gen-footer-h" class="rounded-lg border border-gray-200 p-5"
              data-card="stopka" data-card-label="Stopka">
         <h2 id="gen-footer-h" class="text-base font-bold text-ink" data-card-title>Stopka</h2>
-        <p class="mt-1 text-xs text-muted">Tekst, stałe linki i ikony w stopce strony{{ ($settings->site_template ?? 'default') === 'feer' ? '' : ' (szablon FEER)' }}. Własne linki stopki dodajesz w <a href="{{ route('admin.pozycje-menu.index', ['location' => 'footer']) }}" class="font-bold text-brand-dark underline">Menu nawigacji → Stopka</a>, profile społecznościowe w zakładce Social, a metkę w Treści → Metryczka.</p>
+        <p class="mt-1 text-xs text-muted">Tekst, stałe linki i ikony w stopce strony{{ in_array($settings->site_template ?? 'default', ['feer', 'kreatywni'], true) ? '' : ' (szablony FEER i Kreatywni)' }}. Własne linki stopki dodajesz w <a href="{{ route('admin.pozycje-menu.index', ['location' => 'footer']) }}" class="font-bold text-brand-dark underline">Menu nawigacji → Stopka</a>, profile społecznościowe w zakładce Social, a metkę w Treści → Metryczka.</p>
         @php
             $fo = old('footer_options', $settings->footerOptions());
             $foChk = 'mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark';
@@ -175,7 +175,7 @@
                 </div>
             </div>
         </fieldset>
-        {!! $foBox('show_admin_link', 'Ikona panelu administracyjnego (koło zębate w rogu stopki)') !!}
+        {!! $foBox('show_admin_link', 'Link do panelu administracyjnego', 'W szablonie FEER koło zębate w rogu stopki, w szablonie Kreatywni napis „Panel administracyjny” w dolnym pasku.') !!}
         @php $isFeerInstall = str_contains(request()->getHost(), 'feer.org.pl'); @endphp
         <label class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
             <input type="checkbox" name="show_cms_credit" value="1"
@@ -186,7 +186,7 @@
                 <input type="hidden" name="show_cms_credit" value="1">
             @endif
             <span class="text-sm font-bold">
-                Pokaż nazwę CMS w stopce („weCMS · autor…")
+                Pokaż nazwę CMS w stopce („weCMS · autor…”; w szablonie Kreatywni ikonka weCMS i „Projekt i wykonanie: Ziemowit Gil” w prawym dolnym rogu)
                 @unless ($isFeerInstall)
                     <span class="ml-1 text-[0.65rem] font-bold text-muted">🔒 Zawsze widoczne poza feer.org.pl</span>
                 @endunless

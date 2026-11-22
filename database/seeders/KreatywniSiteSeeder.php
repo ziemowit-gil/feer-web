@@ -77,6 +77,10 @@ class KreatywniSiteSeeder extends Seeder
                 $fill[$key] = $value;
             }
         }
+        // Stopka: bez linku do strefy współpracownika FEER (na tej witrynie prowadziłby donikąd), gdy stopki nikt nie ustawiał.
+        if (empty($this->site->getAttribute('footer_options')) && \Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'footer_options')) {
+            $fill['footer_options'] = ['staff_link' => false];
+        }
         $this->site->forceFill($fill)->save();
     }
 
