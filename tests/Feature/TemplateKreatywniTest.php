@@ -409,6 +409,34 @@ class TemplateKreatywniTest extends TestCase
         $this->get('/')->assertOk()->assertDontSee('Akcja zimowa');
     }
 
+    public function test_w_szablonie_mozna_wylaczyc_i_wlaczyc_dzialania_oraz_pozycje_komunikacji(): void
+    {
+        $this->useTemplate();
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $html = $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'template']))->assertOk()->getContent();
+        $this->assertStringContainsString('Moduły tej witryny', $html);
+        $this->assertStringContainsString('Wyłącz działania', $html);
+        foreach (['newsletter', 'polls', 'forms', 'campaigns', 'donations', 'banners', 'contact_inbox', 'meetings'] as $module) {
+            $this->assertStringContainsString('form="kc-module-form-'.$module.'"', $html);
+            $this->assertStringContainsString('<input type="hidden" name="row_action" value="disable|'.$module.'">', $html);
+        }
+        // Formularze przycisków są poza formularzem ustawień.
+        $settingsFormEnd = strpos($html, '</form>', strpos($html, 'action="'.route('admin.ustawienia.update').'"'));
+        $this->assertGreaterThan($settingsFormEnd, strpos($html, '<form id="kc-module-form-projects"'));
+
+        $this->post(route('admin.ustawienia.moduly.masowo'), ['row_action' => 'disable|projects', 'return_to' => 'template', 'anchor' => 'kreatywni-moduly'])
+            ->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'template']).'#kreatywni-moduly')
+            ->assertSessionHas('status');
+        $this->resetCache();
+        $this->assertContains('projects', SiteSetting::current()->disabled_modules);
+        $this->get('/dzialania')->assertNotFound();
+
+        $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'template']))
+            ->assertSee('Włącz działania')
+            ->assertSee('<input type="hidden" name="row_action" value="enable|projects">', false);
+    }
+
     public function test_lista_dzialan_ma_uklad_szablonu_karty_i_link_do_zakonczonych(): void
     {
         $this->useTemplate(['kreatywni_texts' => ['projects_title' => 'Co robimy']]);
