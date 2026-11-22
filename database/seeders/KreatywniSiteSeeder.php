@@ -48,6 +48,7 @@ class KreatywniSiteSeeder extends Seeder
         $this->menu($pages);
         $this->people();
         $this->offers();
+        $this->documents();
 
         $this->command?->info('Witryna „'.$site->site_name.'” w szablonie „kreatywni”: utworzono lub uzupełniono '.$this->created.' stron. Dokumenty fundacji są szkicami do uzupełnienia.');
     }
@@ -86,6 +87,14 @@ class KreatywniSiteSeeder extends Seeder
             $fill['footer_options'] = ['staff_link' => false];
         }
         $this->site->forceFill($fill)->save();
+    }
+
+    /** Dokumenty (podstrony „Fundacji”) do modułu „Dokumenty – Kreatywni” na stronie „O nas”, gdy moduł jest pusty. */
+    private function documents(): void
+    {
+        if (\App\Models\KreatywniDocument::supported()) {
+            \App\Models\KreatywniDocument::importFromPages($this->site);
+        }
     }
 
     /** Oferta z tekstów szablonu do modułu „Mikrooferta – Kreatywni”, gdy moduł jest pusty. */

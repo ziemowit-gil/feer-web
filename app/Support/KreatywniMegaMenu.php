@@ -64,6 +64,7 @@ final class KreatywniMegaMenu
                     \App\Models\KreatywniPerson::teamRows($texts, 'about_team') !== [] ? ['label' => $texts->get('about_team_title'), 'url' => $base.'#zespol', 'current' => false] : null,
                     $texts->rows('about_why') !== [] ? ['label' => $texts->get('about_why_title'), 'url' => $base.'#dlaczego', 'current' => false] : null,
                     $texts->get('about_story') !== '' ? ['label' => $texts->get('about_story_title'), 'url' => $base.'#historia', 'current' => false] : null,
+                    \App\Models\KreatywniDocument::forDisplay() !== [] ? ['label' => 'Dokumenty', 'url' => $base.'#dokumenty', 'current' => false] : null,
                     ['label' => $texts->get('about_join_title'), 'url' => $base.'#dolacz', 'current' => false],
                 ]))];
             } elseif ($page && $base && $page->usesStandardLayout() && filled($page->content)) {

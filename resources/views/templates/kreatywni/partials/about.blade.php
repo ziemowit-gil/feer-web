@@ -2,7 +2,8 @@
     Dedykowana podstrona „O nas” szablonu „kreatywni” (strona o adresie o-nas / o-nas-2…, włączana z page.blade.php
     pod pasem z tytułem). Sekcje z tekstów App\Support\KreatywniTexts (grupa „about”): misja jako duży cytat,
     #zespol — karty osób (zdjęcie albo inicjały, rola, opis; z modułu „Osoby – Kreatywni”, bez niego z tekstów), #dlaczego — karty „Dlaczego powstała Fundacja” z punktami,
-    #historia — historia z napisem „Od 2020 roku”, #dolacz — ciemny pas z zaproszeniem, przyciskiem do kontaktu
+    #historia — historia z napisem „Od 2020 roku”, #dokumenty — dokumenty fundacji z modułu „Dokumenty – Kreatywni”
+    (partials/documents), #dolacz — ciemny pas z zaproszeniem, przyciskiem do kontaktu
     i profilami social media. Sekcja bez treści się nie pokazuje. Kotwice są w mega menu (KreatywniMegaMenu).
     Zmienne: $texts, $kcPageContent (HTML treści strony z edytora albo '').
 --}}
@@ -100,6 +101,8 @@
         <div class="kc-wrap"><div class="kc-prose prose max-w-none" style="max-width:52rem">{!! $kcPageContent !!}</div></div>
     </section>
 @endif
+
+@include('templates.kreatywni.partials.documents')
 
 <section id="dolacz" class="kc-sec kc-dark" aria-labelledby="kc-about-join">
     <div class="kc-wrap kc-page-cta-in">

@@ -570,6 +570,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('kreatywni-oferty/import', [\App\Http\Controllers\Admin\KreatywniOfferController::class, 'import'])->name('kreatywni-oferty.import');
         Route::post('kreatywni-oferty/{offer}/przesun', [\App\Http\Controllers\Admin\KreatywniOfferController::class, 'move'])->name('kreatywni-oferty.przesun');
         Route::resource('kreatywni-oferty', \App\Http\Controllers\Admin\KreatywniOfferController::class)->parameters(['kreatywni-oferty' => 'offer'])->except('show');
+        // Mikro moduł „Dokumenty – Kreatywni” (sekcja „Dokumenty” na stronie „O nas”).
+        Route::post('kreatywni-dokumenty/import', [\App\Http\Controllers\Admin\KreatywniDocumentController::class, 'import'])->name('kreatywni-dokumenty.import');
+        Route::post('kreatywni-dokumenty/{document}/przesun', [\App\Http\Controllers\Admin\KreatywniDocumentController::class, 'move'])->name('kreatywni-dokumenty.przesun');
+        Route::resource('kreatywni-dokumenty', \App\Http\Controllers\Admin\KreatywniDocumentController::class)->parameters(['kreatywni-dokumenty' => 'document'])->except('show');
     });
 
     Route::middleware(['module:materials', 'module-access:materials'])->group(function () {

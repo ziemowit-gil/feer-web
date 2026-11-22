@@ -235,6 +235,9 @@ final class AdminMenu
                 // Szablon „kreatywni”: oferty z bloku sprzedażowego (mikro moduł).
                 \App\Models\SiteSetting::current()->site_template === 'kreatywni' && \App\Models\KreatywniOffer::supported() && $this->user->canAccessModule('pages')
                     ? $this->item('kreatywni-offers', 'Mikrooferta – Kreatywni', 'admin.kreatywni-oferty.index', 'fa-tags', active: 'admin.kreatywni-oferty.*') : null,
+                // Szablon „kreatywni”: dokumenty fundacji na stronie „O nas” (mikro moduł).
+                \App\Models\SiteSetting::current()->site_template === 'kreatywni' && \App\Models\KreatywniDocument::supported() && $this->user->canAccessModule('pages')
+                    ? $this->item('kreatywni-documents', 'Dokumenty – Kreatywni', 'admin.kreatywni-dokumenty.index', 'fa-folder-open', active: 'admin.kreatywni-dokumenty.*') : null,
             ]),
 
             $this->section('content', 'Treści', [
