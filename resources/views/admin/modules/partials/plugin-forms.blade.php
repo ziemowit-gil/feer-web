@@ -1,5 +1,5 @@
-{{-- Puste formularze akcji modułów instalowanych — przyciski w kartach
-     (partial plugin-card) wskazują je atrybutem form="…". Muszą stać POZA
+{{-- Puste formularze akcji modułów instalowanych — przyciski w wierszach tabeli
+     (partial plugin-table) wskazują je atrybutem form="…". Muszą stać POZA
      każdym innym formularzem (HTML nie pozwala zagnieżdżać <form>).
      Parametry: $cards, $returnTo (opcjonalnie 'settings' — powrót do zakładki Ustawienia → Moduły). --}}
 @foreach ($cards as $card)
