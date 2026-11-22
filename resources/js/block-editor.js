@@ -348,6 +348,9 @@ function start(config) {
     // przesunięcia albo usunięcia (serwer i tak nie przyjmie nowego). Pola zablokowane chowamy w panelu.
     const ALLOWED = Array.isArray(config.permissions?.blocks) ? config.permissions.blocks : null;
     const LOCKED = new Set(config.permissions?.locked || []);
+    // Typy bloków wyłączone razem z modułem (Ustawienia → Moduły): typ => nazwa modułu. Są też poza ALLOWED.
+    const MODULE_OFF = config.permissions?.modulesOff || {};
+    const moduleOffText = (type) => `Moduł „${MODULE_OFF[type]}” jest wyłączony w Ustawienia → Moduły, więc ten blok nie pokazuje się na stronie.`;
     const typeAllowed = (type) => { if (!ALLOWED) return true; const t = BLOCKS[type]?.as || type; return ALLOWED.includes(PART_OF[t] || t); };
     const allowedDeep = (b) => typeAllowed(b.type) && (b.inner || []).every(allowedDeep);
     // Bloki wklejone lub ze wzorca bez niedozwolonych: zwykły blok znika, kontener zostawia treść.
@@ -1682,7 +1685,9 @@ function start(config) {
         // Blok typu spoza uprawnień grupy: widać go, można go przesunąć albo usunąć, ale nie zmienić treści.
         if (!typeAllowed(b.type)) {
             wrap.classList.add('is-hidden-block');
-            wrap.append(h('p', { class: 'be-hidden-note' }, icon('lock'), ` Tego bloku nie zmienisz — Twoja grupa nie używa bloków „${def.title}”. Możesz go przesunąć albo usunąć.`));
+            wrap.append(h('p', { class: 'be-hidden-note' }, icon('lock'), MODULE_OFF[b.type]
+                ? ` ${moduleOffText(b.type)} Możesz go przesunąć albo usunąć.`
+                : ` Tego bloku nie zmienisz — Twoja grupa nie używa bloków „${def.title}”. Możesz go przesunąć albo usunąć.`));
             if (!def.container) body.inert = true;
         }
         wrap.append(body);
@@ -3568,7 +3573,7 @@ function start(config) {
         const set = (patch, opts) => updateAttrs(b, patch, opts);
         const typing = (patch) => updateAttrs(b, patch, { typing: true });
         if (!typeAllowed(b.type)) {
-            parts.push(panelSection(null, lockedNote(`Blok „${def.title}” jest poza uprawnieniami Twojej grupy`),
+            parts.push(panelSection(null, MODULE_OFF[b.type] ? h('p', { class: 'be-help' }, icon('lock'), ' ' + moduleOffText(b.type)) : lockedNote(`Blok „${def.title}” jest poza uprawnieniami Twojej grupy`),
                 h('button', { type: 'button', class: 'be-btn be-btn--ghost be-danger', onClick: () => removeBlock(b.id) }, icon('trash'), ' Usuń')));
             return h('div', {}, ...parts);
         }

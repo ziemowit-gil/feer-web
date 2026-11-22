@@ -287,7 +287,7 @@ class BlockEditorController extends Controller
             fn ($b) => is_array($b) ? array_diff_key($b, array_flip(['hidden', 'from', 'until'])) : $b,
             $data['blocks'],
         ));
-        $blocks = EditorPermissions::enforceBlockTypes($blocks, [], $request->user()->allowedBlockTypes());
+        $blocks = EditorPermissions::enforceBlockTypes($blocks, [], EditorPermissions::allowedBlockTypes($request->user()));
         // Wstawka innego bloku wspólnego w środku nie miałaby sensu (jeden poziom, bez pętli).
         $blocks = array_values(array_filter($blocks, fn ($b) => BlockSummary::sharedId($b) === null));
         if ($blocks === []) {
@@ -438,8 +438,13 @@ class BlockEditorController extends Controller
                 'classic' => ClassicInserts::forBlockEditor(),
                 // Edytujemy sam blok wspólny: bez wstawiania innych bloków wspólnych i bez „Zapisz jako blok wspólny”.
                 'shared' => $record instanceof ContentBlock ? ['id' => $record->id, 'pages' => $record->usedOnPages()->count()] : null,
-                // Uprawnienia grupy osoby: dozwolone typy bloków (null = wszystkie) i pola, których nie zmienia.
-                'permissions' => ['blocks' => auth()->user()->allowedBlockTypes(), 'locked' => auth()->user()->lockedFields()],
+                // Uprawnienia: dozwolone typy bloków (grupy osoby bez bloków wyłączonych modułów; null = wszystkie), pola,
+                // których osoba nie zmienia, i typy wyłączone razem z modułem (typ => nazwa modułu, do komunikatu).
+                'permissions' => [
+                    'blocks' => EditorPermissions::allowedBlockTypes(auth()->user()),
+                    'locked' => auth()->user()->lockedFields(),
+                    'modulesOff' => (object) EditorPermissions::moduleDisabledTypes(),
+                ],
                 // Blok „Lista aktualności": kategorie do wyboru.
                 'newsCategories' => NewsList::categoryOptions(),
                 'materialGroups' => \App\Models\EducationalMaterial::TARGET_GROUPS,
@@ -494,7 +499,7 @@ class BlockEditorController extends Controller
         $blocks = BlockRenderer::normalize($data['blocks']);
         // Typy bloków spoza uprawnień grupy: nowy taki blok nie przechodzi, istniejący zostaje nietknięty.
         $draftBlocks = $record instanceof Page && $request->boolean('robocza') && \Illuminate\Support\Facades\Schema::hasTable('page_drafts') ? $record->draft?->blocks : null;
-        $blocks = EditorPermissions::enforceBlockTypes($blocks, is_array($draftBlocks) ? $draftBlocks : (is_array($record->blocks) ? $record->blocks : []), $request->user()->allowedBlockTypes());
+        $blocks = EditorPermissions::enforceBlockTypes($blocks, is_array($draftBlocks) ? $draftBlocks : (is_array($record->blocks) ? $record->blocks : []), EditorPermissions::allowedBlockTypes($request->user()));
 
         // Blok wspólny: nazwa i bloki (zmiana od razu na wszystkich stronach; wersja trafia do historii).
         if ($record instanceof ContentBlock) {
