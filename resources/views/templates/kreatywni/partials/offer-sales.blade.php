@@ -1,7 +1,7 @@
 {{--
     Blok sprzedażowy oferty (strona główna i góra strony „Oferta”): ciemna karta cenowa — nazwa, duża cena z jednostką,
     dopisek, korzyści, „Zamów warsztaty” (domyślnie strona kontaktu) i telefon — oraz warsztaty pogrupowane
-    (Tytuł | grupa z KreatywniTexts::offer_items) jako zwykłe listy pod nagłówkami, płasko: bez kart, ikon i „pigułek”.
+    (Tytuł | grupa z KreatywniTexts::offer_items) jako „pigułki” pod nagłówkami, płasko: bez kart, ikon i kolorowych kropek.
     Zmienne: $texts, $kcHeadingLevel (poziom nagłówków grup: 3 na głównej pod H2 sekcji, 2 na stronie Oferta pod H1).
 --}}
 @php
@@ -39,7 +39,7 @@
             @foreach ($kcGroups as $group => $titles)
                 <div @class(['kc-collection', 'is-main' => $loop->first])>
                     <{{ $kcH }} class="kc-collection-head">{{ $group }}</{{ $kcH }}>
-                    <ul class="kc-plain-list">
+                    <ul class="kc-chips">
                         @foreach ($titles as $title)
                             <li>{{ $title }}</li>
                         @endforeach

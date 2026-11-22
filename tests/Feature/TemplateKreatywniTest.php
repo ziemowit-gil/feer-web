@@ -67,8 +67,7 @@ class TemplateKreatywniTest extends TestCase
         $this->assertStringNotContainsString('id="zespol"', $html, 'Zespół jest domyślnie ukryty (jest na stronie O nas).');
         $this->assertStringContainsString('<span class="kc-review-name">Justyna</span>', $html);
         $this->assertStringContainsString('class="kc-price-card kc-dark"', $html); // karta cenowa oferty
-        $this->assertStringContainsString('<ul class="kc-plain-list">', $html, 'Warsztaty jako zwykła lista, bez „pigułek”.');
-        $this->assertStringNotContainsString('<ul class="kc-chips">', $html);
+        $this->assertStringContainsString('<ul class="kc-chips">', $html, 'Warsztaty jako pigułki.');
         $this->assertStringContainsString('Boże Narodzenie', $html); // kolekcja warsztatów
         $this->assertStringContainsString('href="tel:+48663182816"', $html);
         $this->assertStringContainsString('class="kc kc-dark kc-footer"', $html);

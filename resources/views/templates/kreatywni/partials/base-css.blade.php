@@ -261,14 +261,11 @@
     .kc-more { margin-top: 2.5rem; display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; }
     .kc-chips { display: flex; flex-wrap: wrap; gap: .6rem; margin: 0; padding: 0; list-style: none; }
     .kc-chips li { display: inline-flex; align-items: center; gap: .55rem; padding: .6rem 1.1rem; border-radius: 999px; background: #fff; color: var(--kc-forest); font-weight: 700; line-height: 1.3; }
-    .kc-chips li::before { content: ''; width: .6rem; height: .6rem; flex: none; border-radius: 50%; background: var(--kc-lime); }
-    .kc-chips li:nth-child(3n+2)::before { background: var(--kc-gold); }
-    .kc-chips li:nth-child(3n)::before { background: var(--kc-green); }
 
     /* Blok sprzedażowy oferty (partials/offer-sales) */
     .kc-sales { display: grid; gap: 1.5rem; align-items: start; }
     @media (min-width: 1024px) { .kc-sales { grid-template-columns: 22rem minmax(0, 1fr); gap: 2rem; } .kc-price-card { position: sticky; top: 7rem; } }
-    /* Blok oferty płasko („mniej AI”): karta bez cienia i pigułki, korzyści z krótką kreską, warsztaty jako zwykłe listy. */
+    /* Blok oferty płasko („mniej AI”): karta bez cienia i etykiety, korzyści z krótką kreską, warsztaty jako pigułki bez kropek. */
     .kc-price-card { padding: 2rem; border-radius: .75rem; }
     .kc-price-name { margin: 0 0 .75rem; font-size: 1.05rem; font-weight: 700; color: var(--kc-sun); }
     .kc-price-big { margin: 0; line-height: 1; }
@@ -284,10 +281,7 @@
     .kc-collections { display: grid; gap: 2rem 2.5rem; padding-top: .25rem; }
     @media (min-width: 768px) { .kc-collections { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kc-collection.is-main { grid-column: 1 / -1; } }
     .kc-collection-head { margin: 0 0 .75rem; padding-bottom: .45rem; border-bottom: 3px solid var(--kc-lime); font-size: 1.2rem; font-weight: 800; color: var(--kc-forest); }
-    .kc-plain-list { margin: 0; padding: 0; list-style: none; }
-    .kc-plain-list li { padding: .3rem 0; font-size: 1.05rem; line-height: 1.45; break-inside: avoid; }
-    @media (min-width: 640px) { .kc-collection.is-main .kc-plain-list { columns: 2; column-gap: 2.5rem; } }
-    @media (min-width: 1280px) { .kc-collection.is-main .kc-plain-list { columns: 3; } }
+
     .kc-offer-page { padding-top: 2.5rem; }
 
     /* Dlaczego my */
