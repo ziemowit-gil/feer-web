@@ -136,8 +136,12 @@
            (nie dziedziczy rozmiaru i kroju z szablonu). */
         .site-admin-bar .mt-nav { position: relative; z-index: 60; display: block; background: var(--m-ink); color: #fff; font-size: 1rem; line-height: 1.5; text-align: left; }
         .site-admin-bar .mt-nav :is(ul, p) { margin: 0; }
-        /* Kreska pod paskiem: oddziela go od ciemnych pasków szablonu (np. pasek górny FEER), żeby nie zlewały się w jeden. */
-        .site-admin-bar .mt-nav { box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .28); }
+        /* Złota linia pod paskiem: oddziela menu CMS od menu strony (także od ciemnych pasków szablonu, np. pasek górny
+           FEER albo zielony pasek Kreatywnych), bez przerwy między nimi. Na wrapperze, nie na .mt-nav, żeby tła pozycji
+           paska jej nie przykrywały; rozwijane panele otwierają się pod paskiem i ją zakrywają. Linia jest ozdobna
+           (bez treści), a do ciemnego paska ma kontrast > 3:1. */
+        .site-admin-bar { margin: 0; padding: 0; border-bottom: 3px solid #d9a521; }
+        body.template-kreatywni .site-admin-bar { border-bottom-color: #f2d600; }
         .site-admin-bar .mt-nav a { text-decoration: none; }
         @media (min-width: 1024px) { .site-admin-bar .mt-nav { position: relative; z-index: 60; } }
         @media (max-width: 1023.98px) {
