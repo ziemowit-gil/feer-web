@@ -320,6 +320,7 @@
                         </a>
                     </li>
                 @endif
+                @if (\App\Models\SiteSetting::current()->isModuleEnabled('newsletter') && \Illuminate\Support\Facades\Route::has('newsletter.show'))
                 <li>
                     <a href="{{ route('newsletter.show') }}" class="flex h-full flex-col rounded-lg border border-gray-200 p-5 transition hover:border-brand hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
                         <i class="fa-solid fa-envelope-open-text mb-2 text-2xl text-brand" aria-hidden="true"></i>
@@ -327,6 +328,7 @@
                         <span class="mt-1 text-sm text-muted">Zapisz się na newsletter i opowiedz o nas znajomym.</span>
                     </a>
                 </li>
+                @endif
             </ul>
         </div>
 

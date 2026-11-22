@@ -195,10 +195,15 @@ class Category extends Model
             && ($k !== 'rss' || filled($this->portal_rss_url ?? null))));
     }
 
-    /** Czy funkcja portali jest włączona (Ustawienia → Działania; domyślnie tak, także przed migracją). */
+    /**
+     * Czy funkcja portali jest włączona: moduł „Portale” (Ustawienia → Moduły) i opcja w Ustawienia → Działania
+     * (domyślnie tak, także przed migracją). Wyłączone — linki do kategorii prowadzą na zwykłą stronę kategorii.
+     */
     public static function portalsEnabled(): bool
     {
-        return (bool) (SiteSetting::current()->portals_enabled ?? true);
+        $site = SiteSetting::current();
+
+        return $site->isModuleEnabled('portals') && (bool) ($site->portals_enabled ?? true);
     }
 
     public function hasPortal(): bool

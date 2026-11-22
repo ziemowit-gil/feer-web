@@ -2073,7 +2073,7 @@
                     plural(n) { const t = n % 10, h = n % 100; return n === 1 ? 'pozycja' : (t >= 2 && t <= 4 && (h < 12 || h > 14) ? 'pozycje' : 'pozycji'); },
                 }" data-cards="modules" data-cards-label="Karty sekcji Moduły">
                 <div data-card="moduly" data-card-label="Moduły">
-                    <p class="mb-4 text-sm text-muted">Wyłącz moduł, aby ukryć go z panelu i strony publicznej. Adresy powiązane z wyłączonym modułem przestaną działać (błąd 404), dopóki nie zostanie ponownie włączony. Zmiany przełączników zapisuje przycisk „Zapisz” na dole strony.</p>
+                    <p class="mb-4 text-sm text-muted">Wyłącz moduł, aby ukryć go z panelu i strony publicznej. Adresy powiązane z wyłączonym modułem przestaną działać (błąd 404), dopóki nie zostanie ponownie włączony. Zaznacz moduły w tabeli i wybierz „Włącz zaznaczone” albo „Wyłącz zaznaczone” (albo użyj przycisku w wierszu) — zmiana działa od razu, bez przycisku „Zapisz”.</p>
 
                     {{-- Pasek narzędzi: wyszukiwarka, licznik, filtr stanu --}}
                     <div class="mb-6 flex flex-col gap-4 rounded-md bg-gray-50 p-4 lg:flex-row lg:items-end lg:justify-between">
@@ -2112,46 +2112,8 @@
                         Brak modułów ani opcji pasujących do wyszukiwania lub filtra.
                     </p>
 
-                    {{-- Przełączniki modułów wbudowanych (zapisywane jako enabled_modules[]) --}}
-                    @foreach ($moduleGroups as $groupKey => $group)
-                        <section class="mb-8" aria-labelledby="modules-group-{{ $groupKey }}"
-                            x-show="anyVisible(@js(array_keys($group['modules'])))">
-                            <h2 id="modules-group-{{ $groupKey }}" class="mb-3 text-base font-bold text-ink">{{ $group['label'] }}</h2>
-                            <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                                @foreach ($group['modules'] as $key => $module)
-                                    @php $isOn = in_array($key, $enabledModules, true); @endphp
-                                    <li x-show="visible('{{ $key }}')"
-                                        class="flex flex-col gap-3 rounded-md p-4 {{ $isOn ? 'bg-brand-light' : 'bg-gray-50' }}"
-                                        :class="enabled['{{ $key }}'] ? 'bg-brand-light' : 'bg-gray-50'">
-                                        <div class="flex items-start gap-3">
-                                            <i class="fa-solid {{ $module['icon'] }} mt-0.5 w-5 flex-none text-center text-lg text-brand-dark" aria-hidden="true"></i>
-                                            <div class="min-w-0 flex-1">
-                                                <h3 class="font-bold text-ink">
-                                                    <label for="module-switch-{{ $key }}" class="cursor-pointer">{{ $module['label'] }}</label>
-                                                </h3>
-                                                @if ($module['desc'] !== '')
-                                                    <p id="module-desc-{{ $key }}" class="mt-1 text-sm text-muted">{{ $module['desc'] }}@unless (\App\Support\Edition::allows($key)) <span class="font-bold text-ink">Wersja płatna — w darmowej tylko podgląd dotychczasowych treści.</span>@endunless</p>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="mt-auto">
-                                            @include('admin.modules.partials.switch', [
-                                                'id' => 'module-switch-'.$key,
-                                                'name' => 'enabled_modules[]',
-                                                'value' => $key,
-                                                'checked' => $isOn,
-                                                'stateKey' => $key,
-                                                'label' => $module['label'],
-                                                'onText' => 'Włączony',
-                                                'offText' => 'Wyłączony',
-                                                'describedBy' => $module['desc'] !== '' ? 'module-desc-'.$key : null,
-                                            ])
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </section>
-                    @endforeach
+                    {{-- Moduły wbudowane: tabela z zaznaczaniem wielu wierszy i akcjami masowymi (osobny formularz). --}}
+                    @include('admin.settings.partials.modules-table')
 
                     {{-- Moduły instalowane (rozszerzenia z katalogu modules/). Przyciski akcji
                          wskazują atrybutem form="…" formularze dodane przez @push('scripts')
@@ -2174,65 +2136,8 @@
                     @endif
                 </div>
 
-                {{-- Typy treści i układy: opcje do ukrycia w listach wyboru (blocked_options).
-                     Żądanie niesie DOSTĘPNE wartości (allowed_options[grupa][]); znacznik
-                     blocked_options_form mówi kontrolerowi, że sekcja była w formularzu. --}}
-                <section class="mt-10" aria-labelledby="content-options-heading" data-card="typy-tresci" data-card-label="Typy treści i układy">
-                    <input type="hidden" name="blocked_options_form" value="1">
-                    <h2 id="content-options-heading" class="mb-1 text-lg font-bold text-ink" data-card-title>Typy treści i układy</h2>
-                    <p class="mb-6 text-sm text-muted">Ukryta opcja znika z list wyboru przy tworzeniu i edycji. Treści, które już jej używają, działają dalej i zachowują swój wybór. W każdej grupie musi zostać co najmniej jedna dostępna opcja.</p>
-
-                    @foreach ($optionGroups as $group => $options)
-                        @php
-                            $groupLabel = \App\Models\SiteSetting::BLOCKABLE_GROUP_LABELS[$group] ?? $group;
-                            $protected = \App\Models\SiteSetting::UNBLOCKABLE_OPTIONS[$group] ?? [];
-                            $optionKeys = array_map(fn ($v) => "opt:{$group}:{$v}", array_keys($options));
-                        @endphp
-                        <section class="mb-8" aria-labelledby="options-group-{{ $group }}"
-                            x-show="anyVisible(@js($optionKeys))">
-                            <h3 id="options-group-{{ $group }}" class="mb-1 text-base font-bold text-ink">{{ $groupLabel }}</h3>
-                            <div id="allowed_options.{{ $group }}" tabindex="-1" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                                @error("allowed_options.{$group}")
-                                    <p class="mb-2 text-sm font-bold text-red-700" role="alert">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                                @foreach ($options as $value => $label)
-                                    @php
-                                        $stateKey = "opt:{$group}:{$value}";
-                                        $isAvailable = $moduleState[$stateKey];
-                                        $isProtected = in_array((string) $value, $protected, true);
-                                        $switchId = 'option-switch-'.$group.'-'.$value;
-                                    @endphp
-                                    <li x-show="visible(@js($stateKey))"
-                                        class="flex flex-col gap-3 rounded-md p-4 {{ $isAvailable ? 'bg-brand-light' : 'bg-gray-50' }}"
-                                        :class="enabled[@js($stateKey)] ? 'bg-brand-light' : 'bg-gray-50'">
-                                        <p class="text-sm font-bold text-ink">
-                                            <label for="{{ $switchId }}" class="{{ $isProtected ? '' : 'cursor-pointer' }}">{{ $label }}</label>
-                                        </p>
-                                        @if ($isProtected)
-                                            <p id="{{ $switchId }}-note" class="text-xs text-muted">Zawsze dostępny — wariant awaryjny, gdy nic innego nie wybrano.</p>
-                                        @endif
-                                        <div class="mt-auto">
-                                            @include('admin.modules.partials.switch', [
-                                                'id' => $switchId,
-                                                'name' => "allowed_options[{$group}][]",
-                                                'value' => $value,
-                                                'checked' => $isAvailable,
-                                                'stateKey' => $stateKey,
-                                                'label' => $label.' ('.$groupLabel.')',
-                                                'onText' => 'Dostępny',
-                                                'offText' => 'Ukryty',
-                                                'describedBy' => $isProtected ? $switchId.'-note' : null,
-                                                'disabled' => $isProtected,
-                                            ])
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </section>
-                    @endforeach
-                </section>
+                {{-- Typy treści i układy (blocked_options): tabela z zaznaczaniem wielu wierszy i akcjami masowymi. --}}
+                @include('admin.settings.partials.content-types-table')
             </div>
         </div>
 

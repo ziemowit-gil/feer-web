@@ -38,10 +38,12 @@
         $projectsInMain = $slides->isEmpty() && $projects->isNotEmpty() && in_array('projects', $widgets, true);
         // Menu jak na stronie działania (projects/partials/sidebar-nav): pozycje na całą szerokość ze strzałką.
         $navItem = 'proj-nav-item flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-[0.9375rem] text-ink transition hover:bg-white hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
+        // Newsletter wyłączony dla witryny (Ustawienia → Moduły) albo nieaktywny w systemie — bez linków do zapisu.
+        $newsletterOn = \App\Models\SiteSetting::current()->isModuleEnabled('newsletter') && Route::has('newsletter.show');
         $shortcuts = $category->portalShortcuts() ?: array_values(array_filter([
             [$category->portalLabel('all_link'), route('categories.show', $category), ''],
             Route::has('events.index') ? ['Kalendarz szkoleń i wydarzeń', route('events.index'), 'fa-regular fa-calendar'] : null,
-            Route::has('newsletter.show') ? ['Zapisz się do newslettera', route('newsletter.show'), 'fa-regular fa-envelope'] : null,
+            $newsletterOn ? ['Zapisz się do newslettera', route('newsletter.show'), 'fa-regular fa-envelope'] : null,
             Route::has('contact.show') ? ['Kontakt z fundacją', route('contact.show'), 'fa-regular fa-address-card'] : null,
             ['Kanał RSS portalu', route('portal.feed', $category->portal_slug), ''],
         ]));
@@ -153,7 +155,7 @@
                     <p class="mt-4 max-w-3xl text-lg leading-relaxed text-ink">{{ $stayText }}</p>
                 @endif
                 <div class="mt-5 grid gap-6 md:grid-cols-3">
-                    @if (Route::has('newsletter.show'))
+                    @if ($newsletterOn)
                         <div>
                             <h3 class="font-bold text-ink">Newsletter</h3>
                             <p class="mt-1 text-ink">Nowe szkolenia, materiały i wydarzenia prosto na Twoją skrzynkę.</p>

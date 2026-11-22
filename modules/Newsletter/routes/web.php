@@ -23,11 +23,15 @@ use Modules\Newsletter\Http\Controllers\Public\WebhookController;
 Route::group(['middleware' => 'web', 'module' => 'newsletter'], function (): void {
 
 // ── Publiczne ─────────────────────────────────────────────────────────────────
-Route::get('/newsletter', [SignupController::class, 'show'])->name('newsletter.show');
-Route::post('/newsletter/zapis', [SignupController::class, 'store'])->name('newsletter.subscribe')->middleware('throttle:5,1');
-Route::get('/newsletter/oczekiwanie', [SignupController::class, 'pending'])->name('newsletter.pending');
-Route::get('/newsletter/{form:slug}/dolacz', [SignupController::class, 'landing'])->name('newsletter.landing');
-Route::get('/newsletter/{form:slug}', [SignupController::class, 'showForm'])->name('newsletter.form'); // musi być ostatnia
+// Zapisy: wyłączony dla witryny moduł (Ustawienia → Moduły) = 404. Potwierdzenie, wypis, preferencje i statystyki
+// poniżej (/n/…) działają zawsze — linki z wysłanych już maili muszą się otwierać.
+Route::middleware('module:newsletter')->group(function (): void {
+    Route::get('/newsletter', [SignupController::class, 'show'])->name('newsletter.show');
+    Route::post('/newsletter/zapis', [SignupController::class, 'store'])->name('newsletter.subscribe')->middleware('throttle:5,1');
+    Route::get('/newsletter/oczekiwanie', [SignupController::class, 'pending'])->name('newsletter.pending');
+    Route::get('/newsletter/{form:slug}/dolacz', [SignupController::class, 'landing'])->name('newsletter.landing');
+    Route::get('/newsletter/{form:slug}', [SignupController::class, 'showForm'])->name('newsletter.form'); // musi być ostatnia
+});
 
 Route::prefix('n')->name('newsletter.')->group(function (): void {
     Route::get('potwierdz/{token}', [SignupController::class, 'confirm'])->name('confirm');

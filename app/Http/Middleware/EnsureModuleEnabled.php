@@ -15,7 +15,8 @@ class EnsureModuleEnabled
 
     public function handle(Request $request, Closure $next, string $module): Response
     {
-        $isActive = $this->modules->get($module) !== null
+        // Rozszerzenie z przełącznikiem witryny (np. Newsletter) sprawdza też Ustawienia → Moduły tej witryny.
+        $isActive = $this->modules->get($module) !== null && ! in_array($module, SiteSetting::SITE_SWITCHABLE_PLUGINS, true)
             ? $this->modules->isActive($module)
             : SiteSetting::current()->isModuleEnabled($module);
 
@@ -26,7 +27,7 @@ class EnsureModuleEnabled
                     'moduleName'  => $manifest?->name ?? (SiteSetting::MODULES[$module] ?? $module),
                     'identifier'  => $module,
                     // Moduł z listy Ustawienia → Moduły (nie z Instalacji modułów) włącza się w ustawieniach witryny.
-                    'settingsModule' => $manifest === null && isset(SiteSetting::MODULES[$module]),
+                    'settingsModule' => isset(SiteSetting::MODULES[$module]) && ($manifest === null || $this->modules->isActive($module)),
                 ]);
             }
             abort(404);

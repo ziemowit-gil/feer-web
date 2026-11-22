@@ -27,7 +27,9 @@ class SitemapController extends Controller
 
         $sitemap->add(Url::create(route('home'))->setPriority(1.0));
         $sitemap->add(Url::create(route('contact.show')));
-        $sitemap->add(Url::create(route('newsletter.show')));
+        if ($settings->isModuleEnabled('newsletter') && \Illuminate\Support\Facades\Route::has('newsletter.show')) {
+            $sitemap->add(Url::create(route('newsletter.show')));
+        }
 
         if ($settings->isModuleEnabled('support')) {
             $sitemap->add(Url::create(route('support.show')));
@@ -109,7 +111,7 @@ class SitemapController extends Controller
             $on('support') && $has('support.show') ? ['Wesprzyj nas', route('support.show'), 'fa-hand-holding-heart', 'Darowizny i 1,5% podatku'] : null,
             $on('faq') && $has('faq.index') ? ['Pytania i odpowiedzi', route('faq.index'), 'fa-circle-question', 'FAQ'] : null,
             $on('bip') && $has('bip') ? ['BIP', $settings->bipHref() ?? route('bip'), 'fa-landmark', 'Biuletyn Informacji Publicznej'] : null,
-            $has('newsletter.show') ? ['Newsletter', route('newsletter.show'), 'fa-envelope-open-text', 'Zapisz się na wiadomości'] : null,
+            $on('newsletter') && $has('newsletter.show') ? ['Newsletter', route('newsletter.show'), 'fa-envelope-open-text', 'Zapisz się na wiadomości'] : null,
             $has('contact.show') ? ['Kontakt', route('contact.show'), 'fa-address-book', 'Adres, telefon, formularz'] : null,
         ]));
 

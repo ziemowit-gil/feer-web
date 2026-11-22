@@ -107,13 +107,13 @@ class ActivityCommsModulesTest extends TestCase
         foreach ($routes as $module => $route) {
             $this->get(route($route))
                 ->assertOk()
-                ->assertViewIs('admin.modules.disabled')
+                ->assertSee('Moduł dezaktywowany')
                 ->assertSee(SiteSetting::MODULES[$module])
                 ->assertSee('w zakładce Moduły');
         }
 
-        $this->get(route('admin.strefy-bannerow.index'))->assertViewIs('admin.modules.disabled');
-        $this->get(route('admin.zbiorki-teksty.edit'))->assertViewIs('admin.modules.disabled');
+        $this->get(route('admin.strefy-bannerow.index'))->assertSee('Moduł dezaktywowany');
+        $this->get(route('admin.zbiorki-teksty.edit'))->assertSee('Moduł dezaktywowany');
     }
 
     public function test_wylaczone_zbiorki_i_portale_zwracaja_404_na_stronie(): void

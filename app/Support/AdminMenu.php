@@ -787,11 +787,17 @@ final class AdminMenu
         return $this->enabled($module) && $this->user->canAccessModule($module);
     }
 
-    /** Czy moduł jest włączony (Instalacja modułów albo Ustawienia → Moduły), bez sprawdzania uprawnień osoby. */
+    /**
+     * Czy moduł jest włączony (Instalacja modułów albo Ustawienia → Moduły), bez sprawdzania uprawnień osoby.
+     * Rozszerzenia z przełącznikiem witryny (SiteSetting::SITE_SWITCHABLE_PLUGINS, np. Newsletter) muszą być aktywne
+     * globalnie i niewyłączone dla tej witryny.
+     */
     private function enabled(string $module): bool
     {
-        return $this->modules->get($module) !== null
-            ? $this->modules->isActive($module)
-            : $this->site->isModuleEnabled($module);
+        if ($this->modules->get($module) !== null && ! in_array($module, SiteSetting::SITE_SWITCHABLE_PLUGINS, true)) {
+            return $this->modules->isActive($module);
+        }
+
+        return $this->site->isModuleEnabled($module);
     }
 }

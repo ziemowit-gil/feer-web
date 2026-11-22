@@ -29,7 +29,7 @@ class JoinUsController extends Controller
             ? Page::where('type', 'wspolpraca')->where('is_published', true)->orderBy('order')->first()
             : null;
         $supportActive = $settings->isModuleEnabled('support');
-        $newsletterActive = \Illuminate\Support\Facades\Route::has('newsletter.show');
+        $newsletterActive = \App\Models\SiteSetting::current()->isModuleEnabled('newsletter') && \Illuminate\Support\Facades\Route::has('newsletter.show');
 
         return view('dolacz-do-nas', compact('page', 'offers', 'ads', 'offersCount', 'adsCount', 'jobsActive', 'volunteeringActive', 'cooperationPage', 'supportActive', 'newsletterActive'));
     }

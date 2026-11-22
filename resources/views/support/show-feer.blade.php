@@ -275,7 +275,9 @@
                     @if ($cooperationPage)
                         <li><a href="{{ $cooperationPage->publicUrl() }}" class="block rounded-md bg-white p-5 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><span class="font-bold text-ink">Nawiąż współpracę →</span><span class="mt-1 block text-sm text-muted">Zostań partnerem organizacji lub projektu.</span></a></li>
                     @endif
-                    <li><a href="{{ route('newsletter.show') }}" class="block rounded-md bg-white p-5 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><span class="font-bold text-ink">Bądź na bieżąco →</span><span class="mt-1 block text-sm text-muted">Zapisz się na newsletter i opowiedz o nas znajomym.</span></a></li>
+                    @if (\App\Models\SiteSetting::current()->isModuleEnabled('newsletter') && \Illuminate\Support\Facades\Route::has('newsletter.show'))
+                        <li><a href="{{ route('newsletter.show') }}" class="block rounded-md bg-white p-5 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"><span class="font-bold text-ink">Bądź na bieżąco →</span><span class="mt-1 block text-sm text-muted">Zapisz się na newsletter i opowiedz o nas znajomym.</span></a></li>
+                    @endif
                 </ul>
             </div>
 
