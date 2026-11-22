@@ -16,9 +16,14 @@ class AdminColorSchemeTest extends TestCase
         return User::factory()->create(['role' => User::ROLE_ADMIN] + $attrs);
     }
 
-    public function test_domyslnie_krem_z_motywem_joomla(): void
+    public function test_domyslnie_metro_a_krem_z_motywem_joomla_po_wyborze(): void
     {
-        $this->actingAs($this->admin())->get(route('admin.dashboard'))->assertOk()
+        $admin = $this->admin();
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()
+            ->assertSee('<body data-scheme="metro" class="admin-joomla admin-metro', false);
+
+        $admin->forceFill(['admin_scheme' => 'krem'])->save();
+        $this->actingAs($admin->fresh())->get(route('admin.dashboard'))->assertOk()
             ->assertSee('<body data-scheme="krem" class="admin-joomla', false);
     }
 
@@ -55,7 +60,8 @@ class AdminColorSchemeTest extends TestCase
 
         // Nieznana wartość w bazie → schemat domyślny.
         $admin->forceFill(['admin_scheme' => 'stary'])->save();
-        $this->assertSame('krem', $admin->fresh()->adminScheme());
+        $this->assertSame(User::DEFAULT_ADMIN_SCHEME, $admin->fresh()->adminScheme());
+        $this->assertSame('metro', User::DEFAULT_ADMIN_SCHEME);
     }
 
     public function test_admin_zmienia_schemat_innej_osoby_w_edycji_uzytkownika(): void

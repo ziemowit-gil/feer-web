@@ -20,7 +20,7 @@ class AdminJoomlaThemeTest extends TestCase
 
     public function test_pulpit_admina_ma_motyw_naglowek_i_uproszczony_uklad(): void
     {
-        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'admin_scheme' => 'krem']);
 
         $html = $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->getContent();
 
@@ -49,7 +49,7 @@ class AdminJoomlaThemeTest extends TestCase
 
     public function test_inne_strony_panelu_tez_maja_motyw(): void
     {
-        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'admin_scheme' => 'krem']);
 
         $html = $this->actingAs($admin)->get(route('admin.podstrony.index'))->assertOk()->getContent();
 

@@ -183,7 +183,7 @@ class AdminMetroStyleTest extends TestCase
 
     public function test_inne_style_panelu_maja_dawne_menu_z_naglowkami_grup(): void
     {
-        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN, 'admin_scheme' => 'krem']);
         $html = $this->actingAs($admin)->get(route('admin.podstrony.index'))->assertOk()->getContent();
 
         $this->assertStringContainsString('class="admin-sidebar nav-style-flyout fixed', $html);
