@@ -24,13 +24,14 @@
                     @php
                         $scope = [];
                         if ($user->hasContentScope()) {
-                            if ($user->group->own_content_only) { $scope[] = 'tylko własne wpisy'; }
+                            if ($user->group?->own_content_only) { $scope[] = 'tylko własne wpisy'; }
+                            if ($user->personalPageMounts()) { $scope[] = 'własne gałęzie stron'; }
                             if ($ids = $user->allowedProjectCategoryIds()) { $scope[] = 'działania: '.collect($ids)->map(fn ($i) => $categories[$i] ?? '?')->implode(', '); }
                         }
                     @endphp
                     <tr>
                         <th scope="row" class="sticky left-0 z-10 bg-white px-4 py-3 text-left font-medium">{{ $user->name }}<span class="block text-xs font-normal text-muted">{{ $user->email }}</span></th>
-                        <td class="px-4 py-3">{{ \App\Models\User::ROLES[$user->role] ?? $user->role }}@if ($user->group)<span class="block text-xs text-muted">{{ $user->group->name }}</span>@endif</td>
+                        <td class="px-4 py-3">{{ \App\Models\User::ROLES[$user->role] ?? $user->role }}@if ($user->group)<span class="block text-xs text-muted">{{ $user->group->name }}</span>@endif<span class="block text-xs text-muted">{{ $user->canApproveContent() ? 'publikuje i zatwierdza' : ($user->publishesWithoutApproval() ? 'publikuje bez akceptacji' : 'publikacja po akceptacji') }}</span></td>
                         <td class="px-4 py-3 text-xs">{{ $scope ? implode('; ', $scope) : '—' }}</td>
                         @foreach ($modules as $key => $label)
                             <td class="px-3 py-3 text-center">

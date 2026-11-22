@@ -46,6 +46,12 @@
                 <p class="mt-1 text-sm text-ink">
                     Widzi {{ $preview['visible'] }} z {{ $preview['total'] }} pozycji menu w {{ $groupCount }} {{ $groupCount === 1 ? 'grupie' : 'grupach' }}.
                 </p>
+                {{-- Menu Edytora treści i Samodzielnego edytora jest takie samo — różni je obieg akceptacji. --}}
+                @if (collect(['pages', 'news', 'projects'])->contains(fn ($m) => $subject->canAccessModule($m)))
+                    <p class="mt-1 text-sm text-ink" data-publikacja>
+                        Publikacja stron, aktualności i działań: {{ $subject->canApproveContent() ? 'od razu, a do tego zatwierdza zgłoszenia innych' : ($subject->publishesWithoutApproval() ? 'od razu, bez akceptacji (nie zatwierdza zgłoszeń innych)' : 'po akceptacji osoby z prawem zatwierdzania') }}.
+                    </p>
+                @endif
                 @if ($subject->exists)
                     <p class="mt-2 text-sm text-ink">
                         <a href="{{ route('admin.uzytkownicy.edit', $subject) }}" class="font-bold text-brand-dark underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Edytuj użytkownika {{ $subject->name }}</a>

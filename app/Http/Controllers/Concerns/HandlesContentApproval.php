@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Concerns;
 
 /**
- * Obieg akceptacji treści. Użytkownik z uprawnieniem akceptanta (lub admin)
- * publikuje od razu. Edytor bez uprawnień: próba publikacji trafia do kolejki
+ * Obieg akceptacji treści. Użytkownik z uprawnieniem akceptanta (lub admin) i Samodzielny edytor
+ * publikują od razu. Edytor bez uprawnień: próba publikacji trafia do kolejki
  * „Do zatwierdzenia" (pozostaje nieopublikowane do czasu akceptacji).
  */
 /**
@@ -30,6 +30,16 @@ trait HandlesContentApproval
 
         if ($user->canApproveContent()) {
             $data['pending_approval'] = false;
+
+            return $data;
+        }
+
+        // Samodzielny edytor publikuje od razu, ale nie zatwierdza cudzych zgłoszeń: zapis bez publikacji
+        // zostawia stan oczekiwania bez zmian (np. poprawka literówki w treści czekającej na akceptację).
+        if ($user->publishesWithoutApproval()) {
+            if (! empty($data['is_published'])) {
+                $data['pending_approval'] = false;
+            }
 
             return $data;
         }

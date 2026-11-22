@@ -781,7 +781,8 @@ class BlockEditorController extends Controller
                 : [],
             'wasPublished' => (bool) $record->is_published,
             'publicBase' => $record instanceof News ? url('/aktualnosci').'/' : url('/'),
-            'canApprove' => (bool) auth()->user()?->canApproveContent(),
+            // „Treść jest dostępna publicznie” zamiast „Po zapisie trafi do zatwierdzenia” — kto publikuje bez akceptacji.
+            'canApprove' => (bool) auth()->user()?->publishesWithoutApproval(),
         ];
     }
 

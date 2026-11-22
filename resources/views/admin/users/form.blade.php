@@ -34,7 +34,11 @@
             {{-- Podpowiedzi per rola --}}
             <p x-show="role === 'content_editor'" x-cloak class="mt-1.5 rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
-                Edytor treści ma dostęp do wszystkich aktywnych modułów z treścią (aktualności, blog, wydarzenia, materiały, działania itp.), bez ustawień i systemu.
+                Edytor treści ma dostęp do wszystkich aktywnych modułów z treścią (aktualności, blog, wydarzenia, materiały, działania itp.), bez ustawień i systemu. Publikację stron, aktualności i działań zatwierdza osoba z prawem akceptacji.
+            </p>
+            <p x-show="role === 'independent_editor'" x-cloak class="mt-1.5 rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
+                <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
+                Samodzielny edytor ma te same moduły co Edytor treści, ale publikuje bez zatwierdzania — jego strony, aktualności, działania i wersje robocze stron od razu trafiają na stronę. Nie zatwierdza cudzych zgłoszeń i nie ma ustawień, użytkowników ani witryn.
             </p>
             <p x-show="role === 'coordinator'" x-cloak class="mt-1.5 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 <i class="fa-solid fa-circle-info mr-1" aria-hidden="true"></i>
@@ -100,7 +104,7 @@
         </div>
 
         {{-- Gałęzie stron tej osoby (jak „DB mounts” w TYPO3): widzi i edytuje w module Strony tylko zaznaczone strony z podstronami.
-             Sumują się z gałęziami z grupy. Dla ról Edytor (grupy) i Redaktor treści. --}}
+             Sumują się z gałęziami z grupy. Dla ról Edytor (grupy), Edytor treści i Samodzielny edytor. --}}
         @php
             $mountSel = array_map('intval', (array) old('page_mounts', $user->page_mounts ?? []));
             $mountPages = \App\Models\Page::forCurrentSite()->where('type', '!=', 'about_person')->orderBy('order')->orderBy('title')->get(['id', 'title', 'parent_id']);
@@ -119,7 +123,7 @@
                 return $html;
             };
         @endphp
-        <fieldset id="page-mounts-field" x-data="{ role: '{{ old('role', $user->role ?? 'editor') }}' }" x-show="['editor', 'content_editor'].includes(role)" x-cloak
+        <fieldset id="page-mounts-field" x-data="{ role: '{{ old('role', $user->role ?? 'editor') }}' }" x-show="['editor', 'content_editor', 'independent_editor'].includes(role)" x-cloak
             @change.window="role = document.getElementById('role').value">
             <legend class="mb-1 text-sm font-bold">Gałęzie stron tej osoby</legend>
             <p id="page-mounts-help" class="mb-2 text-xs text-muted">Zaznacz strony (działy), np. stronę ośrodka. Osoba zobaczy w module Strony tylko je i ich podstrony — drzewo zaczyna się od nich — i tylko tam doda nowe strony. Sumuje się z gałęziami z grupy. Bez zaznaczenia — bez ograniczenia (albo jak w grupie).</p>

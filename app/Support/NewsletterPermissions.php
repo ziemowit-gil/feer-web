@@ -46,6 +46,7 @@ final class NewsletterPermissions
         User::ROLE_NEWSLETTER_PUBLISHER => [self::VIEW, self::CAMPAIGNS, self::SEND, self::TEMPLATES, self::SUBSCRIBERS, self::REPORTS],
         // Edytor treści miał dotąd pełny dostęp do modułu — zostaje, ale bez ustawień (jak w pozostałych modułach).
         User::ROLE_CONTENT_EDITOR => [self::VIEW, self::CAMPAIGNS, self::SEND, self::TEMPLATES, self::SUBSCRIBERS, self::REPORTS],
+        User::ROLE_INDEPENDENT_EDITOR => [self::VIEW, self::CAMPAIGNS, self::SEND, self::TEMPLATES, self::SUBSCRIBERS, self::REPORTS],
     ];
 
     /** @return list<string> */
