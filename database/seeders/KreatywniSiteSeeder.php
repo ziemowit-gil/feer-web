@@ -77,6 +77,8 @@ class KreatywniSiteSeeder extends Seeder
                 $fill[$key] = $value;
             }
         }
+        // Moduły, których wizytówka fundacji nie używa (Podcasty, Osoby) — dopisane do wyłączonych, reszta bez zmian.
+        $fill['disabled_modules'] = array_values(array_unique(array_merge((array) $this->site->disabled_modules, ['podcasts', 'persons'])));
         // Stopka: bez linku do strefy współpracownika FEER (na tej witrynie prowadziłby donikąd), gdy stopki nikt nie ustawiał.
         if (empty($this->site->getAttribute('footer_options')) && \Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'footer_options')) {
             $fill['footer_options'] = ['staff_link' => false];

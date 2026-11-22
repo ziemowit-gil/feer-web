@@ -357,6 +357,8 @@ class TemplateKreatywniTest extends TestCase
         $this->assertTrue((clone $pages)->where('title', 'Oferta')->value('is_published'));
         $this->assertFalse((bool) (clone $pages)->where('title', 'Statut Fundacji')->value('is_published'), 'Dokumenty są szkicami.');
         $this->assertFalse($fresh->footerOptions()['staff_link'], 'Bez linku do strefy współpracownika FEER.');
+        $this->assertFalse($fresh->isModuleEnabled('podcasts'));
+        $this->assertContains('persons', $fresh->disabled_modules);
         $this->assertSame(['Oferta', 'Działania', 'O nas', 'Galeria', 'Fundacja'],
             NavItem::withoutGlobalScopes()->where('site_id', $site->id)->where('location', 'main')->orderBy('order')->pluck('label')->all());
     }
