@@ -45,6 +45,9 @@ class SiteAdminBarTest extends TestCase
         $this->assertStringContainsString('id="mt-btn-skroty"', $html);
         $this->assertStringContainsString("Alpine.data('navQuick'", $html);
         $this->assertStringContainsString('.site-admin-bar .mt-nav { position: relative;', $html);
+        // Złota linia oddziela menu CMS od menu strony (zamiast dawnej jasnej kreski).
+        $this->assertStringContainsString('.site-admin-bar { margin: 0; padding: 0; border-bottom: 3px solid #d9a521; }', $html);
+        $this->assertStringNotContainsString('inset 0 -1px 0 rgba(255, 255, 255, .28)', $html);
 
         // Edytuj: ta strona (na stronie, w edytorze blokowym, w panelu) i stopka.
         $this->assertMatchesRegularExpression('~id="mt-panel-edytuj".*?Ta strona.*?site-admin-edit~s', $html);
