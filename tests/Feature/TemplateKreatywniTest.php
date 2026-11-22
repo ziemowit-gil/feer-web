@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\NavItem;
 use App\Models\Page;
+use App\Models\Project;
 use App\Models\SiteSetting;
 use App\Models\User;
 use App\Support\KreatywniTexts;
@@ -247,6 +249,63 @@ class TemplateKreatywniTest extends TestCase
         $this->assertStringNotContainsString('Pracujemy zdalnie', $html);
     }
 
+    /** Działanie w module Działania (kategoria jest wymagana). */
+    private function project(string $title, array $extra = []): Project
+    {
+        $category = Category::query()->firstOrCreate(['slug' => 'warsztaty'], ['name' => 'Warsztaty']);
+
+        return Project::create(array_merge(['title' => $title, 'slug' => \Illuminate\Support\Str::slug($title), 'category_id' => $category->id,
+            'is_published' => true, 'is_completed' => false], $extra));
+    }
+
+    public function test_sekcja_dzialan_pokazuje_zaznaczone_a_bez_nich_ostatnie_trwajace(): void
+    {
+        $this->useTemplate();
+        $make = fn (string $title, array $extra = []) => $this->project($title, ['excerpt' => 'Opis '.$title] + $extra);
+
+        $this->get('/')->assertOk()->assertDontSee('kc-projects-title', false);
+
+        $make('Warsztaty w szpitalu');
+        $make('Zakończona akcja', ['is_completed' => true]);
+        $make('Szkic działania', ['is_published' => false]);
+
+        $this->get('/')->assertOk()
+            ->assertSee('Nasze działania')->assertSee('Warsztaty w szpitalu')->assertSee('Opis Warsztaty w szpitalu')
+            ->assertSee('Wszystkie działania')->assertSee(route('projects.index'), false)
+            ->assertDontSee('Zakończona akcja')->assertDontSee('Szkic działania');
+
+        // Zaznaczone „Pokaż na stronie głównej” mają pierwszeństwo przed ostatnio dodanymi.
+        $make('Dary dla DPS', ['show_on_home' => true]);
+        $this->get('/')->assertOk()->assertSee('Dary dla DPS')->assertDontSee('Warsztaty w szpitalu');
+    }
+
+    public function test_sekcja_dzialan_znika_po_ukryciu_albo_wylaczeniu_modulu(): void
+    {
+        $site = $this->useTemplate(['kreatywni_texts' => ['_hidden' => ['team', 'projects']]]);
+        $this->project('Akcja zimowa');
+
+        $this->get('/')->assertOk()->assertDontSee('Akcja zimowa');
+
+        $site->forceFill(['kreatywni_texts' => null, 'disabled_modules' => ['projects']])->save();
+        $this->resetCache();
+        $this->get('/')->assertOk()->assertDontSee('Akcja zimowa');
+    }
+
+    public function test_lista_dzialan_ma_uklad_szablonu_karty_i_link_do_zakonczonych(): void
+    {
+        $this->useTemplate(['kreatywni_texts' => ['projects_title' => 'Co robimy']]);
+        $this->project('Warsztaty w DPS', ['excerpt' => 'Spotkania z seniorami.']);
+        $this->project('Stara akcja', ['is_completed' => true]);
+
+        $this->get(route('projects.index'))->assertOk()
+            ->assertSee('kc-page-head', false)->assertSee('<h1 id="kc-page-title">Co robimy</h1>', false)
+            ->assertSee('<h2 class="kc-child-title">Warsztaty w DPS</h2>', false)->assertSee('Spotkania z seniorami.')
+            ->assertSee(route('projects.show', 'warsztaty-w-dps'), false)
+            ->assertDontSee('Stara akcja')->assertSee('Zakończone działania')->assertSee(route('projects.archive'), false);
+
+        $this->get(route('projects.show', 'warsztaty-w-dps'))->assertOk()->assertSee('Warsztaty w DPS');
+    }
+
     public function test_seeder_zaklada_strony_menu_i_ustawienia_tylko_dla_wskazanej_witryny(): void
     {
         \Illuminate\Support\Facades\Storage::fake('public');
@@ -272,7 +331,7 @@ class TemplateKreatywniTest extends TestCase
         $this->assertSame(1, (clone $pages)->where('title', 'Oferta')->count());
         $this->assertTrue((clone $pages)->where('title', 'Oferta')->value('is_published'));
         $this->assertFalse((bool) (clone $pages)->where('title', 'Statut Fundacji')->value('is_published'), 'Dokumenty są szkicami.');
-        $this->assertSame(['Oferta', 'O nas', 'Galeria', 'Fundacja'],
+        $this->assertSame(['Oferta', 'Działania', 'O nas', 'Galeria', 'Fundacja'],
             NavItem::withoutGlobalScopes()->where('site_id', $site->id)->where('location', 'main')->orderBy('order')->pluck('label')->all());
     }
 

@@ -41,7 +41,17 @@ class ProjectController extends Controller
             ]);
         }
 
-        // Opcja „Nawigacja kafelkowa” (Ustawienia → Treści): działania jako duże kolorowe kafelki — w każdym szablonie.
+        // Szablon „kreatywni” (wizytówka fundacji): pas z tytułem i trwające działania jako karty ze zdjęciem.
+        if (SiteSetting::current()->site_template === 'kreatywni') {
+            return view('templates.kreatywni.projects-index', [
+                'projects' => Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)
+                    ->whereNull('parent_id')->orderBy('order')->orderBy('title')->get(),
+                'hasArchive' => $hasArchive,
+                'texts' => \App\Support\KreatywniTexts::for(SiteSetting::current()),
+            ]);
+        }
+
+                // Opcja „Nawigacja kafelkowa” (Ustawienia → Treści): działania jako duże kolorowe kafelki — w każdym szablonie.
         if (SiteSetting::current()->projects_layout === 'tiles') {
             return view('projects.index-tiles', compact('categories', 'hasArchive'));
         }

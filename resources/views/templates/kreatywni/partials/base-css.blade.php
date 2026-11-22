@@ -431,6 +431,15 @@
     .kc-child-title { font-size: 1.1rem; font-weight: 800; color: var(--kc-forest); }
     .kc-child-text { line-height: 1.6; }
     .kc-child-more { margin-top: auto; padding-top: .5rem; font-weight: 700; color: var(--kc-forest); }
+    /* Karty działań (partials/project-card): zdjęcie u góry na całą szerokość karty, treść pod nim. */
+    .kc-project-card { padding: 0; overflow: hidden; gap: 0; }
+    .kc-project-img { display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 3; background: var(--kc-cream); color: var(--kc-green); font-size: 2.5rem; }
+    .kc-project-img img { width: 100%; height: 100%; object-fit: cover; }
+    .kc-project-body { display: flex; flex: 1; flex-direction: column; gap: .4rem; padding: 1.25rem 1.5rem 1.5rem; }
+    .kc-project-body .kc-child-title { margin: 0; line-height: 1.3; }
+    .kc-project-card:focus-visible { outline: 3px solid var(--kc-forest); outline-offset: 3px; }
+    .kc-sec-cream .kc-project-card { background: #fff; }
+    .kc-sec-cream .kc-project-card:hover { background: var(--kc-sun); }
     .kc-typed { padding-bottom: 3rem; }
     .kc-page-cta { padding: 3.5rem 0; }
     .kc-page-cta-in { display: grid; gap: 1.5rem; align-items: center; }

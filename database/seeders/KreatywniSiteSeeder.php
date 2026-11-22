@@ -123,9 +123,10 @@ class KreatywniSiteSeeder extends Seeder
             return;
         }
         $order = 1;
-        foreach (['offer' => 'Oferta', 'about' => 'O nas', 'gallery' => 'Galeria', 'foundation' => 'Fundacja'] as $key => $label) {
+        // „Działania” prowadzi do listy z modułu Działania (/dzialania), reszta do stron założonych wyżej.
+        foreach (['offer' => 'Oferta', 'projects' => 'Działania', 'about' => 'O nas', 'gallery' => 'Galeria', 'foundation' => 'Fundacja'] as $key => $label) {
             NavItem::withoutGlobalScopes()->create([
-                'site_id' => $this->site->id, 'label' => $label, 'url' => '/'.$pages[$key]->slug, 'type' => 'link',
+                'site_id' => $this->site->id, 'label' => $label, 'url' => $key === 'projects' ? '/dzialania' : '/'.$pages[$key]->slug, 'type' => 'link',
                 'location' => 'main', 'is_active' => true, 'order' => $order++,
             ]);
         }

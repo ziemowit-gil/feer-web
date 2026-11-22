@@ -22,6 +22,7 @@ final class KreatywniTexts
         'social' => ['Social media', 'Duże karty z profilami z Ustawienia → Media i BIP. Bez ustawionych profili sekcja się nie pokazuje.'],
         'offer' => ['Oferta warsztatów', 'Lista warsztatów z ceną i przyciskiem do zapytania o termin.'],
         'why' => ['Dlaczego my', 'Wyróżniki i opis, jak pracujemy.'],
+        'projects' => ['Działania', 'Działania z modułu Działania: zaznaczone „Pokaż na stronie głównej” (do 6), a gdy żadne nie jest zaznaczone — trzy ostatnio dodane trwające. Bez działań sekcja się nie pokazuje.'],
         'gallery' => ['Galeria', 'Zdjęcia z modułu Galeria (do 8). Bez zdjęć sekcja się nie pokazuje.'],
         'team' => ['Zespół', 'Osoby prowadzące warsztaty.'],
         'reviews' => ['Opinie', 'Opinie uczestników.'],
@@ -86,6 +87,11 @@ final class KreatywniTexts
         'why_items' => ['why', 'Wyróżniki (Tytuł | krótki opis)', 'list', "Mobilność | Dojeżdżamy do Twojej placówki.\nMateriały w cenie | Przywozimy wszystko, co potrzebne.\nDla każdego wieku | Program dopasowany do grupy.\nBezpieczeństwo | Mamy zaświadczenie o niekaralności."],
         'how_title' => ['why', 'Nagłówek „Jak pracujemy” (H3)', 'line', 'Jak pracujemy?'],
         'how_text' => ['why', 'Tekst „Jak pracujemy” (puste = bez ramki)', 'text', ''],
+
+        // Działania (moduł Działania)
+        'projects_title' => ['projects', 'Nagłówek (H2; także tytuł strony Działania)', 'line', 'Nasze działania'],
+        'projects_text' => ['projects', 'Tekst wstępu (także na stronie Działania)', 'text', 'Projekty, akcje i cykle warsztatów, które prowadzimy.'],
+        'projects_button' => ['projects', 'Przycisk do listy działań — napis', 'line', 'Wszystkie działania'],
 
         // Social media
         'social_title' => ['social', 'Nagłówek (H2)', 'line', 'Zobacz, co ostatnio tworzyliśmy'],

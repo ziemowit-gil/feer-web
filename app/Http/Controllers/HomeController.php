@@ -311,7 +311,24 @@ class HomeController extends Controller
         return view('templates.kreatywni.home', [
             'texts' => \App\Support\KreatywniTexts::for($settings),
             'gallery' => $gallery->take(8)->values(),
+            'projects' => $this->kreatywniProjects($settings),
         ]);
+    }
+
+    /**
+     * Działania do sekcji „Nasze działania” szablonu „kreatywni”: trwające, zaznaczone „Pokaż na stronie głównej”
+     * (do sześciu), a gdy redakcja żadnego nie zaznaczyła — trzy ostatnio dodane trwające.
+     */
+    private function kreatywniProjects(SiteSetting $settings): Collection
+    {
+        if (! $settings->isModuleEnabled('projects')) {
+            return collect();
+        }
+
+        $active = fn () => Project::forCurrentSite()->where('is_published', true)->where('is_completed', false)->whereNull('parent_id');
+        $featured = $active()->onHome()->orderBy('order')->orderBy('title')->limit(6)->get();
+
+        return $featured->isNotEmpty() ? $featured : $active()->latest('id')->limit(3)->get();
     }
 
     /** Renderuje stronę główną w szablonie "wrzos" (siatka aktualności 4×2, blok "Kim jesteśmy?", karty wartości). */
