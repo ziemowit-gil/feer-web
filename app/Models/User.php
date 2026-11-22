@@ -27,6 +27,8 @@ class User extends Authenticatable implements Subscribable
 
     public const ROLE_ADMIN          = 'admin';
     public const ROLE_CONTENT_EDITOR = 'content_editor';
+    /** Samodzielny edytor: uprawnienia Edytora treści, ale publikuje bez akceptacji (nie zatwierdza cudzych zgłoszeń). */
+    public const ROLE_INDEPENDENT_EDITOR = 'independent_editor';
     public const ROLE_COORDINATOR    = 'coordinator';
     public const ROLE_PR_EDITOR      = 'pr_editor';
     public const ROLE_BIP_EDITOR_PLUS = 'bip_editor_plus';
@@ -38,6 +40,7 @@ class User extends Authenticatable implements Subscribable
     public const ROLES = [
         self::ROLE_ADMIN           => 'Administrator',
         self::ROLE_CONTENT_EDITOR  => 'Edytor treści',
+        self::ROLE_INDEPENDENT_EDITOR => 'Samodzielny edytor',
         self::ROLE_COORDINATOR     => 'Koordynator',
         self::ROLE_PR_EDITOR       => 'Redaktor PR',
         self::ROLE_BIP_EDITOR_PLUS => 'Edytor BIP+',
@@ -326,8 +329,13 @@ class User extends Authenticatable implements Subscribable
         return $this->role === self::ROLE_CONTENT_EDITOR;
     }
 
+    public function isIndependentEditor(): bool
+    {
+        return $this->role === self::ROLE_INDEPENDENT_EDITOR;
+    }
+
     /** Role, którym można przypisać gałęzie stron (redakcja stron). */
-    public const PAGE_MOUNT_ROLES = [self::ROLE_EDITOR, self::ROLE_CONTENT_EDITOR];
+    public const PAGE_MOUNT_ROLES = [self::ROLE_EDITOR, self::ROLE_CONTENT_EDITOR, self::ROLE_INDEPENDENT_EDITOR];
 
     /**
      * Gałęzie stron przypisane tej osobie (users.page_mounts, jak „DB mounts” w TYPO3) — tylko dla ról redakcji stron.
@@ -429,7 +437,7 @@ class User extends Authenticatable implements Subscribable
         }
 
         return match ($this->role) {
-            self::ROLE_CONTENT_EDITOR  => true,
+            self::ROLE_CONTENT_EDITOR, self::ROLE_INDEPENDENT_EDITOR => true,
             self::ROLE_COORDINATOR     => in_array($module, ['volunteering', 'jobs', 'events', 'courses', 'materials', 'podcasts'], true),
             self::ROLE_PR_EDITOR       => in_array($module, ['news', 'blog', 'landing', 'projects', 'polls', 'podcasts'], true),
             self::ROLE_BIP_EDITOR_PLUS => in_array($module, ['bip', 'reports'], true),
@@ -453,6 +461,16 @@ class User extends Authenticatable implements Subscribable
     public function canApproveContent(): bool
     {
         return $this->isAdmin() || (bool) $this->permissionGroup()?->can_approve;
+    }
+
+    /**
+     * Czy osoba publikuje bez akceptacji: akceptujący (wyżej) i Samodzielny edytor. W odróżnieniu od
+     * {@see canApproveContent()} nie daje kolejki „Do zatwierdzenia”, zatwierdzania ani odrzucania cudzych zgłoszeń
+     * i powiadomień o nich — dotyczy tylko własnej publikacji (formularze, edytor blokowy, wersja robocza strony).
+     */
+    public function publishesWithoutApproval(): bool
+    {
+        return $this->canApproveContent() || $this->role === self::ROLE_INDEPENDENT_EDITOR;
     }
 
     /**

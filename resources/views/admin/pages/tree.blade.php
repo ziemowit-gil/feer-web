@@ -491,7 +491,7 @@
                                 <a href="{{ $selected->draftPreviewUrl() }}" target="_blank" rel="noopener" class="{{ $ghost }}"><i class="fa-solid fa-eye" aria-hidden="true"></i> Podgląd zmian<span class="sr-only"> (nowa karta)</span></a>
                                 @if ($canEditSelected)
                                     <a href="{{ route('admin.podstrony.bloki.edit', [$selected, 'robocza' => 1]) }}" class="{{ $ghost }}"><i class="fa-solid fa-pen" aria-hidden="true"></i> Edytuj wersję roboczą</a>
-                                    @if (auth()->user()->canApproveContent())
+                                    @if (auth()->user()->publishesWithoutApproval())
                                         <form method="POST" action="{{ route('admin.podstrony.robocza.opublikuj', $selected) }}" data-confirm="Opublikować zmiany z wersji roboczej? Odwiedzający od razu zobaczą nową treść; poprzednia zostanie w historii.">
                                             @csrf <button type="submit" class="{{ $ghost }}"><i class="fa-solid fa-upload" aria-hidden="true"></i> Opublikuj zmiany</button>
                                         </form>

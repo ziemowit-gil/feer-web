@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
 
 /**
- * Wersja robocza opublikowanej strony (Workspaces w TYPO3): publikacja zmian (osoby z prawem akceptacji),
+ * Wersja robocza opublikowanej strony (Workspaces w TYPO3): publikacja zmian (osoby z prawem akceptacji i Samodzielny edytor),
  * zgłoszenie do akceptacji (pozostali — powiadomienie do akceptujących) i odrzucenie kopii.
  * Edycja kopii odbywa się w edytorze blokowym z ?robocza=1 (BlockEditorController).
  */
@@ -21,7 +21,7 @@ class PageDraftController extends Controller
     public function publish(Request $request, Page $page): RedirectResponse
     {
         $draft = $this->draftFor($request, $page);
-        if (! $request->user()->canApproveContent()) {
+        if (! $request->user()->publishesWithoutApproval()) {
             return $this->back($page)->with('error', 'Zmiany opublikuje osoba z prawem akceptacji — wyślij je do akceptacji.');
         }
 

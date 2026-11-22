@@ -13,7 +13,7 @@ class DemoUserCreate extends Command
                             {--dev : Skrót developerski: admin@dev.local / password, rola admin, --force}
                             {--email=demo@wecms.local : Adres e-mail użytkownika}
                             {--name=Demo Admin : Imię i nazwisko}
-                            {--role=admin : Rola (admin, content_editor, coordinator, pr_editor, editor)}
+                            {--role=admin : Rola (admin, content_editor, independent_editor, coordinator, pr_editor, editor)}
                             {--password= : Hasło (domyślnie losowe 12-znakowe)}
                             {--force : Nadpisz istniejącego użytkownika z tym e-mailem}';
 
