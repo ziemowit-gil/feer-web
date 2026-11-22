@@ -19,16 +19,23 @@
 #   ./deploy.sh --tak        bez pytania (-y) — np. ssh h68 './deploy.sh --tak'
 #   ./deploy.sh --verbose    pełne wyjście narzędzi na ekranie (-v)
 #   ./deploy.sh --dry-run    tylko plan kroków + kontrole (bez pull, bez zmian)
+#   ./deploy.sh --galaz=kreatywni   wdrożenie wskazanej gałęzi (też --branch=…, -b kreatywni)
+#   ./deploy.sh --wybierz-galaz     menu z gałęziami z origin (-g), także gdy ustawiono BRANCH
 #   ./deploy.sh --demo       podgląd wyglądu kreatora: przykładowy przebieg, nic nie jest zmieniane
 #   ./deploy.sh --demo-blad  to samo z błędem w kroku 6 (jak wygląda przerwane wdrożenie)
 #   ./deploy.sh --help
+#
+# Wybór gałęzi: uruchomiony w terminalu bez --tak i bez wskazanej gałęzi skrypt pokazuje menu
+# gałęzi z origin (Enter = main). Gdy wybrana gałąź jest inna niż wyjęta na serwerze, krok 3
+# przełącza ją (git checkout) i dopiero wtedy pobiera — z ostrzeżeniem, ile commitów obecnej
+# gałęzi zniknie z kodu. Uwaga: automatyczne pobieranie po pushu działa na gałęzi wyjętej.
 #
 # Zmienne środowiskowe (opcjonalne):
 #   PHP_BIN       binarka PHP CLI                (domyślnie: php84)
 #   COMPOSER_BIN  binarka Composer               (domyślnie: composer84)
 #   COMPOSER_CMD  install | update               (domyślnie: install — dokładnie wersje z composer.lock)
 #   NPM_BIN       binarka npm                    (domyślnie: najnowsza z /opt/alt/alt-nodejs24|22|20, potem npm z PATH)
-#   BRANCH        gałąź do pobrania              (domyślnie: main)
+#   BRANCH        gałąź do pobrania              (domyślnie: main; --galaz ma pierwszeństwo)
 #   NO_COLOR      wyłącza kolory
 #   FORCE_COLOR   wymusza kolory także bez terminala (np. do zapisu podglądu --demo)
 #
@@ -41,8 +48,16 @@ DRY_RUN=0
 DEMO=0
 ASSUME_YES="${DEPLOY_ASSUME_YES:-0}"
 VERBOSE="${DEPLOY_VERBOSE:-0}"
-for _arg in "$@"; do
+BRANCH_ARG=""
+PICK_BRANCH=0
+while [ $# -gt 0 ]; do
+    _arg="$1"
     case "$_arg" in
+        --galaz=*|--branch=*) BRANCH_ARG="${_arg#*=}" ;;
+        --galaz|--branch|-b)
+            [ $# -ge 2 ] || { echo "Opcja $_arg wymaga nazwy gałęzi, np. $_arg kreatywni" >&2; exit 2; }
+            BRANCH_ARG="$2"; shift ;;
+        --wybierz-galaz|-g) PICK_BRANCH=1 ;;
         --dry-run|-n)  DRY_RUN=1 ;;
         --tak|--yes|-y) ASSUME_YES=1 ;;
         --verbose|-v)  VERBOSE=1 ;;
@@ -51,6 +66,7 @@ for _arg in "$@"; do
         --help|-h)     awk 'NR > 1 { if (/^#/) { sub(/^# ?/, ""); print } else exit }' "$0"; exit 0 ;;
         *)             echo "Nieznana opcja: $_arg (użyj --help)" >&2; exit 2 ;;
     esac
+    shift
 done
 unset _arg
 
@@ -276,7 +292,14 @@ fi
 # Puppeteer (zależność deweloperska) przy npm ci pobiera całą przeglądarkę Chrome —
 # do budowania assetów niepotrzebna, a na hostingu współdzielonym potrafi zawiesić instalację.
 export PUPPETEER_SKIP_DOWNLOAD="${PUPPETEER_SKIP_DOWNLOAD:-1}"
-BRANCH="${BRANCH:-main}"
+# Gałąź jawnie wskazana (--galaz albo zmienna BRANCH) nie wywołuje menu wyboru.
+BRANCH_EXPLICIT=0
+if [ -n "$BRANCH_ARG" ] || [ -n "${BRANCH:-}" ]; then BRANCH_EXPLICIT=1; fi
+BRANCH="${BRANCH_ARG:-${BRANCH:-main}}"
+if ! git check-ref-format --branch "$BRANCH" >/dev/null 2>&1; then
+    echo "Niepoprawna nazwa gałęzi: $BRANCH" >&2
+    exit 2
+fi
 DB="database/database.sqlite"
 BLOG_DB="database/blog.sqlite"                 # stara lokalizacja (śledzona w gicie)
 BLOG_DB_NEW="storage/app/blog/blog.sqlite"     # nowa lokalizacja (docs/blog-db-migration.md)
@@ -513,7 +536,13 @@ header() {
     box_sep "$BRAND"
     box_kv "$BRAND" "Serwer"  "$(hostname 2>/dev/null || echo '?')"
     box_kv "$BRAND" "Katalog" "$(pwd)"
-    box_kv "$BRAND" "Gałąź"   "$BRANCH" "$(git rev-parse --short HEAD 2>/dev/null || echo '?')"
+    local here_branch
+    here_branch="$(current_branch)"
+    if [ "$here_branch" = "$BRANCH" ]; then
+        box_kv "$BRAND" "Gałąź"   "$BRANCH" "$(git rev-parse --short HEAD 2>/dev/null || echo '?')"
+    else
+        box_kv "$BRAND" "Gałąź"   "$BRANCH" "teraz: ${here_branch:-odłączony HEAD} @ $(git rev-parse --short HEAD 2>/dev/null || echo '?')"
+    fi
     box_kv "$BRAND" "PHP"     "$php_ver" "$PHP_BIN"
     box_kv "$BRAND" "Node"    "$node_ver" "$NPM_BIN"
     if [ "$DRY_RUN" -ne 1 ] && [ "$DEMO" -lt 1 ]; then box_kv "$BRAND" "Log" "$LOG"; fi
@@ -547,11 +576,88 @@ show_commits() {
     return 0
 }
 
+# Gałąź wyjęta teraz w katalogu (pusto = odłączony HEAD).
+current_branch() { git symbolic-ref --quiet --short HEAD 2>/dev/null || true; }
+
+# Menu gałęzi z origin (najnowsze u góry, do 15): numer albo nazwa, Enter = bieżący wybór ($BRANCH).
+choose_branch() {
+    local names=() whens=() name when i answer here
+    git fetch --prune origin --quiet 2>/dev/null \
+        || warn "Nie udało się pobrać listy gałęzi z origin — pokazuję ostatnio znane."
+    while IFS=$'\t' read -r name when; do
+        name="${name#origin/}"
+        case "$name" in origin|HEAD|'') continue ;; esac
+        names+=("$name"); whens+=("$when")
+    done < <(git for-each-ref --sort=-committerdate --count=16 \
+        --format='%(refname:short)%09%(committerdate:relative)' refs/remotes/origin)
+    if [ "${#names[@]}" -eq 0 ]; then
+        warn "Brak gałęzi z origin — zostaje $BRANCH."
+        return 0
+    fi
+    here="$(current_branch)"
+    printf "\n  ${BRAND}%s${NC} ${BLD}Którą gałąź wdrożyć?${NC}\n" "$G_ASK"
+    for ((i = 0; i < ${#names[@]}; i++)); do
+        local note="${whens[$i]}"
+        [ "${names[$i]}" = "$here" ] && note="$note $G_DOT teraz na serwerze"
+        [ "${names[$i]}" = "$BRANCH" ] && note="$note $G_DOT Enter"
+        printf "    ${CYN}%2d${NC}  %s ${DIM}%s${NC}\n" "$((i + 1))" "$(pad "${names[$i]}" 28)" "$note"
+    done
+    printf "\n  Numer albo nazwa gałęzi ${DIM}[Enter = %s]${NC} " "$BRANCH"
+    if ! read -r answer; then
+        echo ""
+        return 0
+    fi
+    answer="${answer// /}"
+    if [ -z "$answer" ]; then
+        return 0
+    elif [[ "$answer" =~ ^[0-9]+$ ]] && [ "$answer" -ge 1 ] && [ "$answer" -le "${#names[@]}" ]; then
+        BRANCH="${names[$((answer - 1))]}"
+    elif git check-ref-format --branch "$answer" >/dev/null 2>&1; then
+        BRANCH="$answer"
+    else
+        echo "  Niepoprawna nazwa gałęzi: $answer — anulowano."
+        exit 2
+    fi
+    info "Wybrana gałąź: $BRANCH"
+}
+
+# Czy gałąź jest na origin (po fetch); jeśli nie — lista dostępnych i przerwanie.
+require_remote_branch() {
+    git rev-parse --verify --quiet "origin/$BRANCH^{commit}" >/dev/null && return 0
+    local list
+    list="$(git for-each-ref --format='%(refname:short)' refs/remotes/origin | sed 's#^origin/##' | grep -vE '^(HEAD|origin)$' | head -n 12 | tr '\n' ' ')"
+    die "Na origin nie ma gałęzi „${BRANCH}”." "Dostępne: ${list:-brak}" "Uruchom ponownie z --galaz=NAZWA albo bez niej (menu)."
+}
+
+# Ostrzeżenie przed zmianą gałęzi: co zniknie z kodu, a co przyjdzie.
+branch_switch_notice() {
+    local here behind
+    here="$(current_branch)"
+    [ "$here" = "$BRANCH" ] && return 0
+    echo ""
+    warn "Zmiana gałęzi: ${here:-odłączony HEAD} $G_ARROW $BRANCH (krok 3 zrobi git checkout $BRANCH)."
+    behind=$(git rev-list --count "origin/$BRANCH..HEAD" 2>/dev/null || echo 0)
+    if [ "$behind" -gt 0 ]; then
+        warn "$(commits_pl "$behind") z obecnej wersji nie ma na $BRANCH — ich zmian nie będzie w kodzie po przełączeniu."
+    fi
+    return 0
+}
+
+if [ "$DEMO" -lt 1 ] && [ "$PO_PULL" != "1" ] && [ -t 0 ] \
+    && { [ "$PICK_BRANCH" -eq 1 ] || { [ "$BRANCH_EXPLICIT" -eq 0 ] && [ "$ASSUME_YES" -ne 1 ]; }; }; then
+    choose_branch
+fi
+if [ "$(current_branch)" = "$BRANCH" ]; then
+    PULL_DESC="git pull origin $BRANCH (restart, jeśli zmienił się deploy.sh)"
+else
+    PULL_DESC="git checkout $BRANCH + git pull origin $BRANCH (zmiana gałęzi)"
+fi
+
 # Plan wdrożenia (10 kroków) — wspólny dla --dry-run i --demo.
 PLAN=(
     "Tryb serwisowy|artisan down (odwiedzający widzą stronę 503)"
     "Kopia zapasowa baz|SQLite do /tmp"
-    "Pobieranie kodu|git pull origin $BRANCH (restart, jeśli zmienił się deploy.sh)"
+    "Pobieranie kodu|$PULL_DESC"
     "Composer $COMPOSER_CMD|--no-dev --optimize-autoloader"
     "Baza bloga|do $BLOG_DB_NEW (jednorazowo)"
     "Budowanie assetów|npm ci + npm run build"
@@ -648,6 +754,9 @@ if [ "$DRY_RUN" -eq 1 ]; then
     if git fetch origin "$BRANCH" --quiet 2>/dev/null; then
         _n=$(git rev-list --count HEAD..origin/"$BRANCH" 2>/dev/null || echo "?")
         ok "Nowe commity na origin/$BRANCH: $_n"
+        branch_switch_notice
+    elif ! git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+        fail "Na origin nie ma gałęzi „${BRANCH}”."; DRY_FAIL=1
     else
         warn "Nie udało się pobrać informacji z origin/$BRANCH."
     fi
@@ -675,7 +784,12 @@ header "wdrożenie"
 
 echo ""
 info "Pobieranie informacji o zmianach…"
-run git fetch origin "$BRANCH" || die "git fetch nie powiódł się." "Sprawdź połączenie z GitHubem: git fetch origin $BRANCH"
+if ! run git fetch origin "$BRANCH"; then
+    git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1 || require_remote_branch
+    die "git fetch nie powiódł się." "Sprawdź połączenie z GitHubem: git fetch origin $BRANCH"
+fi
+require_remote_branch
+branch_switch_notice
 
 COUNT=$(git rev-list --count HEAD..origin/"$BRANCH" 2>/dev/null || echo 0)
 if [ "$COUNT" -eq 0 ]; then
@@ -730,9 +844,27 @@ HEAD_BEFORE=$(git rev-parse --short HEAD)
 # Usuniętej poprzedniej bazy SQLite (serwis na MySQL, „Usuń poprzednią bazę”) nie odtwarzamy z gita.
 [ -f "$DB" ] && git checkout -- "$DB" 2>/dev/null || true
 [ -f "$BLOG_DB" ] && git checkout -- "$BLOG_DB" 2>/dev/null || true
-if ! run git pull origin "$BRANCH"; then
+restore_db_backups() {
     [ -n "$BACKUP" ] && cp "$BACKUP" "$DB"
     [ -n "$BLOG_BACKUP" ] && cp "$BLOG_BACKUP" "$BLOG_DB"
+    return 0
+}
+BRANCH_BEFORE="$(current_branch)"
+if [ "$BRANCH_BEFORE" != "$BRANCH" ]; then
+    if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+        _checkout=(git checkout "$BRANCH")
+    else
+        _checkout=(git checkout -b "$BRANCH" --track "origin/$BRANCH")
+    fi
+    if ! run "${_checkout[@]}"; then
+        restore_db_backups
+        die "Nie udało się przełączyć na gałąź $BRANCH — bazy przywrócone z kopii." \
+            "Sprawdź: git status (lokalne zmiany blokują przełączenie)."
+    fi
+    info "Przełączono gałąź: ${BRANCH_BEFORE:-odłączony HEAD} $G_ARROW $BRANCH."
+fi
+if ! run git pull origin "$BRANCH"; then
+    restore_db_backups
     die "git pull nie powiódł się — bazy przywrócone z kopii." \
         "Sprawdź: git status (konflikty / lokalne zmiany)."
 fi
