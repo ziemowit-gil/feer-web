@@ -151,4 +151,41 @@ class KreatywniOffersTest extends TestCase
 
         $this->actingAs($this->admin())->get(route('admin.kreatywni-oferty.edit', $other))->assertNotFound();
     }
+
+    public function test_migracja_przenosi_oferte_z_tekstow_do_pustego_modulu_witryny_kreatywni(): void
+    {
+        $site = $this->useTemplate(extra: ['kreatywni_texts' => ['offer_card_title' => 'Warsztaty w szkole', '_offer_style' => 'list']]);
+        $migration = require base_path('database/migrations/2026_11_23_120000_import_kreatywni_offers_from_texts.php');
+
+        $migration->up();
+        $offer = KreatywniOffer::withoutGlobalScopes()->where('site_id', $site->id)->sole();
+        $this->assertSame(['Warsztaty w szkole', 'od 30 zł', 'list', 1, true], [$offer->name, $offer->price, $offer->items_style, $offer->order, $offer->is_active]);
+
+        // Ponowne uruchomienie nie dubluje, a zmieniona w panelu oferta zostaje.
+        $offer->update(['name' => 'Zmieniona w panelu']);
+        $migration->up();
+        $this->assertSame(['Zmieniona w panelu'], KreatywniOffer::withoutGlobalScopes()->where('site_id', $site->id)->pluck('name')->all());
+
+        // Witryna w innym szablonie — bez importu.
+        KreatywniOffer::query()->delete();
+        $this->useTemplate('default');
+        $migration->up();
+        $this->assertSame(0, KreatywniOffer::query()->count());
+    }
+
+    public function test_ustawienia_i_pasek_panelu_prowadza_do_mikrooferty(): void
+    {
+        $this->useTemplate();
+        $this->actingAs($this->admin());
+
+        $this->get(route('admin.ustawienia.edit'))->assertOk()
+            ->assertSee('Mikrooferta jest pusta, więc sekcja „Oferta warsztatów” pokazuje kartę i warsztaty z tekstów poniżej.')
+            ->assertSee('Przenieś je do Mikrooferty');
+        $this->get('/')->assertOk()->assertSee('Zarządzaj ofertą warsztatów (Mikrooferta)')->assertSee(route('admin.kreatywni-oferty.index'), false);
+
+        $this->post(route('admin.kreatywni-oferty.import'))->assertSessionHas('status');
+        $this->get(route('admin.ustawienia.edit'))->assertOk()
+            ->assertSee('Kartę cenową i warsztaty w sekcji „Oferta warsztatów” (strona główna i góra strony „Oferta”) bierzemy z')
+            ->assertSee('Oferty z Mikrooferty mają własny wygląd warsztatów');
+    }
 }

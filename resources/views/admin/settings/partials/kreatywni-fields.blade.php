@@ -116,11 +116,35 @@
         @endpush
     @endif
 
+    {{-- Oferta warsztatów: karta cenowa i warsztaty pochodzą z mikro modułu „Mikrooferta – Kreatywni”, a teksty
+         poniżej są zapasem na czas, gdy moduł jest pusty (albo przed migracją). --}}
+    @php
+        $kcOfferModule = \App\Models\KreatywniOffer::supported()
+            && \App\Models\KreatywniOffer::withoutGlobalScopes()->where('site_id', $settings->getKey())->exists();
+        $kcOfferAdmin = \App\Models\KreatywniOffer::supported() && \Illuminate\Support\Facades\Route::has('admin.kreatywni-oferty.index')
+            ? route('admin.kreatywni-oferty.index') : null;
+    @endphp
+    @if ($kcOfferAdmin)
+        <p id="kc-offer-source" class="rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
+            <i class="fa-solid fa-tags mr-1" aria-hidden="true"></i>
+            @if ($kcOfferModule)
+                Kartę cenową i warsztaty w sekcji „Oferta warsztatów” (strona główna i góra strony „Oferta”) bierzemy z
+                <a href="{{ $kcOfferAdmin }}" class="font-bold text-brand-dark underline underline-offset-2">Treści → Strona główna → Mikrooferta – Kreatywni</a>.
+                Tutaj zostają nagłówek i wstęp sekcji; pola karty i warsztatów w tekstach oferty są zapasem na czas, gdy Mikrooferta jest pusta.
+            @else
+                Mikrooferta jest pusta, więc sekcja „Oferta warsztatów” pokazuje kartę i warsztaty z tekstów poniżej.
+                <a href="{{ $kcOfferAdmin }}" class="font-bold text-brand-dark underline underline-offset-2">Przenieś je do Mikrooferty</a>, żeby edytować oferty w Treściach i dodawać kolejne.
+            @endif
+        </p>
+    @endif
+
     {{-- Wygląd listy warsztatów w bloku oferty (strona główna i góra strony „Oferta”). --}}
     @php $kcOfferStyle = old('kreatywni_texts._offer_style', $kcTexts->offerStyle()); @endphp
     <fieldset aria-describedby="kc-offer-style-help">
         <legend class="mb-1 text-sm font-bold">Wygląd listy warsztatów</legend>
-        <p id="kc-offer-style-help" class="mb-2 text-xs text-muted">Dotyczy bloku oferty na stronie głównej i na górze strony „Oferta”. Same warsztaty wpisujesz w polu „Warsztaty” w tekstach oferty.</p>
+        <p id="kc-offer-style-help" class="mb-2 text-xs text-muted">{{ $kcOfferModule
+            ? 'Dotyczy oferty z tekstów (zapasu). Oferty z Mikrooferty mają własny wygląd warsztatów, ustawiany przy każdej ofercie.'
+            : 'Dotyczy bloku oferty na stronie głównej i na górze strony „Oferta”. Same warsztaty wpisujesz w polu „Warsztaty” w tekstach oferty.' }}</p>
         <div class="grid gap-2 sm:grid-cols-2">
             @foreach (\App\Support\KreatywniTexts::OFFER_STYLES as $kcStyleKey => [$kcStyleName, $kcStyleDesc])
                 <label class="flex cursor-pointer items-start gap-2 rounded border border-gray-300 bg-white p-2">
@@ -141,6 +165,9 @@
         <details class="rounded border border-gray-300 bg-white">
             <summary class="cursor-pointer px-3 py-2 text-sm font-bold text-ink">Teksty: {{ $kcName }}</summary>
             <div class="space-y-4 border-t border-gray-200 p-3">
+                @if ($kcKey === 'offer' && $kcOfferModule)
+                    <p class="text-xs text-muted">Nagłówek i wstęp są na stronie. Karta cenowa i warsztaty pochodzą z Mikrooferty — pola od „Karta cenowa — nazwa” w dół strona wykorzysta dopiero wtedy, gdy Mikrooferta będzie pusta.</p>
+                @endif
                 @foreach ($kcFields as $kcField => [$kcLabel, $kcType, $kcDefault])
                     @php $kcValue = old('kreatywni_texts.'.$kcField, $kcTexts->get($kcField)); @endphp
                     <div>

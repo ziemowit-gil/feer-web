@@ -50,6 +50,11 @@
                 }
             }
         }
+        // Szablon „kreatywni”: sekcja „Oferta warsztatów” pochodzi z mikro modułu „Mikrooferta – Kreatywni”.
+        if ($sabHome && ($siteSettings->site_template ?? 'default') === 'kreatywni' && $sabUser->canAccessModule('pages')
+            && \Illuminate\Support\Facades\Route::has('admin.kreatywni-oferty.index') && \App\Models\KreatywniOffer::supported()) {
+            $sabHere[] = ['label' => 'Zarządzaj ofertą warsztatów (Mikrooferta)', 'url' => route('admin.kreatywni-oferty.index'), 'icon' => 'fa-tags'];
+        }
         if (($sabHome || request()->routeIs('news.index')) && $siteSettings->isModuleEnabled('news') && $sabUser->canAccessModule('news')) {
             $sabHere[] = ['label' => 'Zarządzaj aktualnościami', 'url' => route('admin.newsy.index'), 'icon' => 'fa-newspaper'];
         }
