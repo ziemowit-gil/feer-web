@@ -166,7 +166,14 @@
                                 </a>
                             @endif
                         </div>
-                        @if ($page->hasLockedBlockContent())
+                        @if (! $page->exists && ($blockFirst ?? false))
+                            {{-- Domyślny edytor blokowy: treść dodaje się po zapisie, w edytorze blokowym (PageController::store). --}}
+                            <input type="hidden" name="block_first" value="1">
+                            <div class="rounded-md bg-brand-light p-4 text-sm text-ink" data-block-first>
+                                <p><i class="fa-solid fa-cubes mr-1 text-brand-dark" aria-hidden="true"></i><span class="font-bold">Treść dodasz w edytorze blokowym.</span> Uzupełnij tytuł i ustawienia, zapisz — strona otworzy się w edytorze blokowym.</p>
+                                <a href="{{ request()->fullUrlWithQuery(['klasyczny' => 1]) }}" class="mt-1 inline-flex min-h-11 items-center font-bold text-brand-dark underline underline-offset-2 hover:text-ink">Wolę formularz klasyczny z polem treści</a>
+                            </div>
+                        @elseif ($page->hasLockedBlockContent())
                             @include('admin.partials.block-locked-content', ['editUrl' => route('admin.podstrony.bloki.edit', $page), 'noun' => 'tej strony', 'html' => $page->content])
                         @else
                         @include('admin.partials.editor', ['name' => 'content', 'value' => old('content', $page->content), 'revisionable' => $page->exists ? ['type' => 'page', 'id' => $page->id] : null])

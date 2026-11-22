@@ -628,6 +628,8 @@ class PageController extends Controller
             'parentOptions' => Page::orderBy('title')->get(),
             'projectOptions' => Project::orderBy('title')->get(),
             'partnerOptions' => \App\Models\Partner::forCurrentSite()->orderBy('order')->orderBy('name')->get(),
+            // Domyślny edytor blokowy: nowa strona bez pola treści, po zapisie otwiera się w edytorze blokowym (?klasyczny=1 — formularz).
+            'blockFirst' => ! $request->boolean('klasyczny') && $request->user()->prefersBlockEditor(),
         ]);
     }
 
@@ -664,6 +666,13 @@ class PageController extends Controller
         }
 
         $route = $page->isAboutPerson() ? 'admin.osoby.index' : 'admin.podstrony.index';
+
+        // Formularz „najpierw ustawienia, treść w edytorze blokowym”: strona z treścią otwiera się od razu w edytorze blokowym.
+        if ($request->boolean('block_first') && $request->user()->prefersBlockEditor()
+            && PageTypeFields::hasFreeContent($page) && ! in_array($page->type, Page::NON_CONTENT_TYPES, true)) {
+            return redirect()->route('admin.podstrony.bloki.edit', $page)
+                ->with('status', 'Strona „' . $page->title . '” została utworzona' . ($request->boolean('draft') ? ' jako wersja robocza' : '') . ' — dodaj treść w edytorze blokowym.' . $notice);
+        }
 
         return redirect()->route($route)
             ->with('status', $page->isAboutPerson() ? 'Osoba „' . $page->title . '” została dodana.' : 'Strona „' . $page->title . '” została utworzona' . ($request->boolean('draft') ? ' jako wersja robocza.' : '.') . $notice . ContentA11yChecker::saveNotice($page->content))
