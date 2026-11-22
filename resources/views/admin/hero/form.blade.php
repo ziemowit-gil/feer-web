@@ -50,6 +50,25 @@
         </div>
         <p class="-mt-3 text-xs text-muted">Zostaw puste, jeśli slajd nie ma mieć przycisku.</p>
 
+        @if (\App\Models\HeroSlide::supportsSecondButton())
+            <div class="grid gap-5 sm:grid-cols-2">
+                <div>
+                    <label for="button2_label" class="mb-1 block text-sm font-bold">Etykieta drugiego przycisku</label>
+                    <input type="text" id="button2_label" name="button2_label" value="{{ old('button2_label', $heroSlide->button2_label) }}" placeholder="np. Oferta warsztatów"
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark" aria-describedby="button2-help">
+                    @error('button2_label') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="button2_url" class="mb-1 block text-sm font-bold">Link drugiego przycisku</label>
+                    <input type="text" id="button2_url" name="button2_url" value="{{ old('button2_url', $heroSlide->button2_url) }}" placeholder="np. #oferta lub /kontakt"
+                        class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark" aria-describedby="button2-help">
+                    @error('button2_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            </div>
+            <p id="button2-help" class="-mt-3 text-xs text-muted">Opcjonalny, mniej wyrazisty przycisk obok głównego. Pokazuje go szablon „Kreatywni na co dzień”.</p>
+        @endif
+
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
                 <label for="order" class="mb-1 block text-sm font-bold">Kolejność</label>

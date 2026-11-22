@@ -11,7 +11,7 @@ class HeroSlide extends Model implements HasMedia
     use InteractsWithMedia;
     use \App\Models\Concerns\BelongsToSite;
 
-    protected $fillable = ['site_id', 'slider_id', 'title', 'text', 'button_label', 'button_url', 'order', 'duration', 'starts_at', 'ends_at'];
+    protected $fillable = ['site_id', 'slider_id', 'title', 'text', 'button_label', 'button_url', 'button2_label', 'button2_url', 'order', 'duration', 'starts_at', 'ends_at'];
 
     protected $casts = ['duration' => 'integer', 'starts_at' => 'datetime', 'ends_at' => 'datetime'];
 
@@ -38,6 +38,12 @@ class HeroSlide extends Model implements HasMedia
         }
 
         return $this->ends_at && $this->ends_at->isPast() ? 'expired' : 'active';
+    }
+
+    /** Czy jest już kolumna drugiego przycisku (migracja 2026_11_23_100000) — push wdraża kod przed migracją. */
+    public static function supportsSecondButton(): bool
+    {
+        return once(fn () => \Illuminate\Support\Facades\Schema::hasColumn('hero_slides', 'button2_label'));
     }
 
     public function slider(): \Illuminate\Database\Eloquent\Relations\BelongsTo

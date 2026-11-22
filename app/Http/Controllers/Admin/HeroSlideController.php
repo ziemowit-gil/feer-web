@@ -47,6 +47,8 @@ class HeroSlideController extends Controller
             'text' => ['nullable', 'string', 'max:500'],
             'button_label' => ['nullable', 'string', 'max:50'],
             'button_url' => ['nullable', 'required_with:button_label', 'string', 'max:255'],
+            'button2_label' => ['nullable', 'string', 'max:50'],
+            'button2_url' => ['nullable', 'required_with:button2_label', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
             'starts_at' => ['nullable', 'date'],
@@ -60,6 +62,10 @@ class HeroSlideController extends Controller
         // Przed migracją kolumn dat (push bez deploy.sh) zapis nie może padać.
         if (! \Illuminate\Support\Facades\Schema::hasColumn('hero_slides', 'starts_at')) {
             unset($data['starts_at'], $data['ends_at']);
+        }
+        // Drugi przycisk — tak samo przed migracją 2026_11_23_100000.
+        if (! HeroSlide::supportsSecondButton()) {
+            unset($data['button2_label'], $data['button2_url']);
         }
         unset($data['image'], $data['image_library_id'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 
@@ -88,6 +94,8 @@ class HeroSlideController extends Controller
             'text' => ['nullable', 'string', 'max:500'],
             'button_label' => ['nullable', 'string', 'max:50'],
             'button_url' => ['nullable', 'required_with:button_label', 'string', 'max:255'],
+            'button2_label' => ['nullable', 'string', 'max:50'],
+            'button2_url' => ['nullable', 'required_with:button2_label', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
             'starts_at' => ['nullable', 'date'],
@@ -101,6 +109,10 @@ class HeroSlideController extends Controller
         // Przed migracją kolumn dat (push bez deploy.sh) zapis nie może padać.
         if (! \Illuminate\Support\Facades\Schema::hasColumn('hero_slides', 'starts_at')) {
             unset($data['starts_at'], $data['ends_at']);
+        }
+        // Drugi przycisk — tak samo przed migracją 2026_11_23_100000.
+        if (! HeroSlide::supportsSecondButton()) {
+            unset($data['button2_label'], $data['button2_url']);
         }
         unset($data['image'], $data['image_library_id'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 
