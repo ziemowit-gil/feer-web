@@ -1,14 +1,11 @@
 {{--
-    Aktualności tuż pod sliderem (HomeController::kreatywniHome, $newsItems — trzy najnowsze tej witryny): miętowy pas,
-    po lewej najnowsza wyróżniona (duże zdjęcie, data jako płaski kafelek kalendarza, tytuł, zajawka), po prawej dwie
-    kolejne w zwartych wierszach (miniatura, data, tytuł). Cała karta jest linkiem; zdjęcia dekoracyjne (nazwę niesie
-    tytuł), pełna data dla czytników w <time>. Bez aktualności albo przy wyłączonym module sekcji nie ma; przełącznik
-    w Ustawienia → Szablon → Sekcje strony głównej.
+    Aktualności tuż pod sliderem (HomeController::kreatywniHome, $newsItems — cztery najnowsze tej witryny): miętowy pas,
+    równe karty po dwie w rzędzie (na telefonie jedna pod drugą): zdjęcie, data jako płaski kafelek kalendarza, tytuł,
+    zajawka. Cała karta jest linkiem; zdjęcia dekoracyjne (nazwę niesie tytuł), pełna data dla czytników w <time>.
+    Bez aktualności albo przy wyłączonym module sekcji nie ma; przełącznik w Ustawienia → Szablon → Sekcje strony głównej.
 --}}
 @if (($newsItems ?? collect())->isNotEmpty())
 @php
-    $kcFeature = $newsItems->first();
-    $kcRest = $newsItems->slice(1, 2)->values();
     $kcExcerpt = fn ($item) => trim(strip_tags((string) ($item->excerpt ?: $item->meta_description)));
 @endphp
 <section id="aktualnosci" class="kc-sec kc-sec-mint kc-news-sec" aria-labelledby="kc-news-title">
@@ -28,49 +25,30 @@
             @endif
         </div>
 
-        <ul @class(['kc-news-layout', 'has-rest' => $kcRest->isNotEmpty(), 'has-two' => $kcRest->count() === 2])>
-            @php $kcImage = $kcFeature->imageUrlOrDefault(); @endphp
-            <li class="kc-news-main">
-                <a href="{{ route('news.show', $kcFeature) }}" class="kc-news-feature">
-                    <span class="kc-news-photo" aria-hidden="true">
-                        @if ($kcImage)
-                            <img src="{{ $kcImage }}" alt="" loading="lazy">
-                        @else
-                            <i class="fa-solid fa-newspaper"></i>
-                        @endif
-                    </span>
-                    @if ($kcFeature->published_at)
-                        <time class="kc-news-date" datetime="{{ $kcFeature->published_at->toDateString() }}">
-                            <span class="kc-news-day" aria-hidden="true">{{ $kcFeature->published_at->format('j') }}</span>
-                            <span class="kc-news-mon" aria-hidden="true">{{ $kcFeature->published_at->translatedFormat('M') }}</span>
-                            <span class="kc-sr">{{ $kcFeature->published_at->translatedFormat('j F Y') }}</span>
-                        </time>
-                    @endif
-                    <span class="kc-news-body">
-                        <h3 class="kc-news-name">{{ $kcFeature->title }}</h3>
-                        @if ($kcExcerpt($kcFeature) !== '')
-                            <span class="kc-news-text">{{ \Illuminate\Support\Str::limit($kcExcerpt($kcFeature), 200) }}</span>
-                        @endif
-                        <span class="kc-child-more" aria-hidden="true">Czytaj dalej →</span>
-                    </span>
-                </a>
-            </li>
-            @foreach ($kcRest as $item)
-                @php $kcThumb = $item->imageUrlOrDefault(); @endphp
-                <li>
-                    <a href="{{ route('news.show', $item) }}" class="kc-news-row">
-                        <span class="kc-news-thumb" aria-hidden="true">
-                            @if ($kcThumb)
-                                <img src="{{ $kcThumb }}" alt="" loading="lazy">
+        <ul class="kc-news-layout">
+            @foreach ($newsItems as $item)
+                @php $kcImage = $item->imageUrlOrDefault(); @endphp
+                <li class="kc-news-item">
+                    <a href="{{ route('news.show', $item) }}" class="kc-news-feature">
+                        <span class="kc-news-photo" aria-hidden="true">
+                            @if ($kcImage)
+                                <img src="{{ $kcImage }}" alt="" loading="lazy">
                             @else
                                 <i class="fa-solid fa-newspaper"></i>
                             @endif
                         </span>
+                        @if ($item->published_at)
+                            <time class="kc-news-date" datetime="{{ $item->published_at->toDateString() }}">
+                                <span class="kc-news-day" aria-hidden="true">{{ $item->published_at->format('j') }}</span>
+                                <span class="kc-news-mon" aria-hidden="true">{{ $item->published_at->translatedFormat('M') }}</span>
+                                <span class="kc-sr">{{ $item->published_at->translatedFormat('j F Y') }}</span>
+                            </time>
+                        @endif
                         <span class="kc-news-body">
-                            @if ($item->published_at)
-                                <time class="kc-news-when" datetime="{{ $item->published_at->toDateString() }}">{{ $item->published_at->translatedFormat('j F Y') }}</time>
-                            @endif
                             <h3 class="kc-news-name">{{ $item->title }}</h3>
+                            @if ($kcExcerpt($item) !== '')
+                                <span class="kc-news-text">{{ \Illuminate\Support\Str::limit($kcExcerpt($item), 160) }}</span>
+                            @endif
                             <span class="kc-child-more" aria-hidden="true">Czytaj dalej →</span>
                         </span>
                     </a>

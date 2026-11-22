@@ -315,8 +315,9 @@ class HomeController extends Controller
             'slides' => $slides->values(),
             'gallery' => $gallery->take(8)->values(),
             'projects' => $this->kreatywniProjects($settings),
+            // Aktualności po dwie w rzędzie — cztery najnowsze to dwa pełne rzędy.
             'newsItems' => $settings->isModuleEnabled('news')
-                ? News::published()->forCurrentSite()->orderByDesc('published_at')->limit(3)->get()
+                ? News::published()->forCurrentSite()->orderByDesc('published_at')->limit(4)->get()
                 : collect(),
         ]);
     }

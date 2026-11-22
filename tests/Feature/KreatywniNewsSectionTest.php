@@ -45,19 +45,33 @@ class KreatywniNewsSectionTest extends TestCase
         $this->assertTrue($hero < $news && $news < $mission, 'aktualności między sliderem a „W czym pomagamy”');
 
         $this->assertStringContainsString('<p class="kc-eyebrow kc-hand">Co nowego?</p>', $html);
-        $this->assertStringContainsString('kc-news-layout has-rest has-two', $html);
-        // Najnowsza wyróżniona: kafelek daty z pełną datą dla czytników, zajawka.
-        $this->assertMatchesRegularExpression('#<li class="kc-news-main">\s*<a href="[^"]*'.$newest->slug.'" class="kc-news-feature">#', $html);
+        // Równe karty po dwie w rzędzie, od najnowszej: kafelek daty z pełną datą dla czytników i zajawka w każdej.
+        $this->assertStringContainsString('<ul class="kc-news-layout">', $html);
+        $this->assertSame(3, substr_count($html, '<li class="kc-news-item">'));
+        $this->assertMatchesRegularExpression('#<li class="kc-news-item">\s*<a href="[^"]*'.$newest->slug.'" class="kc-news-feature">#', $html);
         $this->assertStringContainsString('<span class="kc-sr">'.$newest->published_at->translatedFormat('j F Y').'</span>', $html);
         $this->assertStringContainsString('Zajawka: Najnowsza wiadomość', $html);
-        // Dwie kolejne jako wiersze, bez zajawek, w tej samej liście.
-        $this->assertSame(2, substr_count($html, 'class="kc-news-row"'));
-        $this->assertStringNotContainsString('Zajawka: Starsza wiadomość', $html);
+        $this->assertStringContainsString('Zajawka: Starsza wiadomość', $html);
+        $this->assertLessThan(strpos($html, 'Środkowa wiadomość'), strpos($html, 'Najnowsza wiadomość'));
         $this->assertLessThan(strpos($html, 'Starsza wiadomość'), strpos($html, 'Środkowa wiadomość'));
         $this->assertStringContainsString('Wszystkie aktualności', $html);
     }
 
-    public function test_jedna_aktualnosc_bez_kolumny_wierszy(): void
+    public function test_cztery_najnowsze_po_dwie_w_rzedzie(): void
+    {
+        $this->useTemplate();
+        foreach (range(1, 5) as $i) {
+            $this->news('Wiadomość '.$i, $i);
+        }
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertSame(4, substr_count($html, '<li class="kc-news-item">'), 'cztery najnowsze = dwa pełne rzędy');
+        $this->assertStringNotContainsString('Wiadomość 5', $html);
+        $this->assertStringContainsString('.kc-news-layout { grid-template-columns: repeat(2, minmax(0, 1fr))', $html);
+    }
+
+    public function test_jedna_aktualnosc_to_jedna_karta(): void
     {
         $this->useTemplate();
         $this->news('Jedyna wiadomość', 1);
@@ -65,6 +79,6 @@ class KreatywniNewsSectionTest extends TestCase
         $html = $this->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('<ul class="kc-news-layout">', $html);
-        $this->assertSame(0, substr_count($html, 'class="kc-news-row"'));
+        $this->assertSame(1, substr_count($html, '<li class="kc-news-item">'));
     }
 }

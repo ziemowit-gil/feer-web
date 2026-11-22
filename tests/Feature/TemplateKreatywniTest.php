@@ -327,13 +327,13 @@ class TemplateKreatywniTest extends TestCase
         $this->assertStringNotContainsString('Pracujemy zdalnie', $html);
     }
 
-    public function test_sekcja_aktualnosci_trzy_najnowsze_z_przelacznikiem(): void
+    public function test_sekcja_aktualnosci_cztery_najnowsze_z_przelacznikiem(): void
     {
         $this->useTemplate();
         // Bez aktualności sekcji nie ma.
         $this->get('/')->assertOk()->assertDontSee('kc-news-title', false);
 
-        foreach (['Pierwsza' => 4, 'Druga' => 3, 'Trzecia' => 2, 'Czwarta' => 1] as $title => $daysAgo) {
+        foreach (['Pierwsza' => 5, 'Druga' => 4, 'Trzecia' => 3, 'Czwarta' => 2, 'Piąta' => 1] as $title => $daysAgo) {
             \App\Models\News::create(['title' => $title.' wiadomość', 'slug' => \Illuminate\Support\Str::slug($title), 'content' => '<p>x</p>',
                 'excerpt' => 'Opis '.$title, 'published_at' => now()->subDays($daysAgo), 'is_published' => true]);
         }
@@ -341,12 +341,12 @@ class TemplateKreatywniTest extends TestCase
 
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertStringContainsString('<h2 id="kc-news-title" class="kc-h2">Aktualności</h2>', $html);
-        foreach (['Czwarta', 'Trzecia', 'Druga'] as $title) {
+        foreach (['Piąta', 'Czwarta', 'Trzecia', 'Druga'] as $title) {
             $this->assertStringContainsString($title.' wiadomość', $html);
         }
-        $this->assertStringNotContainsString('Pierwsza wiadomość', $html, 'tylko trzy najnowsze');
+        $this->assertStringNotContainsString('Pierwsza wiadomość', $html, 'tylko cztery najnowsze (dwa rzędy po dwie)');
         $this->assertStringNotContainsString('Szkic wiadomość', $html);
-        $this->assertTrue(strpos($html, 'Czwarta wiadomość') < strpos($html, 'Druga wiadomość'), 'najnowsza pierwsza');
+        $this->assertTrue(strpos($html, 'Piąta wiadomość') < strpos($html, 'Druga wiadomość'), 'najnowsza pierwsza');
         $this->assertStringContainsString('Wszystkie aktualności', $html);
         $this->assertStringContainsString('<time class="kc-news-date" datetime="', $html);
 

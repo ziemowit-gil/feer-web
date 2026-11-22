@@ -446,15 +446,12 @@
     .kc-project-card:focus-visible { outline: 3px solid var(--kc-forest); outline-offset: 3px; }
     .kc-sec-cream .kc-project-card { background: #fff; }
     .kc-sec-cream .kc-project-card:hover { background: var(--kc-sun); }
-    /* Aktualności pod sliderem (partials/home/news): miętowy pas, wyróżniona po lewej, dwie kolejne w wierszach po prawej. */
+    /* Aktualności pod sliderem (partials/home/news): miętowy pas, równe karty po dwie w rzędzie (na telefonie jedna pod drugą). */
     .kc-news-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem 2rem; margin-bottom: 2rem; }
     .kc-news-head .kc-lead { margin-bottom: 0; }
     .kc-news-all { flex: none; }
     .kc-news-layout { display: grid; gap: 1.25rem; margin: 0; padding: 0; list-style: none; }
-    @media (min-width: 900px) {
-        .kc-news-layout.has-rest { grid-template-columns: 1.25fr 1fr; grid-auto-rows: 1fr; }
-        .kc-news-layout.has-two .kc-news-main { grid-row: span 2; }
-    }
+    @media (min-width: 768px) { .kc-news-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; } }
     .kc-news-feature, .kc-news-row { position: relative; display: flex; height: 100%; overflow: hidden; border-radius: var(--kc-radius);
         background: #fff; color: var(--kc-ink); text-decoration: none; transition: background-color .15s; }
     .kc-news-feature { flex-direction: column; }
