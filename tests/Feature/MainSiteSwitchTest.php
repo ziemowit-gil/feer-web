@@ -154,20 +154,22 @@ class MainSiteSwitchTest extends TestCase
             ->assertSee('Zostaw tylko witrynę „'.$this->main->site_name.'”', false)
             ->assertSee('Kreatywni')
             ->assertSee('Do kosza (2 witryny, 2 rekordy)')
-            ->assertSee('przepisz nazwę witryny, która zostaje', false);
+            ->assertSee('Potwierdzam: usuń wszystkie witryny poza')
+            ->assertDontSee('name="confirm_name"', false);
     }
 
-    public function test_remove_others_to_trash_keeps_main_and_needs_name(): void
+    public function test_remove_others_to_trash_keeps_main_and_needs_checkbox(): void
     {
         $keep = $this->page($this->main, 'zostaje');
         $this->page($this->sub, 'znika');
         $admin = $this->admin();
 
-        $this->actingAs($admin)->delete(route('admin.witryny.pozostale.destroy'), ['mode' => 'trash', 'force' => '1', 'confirm_name' => 'zła nazwa'])
-            ->assertSessionHasErrors('confirm_name');
+        $this->actingAs($admin)->delete(route('admin.witryny.pozostale.destroy'), ['mode' => 'trash'])
+            ->assertSessionHasErrors('force');
         $this->assertNull($this->sub->fresh()->trashed_at);
 
-        $this->actingAs($admin)->delete(route('admin.witryny.pozostale.destroy'), ['mode' => 'trash', 'force' => '1', 'confirm_name' => $this->main->site_name])
+        // Samo pole wyboru wystarcza — bez przepisywania nazwy.
+        $this->actingAs($admin)->delete(route('admin.witryny.pozostale.destroy'), ['mode' => 'trash', 'force' => '1'])
             ->assertRedirect(route('admin.witryny.index'))->assertSessionHas('status');
 
         $this->assertNotNull($this->sub->fresh()->trashed_at);
@@ -185,7 +187,7 @@ class MainSiteSwitchTest extends TestCase
         $this->page($this->main, 'zostaje');
 
         $this->actingAs($this->admin())->delete(route('admin.witryny.pozostale.destroy'), [
-            'mode' => 'permanent', 'backup' => '0', 'force' => '1', 'confirm_name' => $this->main->site_name,
+            'mode' => 'permanent', 'backup' => '0', 'force' => '1',
         ])->assertRedirect(route('admin.witryny.index'));
 
         $this->assertSame([$this->main->id], SiteSetting::query()->pluck('id')->map(fn ($id) => (int) $id)->all());
