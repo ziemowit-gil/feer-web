@@ -84,6 +84,16 @@ class KreatywniHeroSlidesTest extends TestCase
             ->assertDontSee('Misja organizacji jako pierwszy slajd');
     }
 
+    public function test_zdjecie_slajdu_ma_opis_z_panelu(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $this->useTemplate();
+        $slide = $this->slide(['title' => 'Ze zdjęciem', 'image_alt' => 'Uczestnicy lepią z gliny']);
+        $slide->addMedia(\Illuminate\Http\UploadedFile::fake()->image('s.jpg', 800, 800))->toMediaCollection('image');
+
+        $this->get('/')->assertOk()->assertSee('alt="Uczestnicy lepią z gliny"', false);
+    }
+
     public function test_slajd_poza_terminem_i_wylaczony_modul_nie_sa_pokazywane(): void
     {
         $site = $this->useTemplate();

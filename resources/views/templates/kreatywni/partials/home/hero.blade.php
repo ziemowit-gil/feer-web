@@ -4,7 +4,7 @@
     wyłączonym module) slider domyślny z Ustawienia → Szablon: powitanie (napis, H1, tekst, hasła, dwa przyciski, obrazek;
     domyślnie logo), „Naszą misją jest” z punktami misji (gdy są) i zaproszenie na Facebooka i Instagram z dużymi
     przyciskami profili (gdy są w Ustawienia → Media i BIP). Tekst slajdu z panelu: każdy wiersz to akapit, wiersze od „- ”
-    to lista z ptaszkami, od „1. ” lista numerowana. Obrazek slajdu jest dekoracyjny (treść niesie tytuł i tekst).
+    to lista z ptaszkami, od „1. ” lista numerowana. Obrazek slajdu ma opis z panelu (bez opisu jest dekoracyjny).
     Bez automatycznego przewijania (WCAG 2.2.2): po prawej licznik „01 / 02”, strzałki „Poprzedni / Następny” i kropki
     (aktywna wydłuża się w kreskę; nazwa slajdu dla czytników), strzałki ←/→ na kontrolkach. Nieaktywny slajd jest
     ukryty (visibility + inert), ale zajmuje miejsce, więc wysokość się nie zmienia. Bez JS widać pierwszy slajd.
@@ -111,7 +111,7 @@
                     @if ($sImg || $kcLogo)
                         <div @class(['kc-hero-art', 'is-photo' => (bool) $sImg])>
                             <span class="kc-dot kc-dot-2" aria-hidden="true"></span>
-                            <img src="{{ $sImg ?: $kcLogo }}" alt="" width="416" height="416" @if ($i === 0) fetchpriority="high" @else loading="lazy" @endif>
+                            <img src="{{ $sImg ?: $kcLogo }}" alt="{{ $sImg ? ($slide->image_alt ?? '') : '' }}" width="416" height="416" @if ($i === 0) fetchpriority="high" @else loading="lazy" @endif>
                             <span class="kc-dot kc-dot-1" aria-hidden="true"></span>
                         </div>
                     @endif
