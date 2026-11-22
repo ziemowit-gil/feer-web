@@ -47,6 +47,7 @@ class KreatywniSiteSeeder extends Seeder
         $pages = $this->pages();
         $this->menu($pages);
         $this->people();
+        $this->offers();
 
         $this->command?->info('Witryna „'.$site->site_name.'” w szablonie „kreatywni”: utworzono lub uzupełniono '.$this->created.' stron. Dokumenty fundacji są szkicami do uzupełnienia.');
     }
@@ -85,6 +86,22 @@ class KreatywniSiteSeeder extends Seeder
             $fill['footer_options'] = ['staff_link' => false];
         }
         $this->site->forceFill($fill)->save();
+    }
+
+    /** Oferta z tekstów szablonu do modułu „Mikrooferta – Kreatywni”, gdy moduł jest pusty. */
+    private function offers(): void
+    {
+        if (! \App\Models\KreatywniOffer::supported()
+            || \App\Models\KreatywniOffer::withoutGlobalScopes()->where('site_id', $this->site->id)->exists()) {
+            return;
+        }
+        $texts = \App\Support\KreatywniTexts::for($this->site);
+        if ($texts->rows('offer_items') === [] && $texts->get('offer_price') === '') {
+            return;
+        }
+        \App\Models\KreatywniOffer::withoutGlobalScopes()->create(
+            \App\Http\Controllers\Admin\KreatywniOfferController::fromTexts($texts) + ['site_id' => $this->site->id, 'order' => 1, 'is_active' => true]
+        );
     }
 
     /** Osoby z tekstów szablonu („O nas” → zespół) do modułu „Osoby – Kreatywni”, gdy moduł jest pusty. */

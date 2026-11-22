@@ -566,6 +566,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('kreatywni-osoby/import', [\App\Http\Controllers\Admin\KreatywniPersonController::class, 'import'])->name('kreatywni-osoby.import');
         Route::post('kreatywni-osoby/{person}/przesun', [\App\Http\Controllers\Admin\KreatywniPersonController::class, 'move'])->name('kreatywni-osoby.przesun');
         Route::resource('kreatywni-osoby', \App\Http\Controllers\Admin\KreatywniPersonController::class)->parameters(['kreatywni-osoby' => 'person'])->except('show');
+        // Mikro moduł „Mikrooferta – Kreatywni” (blok sprzedażowy oferty na stronie głównej i stronie „Oferta”).
+        Route::post('kreatywni-oferty/import', [\App\Http\Controllers\Admin\KreatywniOfferController::class, 'import'])->name('kreatywni-oferty.import');
+        Route::post('kreatywni-oferty/{offer}/przesun', [\App\Http\Controllers\Admin\KreatywniOfferController::class, 'move'])->name('kreatywni-oferty.przesun');
+        Route::resource('kreatywni-oferty', \App\Http\Controllers\Admin\KreatywniOfferController::class)->parameters(['kreatywni-oferty' => 'offer'])->except('show');
     });
 
     Route::middleware(['module:materials', 'module-access:materials'])->group(function () {

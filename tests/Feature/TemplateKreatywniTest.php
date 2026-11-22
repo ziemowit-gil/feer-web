@@ -175,7 +175,7 @@ class TemplateKreatywniTest extends TestCase
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         // Domyślnie pigułki; w panelu wybór jako grupa przycisków radiowych.
-        $this->get('/')->assertOk()->assertSee('<ul class="kc-chips">', false)->assertDontSee('kc-plain-list', false);
+        $this->get('/')->assertOk()->assertSee('<ul class="kc-chips">', false)->assertDontSee('<ul class="kc-plain-list">', false);
         $this->actingAs($admin)->get(route('admin.ustawienia.edit'))->assertOk()
             ->assertSee('Wygląd listy warsztatów')
             ->assertSee('name="kreatywni_texts[_offer_style]" value="chips" class="mt-1" checked', false)

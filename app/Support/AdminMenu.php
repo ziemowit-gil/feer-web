@@ -232,6 +232,9 @@ final class AdminMenu
                 // Szablon „kreatywni”: osoby z sekcji „Kto prowadzi warsztaty” (mikro moduł).
                 \App\Models\SiteSetting::current()->site_template === 'kreatywni' && \App\Models\KreatywniPerson::supported() && $this->user->canAccessModule('pages')
                     ? $this->item('kreatywni-people', 'Osoby – Kreatywni', 'admin.kreatywni-osoby.index', 'fa-user-group', active: 'admin.kreatywni-osoby.*') : null,
+                // Szablon „kreatywni”: oferty z bloku sprzedażowego (mikro moduł).
+                \App\Models\SiteSetting::current()->site_template === 'kreatywni' && \App\Models\KreatywniOffer::supported() && $this->user->canAccessModule('pages')
+                    ? $this->item('kreatywni-offers', 'Mikrooferta – Kreatywni', 'admin.kreatywni-oferty.index', 'fa-tags', active: 'admin.kreatywni-oferty.*') : null,
             ]),
 
             $this->section('content', 'Treści', [
