@@ -58,8 +58,30 @@ class KreatywniHeroSlidesTest extends TestCase
         $this->assertMatchesRegularExpression('#<ol class="kc-steps kc-steps-hero">\s*<li>krok jeden</li>\s*<li>krok dwa</li>#', $html);
         $this->assertSame(1, substr_count($html, '<h1'), 'jeden H1 na stronie');
         $this->assertStringContainsString('Slajd 1: Zapisy na ferie', $html);
-        // Slajd misji z ustawień szablonu zostaje po slajdach z panelu.
-        $this->assertStringContainsString('Naszą misją jest', $html);
+        // Z panelu steruje się całym sliderem: slajdów misji i social media z ustawień szablonu wtedy nie ma.
+        $this->assertStringNotContainsString('<h2 class="kc-slide-title">Naszą misją jest</h2>', $html);
+        $this->assertSame(2, substr_count($html, 'aria-roledescription="slajd"'));
+    }
+
+    public function test_bez_slajdow_w_panelu_slider_domyslny_ma_misje(): void
+    {
+        $this->useTemplate();
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('<h2 class="kc-slide-title">Naszą misją jest</h2>', $html);
+    }
+
+    public function test_panel_sliderow_w_kreatywni_bez_panelu_slajdu_misji(): void
+    {
+        $this->useTemplate();
+        $admin = \App\Models\User::factory()->create(['role' => \App\Models\User::ROLE_ADMIN]);
+
+        $home = \App\Models\Slider::create(['site_id' => \App\Models\SiteSetting::current()->id, 'name' => 'Strona główna', 'is_home' => true]);
+
+        $this->actingAs($admin)->get(route('admin.slidery.show', $home))->assertOk()
+            ->assertSee('slider na stronie głównej składa się tylko z nich')
+            ->assertDontSee('Misja organizacji jako pierwszy slajd');
     }
 
     public function test_slajd_poza_terminem_i_wylaczony_modul_nie_sa_pokazywane(): void

@@ -1,12 +1,12 @@
 {{--
-    Slider na górze strony głównej. Slajdy z modułu Slajder (panel → Slidery, slider „Strona główna”: tytuł, tekst,
-    dwa przyciski, obrazek, kolejność, terminy) zastępują slajd powitalny; bez nich slajd 1 to powitanie z Ustawienia →
-    Szablon (napis, H1, tekst, hasła, dwa przyciski, obrazek; domyślnie logo). Dalej automatycznie: „Naszą misją jest”
-    z punktami misji (gdy są) i zaproszenie na Facebooka i Instagram z dużymi przyciskami profili (gdy są w Ustawienia →
-    Media i BIP). Tekst slajdu z panelu: każdy wiersz to akapit, wiersze od „- ” to lista z ptaszkami, od „1. ” lista
-    numerowana. Obrazek slajdu jest dekoracyjny (treść niesie tytuł i tekst). Bez automatycznego przewijania (WCAG 2.2.2):
-    po prawej licznik „01 / 02”, strzałki „Poprzedni / Następny” i kropki (aktywna wydłuża się w kreskę; nazwa slajdu
-    dla czytników), strzałki ←/→ na kontrolkach. Nieaktywny slajd jest
+    Slider na górze strony głównej. Gdy w panelu w Sliderach (slider „Strona główna”) są slajdy, slider składa się tylko
+    z nich: tytuł, tekst, dwa przyciski, obrazek, kolejność i terminy ustawia się w panelu. Bez slajdów w panelu (albo przy
+    wyłączonym module) slider domyślny z Ustawienia → Szablon: powitanie (napis, H1, tekst, hasła, dwa przyciski, obrazek;
+    domyślnie logo), „Naszą misją jest” z punktami misji (gdy są) i zaproszenie na Facebooka i Instagram z dużymi
+    przyciskami profili (gdy są w Ustawienia → Media i BIP). Tekst slajdu z panelu: każdy wiersz to akapit, wiersze od „- ”
+    to lista z ptaszkami, od „1. ” lista numerowana. Obrazek slajdu jest dekoracyjny (treść niesie tytuł i tekst).
+    Bez automatycznego przewijania (WCAG 2.2.2): po prawej licznik „01 / 02”, strzałki „Poprzedni / Następny” i kropki
+    (aktywna wydłuża się w kreskę; nazwa slajdu dla czytników), strzałki ←/→ na kontrolkach. Nieaktywny slajd jest
     ukryty (visibility + inert), ale zajmuje miejsce, więc wysokość się nie zmienia. Bez JS widać pierwszy slajd.
 --}}
 @php
@@ -47,8 +47,10 @@
     $kcSlides = $kcManaged->isNotEmpty()
         ? $kcManaged->map(fn ($s) => \Illuminate\Support\Str::limit((string) $s->title, 60))->all()
         : ['Warsztaty'];
-    $kcMissionIdx = $kcMission !== [] ? array_push($kcSlides, $texts->get('mission_title')) - 1 : null;
-    $kcSocialIdx = $kcProfiles !== [] ? array_push($kcSlides, 'Social media') - 1 : null;
+    // Slajdy misji i social media z ustawień szablonu tylko wtedy, gdy w panelu nie ma slajdów — z panelu steruje się całym sliderem.
+    $kcAuto = $kcManaged->isEmpty();
+    $kcMissionIdx = $kcAuto && $kcMission !== [] ? array_push($kcSlides, $texts->get('mission_title')) - 1 : null;
+    $kcSocialIdx = $kcAuto && $kcProfiles !== [] ? array_push($kcSlides, 'Social media') - 1 : null;
     $kcCount = count($kcSlides);
 @endphp
 <section class="kc-hero" aria-roledescription="karuzela" aria-label="Najważniejsze informacje"

@@ -18,7 +18,7 @@ final class KreatywniTexts
 {
     /** Sekcje strony głównej w kolejności wyświetlania: klucz => [nazwa w panelu, opis]. */
     public const SECTIONS = [
-        'hero' => ['Slider na górze', 'Slajdy dodane w panelu w Sliderach (slider „Strona główna”; moduł „Slajder (hero)”) zastępują slajd 1 — można je dodawać, usuwać, układać i planować. Bez nich slajd 1: nazwa, hasło, przyciski i obrazek (domyślnie logo). Dalej: „Naszą misją jest” z punktami misji i zaproszenie na Facebooka i Instagram.'],
+        'hero' => ['Slider na górze', 'Gdy w panelu w Sliderach (slider „Strona główna”; moduł „Slajder (hero)”) są slajdy, slider składa się tylko z nich — można je dodawać, usuwać, układać i planować. Bez nich slider domyślny z pól poniżej: powitanie (nazwa, hasło, przyciski, obrazek — domyślnie logo), „Naszą misją jest” z punktami misji i zaproszenie na Facebooka i Instagram.'],
         'news' => ['Aktualności', 'Tuż pod sliderem: najnowsza aktualność wyróżniona dużym zdjęciem i datą, obok dwie kolejne, oraz przycisk do pełnej listy. Bez aktualności albo przy wyłączonym module sekcja się nie pokazuje.'],
         'mission' => ['Obszary działania', 'Krótki wstęp i cztery obszary działania.'],
         'social' => ['Social media', 'Duże karty z profilami z Ustawienia → Media i BIP. Bez ustawionych profili sekcja się nie pokazuje.'],

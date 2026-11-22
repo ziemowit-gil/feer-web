@@ -21,7 +21,14 @@
                 </a>
             </div>
 
-            @if ($slider->is_home)
+            @if ($slider->is_home && ($siteSettings->site_template ?? null) === 'kreatywni')
+                {{-- Szablon „kreatywni” nie używa slajdu z misją z panelu poniżej: misja to zwykły slajd albo slider domyślny szablonu. --}}
+                <p class="mb-6 rounded-md bg-white px-5 py-4 text-sm text-ink">
+                    Szablon „Kreatywni na co dzień”: gdy ten slider ma slajdy, slider na stronie głównej składa się tylko z nich — misję
+                    i zaproszenie do social media dodaj jako zwykłe slajdy. W tekście slajdu wiersz od „- ” to punkt z ptaszkiem,
+                    od „1. ” punkt numerowany. Bez slajdów strona pokazuje slider domyślny z Ustawienia → Szablon.
+                </p>
+            @elseif ($slider->is_home)
                 @include('admin.hero.partials.mission-panel', ['slideCount' => $slider->slides->count()])
             @endif
 
