@@ -18,7 +18,7 @@ final class KreatywniTexts
 {
     /** Sekcje strony głównej w kolejności wyświetlania: klucz => [nazwa w panelu, opis]. */
     public const SECTIONS = [
-        'hero' => ['Slider na górze', 'Slajdy dodane w panelu w module Slajder (slider „Strona główna”) zastępują slajd 1 — można je dodawać, usuwać, układać i planować. Bez nich slajd 1: nazwa, hasło, przyciski i obrazek (domyślnie logo). Dalej: „Naszą misją jest” z punktami misji i zaproszenie na Facebooka i Instagram.'],
+        'hero' => ['Slider na górze', 'Slajdy dodane w panelu w Sliderach (slider „Strona główna”; moduł „Slajder (hero)”) zastępują slajd 1 — można je dodawać, usuwać, układać i planować. Bez nich slajd 1: nazwa, hasło, przyciski i obrazek (domyślnie logo). Dalej: „Naszą misją jest” z punktami misji i zaproszenie na Facebooka i Instagram.'],
         'mission' => ['Obszary działania', 'Krótki wstęp i cztery obszary działania.'],
         'social' => ['Social media', 'Duże karty z profilami z Ustawienia → Media i BIP. Bez ustawionych profili sekcja się nie pokazuje.'],
         'offer' => ['Oferta warsztatów', 'Lista warsztatów z ceną i przyciskiem do zapytania o termin.'],
