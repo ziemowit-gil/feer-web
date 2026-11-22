@@ -218,11 +218,77 @@ class SiteController extends Controller
         $previous = MainSite::switchTo($site, $request->user());
 
         $status = 'Witryną główną jest teraz „'.$site->site_name.'”. „'.$previous->site_name.'” jest jej subwitryną';
+
+        // „Ustaw jako główną i usuń pozostałe” — od razu do potwierdzenia usunięcia pozostałych witryn.
+        if ($request->input('potem') === 'usun-pozostale') {
+            return redirect()->route('admin.witryny.pozostale')->with('status', $status.'. Teraz możesz usunąć pozostałe witryny.');
+        }
+
         $status .= ($previous->domain || $previous->slug)
             ? ' pod adresem '.current_site_url($previous->fresh()).'.'
             : ' bez publicznego adresu — nadaj go w „Zmień nazwę i adres”.';
 
         return redirect()->route('admin.witryny.index')->with('status', $status);
+    }
+
+    /** „Usuń pozostałe witryny”: lista wszystkich witryn poza główną z liczbą podwitryn i rekordów, wybór kosz/trwale. */
+    public function confirmOthers()
+    {
+        $main = SiteSetting::main();
+        $active = MainSite::others();
+        $trashed = SiteRemoval::trashed();
+
+        if ($active->isEmpty() && $trashed->isEmpty()) {
+            return redirect()->route('admin.witryny.index')->with('status', 'Poza witryną główną „'.$main->site_name.'” nie ma innych witryn.');
+        }
+
+        $row = fn (SiteSetting $s) => [
+            'site' => $s,
+            'subsites' => count(SiteRemoval::withDescendants($s)) - 1,
+            'records' => array_sum(SiteRemoval::contentCountsDeep($s)),
+        ];
+
+        return view('admin.sites.others', [
+            'main' => $main,
+            'active' => $active->map($row)->all(),
+            'trashed' => $trashed->map($row)->all(),
+        ]);
+    }
+
+    /** Usuwa wszystkie witryny poza główną (MainSite::removeOthers) — po przepisaniu nazwy witryny, która zostaje. */
+    public function destroyOthers(Request $request)
+    {
+        $main = SiteSetting::main();
+        $request->validate(['mode' => ['required', 'in:trash,permanent']], ['mode.*' => 'Wybierz, czy przenieść witryny do kosza, czy usunąć je trwale.']);
+        $this->confirmed($request, $main, 'Zaznacz potwierdzenie, aby usunąć wszystkie witryny poza „'.$main->site_name.'”.');
+        $permanent = $request->input('mode') === 'permanent';
+
+        if ($permanent && $request->boolean('backup')) {
+            try {
+                $backup = app(BackupManager::class)->create('pre-delete', false);
+            } catch (\Throwable $e) {
+                return back()->withInput()->with('error', 'Nie udało się zrobić kopii zapasowej, więc niczego nie usunięto: '.$e->getMessage());
+            }
+        }
+
+        $result = MainSite::removeOthers($permanent);
+        $total = array_sum($result['removed']);
+        $this->log($request, ($permanent ? 'Trwale usunięto' : 'Przeniesiono do kosza').' wszystkie witryny poza główną „'.$main->site_name.'”',
+            ['main' => $main->site_name, 'sites' => $result['sites'], 'removed' => $result['removed'], 'backup' => isset($backup) ? basename($backup) : null]);
+
+        if ($result['sites'] === 0) {
+            return redirect()->route('admin.witryny.index')->with('status', 'Nie było witryn do przeniesienia do kosza.');
+        }
+
+        $msg = $permanent
+            ? 'Trwale usunięto witryny poza „'.$main->site_name.'”: '.$result['sites'].($total ? ', razem z '.$total.' powiązanymi rekordami.' : '.')
+            : 'Witryny poza „'.$main->site_name.'” trafiły do kosza: '.$result['sites'].'. Możesz je przywrócić do '
+                .now()->addDays(SiteSetting::TRASH_DAYS)->format('d.m.Y').' — potem zostaną usunięte trwale.';
+        if (isset($backup)) {
+            $msg .= ' Kopia zapasowa: '.basename($backup).'.';
+        }
+
+        return redirect()->route('admin.witryny.index')->with('status', $msg);
     }
 
     public function confirmDestroy(SiteSetting $site)

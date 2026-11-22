@@ -760,6 +760,11 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
             ->middleware('edition:multisite')->name('witryny.nazwa.update');
         Route::delete('witryny/{site}/przekierowania/{redirect}', [\App\Http\Controllers\Admin\SiteController::class, 'destroyRedirect'])
             ->middleware('edition:multisite')->name('witryny.przekierowania.destroy');
+        // „witryny-pozostale”, nie „witryny/pozostale” — to drugie złapałby zasób witryny/{site}.
+        Route::get('witryny-pozostale', [\App\Http\Controllers\Admin\SiteController::class, 'confirmOthers'])
+            ->middleware('edition:multisite')->name('witryny.pozostale');
+        Route::delete('witryny-pozostale', [\App\Http\Controllers\Admin\SiteController::class, 'destroyOthers'])
+            ->middleware('edition:multisite')->name('witryny.pozostale.destroy');
         Route::get('witryny/{site}/glowna', [\App\Http\Controllers\Admin\SiteController::class, 'confirmMain'])
             ->middleware('edition:multisite')->name('witryny.glowna');
         Route::post('witryny/{site}/glowna', [\App\Http\Controllers\Admin\SiteController::class, 'makeMain'])
