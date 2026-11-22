@@ -11,7 +11,7 @@ class HeroSlide extends Model implements HasMedia
     use InteractsWithMedia;
     use \App\Models\Concerns\BelongsToSite;
 
-    protected $fillable = ['site_id', 'slider_id', 'title', 'text', 'button_label', 'button_url', 'button2_label', 'button2_url', 'order', 'duration', 'starts_at', 'ends_at'];
+    protected $fillable = ['site_id', 'slider_id', 'title', 'text', 'button_label', 'button_url', 'button2_label', 'button2_url', 'image_alt', 'order', 'duration', 'starts_at', 'ends_at'];
 
     protected $casts = ['duration' => 'integer', 'starts_at' => 'datetime', 'ends_at' => 'datetime'];
 
@@ -44,6 +44,12 @@ class HeroSlide extends Model implements HasMedia
     public static function supportsSecondButton(): bool
     {
         return once(fn () => \Illuminate\Support\Facades\Schema::hasColumn('hero_slides', 'button2_label'));
+    }
+
+    /** Czy jest już kolumna opisu zdjęcia (migracja 2026_11_23_130000). */
+    public static function supportsImageAlt(): bool
+    {
+        return once(fn () => \Illuminate\Support\Facades\Schema::hasColumn('hero_slides', 'image_alt'));
     }
 
     public function slider(): \Illuminate\Database\Eloquent\Relations\BelongsTo

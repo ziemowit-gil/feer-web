@@ -976,14 +976,14 @@ if (heroSlider) {
         slides[activeIndex].classList.add('opacity-0', 'pointer-events-none');
         slides[activeIndex].classList.remove('opacity-100');
         slides[activeIndex].setAttribute('aria-hidden', 'true');
-        slides[activeIndex].querySelector('[data-hero-cta]')?.setAttribute('tabindex', '-1');
+        slides[activeIndex].querySelectorAll('[data-hero-cta]').forEach((a) => a.setAttribute('tabindex', '-1'));
 
         activeIndex = (index + slides.length) % slides.length;
 
         slides[activeIndex].classList.remove('opacity-0', 'pointer-events-none');
         slides[activeIndex].classList.add('opacity-100');
         slides[activeIndex].removeAttribute('aria-hidden');
-        slides[activeIndex].querySelector('[data-hero-cta]')?.removeAttribute('tabindex');
+        slides[activeIndex].querySelectorAll('[data-hero-cta]').forEach((a) => a.removeAttribute('tabindex'));
 
         if (counter) {
             counter.textContent = String(activeIndex + 1);

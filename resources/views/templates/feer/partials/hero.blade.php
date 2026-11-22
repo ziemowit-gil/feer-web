@@ -27,6 +27,8 @@
                     $sBtnUrl   = $slide->button_url ?? null;
                     $sBtnLabel = $slide->button_label ?? null;
                     $sAlt      = $slide->image_alt ?? '';
+                    $sBtn2Url  = $slide->button2_url ?? null;
+                    $sBtn2Label = $slide->button2_label ?? null;
                 @endphp
                 <div class="col-start-1 row-start-1 grid items-center gap-8 transition-[opacity,transform] motion-reduce:transition-none motion-reduce:transform-none {{ $sImage ? 'lg:grid-cols-[minmax(0,1fr)_28rem]' : '' }}"
                      :class="current === {{ $i }} ? 'translate-x-0 opacity-100 duration-500 delay-300' : 'pointer-events-none translate-x-4 opacity-0 duration-300'"
@@ -55,6 +57,12 @@
                                    class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-6 text-sm font-bold text-white transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                                     {{ $sBtnLabel }}
                                     <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                </a>
+                            @endif
+                            @if ($sBtn2Url && $sBtn2Label)
+                                <a href="{{ $sBtn2Url }}"
+                                   class="inline-flex min-h-11 items-center px-2 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                                    {{ $sBtn2Label }}
                                 </a>
                             @endif
                         </div>

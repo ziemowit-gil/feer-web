@@ -17,6 +17,8 @@
         'alt'    => $slide->image_alt ?? '',
         'url'    => $slide->button_url ?? null,
         'label'  => $slide->button_label ?? null,
+        'url2'   => $slide->button2_url ?? null,
+        'label2' => $slide->button2_label ?? null,
     ]);
 @endphp
 <section class="relative bg-gradient-to-r from-brand to-brand-dark"
@@ -50,6 +52,12 @@
                                 <a href="{{ $slide->url }}"
                                    class="vm-display inline-flex min-h-11 items-center rounded-2xl border-2 border-white px-5 text-xs transition hover:bg-white hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
                                     {{ $slide->label }}<span class="sr-only">: {{ $slide->title }}</span>
+                                </a>
+                            @endif
+                            @if ($slide->url2 && $slide->label2)
+                                <a href="{{ $slide->url2 }}"
+                                   class="vm-display ml-3 inline-flex min-h-11 items-center px-2 text-xs text-white underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand">
+                                    {{ $slide->label2 }}<span class="sr-only">: {{ $slide->title }}</span>
                                 </a>
                             @endif
                         </div>

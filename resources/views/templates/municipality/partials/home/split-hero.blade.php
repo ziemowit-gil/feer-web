@@ -32,7 +32,7 @@
                         </div>
                     @else
                         @if ($slide->image_url)
-                            <img src="{{ $slide->image_url }}" alt="{{ $slide->title ?? '' }}"
+                            <img src="{{ $slide->image_url }}" alt="{{ $slide->image_alt ?? '' }}"
                                 class="h-full w-full object-cover">
                         @endif
 
@@ -53,6 +53,12 @@
                                     class="mt-3 inline-flex items-center gap-1.5 rounded bg-[#e53935] px-4 py-1.5 text-xs font-bold text-white hover:bg-red-700 transition">
                                     {{ $slide->button_label }}
                                     <i class="fa-solid fa-arrow-right text-[0.6rem]" aria-hidden="true"></i>
+                                </a>
+                            @endif
+                            @if (filled($slide->button2_label ?? null) && filled($slide->button2_url ?? null))
+                                <a href="{{ $slide->button2_url }}"
+                                    class="ml-3 mt-3 inline-flex items-center text-xs font-bold text-white underline underline-offset-4 hover:no-underline">
+                                    {{ $slide->button2_label }}
                                 </a>
                             @endif
                         </div>
