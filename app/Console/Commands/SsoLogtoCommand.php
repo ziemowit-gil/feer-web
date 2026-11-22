@@ -45,7 +45,7 @@ class SsoLogtoCommand extends Command
 
     public function handle(): int
     {
-        $settings = SiteSetting::query()->firstOrCreate(['id' => 1]);
+        $settings = SiteSetting::main();
         $issuer = rtrim((string) $this->option('issuer'), '/');
         $base = rtrim((string) ($this->option('url') ?: config('app.url')), '/');
         $redirect = $base.'/auth/sso/callback';

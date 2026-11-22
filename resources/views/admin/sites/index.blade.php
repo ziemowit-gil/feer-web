@@ -7,6 +7,7 @@
         $btn = 'inline-flex min-h-11 items-center gap-2 rounded px-4 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2';
         $btnPlain = $btn.' bg-gray-100 text-ink hover:bg-brand-light';
         $renameRoute = Route::has('admin.witryny.nazwa');
+        $mainRoute = Route::has('admin.witryny.glowna');
     @endphp
 
     <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -30,7 +31,8 @@
 
     {{-- Witryna główna: jej adres to adres serwera (APP_URL), więc tu można zmienić tylko nazwę. --}}
     <section aria-labelledby="h-main-site">
-        <h2 id="h-main-site" class="mb-2 text-base font-bold text-ink">Witryna główna</h2>
+        <h2 id="h-main-site" class="text-base font-bold text-ink">Witryna główna</h2>
+        <p class="mb-2 mt-1 max-w-2xl text-sm text-ink">Otwiera się pod adresem serwera. Inną witrynę ustawisz jako główną przyciskiem „Ustaw jako główną” przy subwitrynie.</p>
         <ul class="space-y-2" role="list">
             @foreach ($mains as $main)
                 <li class="flex flex-wrap items-center gap-3 rounded-md bg-white px-4 py-3">
@@ -130,6 +132,11 @@
                                         <a href="{{ route('admin.witryny.edit', $sub) }}" class="{{ $btnPlain }}">
                                             <i class="fa-solid fa-sliders" aria-hidden="true"></i> Pełna edycja<span class="sr-only">: {{ $sub->site_name }}</span>
                                         </a>
+                                        @if ($mainRoute && ! $sub->isBipSite())
+                                            <a href="{{ route('admin.witryny.glowna', $sub) }}" class="{{ $btnPlain }}">
+                                                <i class="fa-solid fa-house" aria-hidden="true"></i> Ustaw jako główną<span class="sr-only">: {{ $sub->site_name }}</span>
+                                            </a>
+                                        @endif
                                         @if (Route::has('admin.witryny.confirm-destroy'))
                                             <a href="{{ route('admin.witryny.confirm-destroy', $sub) }}" class="inline-flex h-11 w-11 items-center justify-center rounded text-muted hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark" title="Usuń">
                                                 <i class="fa-solid fa-trash" aria-hidden="true"></i><span class="sr-only">Usuń witrynę {{ $sub->site_name }}</span>
