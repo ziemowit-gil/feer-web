@@ -173,6 +173,27 @@
                             </button>
                         </div>
                     @endif
+                    {{-- Szablon „kreatywni”: podmenu dobudowywane na stronie (podstrony, sekcje H2/H3), którego tu nie widać — do zapisania jako podpozycje. --}}
+                    @php
+                        $kcSite = \App\Models\SiteSetting::current();
+                        $kcPlan = $location === 'main' && $kcSite->site_template === 'kreatywni' && \Illuminate\Support\Facades\Route::has('admin.pozycje-menu.kreatywni-odwzoruj')
+                            ? \App\Support\KreatywniMenuSync::plan($kcSite) : collect();
+                    @endphp
+                    @if ($kcPlan->isNotEmpty())
+                        <form method="POST" action="{{ route('admin.pozycje-menu.kreatywni-odwzoruj') }}" class="rounded bg-brand-light px-2.5 py-2 text-xs text-ink" data-kreatywni-sync>
+                            @csrf
+                            <p>
+                                <i class="fa-solid fa-sitemap text-brand-dark" aria-hidden="true"></i>
+                                Na stronie {{ $kcPlan->count() === 1 ? 'pozycja' : 'pozycje' }}
+                                <span class="font-bold">{{ $kcPlan->map(fn ($r) => $r['nav']->label)->implode(', ') }}</span>
+                                {{ $kcPlan->count() === 1 ? 'ma' : 'mają' }} podmenu dobudowane z podstron i sekcji strony, którego tu nie widać.
+                                Odwzoruj je, żeby menu w panelu było takie samo jak na stronie i dało się je edytować.
+                            </p>
+                            <button type="submit" class="mt-1.5 inline-flex min-h-9 items-center gap-1.5 rounded bg-brand-dark px-3 font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                                <i class="fa-solid fa-clone" aria-hidden="true"></i> Odwzoruj w panelu 1:1
+                            </button>
+                        </form>
+                    @endif
                     {{-- Schowek: pozycja wycięta albo skopiowana (Ctrl+X / Ctrl+C), także z innego menu — np. z menu głównego do stopki. --}}
                     <div id="nav-clip" hidden class="flex flex-wrap items-center gap-x-2 gap-y-1 rounded bg-gray-50 px-2.5 py-1.5 text-xs text-ink">
                         <i class="fa-solid fa-clipboard text-muted" aria-hidden="true"></i>

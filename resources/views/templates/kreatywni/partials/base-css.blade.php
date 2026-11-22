@@ -95,6 +95,7 @@
     .kc-mega-head { display: inline-flex; align-items: center; min-height: 2.5rem; margin-bottom: .25rem; padding-bottom: .25rem; border-bottom: 3px solid var(--kc-lime);
         color: var(--kc-forest); font-size: 1rem; font-weight: 800; text-decoration: none; }
     .kc-mega-head:hover { border-bottom-color: var(--kc-forest); }
+    span.kc-mega-head:hover { border-bottom-color: var(--kc-lime); }
     .kc-mega-group li a { display: flex; align-items: center; gap: .5rem; min-height: 2.5rem; padding: .3rem 0; color: var(--kc-ink); font-size: .95rem; font-weight: 600; text-decoration: none; }
     .kc-mega-group li a::before { content: ''; width: .4rem; height: .4rem; flex: none; border-radius: 50%; background: var(--kc-gold); }
     .kc-mega-group li a:hover, .kc-mega-group li a[aria-current="page"] { color: var(--kc-forest); text-decoration: underline; text-decoration-color: var(--kc-lime); text-decoration-thickness: 2px; text-underline-offset: 4px; }

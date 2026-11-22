@@ -10,7 +10,8 @@ use Illuminate\Support\Collection;
  * pozycji jej pierwotne podmenu — podstrony (ręczne podpozycje i podstrony powiązanej strony) oraz sekcje strony,
  * czyli dawny spis „Na tej stronie” (nagłówki H2 jako grupy, H3 jako linki w grupie), z tymi samymi kotwicami,
  * które nadaje App\Support\TableOfContents (widok podstrony templates.kreatywni.page wstrzykuje je do treści).
- * Pozycja bez podmenu zostaje zwykłym linkiem.
+ * Pozycja bez podmenu zostaje zwykłym linkiem. Pozycja z własnymi podpozycjami w panelu (np. po „Odwzoruj w panelu
+ * 1:1”, App\Support\KreatywniMenuSync) pokazuje dokładnie je — nagłówki kolumn jako grupy — bez dobudowywania.
  */
 final class KreatywniMegaMenu
 {
@@ -28,6 +29,27 @@ final class KreatywniMegaMenu
             $base = $item->hasUrl ? strtok((string) $item->url, '#') : null;
 
             $groups = [];
+
+            // Własne podpozycje z panelu: dokładnie one, bez podstron i sekcji strony (panel = strona 1:1).
+            if ($nav instanceof NavItem && $nav->children->isNotEmpty()) {
+                foreach ($nav->megaSections(null, null) as $sec) {
+                    $heading = $sec['heading'] ? [
+                        'label' => $sec['heading']['label'],
+                        'url' => $sec['heading']['url'] ? site_href($sec['heading']['url']) : null,
+                        'current' => (bool) ($sec['heading']['current'] ?? false),
+                    ] : null;
+                    $links = collect($sec['links'])->filter(fn ($l) => filled($l[0]) && $l[0] !== '#')
+                        ->map(fn ($l) => ['label' => $l[1], 'url' => site_href($l[0]), 'current' => (bool) $l[4]])->values()->all();
+                    if ($heading !== null || $links !== []) {
+                        $groups[] = ['heading' => $heading, 'links' => $links];
+                    }
+                }
+                $item->description = $page ? trim((string) $page->meta_description) : '';
+                $item->groups = $groups;
+                $item->hasPanel = $groups !== [];
+
+                return $item;
+            }
 
             $children = collect($item->flat)->filter(fn ($l) => filled($l['url']))
                 ->map(fn ($l) => ['label' => $l['label'], 'url' => $l['url'], 'current' => (bool) $l['current']])->values()->all();

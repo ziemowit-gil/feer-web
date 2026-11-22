@@ -834,6 +834,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::patch('pozycje-menu/{navItem}/etykieta-ze-strony', [NavItemController::class, 'labelFromPage'])->name('pozycje-menu.etykieta');
         Route::post('pozycje-menu/kolejnosc', [NavItemController::class, 'reorder'])->name('pozycje-menu.reorder');
         Route::post('pozycje-menu/ze-stron', [NavItemController::class, 'storeFromPages'])->name('pozycje-menu.ze-stron');
+        // Szablon „kreatywni”: dobudowywane podmenu zapisane jako podpozycje (panel = strona 1:1).
+        Route::post('pozycje-menu/kreatywni-odwzoruj', [\App\Http\Controllers\Admin\KreatywniMenuController::class, 'store'])->name('pozycje-menu.kreatywni-odwzoruj');
         Route::get('pozycje-menu/podglad', \App\Http\Controllers\Admin\NavItemPreviewController::class)->name('pozycje-menu.podglad');
         Route::get('pozycje-menu/eksport-xml', [\App\Http\Controllers\Admin\NavItemXmlController::class, 'export'])->name('pozycje-menu.eksport-xml');
         Route::post('pozycje-menu/import-xml', [\App\Http\Controllers\Admin\NavItemXmlController::class, 'import'])->name('pozycje-menu.import-xml');

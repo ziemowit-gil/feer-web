@@ -113,8 +113,10 @@
                                         <div class="kc-mega-groups">
                                             @foreach ($item->groups as $group)
                                                 <div @class(['kc-mega-group', 'is-long' => count($group['links']) > 6])>
-                                                    @if ($group['heading'])
+                                                    @if ($group['heading'] && $group['heading']['url'])
                                                         <a href="{{ $group['heading']['url'] }}" class="kc-mega-head">{{ $group['heading']['label'] }}</a>
+                                                    @elseif ($group['heading'])
+                                                        <span class="kc-mega-head">{{ $group['heading']['label'] }}</span>
                                                     @endif
                                                     @if ($group['links'] !== [])
                                                         <ul>
@@ -169,7 +171,8 @@
                             <span class="kc-sr">{{ $item->label }}</span>
                         @endif
                         @php
-                            $kcMobileLinks = collect($item->groups)->flatMap(fn ($g) => $g['heading'] ? [$g['heading']] : $g['links'])->values();
+                            // Na telefonie: nagłówek grupy z adresem zamiast jej linków, nagłówek bez adresu — same linki.
+                            $kcMobileLinks = collect($item->groups)->flatMap(fn ($g) => ($g['heading']['url'] ?? null) ? [$g['heading']] : $g['links'])->values();
                         @endphp
                         @if ($kcMobileLinks->isNotEmpty())
                             <ul>

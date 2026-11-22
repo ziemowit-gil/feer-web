@@ -205,6 +205,54 @@ class TemplateKreatywniTest extends TestCase
         $this->assertStringContainsString('class="kc-price-card kc-dark"', $page, 'Strona Oferta ma na górze blok sprzedażowy.');
     }
 
+
+    public function test_odwzorowanie_menu_w_panelu_1_do_1(): void
+    {
+        $this->useTemplate();
+        Page::create(['title' => 'Oferta', 'slug' => 'oferta', 'type' => 'standard', 'is_published' => true,
+            'content' => '<h2>Warsztaty tematyczne</h2><h3>Laleczki motanki</h3><p>Opis</p><h3>Perfumy</h3><p>Opis</p><h2>Zamów warsztaty</h2><p>Napisz.</p>']);
+        $oferta = NavItem::create(['label' => 'Oferta', 'url' => '/oferta', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1]);
+        NavItem::create(['label' => 'Galeria', 'url' => '/galeria', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 2]);
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->get(route('admin.pozycje-menu.index', ['location' => 'main']))->assertOk()
+            ->assertSee('data-kreatywni-sync', false)->assertSee('Odwzoruj w panelu 1:1');
+
+        $this->post(route('admin.pozycje-menu.kreatywni-odwzoruj'))->assertRedirect()->assertSessionHas('status');
+
+        $children = NavItem::query()->where('parent_id', $oferta->id)->orderBy('order')->get();
+        $this->assertSame(['Warsztaty tematyczne', 'Laleczki motanki', 'Perfumy', 'Zamów warsztaty'], $children->pluck('label')->all());
+        $this->assertSame([true, false, false, true], $children->pluck('is_column_heading')->all());
+        $this->assertSame('/oferta#laleczki-motanki', $children[1]->url);
+        $this->assertSame(0, NavItem::query()->where('label', 'Galeria')->first()->children()->count(), 'Pozycja bez podmenu bez zmian.');
+
+        // Po odwzorowaniu strona pokazuje dokładnie podpozycje z panelu; zmiana w panelu zmienia stronę.
+        $children[2]->update(['is_active' => false]);
+        NavItem::create(['parent_id' => $oferta->id, 'label' => 'Cennik', 'url' => '/oferta#cennik', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 9]);
+        $home = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('href="/oferta#laleczki-motanki"', $home);
+        $this->assertStringNotContainsString('href="/oferta#perfumy"', $home, 'Ukryta podpozycja znika ze strony mimo sekcji w treści.');
+        $this->assertStringContainsString('href="/oferta#cennik"', $home);
+
+        // Drugi raz nic nie dubluje, a przycisk znika.
+        $this->post(route('admin.pozycje-menu.kreatywni-odwzoruj'))->assertSessionHas('status');
+        $this->assertSame(5, NavItem::query()->where('parent_id', $oferta->id)->count());
+        $this->get(route('admin.pozycje-menu.index', ['location' => 'main']))->assertOk()->assertDontSee('data-kreatywni-sync', false);
+    }
+
+    public function test_komenda_odwzorowania_menu(): void
+    {
+        $this->useTemplate();
+        Page::create(['title' => 'Fundacja', 'slug' => 'fundacja', 'type' => 'standard', 'is_published' => true, 'content' => '<h2>Dokumenty</h2><p>Statut.</p>']);
+        $nav = NavItem::create(['label' => 'Fundacja', 'url' => '/fundacja', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1]);
+
+        $this->artisan('kreatywni:menu-w-panelu', ['--dry-run' => true])->expectsOutputToContain('[nagłówek kolumny] Dokumenty')->assertSuccessful();
+        $this->assertSame(0, NavItem::query()->where('parent_id', $nav->id)->count());
+
+        $this->artisan('kreatywni:menu-w-panelu')->assertSuccessful();
+        $this->assertSame(['Dokumenty'], NavItem::query()->where('parent_id', $nav->id)->pluck('label')->all());
+    }
+
     public function test_dedykowana_strona_o_nas_i_jej_sekcje_w_mega_menu(): void
     {
         $this->useTemplate();
