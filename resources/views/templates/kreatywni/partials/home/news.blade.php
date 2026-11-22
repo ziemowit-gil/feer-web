@@ -6,7 +6,12 @@
 --}}
 @if (($newsItems ?? collect())->isNotEmpty())
 @php
-    $kcExcerpt = fn ($item) => trim(strip_tags((string) ($item->excerpt ?: $item->meta_description)));
+    // Zajawka: pole zajawki albo opis SEO, a bez nich początek treści — karta nie zostaje z samym tytułem.
+    $kcExcerpt = function ($item): string {
+        $text = trim(strip_tags((string) ($item->excerpt ?: $item->meta_description)));
+
+        return $text !== '' ? $text : trim((string) preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags((string) $item->content), ENT_QUOTES)));
+    };
 @endphp
 <section id="aktualnosci" class="kc-sec kc-sec-mint kc-news-sec" aria-labelledby="kc-news-title">
     <div class="kc-wrap">
@@ -49,7 +54,7 @@
                             @if ($kcExcerpt($item) !== '')
                                 <span class="kc-news-text">{{ \Illuminate\Support\Str::limit($kcExcerpt($item), 160) }}</span>
                             @endif
-                            <span class="kc-child-more" aria-hidden="true">Czytaj dalej →</span>
+                            <span class="kc-news-more" aria-hidden="true">Czytaj więcej <span>→</span></span>
                         </span>
                     </a>
                 </li>

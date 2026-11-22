@@ -81,4 +81,18 @@ class KreatywniNewsSectionTest extends TestCase
         $this->assertStringContainsString('<ul class="kc-news-layout">', $html);
         $this->assertSame(1, substr_count($html, '<li class="kc-news-item">'));
     }
+
+    public function test_karta_ma_czytaj_wiecej_i_zajawke_z_tresci(): void
+    {
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        SiteSetting::current()->forceFill(['site_template' => 'kreatywni'])->save();
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        News::create(['title' => 'Bez zajawki', 'slug' => 'bez-zajawki', 'content' => '<p>Relacja z <strong>warsztatów</strong> w świetlicy.</p>',
+            'published_at' => now()->subDay(), 'is_published' => true]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('Relacja z warsztatów w świetlicy.', $html, 'bez zajawki — początek treści');
+        $this->assertStringContainsString('<span class="kc-news-more" aria-hidden="true">Czytaj więcej', $html);
+    }
 }
