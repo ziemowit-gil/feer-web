@@ -373,6 +373,7 @@
     .kc-about-person { padding: 2rem; }
     .kc-about-person-head { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.1rem; }
     .kc-avatar-lg { width: 4.5rem; height: 4.5rem; font-size: 1.5rem; }
+    img.kc-avatar { object-fit: cover; background: var(--kc-cream); }
     .kc-about-person h3 { margin: 0 0 .4rem; font-size: 1.3rem; }
     .kc-about-role { display: inline-block; margin: 0 !important; padding: .2rem .75rem; border-radius: 999px; background: var(--kc-sun); color: var(--kc-forest); font-size: .85rem; font-weight: 700; line-height: 1.4; }
     .kc-about-person > p { font-size: 1rem; line-height: 1.75; }

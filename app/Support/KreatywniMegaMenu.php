@@ -61,7 +61,7 @@ final class KreatywniMegaMenu
                 // Dedykowana podstrona „O nas”: sekcje z templates.kreatywni.partials.about.
                 $texts = KreatywniTexts::for();
                 $groups[] = ['heading' => null, 'links' => array_values(array_filter([
-                    $texts->rows('about_team') !== [] ? ['label' => $texts->get('about_team_title'), 'url' => $base.'#zespol', 'current' => false] : null,
+                    \App\Models\KreatywniPerson::teamRows($texts, 'about_team') !== [] ? ['label' => $texts->get('about_team_title'), 'url' => $base.'#zespol', 'current' => false] : null,
                     $texts->rows('about_why') !== [] ? ['label' => $texts->get('about_why_title'), 'url' => $base.'#dlaczego', 'current' => false] : null,
                     $texts->get('about_story') !== '' ? ['label' => $texts->get('about_story_title'), 'url' => $base.'#historia', 'current' => false] : null,
                     ['label' => $texts->get('about_join_title'), 'url' => $base.'#dolacz', 'current' => false],

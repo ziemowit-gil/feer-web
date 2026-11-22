@@ -229,6 +229,9 @@ final class AdminMenu
                 $this->can('feer_bands')    ? $this->item('feer-bands', 'FEER Paski', 'admin.feer-paski.index', 'fa-grip-lines', active: 'admin.feer-paski.*') : null,
                 $this->can('quick_actions') ? $this->item('quick-actions', 'Szybkie akcje', 'admin.szybkie-akcje.index', 'fa-bolt', active: 'admin.szybkie-akcje.*') : null,
                 $this->can('partners')      ? $this->item('partners', 'Partnerzy', 'admin.partnerzy.index', 'fa-handshake', active: 'admin.partnerzy.*') : null,
+                // Szablon „kreatywni”: osoby z sekcji „Kto prowadzi warsztaty” (mikro moduł).
+                \App\Models\SiteSetting::current()->site_template === 'kreatywni' && \App\Models\KreatywniPerson::supported() && $this->user->canAccessModule('pages')
+                    ? $this->item('kreatywni-people', 'Osoby – Kreatywni', 'admin.kreatywni-osoby.index', 'fa-user-group', active: 'admin.kreatywni-osoby.*') : null,
             ]),
 
             $this->section('content', 'Treści', [

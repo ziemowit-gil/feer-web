@@ -1,7 +1,6 @@
-{{-- Zespół: karty osób z inicjałami (bez zdjęć — profile i zdjęcia są w social media i na stronie „O nas”). --}}
+{{-- Zespół: karty osób ze zdjęciem albo inicjałami — z modułu „Osoby – Kreatywni”, a bez niego z tekstów (team_items). --}}
 @php
-    $kcTeam = $texts->rows('team_items', 3);
-    $kcInitials = fn (string $name) => mb_strtoupper(implode('', array_map(fn ($w) => mb_substr($w, 0, 1), array_slice(preg_split('/[\s-]+/u', trim($name)) ?: [], 0, 2))));
+    $kcTeam = \App\Models\KreatywniPerson::teamRows($texts, 'team_items');
 @endphp
 @if ($kcTeam !== [])
 <section id="zespol" class="kc-sec" aria-labelledby="kc-team-title">
@@ -13,13 +12,17 @@
             @endforeach
         </div>
         <ul class="kc-grid kc-grid-2">
-            @foreach ($kcTeam as [$name, $role, $bio])
+            @foreach ($kcTeam as $person)
                 <li class="kc-card kc-sec-cream kc-person">
-                    <span class="kc-avatar" aria-hidden="true">{{ $kcInitials($name) }}</span>
+                    @if ($person['photo'])
+                        <img src="{{ $person['photo'] }}" alt="{{ $person['alt'] }}" class="kc-avatar" loading="lazy">
+                    @else
+                        <span class="kc-avatar" aria-hidden="true">{{ $person['initials'] }}</span>
+                    @endif
                     <div>
-                        <h3>{{ $name }}</h3>
-                        @if ($role !== '')<p class="kc-role">{{ $role }}</p>@endif
-                        @if ($bio !== '')<p>{{ $bio }}</p>@endif
+                        <h3>{{ $person['name'] }}</h3>
+                        @if ($person['role'] !== '')<p class="kc-role">{{ $person['role'] }}</p>@endif
+                        @if ($person['bio'] !== '')<p>{{ \Illuminate\Support\Str::limit(preg_replace('/\s+/u', ' ', $person['bio']), 320) }}</p>@endif
                     </div>
                 </li>
             @endforeach

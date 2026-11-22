@@ -1,16 +1,15 @@
 {{--
     Dedykowana podstrona „O nas” szablonu „kreatywni” (strona o adresie o-nas / o-nas-2…, włączana z page.blade.php
     pod pasem z tytułem). Sekcje z tekstów App\Support\KreatywniTexts (grupa „about”): misja jako duży cytat,
-    #zespol — karty osób (inicjały, rola, opis), #dlaczego — karty „Dlaczego powstała Fundacja” z punktami,
+    #zespol — karty osób (zdjęcie albo inicjały, rola, opis; z modułu „Osoby – Kreatywni”, bez niego z tekstów), #dlaczego — karty „Dlaczego powstała Fundacja” z punktami,
     #historia — historia z napisem „Od 2020 roku”, #dolacz — ciemny pas z zaproszeniem, przyciskiem do kontaktu
     i profilami social media. Sekcja bez treści się nie pokazuje. Kotwice są w mega menu (KreatywniMegaMenu).
     Zmienne: $texts, $kcPageContent (HTML treści strony z edytora albo '').
 --}}
 @php
-    $kcTeam = $texts->rows('about_team', 3);
+    $kcTeam = \App\Models\KreatywniPerson::teamRows($texts, 'about_team');
     $kcWhy = $texts->rows('about_why', 2);
     $kcWhyIcons = ['fa-solid fa-hand-holding-heart', 'fa-solid fa-people-group', 'fa-solid fa-seedling', 'fa-solid fa-brain', 'fa-solid fa-leaf'];
-    $kcInitials = fn (string $name) => mb_strtoupper(implode('', array_map(fn ($w) => mb_substr($w, 0, 1), array_slice(preg_split('/[\s-]+/u', trim($name)) ?: [], 0, 2))));
     $kcContactUrl = $siteSettings->isModuleEnabled('contact') && \Illuminate\Support\Facades\Route::has('contact.show') ? site_route('contact.show') : null;
     $kcSocial = $siteSettings->socialLinks();
     $kcNet = fn (string $icon) => str_contains($icon, 'facebook') ? 'fb' : (str_contains($icon, 'instagram') ? 'ig' : (str_contains($icon, 'youtube') ? 'yt' : 'other'));
@@ -33,16 +32,22 @@
         <div class="kc-wrap">
             <h2 id="kc-about-team" class="kc-h2 kc-head">{{ $texts->get('about_team_title') }}</h2>
             <ul class="kc-grid kc-grid-2">
-                @foreach ($kcTeam as [$name, $role, $bio])
+                @foreach ($kcTeam as $person)
                     <li class="kc-card kc-about-person">
                         <div class="kc-about-person-head">
-                            <span class="kc-avatar kc-avatar-lg" aria-hidden="true">{{ $kcInitials($name) }}</span>
+                            @if ($person['photo'])
+                                <img src="{{ $person['photo'] }}" alt="{{ $person['alt'] }}" class="kc-avatar kc-avatar-lg" loading="lazy">
+                            @else
+                                <span class="kc-avatar kc-avatar-lg" aria-hidden="true">{{ $person['initials'] }}</span>
+                            @endif
                             <div>
-                                <h3>{{ $name }}</h3>
-                                @if ($role !== '')<p class="kc-about-role">{{ $role }}</p>@endif
+                                <h3>{{ $person['name'] }}</h3>
+                                @if ($person['role'] !== '')<p class="kc-about-role">{{ $person['role'] }}</p>@endif
                             </div>
                         </div>
-                        @if ($bio !== '')<p>{{ $bio }}</p>@endif
+                        @foreach (preg_split('/\R\s*\R/u', $person['bio']) ?: [] as $kcBioP)
+                            @if (trim($kcBioP) !== '')<p>{{ trim($kcBioP) }}</p>@endif
+                        @endforeach
                     </li>
                 @endforeach
             </ul>

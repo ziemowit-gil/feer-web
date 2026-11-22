@@ -555,6 +555,13 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::resource('partnerzy', AdminPartnerController::class)->parameters(['partnerzy' => 'partner'])->except('show');
     });
 
+    // Szablon „kreatywni”: mikro moduł „Osoby – Kreatywni” (sekcja „Kto prowadzi warsztaty”), z uprawnieniem do Stron.
+    Route::middleware('module-access:pages')->group(function () {
+        Route::post('kreatywni-osoby/import', [\App\Http\Controllers\Admin\KreatywniPersonController::class, 'import'])->name('kreatywni-osoby.import');
+        Route::post('kreatywni-osoby/{person}/przesun', [\App\Http\Controllers\Admin\KreatywniPersonController::class, 'move'])->name('kreatywni-osoby.przesun');
+        Route::resource('kreatywni-osoby', \App\Http\Controllers\Admin\KreatywniPersonController::class)->parameters(['kreatywni-osoby' => 'person'])->except('show');
+    });
+
     Route::middleware(['module:materials', 'module-access:materials'])->group(function () {
         Route::resource('materialy-edukacyjne', AdminEducationalMaterialController::class)->parameters(['materialy-edukacyjne' => 'material'])->except('show');
         Route::post('materialy-edukacyjne/zbiorczo', [AdminEducationalMaterialController::class, 'bulk'])->name('materialy-edukacyjne.bulk');

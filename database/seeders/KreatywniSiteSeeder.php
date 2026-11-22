@@ -46,6 +46,7 @@ class KreatywniSiteSeeder extends Seeder
         $this->logo();
         $pages = $this->pages();
         $this->menu($pages);
+        $this->people();
 
         $this->command?->info('Witryna „'.$site->site_name.'” w szablonie „kreatywni”: utworzono lub uzupełniono '.$this->created.' stron. Dokumenty fundacji są szkicami do uzupełnienia.');
     }
@@ -84,6 +85,22 @@ class KreatywniSiteSeeder extends Seeder
             $fill['footer_options'] = ['staff_link' => false];
         }
         $this->site->forceFill($fill)->save();
+    }
+
+    /** Osoby z tekstów szablonu („O nas” → zespół) do modułu „Osoby – Kreatywni”, gdy moduł jest pusty. */
+    private function people(): void
+    {
+        if (! \App\Models\KreatywniPerson::supported()
+            || \App\Models\KreatywniPerson::withoutGlobalScopes()->where('site_id', $this->site->id)->exists()) {
+            return;
+        }
+        $texts = \App\Support\KreatywniTexts::for($this->site);
+        foreach ($texts->rows('about_team', 3) as $i => [$name, $role, $bio]) {
+            \App\Models\KreatywniPerson::withoutGlobalScopes()->create([
+                'site_id' => $this->site->id, 'name' => $name, 'role' => $role ?: null, 'bio' => $bio ?: null,
+                'order' => $i + 1, 'is_active' => true,
+            ]);
+        }
     }
 
     private function logo(): void
