@@ -70,7 +70,7 @@ class User extends Authenticatable implements Subscribable
         'metro' => ['Metro', 'Alternatywny styl wzorowany na Metro UI: jasne płaskie kafle na pulpicie, kanciaste elementy, jasne menu z akcentem.', ['#f3f3f3', '#1d68f2', '#d7e5ff']],
     ];
 
-    public const DEFAULT_ADMIN_SCHEME = 'krem';
+    public const DEFAULT_ADMIN_SCHEME = 'metro';
 
     public function adminScheme(): string
     {
