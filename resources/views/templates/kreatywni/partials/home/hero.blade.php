@@ -1,7 +1,10 @@
 {{--
-    Slider na górze strony głównej: slajd 1 — powitanie (napis, H1, tekst, hasła, dwa przyciski, obrazek; domyślnie
-    logo), slajd 2 — „Naszą misją jest” z punktami misji (gdy są), slajd 3 — zaproszenie na Facebooka i Instagram
-    z dużymi przyciskami profili (gdy są w Ustawienia → Media i BIP). Bez automatycznego przewijania (WCAG 2.2.2):
+    Slider na górze strony głównej. Slajdy z modułu Slajder (panel → Slajder, slider „Strona główna”: tytuł, tekst,
+    przycisk, obrazek, kolejność, terminy) zastępują slajd powitalny; bez nich slajd 1 to powitanie z Ustawienia →
+    Szablon (napis, H1, tekst, hasła, dwa przyciski, obrazek; domyślnie logo). Dalej automatycznie: „Naszą misją jest”
+    z punktami misji (gdy są) i zaproszenie na Facebooka i Instagram z dużymi przyciskami profili (gdy są w Ustawienia →
+    Media i BIP). Tekst slajdu z panelu: każdy wiersz to akapit, wiersze od „- ” to lista z ptaszkami, od „1. ” lista
+    numerowana. Obrazek slajdu jest dekoracyjny (treść niesie tytuł i tekst). Bez automatycznego przewijania (WCAG 2.2.2):
     po prawej licznik „01 / 02”, strzałki „Poprzedni / Następny” i kropki (aktywna wydłuża się w kreskę; nazwa slajdu
     dla czytników), strzałki ←/→ na kontrolkach. Nieaktywny slajd jest
     ukryty (visibility + inert), ale zajmuje miejsce, więc wysokość się nie zmienia. Bez JS widać pierwszy slajd.
@@ -19,7 +22,31 @@
     $kcMission = $texts->rows('mission_items');
     $kcProfiles = $siteSettings->socialLinks();
     $kcNet = fn (string $icon) => str_contains($icon, 'facebook') ? 'fb' : (str_contains($icon, 'instagram') ? 'ig' : (str_contains($icon, 'youtube') ? 'yt' : 'other'));
-    $kcSlides = ['Warsztaty'];
+    // Slajdy z modułu Slajder (HomeController::kreatywniHome; pusta kolekcja, gdy moduł wyłączony albo brak slajdów).
+    $kcManaged = collect($slides ?? [])->values();
+    // Tekst slajdu z panelu → bloki: akapity, lista „- ” (ptaszki) i lista „1. ” (numerowana).
+    $kcBlocks = function (?string $text): array {
+        $blocks = [];
+        foreach (preg_split('/\R/u', trim((string) $text)) ?: [] as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+            [$type, $value] = preg_match('/^[-•*]\s+(.+)$/u', $line, $m) ? ['ul', $m[1]]
+                : (preg_match('/^\d+[.)]\s+(.+)$/u', $line, $m) ? ['ol', $m[1]] : ['p', $line]);
+            $last = array_key_last($blocks);
+            if ($type !== 'p' && $last !== null && $blocks[$last][0] === $type) {
+                $blocks[$last][1][] = $value;
+            } else {
+                $blocks[] = [$type, $type === 'p' ? $value : [$value]];
+            }
+        }
+
+        return $blocks;
+    };
+    $kcSlides = $kcManaged->isNotEmpty()
+        ? $kcManaged->map(fn ($s) => \Illuminate\Support\Str::limit((string) $s->title, 60))->all()
+        : ['Warsztaty'];
     $kcMissionIdx = $kcMission !== [] ? array_push($kcSlides, $texts->get('mission_title')) - 1 : null;
     $kcSocialIdx = $kcProfiles !== [] ? array_push($kcSlides, 'Social media') - 1 : null;
     $kcCount = count($kcSlides);
@@ -28,44 +55,97 @@
          x-data="{ active: 0, count: {{ $kcCount }}, go(i) { this.active = (i + this.count) % this.count } }">
     <div class="kc-wrap">
         <div class="kc-slides">
-            {{-- Slajd 1: powitanie --}}
-            <div class="kc-slide kc-hero-in" role="group" aria-roledescription="slajd" aria-label="1 z {{ $kcCount }}"
-                 :class="{ 'is-off': active !== 0 }" :inert="active !== 0">
-                <div>
-                    <p class="kc-eyebrow kc-hand">{{ $kcKicker }}</p>
-                    <h1 id="kc-hero-title">{{ $texts->get('hero_title') }}</h1>
-                    @foreach ($texts->paragraphs('hero_text') as $p)
-                        <p class="kc-lead">{{ $p }}</p>
-                    @endforeach
-                    @if ($texts->rows('hero_points') !== [])
-                        <ul class="kc-points">
-                            @foreach ($texts->rows('hero_points') as [$point])
-                                <li><i class="fa-solid fa-check" aria-hidden="true"></i>{{ $point }}</li>
-                            @endforeach
-                        </ul>
+            {{-- Slajdy z modułu Slajder: zastępują slajd powitalny --}}
+            @foreach ($kcManaged as $i => $slide)
+                @php
+                    $sUrl = trim((string) $slide->button_url) ?: null;
+                    $sImg = $slide->image_url;
+                @endphp
+                <div @class(['kc-slide kc-hero-in', 'is-off' => $i > 0]) role="group" aria-roledescription="slajd" aria-label="{{ $i + 1 }} z {{ $kcCount }}"
+                     :class="{ 'is-off': active !== {{ $i }} }" :inert="active !== {{ $i }}" @if ($i > 0) inert @endif>
+                    <div>
+                        <p class="kc-eyebrow kc-hand">{{ $kcKicker }}</p>
+                        @if ($i === 0)
+                            <h1 id="kc-hero-title">{{ $slide->title }}</h1>
+                        @else
+                            <h2 class="kc-slide-title">{{ $slide->title }}</h2>
+                        @endif
+                        @foreach ($kcBlocks($slide->text) as [$type, $value])
+                            @if ($type === 'p')
+                                <p class="kc-lead">{{ $value }}</p>
+                            @elseif ($type === 'ul')
+                                <ul class="kc-points">
+                                    @foreach ($value as $point)
+                                        <li><i class="fa-solid fa-check" aria-hidden="true"></i>{{ $point }}</li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                <ol class="kc-steps kc-steps-hero">
+                                    @foreach ($value as $point)
+                                        <li>{{ $point }}</li>
+                                    @endforeach
+                                </ol>
+                            @endif
+                        @endforeach
+                        @if ($sUrl && trim((string) $slide->button_label) !== '')
+                            <div class="kc-actions">
+                                <a href="{{ $sUrl }}" class="kc-btn" @if ($kcExternal($sUrl)) target="_blank" rel="noopener" @endif>
+                                    @if (str_contains($sUrl, 'facebook.com'))<i class="bi bi-facebook" aria-hidden="true"></i>@endif
+                                    {{ $slide->button_label }}@if ($kcExternal($sUrl))<span class="kc-sr"> (otwiera się w nowej karcie)</span>@endif
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                    @if ($sImg || $kcLogo)
+                        <div @class(['kc-hero-art', 'is-photo' => (bool) $sImg])>
+                            <span class="kc-dot kc-dot-2" aria-hidden="true"></span>
+                            <img src="{{ $sImg ?: $kcLogo }}" alt="" width="416" height="416" @if ($i === 0) fetchpriority="high" @else loading="lazy" @endif>
+                            <span class="kc-dot kc-dot-1" aria-hidden="true"></span>
+                        </div>
                     @endif
-                    <div class="kc-actions">
-                        @if ($kcBtn1 && $texts->get('hero_button') !== '')
-                            <a href="{{ $kcBtn1 }}" class="kc-btn" @if ($kcExternal($kcBtn1)) target="_blank" rel="noopener" @endif>
-                                @if (str_contains($kcBtn1, 'facebook.com'))<i class="bi bi-facebook" aria-hidden="true"></i>@endif
-                                {{ $texts->get('hero_button') }}@if ($kcExternal($kcBtn1))<span class="kc-sr"> (otwiera się w nowej karcie)</span>@endif
-                            </a>
-                        @endif
-                        @if ($kcBtn2 && $texts->get('hero_button2') !== '')
-                            <a href="{{ $kcBtn2 }}" class="kc-btn kc-btn-ghost" @if ($kcExternal($kcBtn2)) target="_blank" rel="noopener" @endif>
-                                {{ $texts->get('hero_button2') }}@if ($kcExternal($kcBtn2))<span class="kc-sr"> (otwiera się w nowej karcie)</span>@endif
-                            </a>
-                        @endif
-                    </div>
                 </div>
-                @if ($kcImage || $kcLogo)
-                    <div @class(['kc-hero-art', 'is-photo' => (bool) $kcImage])>
-                        <span class="kc-dot kc-dot-2" aria-hidden="true"></span>
-                        <img src="{{ $kcImage ?: $kcLogo }}" alt="{{ $kcImage ? $kcImageAlt : '' }}" width="416" height="416" fetchpriority="high">
-                        <span class="kc-dot kc-dot-1" aria-hidden="true"></span>
+            @endforeach
+
+            {{-- Slajd 1: powitanie (gdy w module Slajder nie ma slajdów) --}}
+            @if ($kcManaged->isEmpty())
+                <div class="kc-slide kc-hero-in" role="group" aria-roledescription="slajd" aria-label="1 z {{ $kcCount }}"
+                     :class="{ 'is-off': active !== 0 }" :inert="active !== 0">
+                    <div>
+                        <p class="kc-eyebrow kc-hand">{{ $kcKicker }}</p>
+                        <h1 id="kc-hero-title">{{ $texts->get('hero_title') }}</h1>
+                        @foreach ($texts->paragraphs('hero_text') as $p)
+                            <p class="kc-lead">{{ $p }}</p>
+                        @endforeach
+                        @if ($texts->rows('hero_points') !== [])
+                            <ul class="kc-points">
+                                @foreach ($texts->rows('hero_points') as [$point])
+                                    <li><i class="fa-solid fa-check" aria-hidden="true"></i>{{ $point }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+                        <div class="kc-actions">
+                            @if ($kcBtn1 && $texts->get('hero_button') !== '')
+                                <a href="{{ $kcBtn1 }}" class="kc-btn" @if ($kcExternal($kcBtn1)) target="_blank" rel="noopener" @endif>
+                                    @if (str_contains($kcBtn1, 'facebook.com'))<i class="bi bi-facebook" aria-hidden="true"></i>@endif
+                                    {{ $texts->get('hero_button') }}@if ($kcExternal($kcBtn1))<span class="kc-sr"> (otwiera się w nowej karcie)</span>@endif
+                                </a>
+                            @endif
+                            @if ($kcBtn2 && $texts->get('hero_button2') !== '')
+                                <a href="{{ $kcBtn2 }}" class="kc-btn kc-btn-ghost" @if ($kcExternal($kcBtn2)) target="_blank" rel="noopener" @endif>
+                                    {{ $texts->get('hero_button2') }}@if ($kcExternal($kcBtn2))<span class="kc-sr"> (otwiera się w nowej karcie)</span>@endif
+                                </a>
+                            @endif
+                        </div>
                     </div>
-                @endif
-            </div>
+                    @if ($kcImage || $kcLogo)
+                        <div @class(['kc-hero-art', 'is-photo' => (bool) $kcImage])>
+                            <span class="kc-dot kc-dot-2" aria-hidden="true"></span>
+                            <img src="{{ $kcImage ?: $kcLogo }}" alt="{{ $kcImage ? $kcImageAlt : '' }}" width="416" height="416" fetchpriority="high">
+                            <span class="kc-dot kc-dot-1" aria-hidden="true"></span>
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             {{-- Slajd 2: misja --}}
             @if ($kcMissionIdx !== null)

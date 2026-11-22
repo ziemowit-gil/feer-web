@@ -305,12 +305,14 @@ class HomeController extends Controller
     /**
      * Strona główna szablonu „kreatywni” (wizytówka fundacji): sekcje z tekstami z App\Support\KreatywniTexts,
      * profile social media z ustawień, do ośmiu zdjęć z modułu Galeria i trzy najnowsze aktualności tej witryny.
+     * Slajdy z modułu Slajder (panel → Slajder, slider „Strona główna”) zastępują w sliderze slajd powitalny.
      * Pusta lub ukryta sekcja się nie pokazuje.
      */
-    private function kreatywniHome(SiteSetting $settings, Collection $gallery)
+    private function kreatywniHome(SiteSetting $settings, Collection $gallery, Collection $slides)
     {
         return view('templates.kreatywni.home', [
             'texts' => \App\Support\KreatywniTexts::for($settings),
+            'slides' => $slides->values(),
             'gallery' => $gallery->take(8)->values(),
             'projects' => $this->kreatywniProjects($settings),
             'newsItems' => $settings->isModuleEnabled('news')
@@ -514,7 +516,7 @@ class HomeController extends Controller
             return $this->bu2Home($settings, $slides);
         }
         if ($template === 'kreatywni') {
-            return $this->kreatywniHome($settings, $gallery);
+            return $this->kreatywniHome($settings, $gallery, $slides);
         }
         if ($template === 'wrzos') {
             return $this->wrzosHome($settings, $partners);
