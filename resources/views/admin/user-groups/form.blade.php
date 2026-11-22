@@ -8,7 +8,7 @@
         $allModules = array_diff_key(\App\Models\SiteSetting::MODULES, array_flip(\App\Models\SiteSetting::MODULES_WITHOUT_GROUP_ACCESS));
         // Moduły pogrupowane tematycznie; wszystko, czego tu brakuje, trafia do „Inne".
         $moduleSections = [
-            'Treści i strony' => ['pages', 'news', 'faq', 'timeline', 'landing', 'forms', 'polls'],
+            'Treści i strony' => ['pages', 'news', 'podcasts', 'faq', 'timeline', 'landing', 'forms', 'polls'],
             'Wygląd strony głównej' => ['hero', 'gallery', 'quick_actions', 'feer_bands', 'partners'],
             'Szkolenia i ludzie' => ['events', 'materials', 'volunteering', 'jobs', 'cooperation', 'help_map'],
             'Organizacja i dokumenty' => ['strategy', 'authorizations', 'bip', 'reports', 'support', 'phone_book', 'contact'],

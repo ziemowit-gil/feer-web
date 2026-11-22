@@ -201,7 +201,7 @@ final class AdminMenu
                     active: fn () => request()->routeIs('admin.podstrony.*') && ! request()->routeIs('admin.podstrony.mapa')),
                 $isAdmin ? $this->item('nav', 'Menu nawigacji', 'admin.pozycje-menu.index', 'fa-bars',
                     active: fn () => request()->routeIs('admin.pozycje-menu.*') && request('location') !== 'bip') : null,
-                $this->item('persons', 'Osoby', 'admin.osoby.index', 'fa-address-card', active: 'admin.osoby.*'),
+                $this->enabled('persons') ? $this->item('persons', 'Osoby', 'admin.osoby.index', 'fa-address-card', active: 'admin.osoby.*') : null,
                 $this->item('page-graph', 'Mapa zależności', 'admin.podstrony.mapa', 'fa-diagram-project', active: 'admin.podstrony.mapa'),
             ], defaultOpen: true) : null,
 

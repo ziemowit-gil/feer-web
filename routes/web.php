@@ -272,9 +272,10 @@ Route::middleware(['module:support', 'edition:donations'])->prefix('wsparcie/dar
 });
 
 // Podcasty
-Route::get('/podcasty', [PodcastController::class, 'index'])->name('podcasts.index');
-Route::get('/podcasty/{podcast:slug}', [PodcastController::class, 'show'])->name('podcasts.show');
-Route::get('/podcasty/{podcast}/audio', [PodcastController::class, 'stream'])->name('podcasts.stream'); // premium: canAccess() w kontrolerze
+// Wyłączony moduł „Podcasty” (Ustawienia → Moduły) = 404 na tych adresach.
+Route::get('/podcasty', [PodcastController::class, 'index'])->name('podcasts.index')->middleware('module:podcasts');
+Route::get('/podcasty/{podcast:slug}', [PodcastController::class, 'show'])->name('podcasts.show')->middleware('module:podcasts');
+Route::get('/podcasty/{podcast}/audio', [PodcastController::class, 'stream'])->name('podcasts.stream')->middleware('module:podcasts'); // premium: canAccess() w kontrolerze
 
 // PayU — webhook bez CSRF (przyjmuje JSON od serwera PayU)
 Route::post('/payu/webhook', [PayuWebhookController::class, 'handle'])->name('payu.webhook')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
@@ -406,11 +407,14 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
     Route::delete('kosz/{type}/{id}', [AdminTrashController::class, 'forceDelete'])->name('kosz.force');
 
     Route::middleware(['module:pages', 'module-access:pages'])->group(function () {
-        Route::get('osoby', [AdminPageController::class, 'persons'])->name('osoby.index');
-        Route::get('osoby/create', [AdminPageController::class, 'createPerson'])->name('osoby.create');
-        Route::get('osoby/{page}/scal', [AdminPageController::class, 'showMergePerson'])->name('osoby.scal');
-        Route::post('osoby/{page}/scal', [AdminPageController::class, 'performMergePerson'])->name('osoby.scal.wykonaj');
-        Route::delete('osoby/{page}', [AdminPageController::class, 'destroy'])->name('osoby.destroy');
+        // Moduł „Osoby” (Ustawienia → Moduły): wyłączony = „Moduł dezaktywowany” na ekranach listy osób.
+        Route::middleware('module:persons')->group(function () {
+            Route::get('osoby', [AdminPageController::class, 'persons'])->name('osoby.index');
+            Route::get('osoby/create', [AdminPageController::class, 'createPerson'])->name('osoby.create');
+            Route::get('osoby/{page}/scal', [AdminPageController::class, 'showMergePerson'])->name('osoby.scal');
+            Route::post('osoby/{page}/scal', [AdminPageController::class, 'performMergePerson'])->name('osoby.scal.wykonaj');
+            Route::delete('osoby/{page}', [AdminPageController::class, 'destroy'])->name('osoby.destroy');
+        });
         Route::get('podstrony/eksport', [AdminPageController::class, 'export'])->name('podstrony.eksport');
         Route::get('mapa-zaleznosci-stron', [\App\Http\Controllers\Admin\PageGraphController::class, 'index'])->name('podstrony.mapa');
         Route::get('raporty/brakujace-alt', [AdminPageController::class, 'missingAltReport'])->name('raporty.brakujace-alt');
@@ -526,10 +530,12 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::delete('tagi/{tag}', [AdminTagController::class, 'destroy'])->name('tagi.destroy');
     });
 
-    Route::resource('podcasty', AdminPodcastController::class)
-        ->parameters(['podcasty' => 'podcast'])
-        ->except('show');
-    Route::patch('podcasty/{id}/przywroc', [AdminPodcastController::class, 'restore'])->name('podcasty.restore');
+    Route::middleware('module:podcasts')->group(function () {
+        Route::resource('podcasty', AdminPodcastController::class)
+            ->parameters(['podcasty' => 'podcast'])
+            ->except('show');
+        Route::patch('podcasty/{id}/przywroc', [AdminPodcastController::class, 'restore'])->name('podcasty.restore');
+    });
 
     Route::middleware(['module:polls', 'module-access:polls'])->group(function () {
         Route::resource('ankiety', AdminPollController::class)->parameters(['ankiety' => 'poll'])->except('show');
