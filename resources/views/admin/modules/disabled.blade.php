@@ -11,10 +11,14 @@
         <h1 class="mb-2 text-xl font-bold text-ink">Moduł dezaktywowany</h1>
         <p class="mb-1 text-sm font-medium text-muted">{{ $moduleName }}</p>
         <p class="mb-8 max-w-sm text-sm text-muted">
-            Ten moduł jest wyłączony. Aktywuj go na stronie modułów, żeby mieć dostęp do tej sekcji.
+            @if ($settingsModule ?? false)
+                Ten moduł jest wyłączony dla tej witryny. Włącz go w Ustawieniach, w zakładce Moduły, żeby mieć dostęp do tej sekcji.
+            @else
+                Ten moduł jest wyłączony. Aktywuj go na stronie modułów, żeby mieć dostęp do tej sekcji.
+            @endif
         </p>
 
-        <a href="{{ route('admin.moduly.index') }}"
+        <a href="{{ ($settingsModule ?? false) ? route('admin.ustawienia.edit', ['tab' => 'modules']) : route('admin.moduly.index') }}"
            class="inline-flex items-center gap-2 rounded-lg bg-brand-dark px-4 py-2 text-sm font-semibold text-white hover:bg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
             <i class="fa-solid fa-puzzle-piece" aria-hidden="true"></i>
             Przejdź do modułów

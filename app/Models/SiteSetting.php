@@ -52,6 +52,24 @@ class SiteSetting extends Model implements HasMedia
         'block_editor' => 'Edytor blokowy',
         'phone_book' => 'Książka telefoniczna (kto, numer i w jakiej sprawie dzwonić)',
         'contact' => 'Kontakt (strona kontaktu, formularz, podstrony i „Gdzie działamy”)',
+        // Pozycje Działalności i Komunikacji wydzielone jako osobne moduły (22.11.2026): wyłączony moduł chowa
+        // swoją pozycję w menu panelu, a jego ekrany w panelu pokazują „Moduł wyłączony”.
+        'portals' => 'Portale (strony tematyczne kategorii działań)',
+        'coordinators' => 'Koordynatorzy (osoby prowadzące działania)',
+        'contact_inbox' => 'Wiadomości z formularza kontaktowego (skrzynka)',
+        'meetings' => 'Zgłoszenia na spotkania (skrzynka)',
+        'barriers' => 'Zgłoszenia barier dostępności (skrzynka)',
+        'banners' => 'Bannery i strefy bannerów',
+        'campaigns' => 'Zbiórki (fundraising)',
+        'donations' => 'Wpłaty (lista darowizn w panelu)',
+    ];
+
+    /**
+     * Moduły bez osobnego uprawnienia w grupach użytkowników: Portale idą za Działaniami, a skrzynki, koordynatorzy,
+     * bannery, zbiórki i wpłaty są tylko dla administratora. Formularz grupy ich nie pokazuje.
+     */
+    public const MODULES_WITHOUT_GROUP_ACCESS = [
+        'portals', 'coordinators', 'contact_inbox', 'meetings', 'barriers', 'banners', 'campaigns', 'donations',
     ];
 
     /**
@@ -100,6 +118,14 @@ class SiteSetting extends Model implements HasMedia
         'landing' => ['group' => 'tools', 'icon' => 'fa-rocket', 'desc' => 'Kreator stron docelowych, np. zapisów na webinar.'],
         'block_editor' => ['group' => 'tools', 'icon' => 'fa-cubes', 'desc' => 'Pełnoekranowy edytor z blokami dla stron, aktualności i działań. Wyłączony — treść edytujesz tylko zwykłym edytorem.'],
         'quick_actions' => ['group' => 'tools', 'icon' => 'fa-bolt', 'desc' => 'Skróty do najważniejszych akcji na stronie głównej.'],
+        'portals' => ['group' => 'content', 'icon' => 'fa-table-columns', 'desc' => 'Portale kategorii działań pod adresem /portal/… z własnym opisem i kanałem RSS. Wyłączony — adresy portali zwracają 404.'],
+        'coordinators' => ['group' => 'content', 'icon' => 'fa-user-tie', 'desc' => 'Lista koordynatorów działań w panelu (Działalność → Koordynatorzy).'],
+        'contact_inbox' => ['group' => 'community', 'icon' => 'fa-envelope-open', 'desc' => 'Skrzynka wiadomości z formularza kontaktowego w panelu (Komunikacja → Skrzynka). Formularz na stronie działa dalej.'],
+        'meetings' => ['group' => 'community', 'icon' => 'fa-handshake-angle', 'desc' => 'Skrzynka zgłoszeń na spotkania w panelu, z eksportem. Zapisy na stronie działają dalej.'],
+        'barriers' => ['group' => 'community', 'icon' => 'fa-universal-access', 'desc' => 'Skrzynka zgłoszeń barier z deklaracji dostępności w panelu. Formularz na stronie zostaje (wymaga go ustawa) i wysyła e-mail.'],
+        'banners' => ['group' => 'tools', 'icon' => 'fa-rectangle-ad', 'desc' => 'Bannery w strefach strony i ich statystyki. Wyłączony — strefy bannerów nic nie wyświetlają.'],
+        'campaigns' => ['group' => 'support', 'icon' => 'fa-hand-holding-heart', 'desc' => 'Zbiórki z celem, paskiem postępu i wpłatami online, teksty podziękowań. Wyłączony — strony /kampanie zwracają 404.'],
+        'donations' => ['group' => 'support', 'icon' => 'fa-receipt', 'desc' => 'Lista wpłat w panelu: filtry, ręczne dodanie, zwrot, eksport CSV/XLSX. Płatności na stronie działają dalej.'],
     ];
 
     /**

@@ -301,6 +301,10 @@ class ShortcodeParser
     /** Pojedynczy baner z modułu Banery ([baner:ID]) — tylko aktywny i w oknie czasowym. */
     private static function renderBanner(int $id): string
     {
+        if (! \App\Models\SiteSetting::current()->isModuleEnabled('banners')) {
+            return '';
+        }
+
         $banner = \App\Models\Banner::find($id);
         if (! $banner || ! $banner->is_active || $banner->isScheduled() || $banner->isExpired()) {
             return '';

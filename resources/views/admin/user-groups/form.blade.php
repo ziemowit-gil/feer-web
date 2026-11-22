@@ -4,7 +4,8 @@
 
 @section('content')
     @php
-        $allModules = \App\Models\SiteSetting::MODULES;
+        // Bez modułów, których dostęp wynika z roli administratora albo z Działań (Portale).
+        $allModules = array_diff_key(\App\Models\SiteSetting::MODULES, array_flip(\App\Models\SiteSetting::MODULES_WITHOUT_GROUP_ACCESS));
         // Moduły pogrupowane tematycznie; wszystko, czego tu brakuje, trafia do „Inne".
         $moduleSections = [
             'Treści i strony' => ['pages', 'news', 'faq', 'timeline', 'landing', 'forms', 'polls'],

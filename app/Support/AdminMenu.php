@@ -281,10 +281,10 @@ final class AdminMenu
                         $this->child('Nowe działanie', 'admin.projekty.create', 'admin.projekty.create', icon: 'fa-plus', group: 'Zarządzanie'),
                         $this->child('Kategorie działań', 'admin.kategorie.index', 'admin.kategorie.*', icon: 'fa-tags', group: 'Zarządzanie'),
                     ]) : null,
-                $this->can('projects') && \Illuminate\Support\Facades\Schema::hasColumn('categories', 'portal_slug')
+                $this->can('projects') && $this->enabled('portals') && \Illuminate\Support\Facades\Schema::hasColumn('categories', 'portal_slug')
                     ? $this->item('portals', 'Portale', 'admin.portale.index', 'fa-table-columns', active: 'admin.portale.*')
                     : null,
-                $this->can('projects') && \Illuminate\Support\Facades\Schema::hasTable('coordinators')
+                $this->can('projects') && $this->enabled('coordinators') && \Illuminate\Support\Facades\Schema::hasTable('coordinators')
                     ? $this->item('coordinators', 'Koordynatorzy', 'admin.koordynatorzy.index', 'fa-user-tie', active: 'admin.koordynatorzy.*')
                     : null,
                 // Moduł Kontakt: strona kontaktu, formularz, podstrony, „Gdzie działamy” i dodatki (modules/Contact).
@@ -326,15 +326,15 @@ final class AdminMenu
             ], defaultOpen: true),
 
             $isAdmin ? $this->section('marketing', 'Marketing', [
-                $this->item('banners', 'Bannery', 'admin.banery.index', 'fa-rectangle-ad', active: ['admin.banery.*', 'admin.strefy-bannerow.*'],
+                $this->enabled('banners') ? $this->item('banners', 'Bannery', 'admin.banery.index', 'fa-rectangle-ad', active: ['admin.banery.*', 'admin.strefy-bannerow.*'],
                     children: [
                         $this->child('Strefy bannerów', 'admin.strefy-bannerow.index', 'admin.strefy-bannerow.*'),
-                    ]),
-                $this->item('campaigns', 'Zbiórki', 'admin.kampanie.index', 'fa-hand-holding-heart', active: ['admin.kampanie.*', 'admin.zbiorki-teksty.*'],
+                    ]) : null,
+                $this->enabled('campaigns') ? $this->item('campaigns', 'Zbiórki', 'admin.kampanie.index', 'fa-hand-holding-heart', active: ['admin.kampanie.*', 'admin.zbiorki-teksty.*'],
                     children: [
                         $this->child('Teksty i podziękowania', 'admin.zbiorki-teksty.edit', 'admin.zbiorki-teksty.*'),
-                    ]),
-                $this->item('donations', 'Wpłaty', 'admin.darowizny.index', 'fa-receipt', active: 'admin.darowizny.*'),
+                    ]) : null,
+                $this->enabled('donations') ? $this->item('donations', 'Wpłaty', 'admin.darowizny.index', 'fa-receipt', active: 'admin.darowizny.*') : null,
             ]) : null,
 
             // Newsletter to osobny moduł: jedna pozycja, a jego sekcje są kafelkami na pulpicie.
@@ -344,9 +344,9 @@ final class AdminMenu
             ], defaultOpen: true) : null,
 
             $isAdmin ? $this->section('inbox', 'Skrzynka', [
-                $this->contactInboxItem(),
-                $this->item('meetings', 'Zgłoszenia (spotkania)', 'admin.zgloszenia-spotkania.index', 'fa-handshake-angle', active: 'admin.zgloszenia-spotkania.*'),
-                $this->item('barriers', 'Zgłoszenia barier', 'admin.zgloszenia-barier.index', 'fa-universal-access', active: 'admin.zgloszenia-barier.*'),
+                $this->enabled('contact_inbox') ? $this->contactInboxItem() : null,
+                $this->enabled('meetings') ? $this->item('meetings', 'Zgłoszenia (spotkania)', 'admin.zgloszenia-spotkania.index', 'fa-handshake-angle', active: 'admin.zgloszenia-spotkania.*') : null,
+                $this->enabled('barriers') ? $this->item('barriers', 'Zgłoszenia barier', 'admin.zgloszenia-barier.index', 'fa-universal-access', active: 'admin.zgloszenia-barier.*') : null,
             ]) : null,
 
             $isAdmin ? $this->section('users', 'Użytkownicy', [
@@ -784,10 +784,14 @@ final class AdminMenu
 
     private function can(string $module): bool
     {
-        $enabled = $this->modules->get($module) !== null
+        return $this->enabled($module) && $this->user->canAccessModule($module);
+    }
+
+    /** Czy moduł jest włączony (Instalacja modułów albo Ustawienia → Moduły), bez sprawdzania uprawnień osoby. */
+    private function enabled(string $module): bool
+    {
+        return $this->modules->get($module) !== null
             ? $this->modules->isActive($module)
             : $this->site->isModuleEnabled($module);
-
-        return $enabled && $this->user->canAccessModule($module);
     }
 }

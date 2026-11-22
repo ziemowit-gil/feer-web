@@ -23,8 +23,10 @@ class EnsureModuleEnabled
             if ($request->routeIs('admin.*')) {
                 $manifest = $this->modules->get($module);
                 return response()->view('admin.modules.disabled', [
-                    'moduleName'  => $manifest?->name ?? $module,
+                    'moduleName'  => $manifest?->name ?? (SiteSetting::MODULES[$module] ?? $module),
                     'identifier'  => $module,
+                    // Moduł z listy Ustawienia → Moduły (nie z Instalacji modułów) włącza się w ustawieniach witryny.
+                    'settingsModule' => $manifest === null && isset(SiteSetting::MODULES[$module]),
                 ]);
             }
             abort(404);
