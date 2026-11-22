@@ -1,8 +1,8 @@
 {{--
     Blok sprzedażowy oferty (strona główna i góra strony „Oferta”): ciemna karta cenowa — nazwa, duża cena z jednostką,
-    dopisek, korzyści z ✓, „Zamów warsztaty” (domyślnie strona kontaktu) i telefon — oraz warsztaty pogrupowane
-    w kolekcje (Tytuł | grupa z KreatywniTexts::offer_items) jako karty z „pigułkami”. Zmienne: $texts, $kcHeadingLevel
-    (poziom nagłówków kart: 3 na głównej pod H2 sekcji, 2 na stronie Oferta pod H1).
+    dopisek, korzyści, „Zamów warsztaty” (domyślnie strona kontaktu) i telefon — oraz warsztaty pogrupowane
+    (Tytuł | grupa z KreatywniTexts::offer_items) jako zwykłe listy pod nagłówkami, płasko: bez kart, ikon i „pigułek”.
+    Zmienne: $texts, $kcHeadingLevel (poziom nagłówków grup: 3 na głównej pod H2 sekcji, 2 na stronie Oferta pod H1).
 --}}
 @php
     $kcHeadingLevel ??= 3;
@@ -12,12 +12,6 @@
     $kcGroups = collect($texts->rows('offer_items', 2))
         ->groupBy(fn ($row) => $row[1] !== '' ? $row[1] : 'Warsztaty', preserveKeys: false)
         ->map(fn ($rows) => $rows->pluck(0)->all());
-    $kcGroupIcon = fn (string $g) => match (true) {
-        (bool) preg_match('/boż|święt|zim|choink/iu', $g) => 'fa-solid fa-tree',
-        (bool) preg_match('/wielkan|wiosn/iu', $g) => 'fa-solid fa-egg',
-        (bool) preg_match('/lat|wakac/iu', $g) => 'fa-solid fa-sun',
-        default => 'fa-solid fa-palette',
-    };
     $kcH = 'h'.$kcHeadingLevel;
 @endphp
 <div class="kc-sales">
@@ -28,7 +22,7 @@
         @if ($texts->rows('offer_features') !== [])
             <ul class="kc-price-features">
                 @foreach ($texts->rows('offer_features') as [$feature])
-                    <li><i class="fa-solid fa-circle-check" aria-hidden="true"></i>{{ $feature }}</li>
+                    <li>{{ $feature }}</li>
                 @endforeach
             </ul>
         @endif
@@ -44,10 +38,8 @@
         <div class="kc-collections">
             @foreach ($kcGroups as $group => $titles)
                 <div @class(['kc-collection', 'is-main' => $loop->first])>
-                    <{{ $kcH }} class="kc-collection-head">
-                        <span class="kc-badge" aria-hidden="true"><i class="{{ $kcGroupIcon($group) }}"></i></span>{{ $group }}
-                    </{{ $kcH }}>
-                    <ul class="kc-chips">
+                    <{{ $kcH }} class="kc-collection-head">{{ $group }}</{{ $kcH }}>
+                    <ul class="kc-plain-list">
                         @foreach ($titles as $title)
                             <li>{{ $title }}</li>
                         @endforeach

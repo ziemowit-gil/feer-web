@@ -268,24 +268,26 @@
     /* Blok sprzedażowy oferty (partials/offer-sales) */
     .kc-sales { display: grid; gap: 1.5rem; align-items: start; }
     @media (min-width: 1024px) { .kc-sales { grid-template-columns: 22rem minmax(0, 1fr); gap: 2rem; } .kc-price-card { position: sticky; top: 7rem; } }
-    .kc-price-card { padding: 2rem; border-radius: var(--kc-radius); box-shadow: 0 20px 40px rgba(27, 74, 7, .18); }
-    .kc-price-name { display: inline-block; margin: 0 0 1rem; padding: .3rem .8rem; border-radius: 999px; background: var(--kc-sun); color: var(--kc-forest); font-size: .85rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+    /* Blok oferty płasko („mniej AI”): karta bez cienia i pigułki, korzyści z krótką kreską, warsztaty jako zwykłe listy. */
+    .kc-price-card { padding: 2rem; border-radius: .75rem; }
+    .kc-price-name { margin: 0 0 .75rem; font-size: 1.05rem; font-weight: 700; color: var(--kc-sun); }
     .kc-price-big { margin: 0; line-height: 1; }
     .kc-price-big strong { font-size: clamp(2.6rem, 2rem + 2vw, 3.4rem); font-weight: 800; color: #fff; letter-spacing: -.02em; }
     .kc-price-big span { font-size: 1.1rem; font-weight: 700; color: var(--kc-sun); white-space: nowrap; }
     .kc-price-note { margin: .6rem 0 0; font-size: .95rem; color: #fff; }
     .kc-price-features { display: grid; gap: .7rem; margin: 1.5rem 0; padding: 1.25rem 0 0; list-style: none; border-top: 1px solid rgba(255, 255, 255, .25); }
-    .kc-price-features li { display: flex; gap: .65rem; align-items: flex-start; font-weight: 600; line-height: 1.45; }
-    .kc-price-features i { margin-top: .15rem; color: var(--kc-sun); }
+    .kc-price-features li { position: relative; padding-left: 1.15rem; font-weight: 600; line-height: 1.45; }
+    .kc-price-features li::before { content: ''; position: absolute; left: 0; top: .72em; width: .6rem; height: 2px; background: var(--kc-sun); }
     .kc-btn-block { width: 100%; }
     .kc-price-phone { margin: 1rem 0 0; text-align: center; font-size: .95rem; }
     .kc-price-phone a { color: #fff; font-weight: 800; text-decoration: underline; text-decoration-color: var(--kc-sun); text-underline-offset: 4px; }
-    .kc-collections { display: grid; gap: 1.25rem; }
+    .kc-collections { display: grid; gap: 2rem 2.5rem; padding-top: .25rem; }
     @media (min-width: 768px) { .kc-collections { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kc-collection.is-main { grid-column: 1 / -1; } }
-    .kc-collection { padding: 1.5rem; border-radius: var(--kc-radius); background: #fff; }
-    .kc-collection-head { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .85rem; margin: 0 0 1.1rem; font-size: 1.2rem; font-weight: 800; color: var(--kc-forest); }
-    .kc-collection-head .kc-badge { width: 2.5rem; height: 2.5rem; margin: 0; border-radius: .8rem; font-size: 1.05rem; }
-    .kc-collection .kc-chips li { background: var(--kc-cream); }
+    .kc-collection-head { margin: 0 0 .75rem; padding-bottom: .45rem; border-bottom: 3px solid var(--kc-lime); font-size: 1.2rem; font-weight: 800; color: var(--kc-forest); }
+    .kc-plain-list { margin: 0; padding: 0; list-style: none; }
+    .kc-plain-list li { padding: .3rem 0; font-size: 1.05rem; line-height: 1.45; break-inside: avoid; }
+    @media (min-width: 640px) { .kc-collection.is-main .kc-plain-list { columns: 2; column-gap: 2.5rem; } }
+    @media (min-width: 1280px) { .kc-collection.is-main .kc-plain-list { columns: 3; } }
     .kc-offer-page { padding-top: 2.5rem; }
 
     /* Dlaczego my */
