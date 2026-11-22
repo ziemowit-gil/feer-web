@@ -1,6 +1,6 @@
 {{--
-    Slider na górze strony głównej. Slajdy z modułu Slajder (panel → Slajder, slider „Strona główna”: tytuł, tekst,
-    przycisk, obrazek, kolejność, terminy) zastępują slajd powitalny; bez nich slajd 1 to powitanie z Ustawienia →
+    Slider na górze strony głównej. Slajdy z modułu Slajder (panel → Slidery, slider „Strona główna”: tytuł, tekst,
+    dwa przyciski, obrazek, kolejność, terminy) zastępują slajd powitalny; bez nich slajd 1 to powitanie z Ustawienia →
     Szablon (napis, H1, tekst, hasła, dwa przyciski, obrazek; domyślnie logo). Dalej automatycznie: „Naszą misją jest”
     z punktami misji (gdy są) i zaproszenie na Facebooka i Instagram z dużymi przyciskami profili (gdy są w Ustawienia →
     Media i BIP). Tekst slajdu z panelu: każdy wiersz to akapit, wiersze od „- ” to lista z ptaszkami, od „1. ” lista
@@ -59,6 +59,9 @@
             @foreach ($kcManaged as $i => $slide)
                 @php
                     $sUrl = trim((string) $slide->button_url) ?: null;
+                    $sUrl2 = trim((string) $slide->button2_url) ?: null;
+                    $sBtn1 = $sUrl && trim((string) $slide->button_label) !== '';
+                    $sBtn2 = $sUrl2 && trim((string) $slide->button2_label) !== '';
                     $sImg = $slide->image_url;
                 @endphp
                 <div @class(['kc-slide kc-hero-in', 'is-off' => $i > 0]) role="group" aria-roledescription="slajd" aria-label="{{ $i + 1 }} z {{ $kcCount }}"
@@ -87,12 +90,19 @@
                                 </ol>
                             @endif
                         @endforeach
-                        @if ($sUrl && trim((string) $slide->button_label) !== '')
+                        @if ($sBtn1 || $sBtn2)
                             <div class="kc-actions">
-                                <a href="{{ $sUrl }}" class="kc-btn" @if ($kcExternal($sUrl)) target="_blank" rel="noopener" @endif>
-                                    @if (str_contains($sUrl, 'facebook.com'))<i class="bi bi-facebook" aria-hidden="true"></i>@endif
-                                    {{ $slide->button_label }}@if ($kcExternal($sUrl))<span class="kc-sr"> (otwiera się w nowej karcie)</span>@endif
-                                </a>
+                                @if ($sBtn1)
+                                    <a href="{{ $sUrl }}" class="kc-btn" @if ($kcExternal($sUrl)) target="_blank" rel="noopener" @endif>
+                                        @if (str_contains($sUrl, 'facebook.com'))<i class="bi bi-facebook" aria-hidden="true"></i>@endif
+                                        {{ $slide->button_label }}@if ($kcExternal($sUrl))<span class="kc-sr"> (otwiera się w nowej karcie)</span>@endif
+                                    </a>
+                                @endif
+                                @if ($sBtn2)
+                                    <a href="{{ $sUrl2 }}" class="kc-btn kc-btn-ghost" @if ($kcExternal($sUrl2)) target="_blank" rel="noopener" @endif>
+                                        {{ $slide->button2_label }}@if ($kcExternal($sUrl2))<span class="kc-sr"> (otwiera się w nowej karcie)</span>@endif
+                                    </a>
+                                @endif
                             </div>
                         @endif
                     </div>

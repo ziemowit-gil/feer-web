@@ -43,7 +43,7 @@ class KreatywniHeroSlidesTest extends TestCase
     {
         $this->useTemplate();
         $this->slide(['title' => 'Drugi slajd', 'text' => "Zwykły akapit\n- pierwszy punkt\n- drugi punkt\n1. krok jeden\n2. krok dwa", 'order' => 2]);
-        $this->slide(['title' => 'Zapisy na ferie', 'text' => 'Zostało kilka miejsc.', 'button_label' => 'Zapisz się', 'button_url' => '/kontakt', 'order' => 1]);
+        $this->slide(['title' => 'Zapisy na ferie', 'text' => 'Zostało kilka miejsc.', 'button_label' => 'Zapisz się', 'button_url' => '/kontakt', 'button2_label' => 'Oferta warsztatów', 'button2_url' => '#oferta', 'order' => 1]);
 
         $html = $this->get('/')->assertOk()->getContent();
 
@@ -53,6 +53,7 @@ class KreatywniHeroSlidesTest extends TestCase
         $this->assertLessThan(strpos($html, 'Drugi slajd'), strpos($html, 'Zapisy na ferie'));
         $this->assertStringContainsString('Zapisz się', $html);
         $this->assertStringContainsString('href="/kontakt"', $html);
+        $this->assertMatchesRegularExpression('#<a href="\#oferta" class="kc-btn kc-btn-ghost"\s*>\s*Oferta warsztatów#', $html, 'drugi przycisk slajdu');
         $this->assertMatchesRegularExpression('#<ul class="kc-points">\s*<li><i class="fa-solid fa-check" aria-hidden="true"></i>pierwszy punkt</li>\s*<li>#', $html);
         $this->assertMatchesRegularExpression('#<ol class="kc-steps kc-steps-hero">\s*<li>krok jeden</li>\s*<li>krok dwa</li>#', $html);
         $this->assertSame(1, substr_count($html, '<h1'), 'jeden H1 na stronie');
