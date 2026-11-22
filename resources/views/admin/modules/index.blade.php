@@ -29,11 +29,8 @@
             <p class="mt-1 text-sm text-muted">Umieść moduły w katalogu <code class="font-mono">modules/</code> i odśwież stronę.</p>
         </div>
     @else
-        <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-label="Moduły instalowane">
-            @foreach ($cards as $card)
-                @include('admin.modules.partials.plugin-card', ['card' => $card, 'filterable' => false, 'heading' => 'h2'])
-            @endforeach
-        </ul>
+        {{-- Tabela z zaznaczaniem wielu wierszy i akcjami masowymi (Aktywuj / Dezaktywuj zaznaczone). --}}
+        @include('admin.modules.partials.plugin-table', ['cards' => $cards, 'filterable' => false])
 
         @include('admin.modules.partials.plugin-forms', ['cards' => $cards])
     @endif

@@ -2122,12 +2122,8 @@
                         <section class="mb-8" aria-labelledby="modules-group-plugins"
                             x-show="anyVisible(@js($pluginCards->keys()->map(fn ($id) => 'plugin:'.$id)->values()))">
                             <h2 id="modules-group-plugins" class="mb-1 text-base font-bold text-ink">Moduły instalowane (rozszerzenia)</h2>
-                            <p class="mb-3 text-sm text-muted">Dodatki z osobnymi funkcjami panelu. Instalacja i aktywacja działa od razu, bez przycisku „Zapisz”. Pełna lista: <a href="{{ route('admin.moduly.index') }}" class="font-bold text-brand-dark underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Moduły systemu</a>.</p>
-                            <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                                @foreach ($pluginCards as $card)
-                                    @include('admin.modules.partials.plugin-card', ['card' => $card, 'filterable' => true, 'heading' => 'h3'])
-                                @endforeach
-                            </ul>
+                            <p class="mb-3 text-sm text-muted">Dodatki z osobnymi funkcjami panelu. Pełna lista: <a href="{{ route('admin.moduly.index') }}" class="font-bold text-brand-dark underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Moduły systemu</a>.</p>
+                            @include('admin.modules.partials.plugin-table', ['cards' => $pluginCards, 'filterable' => true, 'returnTo' => 'settings'])
                         </section>
 
                         @push('scripts')

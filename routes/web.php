@@ -788,6 +788,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
     Route::middleware('admin')->group(function () {
         Route::get('moduly', [AdminModuleController::class, 'index'])->name('moduly.index');
+        // Tabela modułów instalowanych: Aktywuj / Dezaktywuj zaznaczone (cała instalacja).
+        Route::post('moduly/masowo', [AdminModuleController::class, 'bulk'])->name('moduly.masowo');
         Route::post('moduly/{identifier}/install', [AdminModuleController::class, 'install'])->name('moduly.install');
         Route::post('moduly/{identifier}/activate', [AdminModuleController::class, 'activate'])->name('moduly.activate');
         Route::post('moduly/{identifier}/deactivate', [AdminModuleController::class, 'deactivate'])->name('moduly.deactivate');
