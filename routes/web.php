@@ -757,6 +757,10 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
             ->middleware('edition:multisite')->name('witryny.nazwa.update');
         Route::delete('witryny/{site}/przekierowania/{redirect}', [\App\Http\Controllers\Admin\SiteController::class, 'destroyRedirect'])
             ->middleware('edition:multisite')->name('witryny.przekierowania.destroy');
+        Route::get('witryny/{site}/glowna', [\App\Http\Controllers\Admin\SiteController::class, 'confirmMain'])
+            ->middleware('edition:multisite')->name('witryny.glowna');
+        Route::post('witryny/{site}/glowna', [\App\Http\Controllers\Admin\SiteController::class, 'makeMain'])
+            ->middleware('edition:multisite')->name('witryny.glowna.update');
         Route::get('witryny/{site}/usun', [\App\Http\Controllers\Admin\SiteController::class, 'confirmDestroy'])
             ->middleware('edition:multisite')->name('witryny.confirm-destroy');
         Route::post('witryny/{site}/przywroc', [\App\Http\Controllers\Admin\SiteController::class, 'restore'])

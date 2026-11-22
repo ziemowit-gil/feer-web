@@ -7,6 +7,7 @@ use App\Models\SiteAddressRedirect;
 use App\Models\SiteSetting;
 use App\Support\Backup\BackupManager;
 use App\Support\BipSite;
+use App\Support\MainSite;
 use App\Support\SiteAddresses;
 use App\Support\SiteRemoval;
 use Illuminate\Http\Request;
@@ -191,6 +192,39 @@ class SiteController extends Controller
      * Strona potwierdzenia: dla zwykłej witryny — przeniesienie do kosza (z „Wymuś usunięcie”, gdy ma treść
      * lub podwitryny), dla witryny w koszu — trwałe usunięcie.
      */
+    /** Potwierdzenie „Ustaw jako główną”: co się zmieni po przełączeniu witryny głównej. */
+    public function confirmMain(SiteSetting $site)
+    {
+        if ($reason = MainSite::refusal($site)) {
+            return redirect()->route('admin.witryny.index')->with('error', $reason);
+        }
+
+        $current = SiteSetting::main();
+
+        return view('admin.sites.main', [
+            'site' => $site,
+            'current' => $current,
+            'currentHasAddress' => (bool) ($current->domain || $current->slug),
+        ]);
+    }
+
+    /** Ustawia witrynę jako główną (MainSite::switchTo); dotychczasowa główna zostaje jej subwitryną. */
+    public function makeMain(Request $request, SiteSetting $site)
+    {
+        if ($reason = MainSite::refusal($site)) {
+            return redirect()->route('admin.witryny.index')->with('error', $reason);
+        }
+
+        $previous = MainSite::switchTo($site, $request->user());
+
+        $status = 'Witryną główną jest teraz „'.$site->site_name.'”. „'.$previous->site_name.'” jest jej subwitryną';
+        $status .= ($previous->domain || $previous->slug)
+            ? ' pod adresem '.current_site_url($previous->fresh()).'.'
+            : ' bez publicznego adresu — nadaj go w „Zmień nazwę i adres”.';
+
+        return redirect()->route('admin.witryny.index')->with('status', $status);
+    }
+
     public function confirmDestroy(SiteSetting $site)
     {
         abort_if($site->parent_site_id === null, 403, 'Nie można usunąć głównej witryny.');

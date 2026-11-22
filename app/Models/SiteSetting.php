@@ -1956,7 +1956,18 @@ class SiteSetting extends Model implements HasMedia
             return app(self::CURRENT_SITE_BINDING);
         }
 
-        return static::$cached ??= static::query()->firstOrCreate(['id' => 1]);
+        return static::$cached ??= static::main();
+    }
+
+    /**
+     * Witryna główna instalacji: ta bez rodzica (przy kilku — najstarsza). Otwiera się pod adresem serwera, z niej czytają
+     * zadania w tle i ustawienia całej instalacji. Zmienia ją App\Support\MainSite (panel Witryny, witryny:glowna);
+     * dopóki nikt jej nie zmienił, to jak dawniej witryna id 1 (zakładana, gdy tabela jest pusta).
+     */
+    public static function main(): self
+    {
+        return static::query()->whereNull('parent_site_id')->notTrashed()->orderBy('id')->first()
+            ?? static::query()->firstOrCreate(['id' => 1]);
     }
 
     protected static function booted(): void
