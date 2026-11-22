@@ -47,6 +47,12 @@
                             <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
                         </a>
                     @endif
+                    @if (filled($slide->button2_label ?? null) && filled($slide->button2_url ?? null))
+                        <a href="{{ $slide->button2_url }}"
+                            class="ml-4 inline-flex items-center py-2.5 text-sm font-extrabold text-white underline underline-offset-4 hover:no-underline">
+                            {{ $slide->button2_label }}
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>

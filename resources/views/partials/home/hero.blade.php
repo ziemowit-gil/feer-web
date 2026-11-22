@@ -66,6 +66,8 @@
                 @if ($slide->duration) data-hero-duration="{{ $slide->duration }}" @endif
                 @if ($index !== 0) aria-hidden="true" @endif
             >
+                {{-- Zdjęcie jest tłem — jego opis (gdy podany w panelu) dostają tylko czytniki ekranu. --}}
+                @if (filled($slide->image_alt ?? null))<span class="sr-only">{{ $slide->image_alt }}</span>@endif
                 {{-- Pole tekstu slajdu: pełne, ciemne tło (bez gradientu i przezroczystości) — biały tekst ma kontrast niezależny od zdjęcia. --}}
                 <div class="mx-auto w-full {{ $hasSidebar ? '' : 'max-w-6xl' }} px-4 py-6 text-white">
                     <div class="inline-block max-w-full rounded-md bg-ink px-5 py-4">
@@ -75,6 +77,12 @@
                         <a href="{{ $slide->button_url }}" data-hero-cta {{ $index !== 0 ? 'tabindex=-1' : '' }}
                             class="mt-4 inline-block rounded-md bg-white px-5 py-2 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">
                             {{ $slide->button_label }}
+                        </a>
+                    @endif
+                    @if (filled($slide->button2_label ?? null) && filled($slide->button2_url ?? null))
+                        <a href="{{ $slide->button2_url }}" data-hero-cta {{ $index !== 0 ? 'tabindex=-1' : '' }}
+                            class="ml-3 mt-4 inline-block py-2 text-sm font-bold text-white underline underline-offset-4 hover:no-underline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2">
+                            {{ $slide->button2_label }}
                         </a>
                     @endif
                     </div>

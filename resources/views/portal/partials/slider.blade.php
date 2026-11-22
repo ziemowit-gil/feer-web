@@ -33,11 +33,19 @@
                     @if ($slide->text)
                         <p class="mt-2 line-clamp-3 leading-relaxed text-ink">{{ strip_tags((string) $slide->text) }}</p>
                     @endif
-                    @if ($slide->button_url)
-                        <p class="mt-4">
-                            <a href="{{ $slide->button_url }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
-                                {{ $slide->button_label ?: 'Zobacz' }}<span class="sr-only">: {{ $slide->title }}</span> <span aria-hidden="true">→</span>
-                            </a>
+                    @php $pBtn2 = filled($slide->button2_label ?? null) && filled($slide->button2_url ?? null); @endphp
+                    @if ($slide->button_url || $pBtn2)
+                        <p class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+                            @if ($slide->button_url)
+                                <a href="{{ $slide->button_url }}" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
+                                    {{ $slide->button_label ?: 'Zobacz' }}<span class="sr-only">: {{ $slide->title }}</span> <span aria-hidden="true">→</span>
+                                </a>
+                            @endif
+                            @if ($pBtn2)
+                                <a href="{{ $slide->button2_url }}" class="inline-flex min-h-11 items-center text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                                    {{ $slide->button2_label }}<span class="sr-only">: {{ $slide->title }}</span>
+                                </a>
+                            @endif
                         </p>
                     @endif
                 </div>

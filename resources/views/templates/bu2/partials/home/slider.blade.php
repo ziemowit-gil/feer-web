@@ -31,18 +31,27 @@
                     $img = $isMission ? ($slide->mission_img_url ?? null) : ($slide->image_url ?? null);
                     $btnUrl = $isMission ? null : ($slide->button_url ?? null);
                     $btnLabel = trim((string) ($slide->button_label ?? '')) ?: 'Więcej';
+                    $btn2Url = $isMission ? null : (trim((string) ($slide->button2_url ?? '')) ?: null);
+                    $btn2Label = trim((string) ($slide->button2_label ?? ''));
                 @endphp
                 <div class="bu2-slide" role="group" aria-roledescription="slajd" aria-label="{{ $k + 1 }} z {{ $count }}"
                      @if ($k > 0) x-cloak @endif x-show="i === {{ $k }}">
                     <div class="bu2-slide-panel bu2-on-blue">
                         @if ($title)<h2>{{ $title }}</h2>@endif
                         @if ($text !== '')<p>{{ $text }}</p>@endif
-                        @if ($btnUrl)
-                            <a class="bu2-btn-ghost" href="{{ $btnUrl }}">{{ $btnLabel }}@if ($title)<span class="bu2-sr">: {{ $title }}</span>@endif</a>
+                        @if ($btnUrl || ($btn2Url && $btn2Label !== ''))
+                            <div class="bu2-slide-actions">
+                                @if ($btnUrl)
+                                    <a class="bu2-btn-ghost" href="{{ $btnUrl }}">{{ $btnLabel }}@if ($title)<span class="bu2-sr">: {{ $title }}</span>@endif</a>
+                                @endif
+                                @if ($btn2Url && $btn2Label !== '')
+                                    <a class="bu2-slide-link" href="{{ $btn2Url }}">{{ $btn2Label }}@if ($title)<span class="bu2-sr">: {{ $title }}</span>@endif</a>
+                                @endif
+                            </div>
                         @endif
                     </div>
                     <div class="bu2-slide-img">
-                        @if ($img)<img src="{{ $img }}" alt="" @if ($k > 0) loading="lazy" @endif>@endif
+                        @if ($img)<img src="{{ $img }}" alt="{{ $isMission ? '' : ($slide->image_alt ?? '') }}" @if ($k > 0) loading="lazy" @endif>@endif
                     </div>
                 </div>
             @endforeach

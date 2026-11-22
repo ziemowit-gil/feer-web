@@ -49,6 +49,7 @@ class HeroSlideController extends Controller
             'button_url' => ['nullable', 'required_with:button_label', 'string', 'max:255'],
             'button2_label' => ['nullable', 'string', 'max:50'],
             'button2_url' => ['nullable', 'required_with:button2_label', 'string', 'max:255'],
+            'image_alt' => ['nullable', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
             'starts_at' => ['nullable', 'date'],
@@ -66,6 +67,9 @@ class HeroSlideController extends Controller
         // Drugi przycisk — tak samo przed migracją 2026_11_23_100000.
         if (! HeroSlide::supportsSecondButton()) {
             unset($data['button2_label'], $data['button2_url']);
+        }
+        if (! HeroSlide::supportsImageAlt()) {
+            unset($data['image_alt']);
         }
         unset($data['image'], $data['image_library_id'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 
@@ -96,6 +100,7 @@ class HeroSlideController extends Controller
             'button_url' => ['nullable', 'required_with:button_label', 'string', 'max:255'],
             'button2_label' => ['nullable', 'string', 'max:50'],
             'button2_url' => ['nullable', 'required_with:button2_label', 'string', 'max:255'],
+            'image_alt' => ['nullable', 'string', 'max:255'],
             'order' => ['nullable', 'integer', 'min:0'],
             'duration' => ['nullable', 'integer', 'min:1', 'max:60'],
             'starts_at' => ['nullable', 'date'],
@@ -113,6 +118,9 @@ class HeroSlideController extends Controller
         // Drugi przycisk — tak samo przed migracją 2026_11_23_100000.
         if (! HeroSlide::supportsSecondButton()) {
             unset($data['button2_label'], $data['button2_url']);
+        }
+        if (! HeroSlide::supportsImageAlt()) {
+            unset($data['image_alt']);
         }
         unset($data['image'], $data['image_library_id'], $data['unsplash_full_url'], $data['unsplash_download_location'], $data['unsplash_author']);
 

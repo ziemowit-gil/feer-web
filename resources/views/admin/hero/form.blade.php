@@ -19,6 +19,17 @@
 
         @include('admin.partials.unsplash-picker', ['initialQuery' => $heroSlide->title, 'titleFieldId' => 'title'])
 
+        @if (\App\Models\HeroSlide::supportsImageAlt())
+            <div>
+                <label for="image_alt" class="mb-1 block text-sm font-bold">Opis zdjęcia (tekst alternatywny)</label>
+                <input type="text" id="image_alt" name="image_alt" value="{{ old('image_alt', $heroSlide->image_alt) }}" maxlength="255"
+                    placeholder="np. Dzieci malują ozdoby na warsztatach w świetlicy"
+                    class="w-full rounded border-gray-500 focus:border-brand-dark focus:ring-brand-dark" aria-describedby="image_alt-help">
+                <p id="image_alt-help" class="mt-1 text-xs text-muted">Opisz, co widać na zdjęciu, jeśli niesie treść — przeczytają to czytniki ekranu. Zostaw puste, jeśli zdjęcie jest tylko ozdobą.</p>
+                @error('image_alt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        @endif
+
         <div>
             <label for="title" class="mb-1 block text-sm font-bold">Tytuł</label>
             <input type="text" id="title" name="title" value="{{ old('title', $heroSlide->title) }}" required
@@ -66,7 +77,7 @@
                     @error('button2_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>
-            <p id="button2-help" class="-mt-3 text-xs text-muted">Opcjonalny, mniej wyrazisty przycisk obok głównego. Pokazuje go szablon „Kreatywni na co dzień”.</p>
+            <p id="button2-help" class="-mt-3 text-xs text-muted">Opcjonalny, mniej wyrazisty przycisk obok głównego.</p>
         @endif
 
         <div class="grid gap-5 sm:grid-cols-2">

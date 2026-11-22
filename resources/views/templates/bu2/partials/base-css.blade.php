@@ -174,6 +174,10 @@
     .bu2-slide-panel p { margin: 0; font-size: 1rem; line-height: 1.6; }
     .bu2-slide-panel .bu2-btn-ghost { align-self: flex-start; margin-top: 1.25rem; display: inline-flex; align-items: center; min-height: 2.75rem; padding: .45rem 1.2rem; border: 1px solid #fff; color: #fff; font-size: .95rem; font-weight: 600; text-decoration: none; }
     .bu2-slide-panel .bu2-btn-ghost:hover { background: #fff; color: var(--bu2-blue); }
+    .bu2-slide-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.5rem; margin-top: 1.25rem; }
+    .bu2-slide-actions .bu2-btn-ghost { margin-top: 0; }
+    .bu2-slide-link { display: inline-flex; align-items: center; min-height: 2.75rem; color: #fff; font-size: .95rem; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+    .bu2-slide-link:hover { text-decoration: none; }
     .bu2-slide-img { position: relative; background: #d9dee3 center / cover no-repeat; }
     .bu2-slide-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .bu2-slider-ctrl { position: absolute; right: 0; bottom: 1.75rem; z-index: 2; display: flex; gap: .25rem; }
