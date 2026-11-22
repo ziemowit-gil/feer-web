@@ -183,6 +183,23 @@ class SiteModulesBulkTest extends TestCase
             ->assertSee('Zaznacz co najmniej jeden moduł, a potem wybierz akcję.');
     }
 
+    public function test_przycisk_spoza_tabeli_wraca_do_zakladki_szablon_z_komunikatem(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.ustawienia.moduly.masowo'), ['row_action' => 'disable|projects', 'return_to' => 'template', 'anchor' => 'kreatywni-dzialania'])
+            ->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'template']).'#kreatywni-dzialania')
+            ->assertSessionHas('status', 'Wyłączono 1 moduł: '.SiteSetting::MODULES['projects'].'.');
+
+        $this->reset();
+        $this->assertSame(['projects'], SiteSetting::current()->disabled_modules);
+
+        // Kotwica tylko z bezpiecznych znaków; błąd jako zwykły komunikat panelu.
+        $this->actingAs($this->admin())
+            ->post(route('admin.ustawienia.moduly.masowo'), ['row_action' => 'enable|nie-ma', 'return_to' => 'template', 'anchor' => '"><script>'])
+            ->assertRedirect(route('admin.ustawienia.edit', ['tab' => 'template']).'#szablon')
+            ->assertSessionHas('error');
+    }
+
     public function test_redaktor_nie_moze_zmieniac_modulow(): void
     {
         $editor = User::factory()->create(['role' => User::ROLE_CONTENT_EDITOR]);
