@@ -255,12 +255,18 @@ class SiteController extends Controller
         ]);
     }
 
-    /** Usuwa wszystkie witryny poza główną (MainSite::removeOthers) — po przepisaniu nazwy witryny, która zostaje. */
+    /** Usuwa wszystkie witryny poza główną (MainSite::removeOthers) — po zaznaczeniu potwierdzenia. */
     public function destroyOthers(Request $request)
     {
         $main = SiteSetting::main();
-        $request->validate(['mode' => ['required', 'in:trash,permanent']], ['mode.*' => 'Wybierz, czy przenieść witryny do kosza, czy usunąć je trwale.']);
-        $this->confirmed($request, $main, 'Zaznacz potwierdzenie, aby usunąć wszystkie witryny poza „'.$main->site_name.'”.');
+        // Potwierdzenie samym polem wyboru (bez przepisywania nazwy — prośba użytkownika).
+        $request->validate([
+            'mode' => ['required', 'in:trash,permanent'],
+            'force' => ['accepted'],
+        ], [
+            'mode.*' => 'Wybierz, czy przenieść witryny do kosza, czy usunąć je trwale.',
+            'force.accepted' => 'Zaznacz „Potwierdzam”, aby usunąć wszystkie witryny poza „'.$main->site_name.'”.',
+        ]);
         $permanent = $request->input('mode') === 'permanent';
 
         if ($permanent && $request->boolean('backup')) {

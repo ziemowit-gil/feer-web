@@ -4,8 +4,8 @@
 
 {{--
     „Usuń pozostałe witryny” (MainSite::removeOthers): wszystkie witryny poza główną do kosza albo trwale. Potwierdzenie
-    zaznaczeniem i przepisaniem nazwy witryny, która zostaje (WCAG 3.3.4). Kontrast: ink/muted na bieli, przycisk biały
-    na red-700; cele ≥ 44 px; płasko, bez ramek.
+    jednym polem wyboru (WCAG 3.3.4 — mechanizm potwierdzenia; bez przepisywania nazwy na prośbę użytkownika).
+    Kontrast: ink/muted na bieli, przycisk biały na red-700; cele ≥ 44 px; płasko, bez ramek.
 --}}
 @section('content')
     @php
@@ -96,12 +96,8 @@
 
             <div class="mt-4 flex min-h-11 items-center gap-2">
                 <input id="force" name="force" type="checkbox" value="1" required class="h-5 w-5 rounded border-gray-500 text-red-700 focus:ring-red-700">
-                <label for="force" class="text-sm font-bold text-ink">Usuń wszystkie witryny poza „{{ $main->site_name }}”</label>
+                <label for="force" class="text-sm font-bold text-ink">Potwierdzam: usuń wszystkie witryny poza „{{ $main->site_name }}”</label>
             </div>
-
-            <label for="confirm-name" class="mt-4 block text-sm font-bold text-ink">Aby potwierdzić, przepisz nazwę witryny, która zostaje: <span class="font-mono">{{ $main->site_name }}</span></label>
-            <input id="confirm-name" name="confirm_name" type="text" required autocomplete="off" value="{{ old('confirm_name') }}"
-                   class="mt-1 min-h-11 w-full rounded border-gray-500 text-sm focus:border-red-700 focus:ring-red-700">
 
             <div class="mt-6 flex flex-wrap gap-3">
                 <button type="submit" class="{{ $btn }} bg-red-700 text-white hover:bg-red-800 focus-visible:ring-red-700"><i class="fa-solid fa-trash" aria-hidden="true"></i> Usuń pozostałe witryny</button>
