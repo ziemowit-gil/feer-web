@@ -169,6 +169,33 @@ class TemplateKreatywniTest extends TestCase
             ->assertSessionHasErrors('kreatywni_texts.hero_button_url');
     }
 
+    public function test_wyglad_listy_warsztatow_pigulki_albo_zwykla_lista(): void
+    {
+        $this->useTemplate();
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        // Domyślnie pigułki; w panelu wybór jako grupa przycisków radiowych.
+        $this->get('/')->assertOk()->assertSee('<ul class="kc-chips">', false)->assertDontSee('kc-plain-list', false);
+        $this->actingAs($admin)->get(route('admin.ustawienia.edit'))->assertOk()
+            ->assertSee('Wygląd listy warsztatów')
+            ->assertSee('name="kreatywni_texts[_offer_style]" value="chips" class="mt-1" checked', false)
+            ->assertSee('name="kreatywni_texts[_offer_style]" value="list"', false);
+
+        $this->put(route('admin.ustawienia.update'), $this->settingsPayload(['_sections' => '1', '_shown' => ['hero', 'offer'], '_offer_style' => 'list']))
+            ->assertSessionHasNoErrors();
+        $this->assertSame('list', SiteSetting::query()->find(SiteSetting::current()->id)->kreatywni_texts['_offer_style']);
+        $this->resetCache();
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('<ul class="kc-plain-list">', $html);
+        $this->assertStringNotContainsString('<ul class="kc-chips">', $html);
+        $this->assertSame(1, substr_count($html, '.kc-plain-list li {'), 'style listy dołączone raz');
+
+        // Powrót do pigułek nie zapisuje wartości domyślnej; nieznany wygląd jest odrzucany.
+        $this->assertNull(KreatywniTexts::clean(['_offer_style' => 'chips']));
+        $this->put(route('admin.ustawienia.update'), $this->settingsPayload(['_offer_style' => 'kafle']))
+            ->assertSessionHasErrors('kreatywni_texts._offer_style');
+    }
+
     public function test_zapis_ustawien_i_strona_dzialaja_bez_migracji(): void
     {
         $this->useTemplate();

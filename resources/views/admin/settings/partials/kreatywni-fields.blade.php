@@ -42,6 +42,25 @@
         </div>
     </fieldset>
 
+    {{-- Wygląd listy warsztatów w bloku oferty (strona główna i góra strony „Oferta”). --}}
+    @php $kcOfferStyle = old('kreatywni_texts._offer_style', $kcTexts->offerStyle()); @endphp
+    <fieldset aria-describedby="kc-offer-style-help">
+        <legend class="mb-1 text-sm font-bold">Wygląd listy warsztatów</legend>
+        <p id="kc-offer-style-help" class="mb-2 text-xs text-muted">Dotyczy bloku oferty na stronie głównej i na górze strony „Oferta”. Same warsztaty wpisujesz w polu „Warsztaty” w tekstach oferty.</p>
+        <div class="grid gap-2 sm:grid-cols-2">
+            @foreach (\App\Support\KreatywniTexts::OFFER_STYLES as $kcStyleKey => [$kcStyleName, $kcStyleDesc])
+                <label class="flex cursor-pointer items-start gap-2 rounded border border-gray-300 bg-white p-2">
+                    <input type="radio" name="kreatywni_texts[_offer_style]" value="{{ $kcStyleKey }}" class="mt-1" @checked($kcOfferStyle === $kcStyleKey)>
+                    <span>
+                        <span class="block text-sm font-bold text-ink">{{ $kcStyleName }}</span>
+                        <span class="block text-xs text-muted">{{ $kcStyleDesc }}</span>
+                    </span>
+                </label>
+            @endforeach
+        </div>
+        @error('kreatywni_texts._offer_style') <p class="mt-1 text-sm text-red-600" role="alert">{{ $message }}</p> @enderror
+    </fieldset>
+
     @foreach (\App\Support\KreatywniTexts::SECTIONS + \App\Support\KreatywniTexts::PAGE_GROUPS as $kcKey => [$kcName])
         @php $kcFields = \App\Support\KreatywniTexts::fields($kcKey); @endphp
         @continue($kcFields === [])

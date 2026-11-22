@@ -11,7 +11,8 @@ use App\Models\SiteSetting;
  * nowy tekst od razu jest edytowalny.
  *
  * Typy pól: line (jedna linia), text (akapity, pusta linia = nowy akapit), url (adres), list (jedna pozycja w wierszu,
- * części rozdzielone „|”, np. „Tytuł | opis”). Ukryte sekcje: klucz `_hidden` (lista kluczy z SECTIONS).
+ * części rozdzielone „|”, np. „Tytuł | opis”). Ukryte sekcje: klucz `_hidden` (lista kluczy z SECTIONS); wygląd
+ * listy warsztatów w bloku oferty: klucz `_offer_style` (OFFER_STYLES).
  */
 final class KreatywniTexts
 {
@@ -40,6 +41,15 @@ final class KreatywniTexts
 
     /** Sekcje ukryte, dopóki redakcja ich nie włączy (wizytówka ma być krótka; zespół jest na stronie „O nas”). */
     public const DEFAULT_HIDDEN = ['team'];
+
+    /**
+     * Wygląd listy warsztatów w bloku oferty (strona główna i góra strony „Oferta”), klucz `_offer_style`:
+     * klucz => [nazwa w panelu, opis]. Pierwszy jest domyślny.
+     */
+    public const OFFER_STYLES = [
+        'chips' => ['Pigułki', 'Nazwy warsztatów w zaokrąglonych białych polach, obok siebie.'],
+        'list' => ['Zwykła lista', 'Nazwy warsztatów jedna pod drugą, bez tła; na szerokim ekranie w kolumnach.'],
+    ];
 
     /**
      * Klucz => [sekcja, etykieta w panelu, typ pola, wartość domyślna].
@@ -203,6 +213,14 @@ final class KreatywniTexts
         return array_values(array_intersect($this->own['_hidden'], array_keys(self::SECTIONS)));
     }
 
+    /** Wygląd listy warsztatów w bloku oferty (klucz z OFFER_STYLES). */
+    public function offerStyle(): string
+    {
+        $style = $this->own['_offer_style'] ?? null;
+
+        return is_string($style) && array_key_exists($style, self::OFFER_STYLES) ? $style : array_key_first(self::OFFER_STYLES);
+    }
+
     /** Wartość zapisana w panelu (do formularza), bez domyślnej. */
     public function ownValue(string $key): string
     {
@@ -264,6 +282,7 @@ final class KreatywniTexts
             $prefix.'._sections' => ['nullable', 'boolean'],
             $prefix.'._hidden' => ['nullable', 'array'], $prefix.'._hidden.*' => ['string', $sections],
             $prefix.'._shown' => ['nullable', 'array'], $prefix.'._shown.*' => ['string', $sections],
+            $prefix.'._offer_style' => ['nullable', 'string', 'in:'.implode(',', array_keys(self::OFFER_STYLES))],
         ];
         foreach (self::DEFS as $key => [, , $type]) {
             $rules[$prefix.'.'.$key] = match ($type) {
@@ -311,6 +330,11 @@ final class KreatywniTexts
         sort($default);
         if ($sorted !== $default) {
             $out['_hidden'] = $hidden;
+        }
+        // Wygląd warsztatów zapisujemy tylko, gdy różni się od domyślnego (pigułki).
+        $style = $texts['_offer_style'] ?? null;
+        if (is_string($style) && array_key_exists($style, self::OFFER_STYLES) && $style !== array_key_first(self::OFFER_STYLES)) {
+            $out['_offer_style'] = $style;
         }
 
         return $out === [] ? null : $out;
