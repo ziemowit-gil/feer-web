@@ -95,11 +95,14 @@ class ClassicInserts
             'schedules' => Page::forCurrentSite()->where('is_published', true)->where('type', 'schedule')->orderBy('title')->get(['id', 'slug', 'title', 'type', 'parent_id'])
                 ->map(fn (Page $p) => ['title' => $p->title, 'url' => '/'.$p->slug])->all(),
             'snippets' => collect(self::SNIPPETS)->map(fn ($s, $key) => ['key' => $key] + $s)->values()->all(),
-            'events' => Event::forCurrentSite()->where('is_published', true)->orderByDesc('starts_at')->limit(30)->get()
-                ->map(fn (Event $e) => ['title' => $e->title, 'html' => self::eventBox($e)])->all(),
+            // Wyłączony moduł = pusta lista, więc edytor blokowy nie pokazuje jego bloku we wstawianiu.
+            'events' => $site->isModuleEnabled('events')
+                ? Event::forCurrentSite()->where('is_published', true)->orderByDesc('starts_at')->limit(30)->get()
+                    ->map(fn (Event $e) => ['title' => $e->title, 'html' => self::eventBox($e)])->all()
+                : [],
             // Moduł Banery: strefy ([banery:slug]) i pojedyncze banery ([baner:ID]).
-            'bannerZones' => self::bannerZones(),
-            'banners' => self::banners(),
+            'bannerZones' => $site->isModuleEnabled('banners') ? self::bannerZones() : [],
+            'banners' => $site->isModuleEnabled('banners') ? self::banners() : [],
             // Diagnoza modułów w bloku „Shortcode”: kod => nazwa, adres edycji, stan (szkic, pusty, wyłączony), statystyki.
             'diagnostics' => self::diagnostics(),
         ];

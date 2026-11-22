@@ -110,15 +110,16 @@ class ShortcodeParser
             $content,
         );
 
+        // Lista aktualności i materiałów (bloki edytora) — pusta, gdy moduł jest wyłączony w Ustawienia → Moduły.
         $content = preg_replace_callback(
             '~(?:<p\b[^>]*>\s*)?\[aktualnosci(?::([^\]\r\n<]{0,200}))?\](?:\s*</p>)?~i',
-            fn ($matches) => NewsList::render(NewsList::parse($matches[1] ?? '')),
+            fn ($matches) => \App\Models\SiteSetting::current()->isModuleEnabled('news') ? NewsList::render(NewsList::parse($matches[1] ?? '')) : '',
             $content,
         );
 
         $content = preg_replace_callback(
             '~(?:<p\b[^>]*>\s*)?\[materialy(?::([^\]\r\n<]{0,200}))?\](?:\s*</p>)?~i',
-            fn ($matches) => MaterialList::render(MaterialList::parse($matches[1] ?? '')),
+            fn ($matches) => \App\Models\SiteSetting::current()->isModuleEnabled('materials') ? MaterialList::render(MaterialList::parse($matches[1] ?? '')) : '',
             $content,
         );
 

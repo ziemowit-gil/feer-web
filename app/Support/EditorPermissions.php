@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\SiteSetting;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,6 +17,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * Przy kilku grupach wygrywa najszersza reguła: typ bloku jest dozwolony, gdy pozwala na niego któraś grupa,
  * a pole jest zablokowane tylko wtedy, gdy blokują je wszystkie grupy osoby.
+ *
+ * Niezależnie od grup bloki pokazujące dane modułu (BLOCK_MODULES) znikają z edytora, gdy moduł jest wyłączony
+ * w Ustawienia → Moduły — tak samo jak blok spoza uprawnień grupy (allowedBlockTypes()).
  */
 class EditorPermissions
 {
@@ -26,6 +30,52 @@ class EditorPermissions
         'seo' => ['SEO: meta tytuł i meta opis', ['meta_title', 'meta_description']],
         'access' => ['Dostęp do strony: hasło, grupy, logowanie', ['access_mode', 'access_password', 'access_level', 'access_group_ids']],
     ];
+
+    /**
+     * Bloki edytora blokowego pokazujące dane modułu: typ bloku => moduł z SiteSetting::MODULES. Bloki-skróty
+     * wstawiane jako „Shortcode” (formularz, banery, pasek, ramka wydarzenia) chowa pusta lista do wyboru
+     * w ClassicInserts::forBlockEditor(), a ich wstawki na stronie są puste przy wyłączonym module (ShortcodeParser).
+     * Bloki z własną treścią (galeria zdjęć, pytania i odpowiedzi, osoby, karty) nie zależą od modułów.
+     */
+    public const BLOCK_MODULES = [
+        'newslist' => 'news',
+        'materials' => 'materials',
+    ];
+
+    /**
+     * Typy bloków wyłączone razem z modułem w bieżącej witrynie: typ => nazwa modułu (do komunikatu w edytorze).
+     *
+     * @return array<string, string>
+     */
+    public static function moduleDisabledTypes(?SiteSetting $site = null): array
+    {
+        $site ??= SiteSetting::current();
+        $out = [];
+        foreach (self::BLOCK_MODULES as $type => $module) {
+            if (! $site->isModuleEnabled($module)) {
+                $out[$type] = \Illuminate\Support\Str::before((string) (SiteSetting::MODULES[$module] ?? $module), ' (');
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Typy bloków, które osoba może wstawić: z uprawnień grup ({@see User::allowedBlockTypes()}) bez bloków
+     * wyłączonych modułów. null = wszystkie.
+     *
+     * @return array<int, string>|null
+     */
+    public static function allowedBlockTypes(?User $user): ?array
+    {
+        $allowed = $user?->allowedBlockTypes();
+        $disabled = array_keys(self::moduleDisabledTypes());
+        if ($disabled === []) {
+            return $allowed;
+        }
+
+        return array_values(array_diff($allowed ?? array_keys(self::blockTypeOptions()), $disabled));
+    }
 
     /** Typy bloków, które grupa może dostać (części kontenerów — kolumna, zakładka — idą razem z kontenerem). */
     public static function blockTypeOptions(): array
