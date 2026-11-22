@@ -348,7 +348,7 @@ class TemplateKreatywniTest extends TestCase
         $this->assertStringNotContainsString('Szkic wiadomość', $html);
         $this->assertTrue(strpos($html, 'Czwarta wiadomość') < strpos($html, 'Druga wiadomość'), 'najnowsza pierwsza');
         $this->assertStringContainsString('Wszystkie aktualności', $html);
-        $this->assertStringContainsString('<time class="kc-child-text" datetime="', $html);
+        $this->assertStringContainsString('<time class="kc-news-date" datetime="', $html);
 
         // Przełącznik w Ustawienia → Szablon i wyłączony moduł chowają sekcję.
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);

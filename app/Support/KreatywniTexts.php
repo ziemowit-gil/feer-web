@@ -19,12 +19,12 @@ final class KreatywniTexts
     /** Sekcje strony głównej w kolejności wyświetlania: klucz => [nazwa w panelu, opis]. */
     public const SECTIONS = [
         'hero' => ['Slider na górze', 'Slajdy dodane w panelu w Sliderach (slider „Strona główna”; moduł „Slajder (hero)”) zastępują slajd 1 — można je dodawać, usuwać, układać i planować. Bez nich slajd 1: nazwa, hasło, przyciski i obrazek (domyślnie logo). Dalej: „Naszą misją jest” z punktami misji i zaproszenie na Facebooka i Instagram.'],
+        'news' => ['Aktualności', 'Tuż pod sliderem: najnowsza aktualność wyróżniona dużym zdjęciem i datą, obok dwie kolejne, oraz przycisk do pełnej listy. Bez aktualności albo przy wyłączonym module sekcja się nie pokazuje.'],
         'mission' => ['Obszary działania', 'Krótki wstęp i cztery obszary działania.'],
         'social' => ['Social media', 'Duże karty z profilami z Ustawienia → Media i BIP. Bez ustawionych profili sekcja się nie pokazuje.'],
         'offer' => ['Oferta warsztatów', 'Lista warsztatów z ceną i przyciskiem do zapytania o termin.'],
         'why' => ['Dlaczego my', 'Wyróżniki i opis, jak pracujemy.'],
         'projects' => ['Działania', 'Działania z modułu Działania: zaznaczone „Pokaż na stronie głównej” (do 6), a gdy żadne nie jest zaznaczone — trzy ostatnio dodane trwające. Bez działań sekcja się nie pokazuje.'],
-        'news' => ['Aktualności', 'Trzy najnowsze aktualności tej witryny z modułu Aktualności i przycisk do pełnej listy. Bez aktualności albo przy wyłączonym module sekcja się nie pokazuje.'],
         'gallery' => ['Galeria', 'Zdjęcia z modułu Galeria (do 8). Bez zdjęć sekcja się nie pokazuje.'],
         'team' => ['Zespół', 'Osoby prowadzące warsztaty.'],
         'reviews' => ['Opinie', 'Opinie uczestników.'],
@@ -105,6 +105,7 @@ final class KreatywniTexts
         'projects_button' => ['projects', 'Przycisk do listy działań — napis', 'line', 'Wszystkie działania'],
 
         // Aktualności
+        'news_kicker' => ['news', 'Napis odręczny nad nagłówkiem', 'line', 'Co nowego?'],
         'news_title' => ['news', 'Nagłówek (H2)', 'line', 'Aktualności'],
         'news_text' => ['news', 'Tekst wstępu', 'text', 'Relacje z warsztatów, zapowiedzi i wieści z Fundacji.'],
         'news_button' => ['news', 'Przycisk do listy aktualności — napis', 'line', 'Wszystkie aktualności'],

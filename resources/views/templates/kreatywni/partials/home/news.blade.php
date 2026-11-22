@@ -1,49 +1,82 @@
 {{--
-    Aktualności: trzy najnowsze aktualności tej witryny (HomeController::kreatywniHome, $newsItems) w kartach jak działania
-    (cała karta jest linkiem, zdjęcie dekoracyjne — nazwę niesie tytuł) i przycisk do pełnej listy. Bez aktualności albo
-    przy wyłączonym module sekcji nie ma; przełącznik w Ustawienia → Szablon → Sekcje strony głównej.
+    Aktualności tuż pod sliderem (HomeController::kreatywniHome, $newsItems — trzy najnowsze tej witryny): miętowy pas,
+    po lewej najnowsza wyróżniona (duże zdjęcie, data jako płaski kafelek kalendarza, tytuł, zajawka), po prawej dwie
+    kolejne w zwartych wierszach (miniatura, data, tytuł). Cała karta jest linkiem; zdjęcia dekoracyjne (nazwę niesie
+    tytuł), pełna data dla czytników w <time>. Bez aktualności albo przy wyłączonym module sekcji nie ma; przełącznik
+    w Ustawienia → Szablon → Sekcje strony głównej.
 --}}
 @if (($newsItems ?? collect())->isNotEmpty())
-<section id="aktualnosci" class="kc-sec" aria-labelledby="kc-news-title">
+@php
+    $kcFeature = $newsItems->first();
+    $kcRest = $newsItems->slice(1, 2)->values();
+    $kcExcerpt = fn ($item) => trim(strip_tags((string) ($item->excerpt ?: $item->meta_description)));
+@endphp
+<section id="aktualnosci" class="kc-sec kc-sec-mint kc-news-sec" aria-labelledby="kc-news-title">
     <div class="kc-wrap">
-        <div class="kc-head">
-            <h2 id="kc-news-title" class="kc-h2">{{ $texts->get('news_title') }}</h2>
-            @foreach ($texts->paragraphs('news_text') as $p)
-                <p class="kc-lead">{{ $p }}</p>
-            @endforeach
+        <div class="kc-news-head">
+            <div>
+                @if ($texts->get('news_kicker') !== '')
+                    <p class="kc-eyebrow kc-hand">{{ $texts->get('news_kicker') }}</p>
+                @endif
+                <h2 id="kc-news-title" class="kc-h2">{{ $texts->get('news_title') }}</h2>
+                @foreach ($texts->paragraphs('news_text') as $p)
+                    <p class="kc-lead">{{ $p }}</p>
+                @endforeach
+            </div>
+            @if (\Illuminate\Support\Facades\Route::has('news.index'))
+                <a href="{{ route('news.index') }}" class="kc-btn kc-btn-ghost kc-news-all">{{ $texts->get('news_button') }} <span aria-hidden="true">→</span></a>
+            @endif
         </div>
-        <ul class="kc-grid kc-grid-3 kc-projects kc-news">
-            @foreach ($newsItems as $item)
-                @php
-                    $kcImage = $item->imageUrlOrDefault();
-                    $kcExcerpt = trim(strip_tags((string) ($item->excerpt ?: $item->meta_description)));
-                @endphp
+
+        <ul @class(['kc-news-layout', 'has-rest' => $kcRest->isNotEmpty(), 'has-two' => $kcRest->count() === 2])>
+            @php $kcImage = $kcFeature->imageUrlOrDefault(); @endphp
+            <li class="kc-news-main">
+                <a href="{{ route('news.show', $kcFeature) }}" class="kc-news-feature">
+                    <span class="kc-news-photo" aria-hidden="true">
+                        @if ($kcImage)
+                            <img src="{{ $kcImage }}" alt="" loading="lazy">
+                        @else
+                            <i class="fa-solid fa-newspaper"></i>
+                        @endif
+                    </span>
+                    @if ($kcFeature->published_at)
+                        <time class="kc-news-date" datetime="{{ $kcFeature->published_at->toDateString() }}">
+                            <span class="kc-news-day" aria-hidden="true">{{ $kcFeature->published_at->format('j') }}</span>
+                            <span class="kc-news-mon" aria-hidden="true">{{ $kcFeature->published_at->translatedFormat('M') }}</span>
+                            <span class="kc-sr">{{ $kcFeature->published_at->translatedFormat('j F Y') }}</span>
+                        </time>
+                    @endif
+                    <span class="kc-news-body">
+                        <h3 class="kc-news-name">{{ $kcFeature->title }}</h3>
+                        @if ($kcExcerpt($kcFeature) !== '')
+                            <span class="kc-news-text">{{ \Illuminate\Support\Str::limit($kcExcerpt($kcFeature), 200) }}</span>
+                        @endif
+                        <span class="kc-child-more" aria-hidden="true">Czytaj dalej →</span>
+                    </span>
+                </a>
+            </li>
+            @foreach ($kcRest as $item)
+                @php $kcThumb = $item->imageUrlOrDefault(); @endphp
                 <li>
-                    <a href="{{ route('news.show', $item) }}" class="kc-card kc-child-card kc-project-card">
-                        <span class="kc-project-img" aria-hidden="true">
-                            @if ($kcImage)
-                                <img src="{{ $kcImage }}" alt="" loading="lazy">
+                    <a href="{{ route('news.show', $item) }}" class="kc-news-row">
+                        <span class="kc-news-thumb" aria-hidden="true">
+                            @if ($kcThumb)
+                                <img src="{{ $kcThumb }}" alt="" loading="lazy">
                             @else
                                 <i class="fa-solid fa-newspaper"></i>
                             @endif
                         </span>
-                        <span class="kc-project-body">
+                        <span class="kc-news-body">
                             @if ($item->published_at)
-                                <time class="kc-child-text" datetime="{{ $item->published_at->toDateString() }}">{{ $item->published_at->translatedFormat('j F Y') }}</time>
+                                <time class="kc-news-when" datetime="{{ $item->published_at->toDateString() }}">{{ $item->published_at->translatedFormat('j F Y') }}</time>
                             @endif
-                            <h3 class="kc-child-title">{{ $item->title }}</h3>
-                            @if ($kcExcerpt !== '')<span class="kc-child-text">{{ \Illuminate\Support\Str::limit($kcExcerpt, 180) }}</span>@endif
+                            <h3 class="kc-news-name">{{ $item->title }}</h3>
                             <span class="kc-child-more" aria-hidden="true">Czytaj dalej →</span>
                         </span>
                     </a>
                 </li>
             @endforeach
         </ul>
-        @if (\Illuminate\Support\Facades\Route::has('news.index'))
-            <div class="kc-more">
-                <a href="{{ route('news.index') }}" class="kc-btn kc-btn-ghost">{{ $texts->get('news_button') }}</a>
-            </div>
-        @endif
     </div>
 </section>
 @endif
