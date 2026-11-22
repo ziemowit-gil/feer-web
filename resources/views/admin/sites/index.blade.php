@@ -55,6 +55,11 @@
                             @csrf
                             <button type="submit" class="{{ $btnPlain }}">Przełącz się<span class="sr-only"> na witrynę {{ $main->site_name }}</span></button>
                         </form>
+                        @if (Route::has('admin.witryny.pozostale') && ($rows !== [] || $trashed->isNotEmpty()))
+                            <a href="{{ route('admin.witryny.pozostale') }}" class="{{ $btnPlain }}">
+                                <i class="fa-solid fa-broom" aria-hidden="true"></i> Usuń pozostałe witryny<span class="sr-only"> — zostanie tylko {{ $main->site_name }}</span>
+                            </a>
+                        @endif
                     </div>
                 </li>
             @endforeach

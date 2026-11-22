@@ -50,7 +50,15 @@
             <button type="submit" class="{{ $btn }} bg-brand-dark text-white hover:bg-ink">
                 <i class="fa-solid fa-house" aria-hidden="true"></i> Ustaw „{{ $site->site_name }}” jako główną
             </button>
+            @if (Route::has('admin.witryny.pozostale'))
+                <button type="submit" name="potem" value="usun-pozostale" class="{{ $btn }} bg-gray-100 text-ink hover:bg-brand-light" aria-describedby="then-others-help">
+                    <i class="fa-solid fa-broom" aria-hidden="true"></i> Ustaw jako główną i usuń pozostałe
+                </button>
+            @endif
             <a href="{{ route('admin.witryny.index') }}" class="{{ $btn }} bg-gray-100 text-ink hover:bg-brand-light">Anuluj</a>
         </form>
+        @if (Route::has('admin.witryny.pozostale'))
+            <p id="then-others-help" class="mt-2 text-sm text-ink">„Ustaw jako główną i usuń pozostałe” po zmianie przejdzie do listy pozostałych witryn — usuniesz je dopiero po potwierdzeniu.</p>
+        @endif
     </div>
 @endsection

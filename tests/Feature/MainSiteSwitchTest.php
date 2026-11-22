@@ -132,6 +132,101 @@ class MainSiteSwitchTest extends TestCase
         $this->assertTrue(SiteSetting::main()->is($this->main));
     }
 
+    private function page(SiteSetting $site, string $slug): Page
+    {
+        return Page::withoutGlobalScopes()->create(['site_id' => $site->id, 'title' => 'Strona '.$slug, 'slug' => $slug, 'content' => '<p>x</p>', 'is_published' => true]);
+    }
+
+    public function test_others_page_lists_sites_with_counts(): void
+    {
+        $child = SiteSetting::create([
+            'site_name' => 'Pod Kreatywnymi', 'slug' => 'pod-kreatywnymi', 'parent_site_id' => $this->sub->id,
+            'brand_color' => SiteSetting::DEFAULT_BRAND_COLOR, 'site_template' => $this->main->site_template,
+        ]);
+        $this->page($this->sub, 'k1');
+        $this->page($child, 'k2');
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->get(route('admin.witryny.index'))->assertOk()
+            ->assertSee(route('admin.witryny.pozostale'), false)->assertSee('Usuń pozostałe witryny');
+
+        $this->actingAs($admin)->get(route('admin.witryny.pozostale'))->assertOk()
+            ->assertSee('Zostaw tylko witrynę „'.$this->main->site_name.'”', false)
+            ->assertSee('Kreatywni')
+            ->assertSee('Do kosza (2 witryny, 2 rekordy)')
+            ->assertSee('przepisz nazwę witryny, która zostaje', false);
+    }
+
+    public function test_remove_others_to_trash_keeps_main_and_needs_name(): void
+    {
+        $keep = $this->page($this->main, 'zostaje');
+        $this->page($this->sub, 'znika');
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->delete(route('admin.witryny.pozostale.destroy'), ['mode' => 'trash', 'force' => '1', 'confirm_name' => 'zła nazwa'])
+            ->assertSessionHasErrors('confirm_name');
+        $this->assertNull($this->sub->fresh()->trashed_at);
+
+        $this->actingAs($admin)->delete(route('admin.witryny.pozostale.destroy'), ['mode' => 'trash', 'force' => '1', 'confirm_name' => $this->main->site_name])
+            ->assertRedirect(route('admin.witryny.index'))->assertSessionHas('status');
+
+        $this->assertNotNull($this->sub->fresh()->trashed_at);
+        $this->assertNull($this->main->fresh()->trashed_at);
+        $this->assertTrue(SiteSetting::main()->is($this->main));
+        $this->assertNotNull($keep->fresh());
+        $this->assertSame(1, Page::withoutGlobalScopes()->where('slug', 'znika')->count(), 'kosz nie rusza treści');
+    }
+
+    public function test_remove_others_permanently_also_purges_trash(): void
+    {
+        $trashedSite = $this->site('Stara', 'stara');
+        \App\Support\SiteRemoval::trash($trashedSite);
+        $this->page($this->sub, 'znika');
+        $this->page($this->main, 'zostaje');
+
+        $this->actingAs($this->admin())->delete(route('admin.witryny.pozostale.destroy'), [
+            'mode' => 'permanent', 'backup' => '0', 'force' => '1', 'confirm_name' => $this->main->site_name,
+        ])->assertRedirect(route('admin.witryny.index'));
+
+        $this->assertSame([$this->main->id], SiteSetting::query()->pluck('id')->map(fn ($id) => (int) $id)->all());
+        $this->assertSame(0, Page::withoutGlobalScopes()->where('slug', 'znika')->count());
+        $this->assertSame(1, Page::withoutGlobalScopes()->where('slug', 'zostaje')->count());
+    }
+
+    public function test_switch_then_remove_others_redirects_to_list(): void
+    {
+        $this->actingAs($this->admin())->post(route('admin.witryny.glowna.update', $this->sub), ['potem' => 'usun-pozostale'])
+            ->assertRedirect(route('admin.witryny.pozostale'));
+
+        $this->forgetCurrent();
+        $this->assertTrue(SiteSetting::main()->is($this->sub));
+    }
+
+    public function test_command_switches_and_removes_others(): void
+    {
+        $this->site('Ośrodek', 'osrodek');
+
+        $this->artisan('witryny:glowna', ['witryna' => 'kreatywni', '--usun-pozostale' => true, '--trwale' => true, '--bez-kopii' => true, '--force' => true])
+            ->expectsOutputToContain('Trwale usunięto witryny: 2')
+            ->assertSuccessful();
+
+        $this->forgetCurrent();
+        $this->assertSame([$this->sub->id], SiteSetting::query()->pluck('id')->map(fn ($id) => (int) $id)->all());
+        $this->assertTrue(SiteSetting::main()->is($this->sub));
+    }
+
+    public function test_command_remove_others_to_trash_asks_first(): void
+    {
+        $this->artisan('witryny:glowna', ['--usun-pozostale' => true])
+            ->expectsConfirmation('Przenieść do kosza powyższe witryny (z podwitrynami)? Zostanie tylko „'.$this->main->site_name.'”.', 'no')
+            ->assertFailed();
+        $this->assertNull($this->sub->fresh()->trashed_at);
+
+        $this->artisan('witryny:glowna', ['--usun-pozostale' => true, '--force' => true])->assertSuccessful();
+        $this->assertNotNull($this->sub->fresh()->trashed_at);
+        $this->assertNull($this->main->fresh()->trashed_at);
+    }
+
     public function test_command_lists_and_switches_by_slug(): void
     {
         $this->artisan('witryny:glowna')->expectsOutputToContain('Witryna główna')->assertSuccessful();

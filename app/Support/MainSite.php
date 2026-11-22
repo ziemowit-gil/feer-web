@@ -2,14 +2,18 @@
 
 namespace App\Support;
 
+use App\Http\Middleware\ResolveCurrentSite;
 use App\Models\SiteSetting;
 use App\Models\User;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Zmiana witryny głównej instalacji (SiteSetting::main()): wskazana witryna traci rodzica, a dotychczasowa główna
  * (i każda inna witryna bez rodzica) staje się jej subwitryną. Treść, ustawienia, podwitryny, adres skrócony i domena
  * nie zmieniają się, więc dawne linki do nowej głównej działają dalej, a zmianę cofa się tym samym przełączeniem.
+ * Opcjonalnie usuwa wszystkie pozostałe witryny (removeOthers) — główna zostaje zawsze.
  */
 class MainSite
 {
@@ -59,5 +63,64 @@ class MainSite
         }
 
         return $previous;
+    }
+
+    /**
+     * Witryny do usunięcia przy „Usuń pozostałe witryny”: najwyższe w drzewie poza główną — każda razem ze swoimi
+     * podwitrynami (SiteRemoval::withDescendants). Bez $withTrashed tylko witryny poza koszem.
+     *
+     * @return Collection<int, SiteSetting>
+     */
+    public static function others(bool $withTrashed = false): Collection
+    {
+        $main = SiteSetting::main();
+        $all = SiteSetting::query()->whereKeyNot($main->getKey())
+            ->when(! $withTrashed, fn ($q) => $q->notTrashed())
+            ->orderBy('id')->get();
+        $ids = $all->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        return $all->reject(fn (SiteSetting $s) => $s->parent_site_id !== null && in_array((int) $s->parent_site_id, $ids, true))->values();
+    }
+
+    /**
+     * Usuwa wszystkie witryny poza główną: do kosza (SiteSetting::TRASH_DAYS dni na przywrócenie) albo trwale razem
+     * z treścią — wtedy także te, które już leżą w koszu. Witryna główna nigdy nie jest usuwana.
+     *
+     * @return array{sites: int, removed: array<string, int>} liczba usuniętych witryn i (przy trwałym) usunięte rekordy
+     */
+    public static function removeOthers(bool $permanent): array
+    {
+        $main = SiteSetting::main();
+        $tops = self::others($permanent);
+
+        foreach ($tops as $top) {
+            foreach (SiteRemoval::withDescendants($top) as $site) {
+                if ($site->is($main)) {
+                    throw new \LogicException('Witryna główna nie może zostać usunięta.');
+                }
+            }
+        }
+
+        $sites = 0;
+        $removed = [];
+        foreach ($tops as $top) {
+            if ($permanent) {
+                foreach (SiteRemoval::remove($top, true) as $table => $n) {
+                    $removed[$table] = ($removed[$table] ?? 0) + $n;
+                }
+            } else {
+                $sites += SiteRemoval::trash($top);
+            }
+        }
+
+        if ($permanent) {
+            $sites = $removed['site_settings'] ?? 0;
+            unset($removed['site_settings']);
+        }
+
+        // Kosz zapisuje witryny bez zdarzeń modelu — mapę adresów skróconych czyścimy sami.
+        Cache::forget(ResolveCurrentSite::SLUG_MAP_CACHE_KEY);
+
+        return ['sites' => $sites, 'removed' => $removed];
     }
 }
