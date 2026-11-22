@@ -60,16 +60,25 @@ class SiteSetting extends Model implements HasMedia
         'meetings' => 'Zgłoszenia na spotkania (skrzynka)',
         'barriers' => 'Zgłoszenia barier dostępności (skrzynka)',
         'banners' => 'Bannery i strefy bannerów',
-        'campaigns' => 'Zbiórki (fundraising)',
+        'campaigns' => 'Kampanie i zbiórki (fundraising)',
         'donations' => 'Wpłaty (lista darowizn w panelu)',
+        // Rozszerzenie z modules/Newsletter: aktywacja w Modułach systemu (globalnie) + przełącznik tej witryny.
+        'newsletter' => 'Newsletter (zapisy i kampanie e-mail)',
     ];
 
     /**
-     * Moduły bez osobnego uprawnienia w grupach użytkowników: Portale idą za Działaniami, a skrzynki, koordynatorzy,
-     * bannery, zbiórki i wpłaty są tylko dla administratora. Formularz grupy ich nie pokazuje.
+     * Moduły instalowane (modules/), które poza globalną aktywacją (Moduły systemu) można wyłączyć dla jednej witryny
+     * w Ustawienia → Moduły — {@see isModuleEnabled()} bierze wtedy pod uwagę `disabled_modules`.
+     */
+    public const SITE_SWITCHABLE_PLUGINS = ['newsletter'];
+
+    /**
+     * Moduły bez osobnego uprawnienia w grupach użytkowników: Portale idą za Działaniami, Newsletter ma własne
+     * uprawnienia (sekcja „Newsletter” w formularzu grupy), a skrzynki, koordynatorzy, bannery, zbiórki i wpłaty
+     * są tylko dla administratora. Formularz grupy ich nie pokazuje na liście modułów.
      */
     public const MODULES_WITHOUT_GROUP_ACCESS = [
-        'portals', 'coordinators', 'contact_inbox', 'meetings', 'barriers', 'banners', 'campaigns', 'donations',
+        'portals', 'coordinators', 'contact_inbox', 'meetings', 'barriers', 'banners', 'campaigns', 'donations', 'newsletter',
     ];
 
     /**
@@ -124,7 +133,8 @@ class SiteSetting extends Model implements HasMedia
         'meetings' => ['group' => 'community', 'icon' => 'fa-handshake-angle', 'desc' => 'Skrzynka zgłoszeń na spotkania w panelu, z eksportem. Zapisy na stronie działają dalej.'],
         'barriers' => ['group' => 'community', 'icon' => 'fa-universal-access', 'desc' => 'Skrzynka zgłoszeń barier z deklaracji dostępności w panelu. Formularz na stronie zostaje (wymaga go ustawa) i wysyła e-mail.'],
         'banners' => ['group' => 'tools', 'icon' => 'fa-rectangle-ad', 'desc' => 'Bannery w strefach strony i ich statystyki. Wyłączony — strefy bannerów nic nie wyświetlają.'],
-        'campaigns' => ['group' => 'support', 'icon' => 'fa-hand-holding-heart', 'desc' => 'Zbiórki z celem, paskiem postępu i wpłatami online, teksty podziękowań. Wyłączony — strony /kampanie zwracają 404.'],
+        'campaigns' => ['group' => 'support', 'icon' => 'fa-hand-holding-heart', 'desc' => 'Kampanie zbiórek z celem, paskiem postępu i wpłatami online, teksty podziękowań. Wyłączony — strony /kampanie zwracają 404.'],
+        'newsletter' => ['group' => 'community', 'icon' => 'fa-envelope-open-text', 'desc' => 'Zapisy na newsletter na stronie i kampanie e-mail w panelu. Wyłączony — znika z menu panelu i ze strony (zapisy 404); wypis i preferencje z wysłanych maili działają dalej.'],
         'donations' => ['group' => 'support', 'icon' => 'fa-receipt', 'desc' => 'Lista wpłat w panelu: filtry, ręczne dodanie, zwrot, eksport CSV/XLSX. Płatności na stronie działają dalej.'],
     ];
 
@@ -2371,7 +2381,9 @@ class SiteSetting extends Model implements HasMedia
 
         $manager = app(\App\Modules\ModuleManager::class);
         if ($manager->get($module) !== null) {
-            return $manager->isActive($module);
+            // Moduł instalowany: aktywny globalnie, a wybrane (SITE_SWITCHABLE_PLUGINS) — także niewyłączony dla witryny.
+            return $manager->isActive($module)
+                && ! (in_array($module, self::SITE_SWITCHABLE_PLUGINS, true) && in_array($module, $this->disabled_modules ?? [], true));
         }
 
         return ! in_array($module, $this->disabled_modules ?? [], true);

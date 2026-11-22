@@ -732,6 +732,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
         Route::get('ustawienia', [SiteSettingController::class, 'edit'])->name('ustawienia.edit');
         Route::put('ustawienia', [SiteSettingController::class, 'update'])->name('ustawienia.update');
+        // Ustawienia → Moduły: akcje masowe w tabelach modułów i typów treści (zapis od razu, bez „Zapisz”).
+        Route::post('ustawienia/moduly/masowo', [\App\Http\Controllers\Admin\SiteModulesController::class, 'modules'])->name('ustawienia.moduly.masowo');
+        Route::post('ustawienia/typy-tresci/masowo', [\App\Http\Controllers\Admin\SiteModulesController::class, 'options'])->name('ustawienia.typy-tresci.masowo');
         Route::post('ustawienia/test-poczty', [SiteSettingController::class, 'mailTest'])->name('ustawienia.mail-test');
         Route::post('ustawienia/cleantalk/sprawdz', [SiteSettingController::class, 'cleantalkCheck'])->name('ustawienia.cleantalk-check')->middleware('throttle:10,1');
         Route::post('ustawienia/szo/sprawdz', [SiteSettingController::class, 'szoCheck'])->name('ustawienia.szo-check')->middleware('throttle:10,1');

@@ -10,8 +10,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Widok modułów: karty z przełącznikami w Ustawienia → Moduły (moduły wbudowane,
- * rozszerzenia, „Typy treści i układy") oraz strona „Moduły systemu".
+ * Widok modułów: tabele z akcjami masowymi w Ustawienia → Moduły (moduły wbudowane, „Typy treści i układy"),
+ * karty rozszerzeń oraz strona „Moduły systemu". Zapis przez główny formularz (enabled_modules / allowed_options)
+ * działa dalej — testy akcji masowych są w SiteModulesBulkTest.
  */
 class ModulesViewTest extends TestCase
 {
@@ -54,7 +55,7 @@ class ModulesViewTest extends TestCase
         return array_map(fn (array $options) => array_map('strval', array_keys($options)), SiteSetting::blockableOptionGroups());
     }
 
-    public function test_kazdy_modul_ma_karte_z_przelacznikiem_w_grupie(): void
+    public function test_kazdy_modul_ma_wiersz_tabeli_z_polem_wyboru_w_grupie(): void
     {
         $html = $this->actingAs($this->admin())
             ->get(route('admin.ustawienia.edit', ['tab' => 'modules']))
@@ -63,15 +64,15 @@ class ModulesViewTest extends TestCase
 
         foreach (SiteSetting::MODULES as $key => $label) {
             $this->assertMatchesRegularExpression(
-                '/<input type="checkbox" role="switch" id="module-switch-'.preg_quote($key, '/').'"\s+name="enabled_modules\[\]" value="'.preg_quote($key, '/').'"/',
+                '/<input type="checkbox" form="modules-bulk-form" name="modules\[\]" value="'.preg_quote($key, '/').'"/',
                 $html,
-                "Brak przełącznika modułu [{$key}]."
+                "Brak pola wyboru modułu [{$key}]."
             );
-            $this->assertStringContainsString(e($label), $html);
+            $this->assertStringContainsString('Zaznacz moduł: '.e($label), $html);
         }
 
         foreach (['Treści', 'Komunikacja i społeczność', 'Organizacja i dokumenty', 'Wsparcie i sprzedaż', 'Narzędzia'] as $group) {
-            $this->assertStringContainsString('>'.$group.'</h2>', $html);
+            $this->assertMatchesRegularExpression('/<th scope="rowgroup"[^>]*>'.preg_quote($group, '/').'<\/th>/', $html);
         }
 
         $this->assertStringContainsString('Włączony', $html);
@@ -173,11 +174,11 @@ class ModulesViewTest extends TestCase
         $this->assertSame(['minimal'], $settings->blocked_options['page_templates']);
         $this->assertSame([], $settings->blocked_options['header_layouts']);
 
-        // Widok pokazuje zapisany stan.
+        // Widok pokazuje zapisany stan: ukryta opcja ma w wierszu „Udostępnij”, dostępna — „Ukryj”.
         $html = $this->actingAs($this->admin())->get(route('admin.ustawienia.edit', ['tab' => 'modules']))->getContent();
         $this->assertStringContainsString('Typy treści i układy', $html);
-        $this->assertMatchesRegularExpression('/id="option-switch-news_layouts-side"\s+name="allowed_options\[news_layouts\]\[\]" value="side"\s+aria-label/', $html);
-        $this->assertMatchesRegularExpression('/id="option-switch-news_layouts-wide"\s+name="allowed_options\[news_layouts\]\[\]" value="wide" checked/', $html);
+        $this->assertStringContainsString('name="row_action" value="show|news_layouts|side"', $html);
+        $this->assertStringContainsString('name="row_action" value="hide|news_layouts|wide"', $html);
     }
 
     public function test_bez_sekcji_w_zadaniu_blokady_zostaja_bez_zmian(): void
@@ -230,9 +231,10 @@ class ModulesViewTest extends TestCase
         $this->assertNotContains('default', $blocked['news_layouts']);
         $this->assertContains('portal', $blocked['news_layouts']);
 
-        // Przełączniki chronionych opcji są nieaktywne z objaśnieniem.
+        // Chronione opcje nie mają pola wyboru ani akcji, za to objaśnienie.
         $html = $this->actingAs($this->admin())->get(route('admin.ustawienia.edit', ['tab' => 'modules']))->getContent();
-        $this->assertMatchesRegularExpression('/id="option-switch-page_types-standard"[^>]*checked disabled/', $html);
+        $this->assertStringNotContainsString('value="opt:page_types:standard"', $html);
+        $this->assertStringNotContainsString('|page_types|standard"', $html);
         $this->assertStringContainsString('Zawsze dostępny', $html);
     }
 
