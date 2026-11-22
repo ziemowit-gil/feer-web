@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class LocalUsersCreateTest extends TestCase
@@ -44,6 +46,15 @@ class LocalUsersCreateTest extends TestCase
         $this->assertSame(User::ROLE_CONTENT_EDITOR, $existing->role);
         $this->assertNull($existing->active_until);
         $this->assertTrue(Hash::check('inne-haslo', $existing->password));
+    }
+
+    public function test_works_before_account_validity_migration(): void
+    {
+        Schema::table('users', fn (Blueprint $t) => $t->dropColumn(['active_from', 'active_until', 'expiry_handled_at']));
+
+        $this->artisan('users:lokalne')->assertSuccessful();
+
+        $this->assertSame(2, User::whereIn('email', ['admin@local', 'edytor@local'])->count());
     }
 
     public function test_editor_can_log_in_with_password(): void

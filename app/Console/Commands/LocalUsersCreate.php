@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Konta robocze admin@local (Administrator) i edytor@local (Edytor treści).
@@ -42,6 +43,9 @@ class LocalUsersCreate extends Command
             return self::FAILURE;
         }
 
+        // Daty ważności konta przychodzą z migracji 2026_11_20_120000 — bez niej ich nie ruszamy.
+        $hasValidity = Schema::hasColumn('users', 'active_until');
+
         $rows = [];
         foreach (self::ACCOUNTS as $email => [$name, $role]) {
             $user = User::firstOrNew(['email' => $email]);
@@ -54,9 +58,10 @@ class LocalUsersCreate extends Command
                 'password'            => $password,
                 'role'                => $role,
                 'local_login_allowed' => true,
-                'active_from'         => null,
-                'active_until'        => null,
             ]);
+            if ($hasValidity) {
+                $user->fill(['active_from' => null, 'active_until' => null]);
+            }
             $user->save();
 
             $rows[] = [$created ? 'utworzono' : 'zaktualizowano', $email, User::ROLES[$role]];
