@@ -4,6 +4,7 @@ namespace App\View\Components;
 
 use App\Models\Banner;
 use App\Models\BannerZone as BannerZoneModel;
+use App\Models\SiteSetting;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\Component;
@@ -18,6 +19,13 @@ class BannerZone extends Component
 
     public function __construct(public string $name)
     {
+        // Wyłączony moduł „Bannery” (Ustawienia → Moduły): strefa nic nie wyświetla i nie pyta bazy.
+        if (! SiteSetting::current()->isModuleEnabled('banners')) {
+            $this->banners = collect();
+
+            return;
+        }
+
         $maxConcurrent = Cache::remember(
             "banner_zone_max_{$name}",
             now()->addHour(),

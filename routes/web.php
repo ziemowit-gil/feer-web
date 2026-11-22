@@ -149,8 +149,8 @@ Route::middleware('module:projects')->group(function () {
     Route::get('/projekty/{slug}', fn (string $slug) => redirect()->to(url('/dzialania/'.$slug), 301))->where('slug', '[A-Za-z0-9\-]+');
     Route::get('/kategoria/{category:slug}', [ProjectController::class, 'category'])->name('categories.show');
     // Portal kategorii (subdomena {adres}.feer.org.pl przekierowuje tutaj — RedirectPortalSubdomain).
-    Route::get('/portal/{portal}/rss.xml', [\App\Http\Controllers\PortalController::class, 'feed'])->name('portal.feed')->where('portal', '[a-z0-9-]+');
-    Route::get('/portal/{portal}', [\App\Http\Controllers\PortalController::class, 'show'])->name('portal.show')->where('portal', '[a-z0-9-]+');
+    Route::get('/portal/{portal}/rss.xml', [\App\Http\Controllers\PortalController::class, 'feed'])->name('portal.feed')->where('portal', '[a-z0-9-]+')->middleware('module:portals');
+    Route::get('/portal/{portal}', [\App\Http\Controllers\PortalController::class, 'show'])->name('portal.show')->where('portal', '[a-z0-9-]+')->middleware('module:portals');
 });
 
 Route::get('/organizacje-czlonkowskie', [FederationController::class, 'organizations'])->name('federation.organizations');
@@ -249,11 +249,12 @@ Route::get('/szukaj', [SearchController::class, 'index'])->name('search');
 // /newsletter — strona systemowa zapisu: modules/Newsletter/routes/web.php
 
 // Zbiórki (moduł Fundraising i darowizny): lista, strona zbiórki, wpłata P24, podziękowania.
-Route::get('/kampanie', [CampaignController::class, 'index'])->name('kampanie.index');
-Route::get('/kampanie/{slug}', [CampaignController::class, 'show'])->name('kampanie.show');
-Route::post('/kampanie/{slug}/wplata', [CampaignController::class, 'donate'])->name('kampanie.donate')->middleware(['edition:donations', 'throttle:10,1']);
-Route::get('/kampanie/{slug}/wplata/{donation}', [CampaignController::class, 'thanks'])->name('kampanie.thanks');
-Route::post('/kampanie/{slug}/wplata/{donation}/ponow', [CampaignController::class, 'retry'])->name('kampanie.retry')->middleware(['edition:donations', 'throttle:10,1']);
+// Wyłączony moduł „Zbiórki” = 404 na tych adresach (potwierdzenie PDF i płatności P24 działają dalej).
+Route::get('/kampanie', [CampaignController::class, 'index'])->name('kampanie.index')->middleware('module:campaigns');
+Route::get('/kampanie/{slug}', [CampaignController::class, 'show'])->name('kampanie.show')->middleware('module:campaigns');
+Route::post('/kampanie/{slug}/wplata', [CampaignController::class, 'donate'])->name('kampanie.donate')->middleware(['module:campaigns', 'edition:donations', 'throttle:10,1']);
+Route::get('/kampanie/{slug}/wplata/{donation}', [CampaignController::class, 'thanks'])->name('kampanie.thanks')->middleware('module:campaigns');
+Route::post('/kampanie/{slug}/wplata/{donation}/ponow', [CampaignController::class, 'retry'])->name('kampanie.retry')->middleware(['module:campaigns', 'edition:donations', 'throttle:10,1']);
 // Potwierdzenie darowizny w PDF (każda zaksięgowana wpłata; adres z losowym UUID wpłaty).
 Route::get('/darowizna/{donation}/potwierdzenie', [DonationController::class, 'receipt'])->name('donation.receipt')->middleware('throttle:30,1');
 
@@ -497,9 +498,11 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
 
     Route::middleware(['module:projects', 'module-access:projects'])->group(function () {
         Route::resource('kategorie', AdminCategoryController::class)->parameters(['kategorie' => 'category'])->except('show');
-        Route::get('portale', [\App\Http\Controllers\Admin\PortalController::class, 'index'])->name('portale.index');
-        Route::get('portale/{category}/edytuj', [\App\Http\Controllers\Admin\PortalController::class, 'edit'])->name('portale.edit');
-        Route::put('portale/{category}', [\App\Http\Controllers\Admin\PortalController::class, 'update'])->name('portale.update');
+        Route::middleware('module:portals')->group(function () {
+            Route::get('portale', [\App\Http\Controllers\Admin\PortalController::class, 'index'])->name('portale.index');
+            Route::get('portale/{category}/edytuj', [\App\Http\Controllers\Admin\PortalController::class, 'edit'])->name('portale.edit');
+            Route::put('portale/{category}', [\App\Http\Controllers\Admin\PortalController::class, 'update'])->name('portale.update');
+        });
         Route::resource('projekty', AdminProjectController::class)->parameters(['projekty' => 'project'])->except('show');
         Route::post('projekty/zbiorczo', [AdminProjectController::class, 'bulk'])->name('projekty.bulk');
         Route::post('projekty/{project}/kopiuj', [AdminProjectController::class, 'duplicate'])->name('projekty.kopiuj');
@@ -775,32 +778,43 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('moduly/{identifier}/activate', [AdminModuleController::class, 'activate'])->name('moduly.activate');
         Route::post('moduly/{identifier}/deactivate', [AdminModuleController::class, 'deactivate'])->name('moduly.deactivate');
 
-        Route::get('zgloszenia-spotkania', [AdminMeetingSignupController::class, 'index'])->name('zgloszenia-spotkania.index');
-        Route::get('zgloszenia-spotkania/eksport', [AdminMeetingSignupController::class, 'export'])->name('zgloszenia-spotkania.export');
-        Route::delete('zgloszenia-spotkania/{signup}', [AdminMeetingSignupController::class, 'destroy'])->name('zgloszenia-spotkania.destroy');
+        // Skrzynki, zbiórki i wpłaty jako osobne moduły (Ustawienia → Moduły): wyłączony = „Moduł wyłączony” w panelu.
+        Route::middleware('module:meetings')->group(function () {
+            Route::get('zgloszenia-spotkania', [AdminMeetingSignupController::class, 'index'])->name('zgloszenia-spotkania.index');
+            Route::get('zgloszenia-spotkania/eksport', [AdminMeetingSignupController::class, 'export'])->name('zgloszenia-spotkania.export');
+            Route::delete('zgloszenia-spotkania/{signup}', [AdminMeetingSignupController::class, 'destroy'])->name('zgloszenia-spotkania.destroy');
+        });
 
-        Route::get('zgloszenia-barier', [AdminAccessibilityReportController::class, 'index'])->name('zgloszenia-barier.index');
-        Route::get('zgloszenia-barier/eksport', [AdminAccessibilityReportController::class, 'export'])->name('zgloszenia-barier.export');
-        Route::delete('zgloszenia-barier/{report}', [AdminAccessibilityReportController::class, 'destroy'])->name('zgloszenia-barier.destroy');
+        Route::middleware('module:barriers')->group(function () {
+            Route::get('zgloszenia-barier', [AdminAccessibilityReportController::class, 'index'])->name('zgloszenia-barier.index');
+            Route::get('zgloszenia-barier/eksport', [AdminAccessibilityReportController::class, 'export'])->name('zgloszenia-barier.export');
+            Route::delete('zgloszenia-barier/{report}', [AdminAccessibilityReportController::class, 'destroy'])->name('zgloszenia-barier.destroy');
+        });
 
-        Route::get('wiadomosci-kontaktowe', [AdminContactMessageController::class, 'index'])->name('wiadomosci-kontaktowe.index');
-        Route::get('wiadomosci-kontaktowe/{contactMessage}', [AdminContactMessageController::class, 'show'])->name('wiadomosci-kontaktowe.show');
-        Route::post('wiadomosci-kontaktowe/{contactMessage}/replied', [AdminContactMessageController::class, 'markReplied'])->name('wiadomosci-kontaktowe.replied');
-        Route::delete('wiadomosci-kontaktowe', [AdminContactMessageController::class, 'destroyAll'])->name('wiadomosci-kontaktowe.destroy-all');
-        Route::delete('wiadomosci-kontaktowe/{contactMessage}', [AdminContactMessageController::class, 'destroy'])->name('wiadomosci-kontaktowe.destroy');
+        Route::middleware('module:contact_inbox')->group(function () {
+            Route::get('wiadomosci-kontaktowe', [AdminContactMessageController::class, 'index'])->name('wiadomosci-kontaktowe.index');
+            Route::get('wiadomosci-kontaktowe/{contactMessage}', [AdminContactMessageController::class, 'show'])->name('wiadomosci-kontaktowe.show');
+            Route::post('wiadomosci-kontaktowe/{contactMessage}/replied', [AdminContactMessageController::class, 'markReplied'])->name('wiadomosci-kontaktowe.replied');
+            Route::delete('wiadomosci-kontaktowe', [AdminContactMessageController::class, 'destroyAll'])->name('wiadomosci-kontaktowe.destroy-all');
+            Route::delete('wiadomosci-kontaktowe/{contactMessage}', [AdminContactMessageController::class, 'destroy'])->name('wiadomosci-kontaktowe.destroy');
+        });
 
-        Route::resource('kampanie', AdminCampaignController::class)->parameters(['kampanie' => 'campaign'])->except('show')->middleware('edition:campaigns');
-        Route::post('kampanie/zbiorczo', [AdminCampaignController::class, 'bulk'])->name('kampanie.bulk')->middleware('edition:campaigns');
-        // Moduł Fundraising i darowizny: wpłaty (lista, ręczne dodanie, eksport) i globalne teksty zbiórek.
-        Route::get('darowizny', [\App\Http\Controllers\Admin\DonationController::class, 'index'])->name('darowizny.index')->middleware('edition:donations');
-        Route::get('darowizny/eksport', [\App\Http\Controllers\Admin\DonationController::class, 'export'])->name('darowizny.export')->middleware('edition:donations');
-        Route::get('darowizny/dodaj', [\App\Http\Controllers\Admin\DonationController::class, 'create'])->name('darowizny.create')->middleware('edition:donations');
-        Route::post('darowizny', [\App\Http\Controllers\Admin\DonationController::class, 'store'])->name('darowizny.store')->middleware('edition:donations');
-        Route::get('darowizny/{donation}', [\App\Http\Controllers\Admin\DonationController::class, 'edit'])->name('darowizny.edit')->middleware('edition:donations');
-        Route::put('darowizny/{donation}', [\App\Http\Controllers\Admin\DonationController::class, 'update'])->name('darowizny.update')->middleware('edition:donations');
-        Route::post('darowizny/{donation}/podziekowanie', [\App\Http\Controllers\Admin\DonationController::class, 'resendThanks'])->name('darowizny.thanks')->middleware('edition:donations');
-        Route::get('zbiorki-teksty', [\App\Http\Controllers\Admin\FundraisingSettingsController::class, 'edit'])->name('zbiorki-teksty.edit')->middleware('edition:campaigns');
-        Route::put('zbiorki-teksty', [\App\Http\Controllers\Admin\FundraisingSettingsController::class, 'update'])->name('zbiorki-teksty.update')->middleware('edition:campaigns');
+        Route::middleware('module:campaigns')->group(function () {
+            Route::resource('kampanie', AdminCampaignController::class)->parameters(['kampanie' => 'campaign'])->except('show')->middleware('edition:campaigns');
+            Route::post('kampanie/zbiorczo', [AdminCampaignController::class, 'bulk'])->name('kampanie.bulk')->middleware('edition:campaigns');
+            Route::get('zbiorki-teksty', [\App\Http\Controllers\Admin\FundraisingSettingsController::class, 'edit'])->name('zbiorki-teksty.edit')->middleware('edition:campaigns');
+            Route::put('zbiorki-teksty', [\App\Http\Controllers\Admin\FundraisingSettingsController::class, 'update'])->name('zbiorki-teksty.update')->middleware('edition:campaigns');
+        });
+        // Moduł Fundraising i darowizny: wpłaty (lista, ręczne dodanie, eksport).
+        Route::middleware('module:donations')->group(function () {
+            Route::get('darowizny', [\App\Http\Controllers\Admin\DonationController::class, 'index'])->name('darowizny.index')->middleware('edition:donations');
+            Route::get('darowizny/eksport', [\App\Http\Controllers\Admin\DonationController::class, 'export'])->name('darowizny.export')->middleware('edition:donations');
+            Route::get('darowizny/dodaj', [\App\Http\Controllers\Admin\DonationController::class, 'create'])->name('darowizny.create')->middleware('edition:donations');
+            Route::post('darowizny', [\App\Http\Controllers\Admin\DonationController::class, 'store'])->name('darowizny.store')->middleware('edition:donations');
+            Route::get('darowizny/{donation}', [\App\Http\Controllers\Admin\DonationController::class, 'edit'])->name('darowizny.edit')->middleware('edition:donations');
+            Route::put('darowizny/{donation}', [\App\Http\Controllers\Admin\DonationController::class, 'update'])->name('darowizny.update')->middleware('edition:donations');
+            Route::post('darowizny/{donation}/podziekowanie', [\App\Http\Controllers\Admin\DonationController::class, 'resendThanks'])->name('darowizny.thanks')->middleware('edition:donations');
+        });
 
         Route::resource('pozycje-menu', NavItemController::class)->parameters(['pozycje-menu' => 'navItem'])->except('show');
         // „Strony i nawigacja”: menu ustawiane z panelu strony w drzewie stron.
@@ -818,7 +832,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::get('pozycje-menu/podglad', \App\Http\Controllers\Admin\NavItemPreviewController::class)->name('pozycje-menu.podglad');
         Route::get('pozycje-menu/eksport-xml', [\App\Http\Controllers\Admin\NavItemXmlController::class, 'export'])->name('pozycje-menu.eksport-xml');
         Route::post('pozycje-menu/import-xml', [\App\Http\Controllers\Admin\NavItemXmlController::class, 'import'])->name('pozycje-menu.import-xml');
-        Route::resource('koordynatorzy', \App\Http\Controllers\Admin\CoordinatorController::class)->except('show');
+        Route::resource('koordynatorzy', \App\Http\Controllers\Admin\CoordinatorController::class)->except('show')->middleware('module:coordinators');
         Route::patch('pozycje-menu/{navItem}/aktywna', [NavItemController::class, 'toggleActive'])->name('pozycje-menu.aktywna');
 
         Route::resource('grupy', AdminUserGroupController::class)->parameters(['grupy' => 'group'])->except('show')->middleware('edition:user_groups');
@@ -850,15 +864,17 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::put('pjm/{type}/{id}', [\App\Http\Controllers\Admin\PjmController::class, 'update'])->name('pjm.update');
 
         // Bannery i strefy wyświetlania.
-        Route::resource('banery', AdminBannerController::class)
-            ->parameters(['banery' => 'banner'])
-            ->except('show');
-        Route::post('banery/zbiorczo', [AdminBannerController::class, 'bulk'])->name('banery.bulk');
-        Route::post('banery/{banner}/toggle', [AdminBannerController::class, 'toggle'])
-            ->name('banery.toggle');
-        Route::resource('strefy-bannerow', AdminBannerZoneController::class)
-            ->parameters(['strefy-bannerow' => 'strefaBanneru'])
-            ->except('show');
+        Route::middleware('module:banners')->group(function () {
+            Route::resource('banery', AdminBannerController::class)
+                ->parameters(['banery' => 'banner'])
+                ->except('show');
+            Route::post('banery/zbiorczo', [AdminBannerController::class, 'bulk'])->name('banery.bulk');
+            Route::post('banery/{banner}/toggle', [AdminBannerController::class, 'toggle'])
+                ->name('banery.toggle');
+            Route::resource('strefy-bannerow', AdminBannerZoneController::class)
+                ->parameters(['strefy-bannerow' => 'strefaBanneru'])
+                ->except('show');
+        });
     });
 
     Route::middleware('admin')->group(function () {
