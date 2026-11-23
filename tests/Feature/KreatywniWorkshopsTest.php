@@ -204,4 +204,37 @@ class KreatywniWorkshopsTest extends TestCase
 
         $this->actingAs($this->admin())->get(route('admin.kreatywni-warsztaty.edit', $other))->assertNotFound();
     }
+
+    public function test_modul_w_ustawieniach_wylaczony_chowa_panel_typ_i_kalendarz(): void
+    {
+        $site = $this->useTemplate();
+        $this->calendarPage();
+        $admin = $this->admin();
+        $this->actingAs($admin)->get(route('admin.ustawienia.edit'))->assertOk()->assertSee('Warsztaty – Kreatywni (kalendarz warsztatów)');
+
+        $site->forceFill(['disabled_modules' => ['workshops']])->save();
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        PageTypeRegistry::reset();
+
+        $this->get(route('admin.dashboard'))->assertOk()->assertDontSee(route('admin.kreatywni-warsztaty.index'), false);
+        $this->get(route('admin.kreatywni-warsztaty.index'))->assertSee('Moduł dezaktywowany');
+        $this->assertNotContains('kreatywni_workshops', collect(PageTypeRegistry::groups())->flatten()->all());
+        auth()->logout();
+        $this->get('/kalendarz-warsztatow')->assertNotFound();
+    }
+
+    public function test_dostep_dla_grupy_z_modulem_i_koordynatora(): void
+    {
+        $this->useTemplate();
+        $withModule = \App\Models\UserGroup::create(['name' => 'Warsztaty', 'modules' => ['workshops']]);
+        $pagesOnly = \App\Models\UserGroup::create(['name' => 'Strony', 'modules' => ['pages']]);
+        $editor = User::factory()->create(['role' => User::ROLE_EDITOR, 'user_group_id' => $withModule->id]);
+        $pagesEditor = User::factory()->create(['role' => User::ROLE_EDITOR, 'user_group_id' => $pagesOnly->id]);
+        $coordinator = User::factory()->create(['role' => User::ROLE_COORDINATOR]);
+
+        $this->actingAs($editor)->get(route('admin.kreatywni-warsztaty.index'))->assertOk();
+        $this->actingAs($coordinator)->get(route('admin.kreatywni-warsztaty.index'))->assertOk();
+        $this->actingAs($pagesEditor)->get(route('admin.kreatywni-warsztaty.index'))->assertForbidden();
+        $this->actingAs($this->admin())->get(route('admin.grupy.create'))->assertOk()->assertSee('value="workshops"', false);
+    }
 }

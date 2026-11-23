@@ -59,6 +59,11 @@ class PageController extends Controller
             return response()->view('page.sys-folder', ['page' => $page, 'preview' => true]);
         }
 
+        // Szablon „kreatywni”: „Kalendarz warsztatów” przy wyłączonym module „Warsztaty – Kreatywni” — jak inne moduły, 404.
+        if ($page->type === 'kreatywni_workshops' && ! SiteSetting::current()->isModuleEnabled('workshops')) {
+            abort_unless($preview, 404);
+        }
+
         // „Skrót” przenosi do pierwszej podstrony, wskazanej strony albo rodzica. 302, bo cel może się zmienić
         // (nowa pierwsza podstrona, inny wybór redaktora) — przeglądarki nie zapamiętują go na stałe.
         if ($page->isShortcut() && ! $preview) {

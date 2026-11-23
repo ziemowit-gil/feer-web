@@ -238,8 +238,8 @@ final class AdminMenu
                 // Szablon „kreatywni”: dokumenty fundacji na stronie „O nas” (mikro moduł).
                 \App\Models\SiteSetting::current()->site_template === 'kreatywni' && \App\Models\KreatywniDocument::supported() && $this->user->canAccessModule('pages')
                     ? $this->item('kreatywni-documents', 'Dokumenty – Kreatywni', 'admin.kreatywni-dokumenty.index', 'fa-folder-open', active: 'admin.kreatywni-dokumenty.*') : null,
-                // Szablon „kreatywni”: terminy warsztatów do strony „Kalendarz warsztatów” (mikro moduł).
-                \App\Models\SiteSetting::current()->site_template === 'kreatywni' && \App\Models\KreatywniWorkshop::supported() && $this->user->canAccessModule('pages')
+                // Szablon „kreatywni”: moduł „Warsztaty – Kreatywni” (Ustawienia → Moduły) — terminy do strony „Kalendarz warsztatów”.
+                \App\Models\SiteSetting::current()->site_template === 'kreatywni' && \App\Models\KreatywniWorkshop::supported() && $this->can('workshops')
                     ? $this->item('kreatywni-workshops', 'Warsztaty – Kreatywni', 'admin.kreatywni-warsztaty.index', 'fa-calendar-check', active: 'admin.kreatywni-warsztaty.*') : null,
             ]),
 

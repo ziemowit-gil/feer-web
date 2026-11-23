@@ -12,7 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Mikro moduł „Warsztaty – Kreatywni” (szablon „kreatywni”): terminy warsztatów do strony typu „Kalendarz warsztatów”
+ * Moduł „Warsztaty – Kreatywni” (szablon „kreatywni”; Ustawienia → Moduły, klucz workshops — trasy za `module:workshops`
+ * i `module-access:workshops`): terminy warsztatów do strony typu „Kalendarz warsztatów”
  * — dodawanie, edycja, kopia terminu (np. kolejna edycja tego samego warsztatu), widoczność i usuwanie. Grafika
  * ilustracyjna wgrana z dysku albo wybrana z biblioteki Multimediów (AttachesLibraryMedia). Czas w formularzu polski.
  */

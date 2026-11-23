@@ -9,7 +9,8 @@ use App\PageTypes\PageType;
 /**
  * „Kalendarz warsztatów” szablonu „kreatywni”: strona z terminami z mikro modułu „Warsztaty – Kreatywni”
  * (App\Models\KreatywniWorkshop) — nadchodzące w miesiącach, opcjonalnie minione. Do wyboru tylko w witrynie
- * w szablonie „kreatywni” (i gdy jest tabela modułu); istniejąca strona wyświetla się zawsze.
+ * w szablonie „kreatywni” z włączonym modułem „workshops” (Ustawienia → Moduły) i tabelą modułu; przy wyłączonym
+ * module istniejąca strona zwraca 404 (PageController::show).
  */
 class KreatywniWorkshops extends PageType
 {
@@ -40,7 +41,9 @@ class KreatywniWorkshops extends PageType
 
     public function selectable(): bool
     {
-        return SiteSetting::current()->site_template === 'kreatywni' && KreatywniWorkshop::supported();
+        $site = SiteSetting::current();
+
+        return $site->site_template === 'kreatywni' && $site->isModuleEnabled('workshops') && KreatywniWorkshop::supported();
     }
 
     public function usesTypeData(): bool

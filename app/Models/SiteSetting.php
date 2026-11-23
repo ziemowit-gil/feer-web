@@ -66,6 +66,8 @@ class SiteSetting extends Model implements HasMedia
         'newsletter' => 'Newsletter (zapisy i kampanie e-mail)',
         'podcasts' => 'Podcasty (odcinki i strona podcastów)',
         'persons' => 'Osoby (strony osób i ich lista w panelu)',
+        // Szablon „kreatywni”: terminy warsztatów i typ strony „Kalendarz warsztatów” (KreatywniWorkshop).
+        'workshops' => 'Warsztaty – Kreatywni (kalendarz warsztatów)',
     ];
 
     /**
@@ -140,6 +142,7 @@ class SiteSetting extends Model implements HasMedia
         'campaigns' => ['group' => 'support', 'icon' => 'fa-hand-holding-heart', 'desc' => 'Kampanie zbiórek z celem, paskiem postępu i wpłatami online, teksty podziękowań. Wyłączony — strony /kampanie zwracają 404.'],
         'podcasts' => ['group' => 'content', 'icon' => 'fa-podcast', 'desc' => 'Odcinki podcastu z odtwarzaczem i strona /podcasty. Wyłączony — znika z menu panelu, a /podcasty i odcinki zwracają 404.'],
         'persons' => ['group' => 'content', 'icon' => 'fa-address-card', 'desc' => 'Lista osób w panelu (Strony → Osoby): dodawanie, scalanie i usuwanie stron osób. Wyłączony — pozycja znika z menu, a ekrany listy osób są zablokowane.'],
+        'workshops' => ['group' => 'community', 'icon' => 'fa-calendar-check', 'desc' => 'Szablon Kreatywni: terminy warsztatów (miejsce, data, liczba uczestników, opis, grafika) i typ strony „Kalendarz warsztatów”. Wyłączony — znika z menu panelu, ekrany warsztatów są zablokowane, typu strony nie ma w wyborze, a strona z kalendarzem zwraca 404.'],
         'newsletter' => ['group' => 'community', 'icon' => 'fa-envelope-open-text', 'desc' => 'Zapisy na newsletter na stronie i kampanie e-mail w panelu. Wyłączony — znika z menu panelu i ze strony (zapisy 404); wypis i preferencje z wysłanych maili działają dalej.'],
         'donations' => ['group' => 'support', 'icon' => 'fa-receipt', 'desc' => 'Lista wpłat w panelu: filtry, ręczne dodanie, zwrot, eksport CSV/XLSX. Płatności na stronie działają dalej.'],
     ];

@@ -10,7 +10,7 @@
         $moduleSections = [
             'Treści i strony' => ['pages', 'news', 'podcasts', 'faq', 'timeline', 'landing', 'forms', 'polls'],
             'Wygląd strony głównej' => ['hero', 'gallery', 'quick_actions', 'feer_bands', 'partners'],
-            'Szkolenia i ludzie' => ['events', 'materials', 'volunteering', 'jobs', 'cooperation', 'help_map'],
+            'Szkolenia i ludzie' => ['events', 'workshops', 'materials', 'volunteering', 'jobs', 'cooperation', 'help_map'],
             'Organizacja i dokumenty' => ['strategy', 'authorizations', 'bip', 'reports', 'support', 'phone_book', 'contact'],
         ];
         $placed = collect($moduleSections)->flatten()->all();

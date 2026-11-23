@@ -561,6 +561,12 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::resource('partnerzy', AdminPartnerController::class)->parameters(['partnerzy' => 'partner'])->except('show');
     });
 
+    // Moduł „Warsztaty – Kreatywni” (Ustawienia → Moduły, klucz workshops): terminy do strony typu „Kalendarz warsztatów”.
+    // Wyłączony = „Moduł dezaktywowany”; uprawnienie jak inne moduły (grupy, koordynator).
+    Route::middleware(['module:workshops', 'module-access:workshops'])->group(function () {
+        Route::resource('kreatywni-warsztaty', \App\Http\Controllers\Admin\KreatywniWorkshopController::class)->parameters(['kreatywni-warsztaty' => 'workshop'])->except('show');
+    });
+
     // Szablon „kreatywni”: mikro moduł „Osoby – Kreatywni” (sekcja „Kto prowadzi warsztaty”), z uprawnieniem do Stron.
     Route::middleware('module-access:pages')->group(function () {
         Route::post('kreatywni-osoby/import', [\App\Http\Controllers\Admin\KreatywniPersonController::class, 'import'])->name('kreatywni-osoby.import');
@@ -574,8 +580,6 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('kreatywni-dokumenty/import', [\App\Http\Controllers\Admin\KreatywniDocumentController::class, 'import'])->name('kreatywni-dokumenty.import');
         Route::post('kreatywni-dokumenty/{document}/przesun', [\App\Http\Controllers\Admin\KreatywniDocumentController::class, 'move'])->name('kreatywni-dokumenty.przesun');
         Route::resource('kreatywni-dokumenty', \App\Http\Controllers\Admin\KreatywniDocumentController::class)->parameters(['kreatywni-dokumenty' => 'document'])->except('show');
-        // Mikro moduł „Warsztaty – Kreatywni” (terminy do strony typu „Kalendarz warsztatów”).
-        Route::resource('kreatywni-warsztaty', \App\Http\Controllers\Admin\KreatywniWorkshopController::class)->parameters(['kreatywni-warsztaty' => 'workshop'])->except('show');
     });
 
     Route::middleware(['module:materials', 'module-access:materials'])->group(function () {
