@@ -59,8 +59,8 @@ class PageController extends Controller
             return response()->view('page.sys-folder', ['page' => $page, 'preview' => true]);
         }
 
-        // Szablon „kreatywni”: „Kalendarz warsztatów” przy wyłączonym module „Warsztaty – Kreatywni” — jak inne moduły, 404.
-        if ($page->type === 'kreatywni_workshops' && ! SiteSetting::current()->isModuleEnabled('workshops')) {
+        // Typ strony zależny od modułu (np. „Kalendarz warsztatów” szablonu „kreatywni”) przy wyłączonym module — jak inne moduły, 404.
+        if ($page->isHiddenByDisabledModule()) {
             abort_unless($preview, 404);
         }
 

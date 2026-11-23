@@ -696,6 +696,20 @@ class Page extends Model
      */
     public const NON_CONTENT_TYPES = ['redirect', 'menu_link', 'menu_heading', 'shortcut', 'sys_folder'];
 
+    /**
+     * Typy stron działające tylko przy włączonym module witryny (typ => moduł z Ustawienia → Moduły).
+     * Przy wyłączonym module strona publiczna daje 404 i nie trafia do mapy strony.
+     */
+    public const TYPE_MODULES = ['kreatywni_workshops' => 'workshops'];
+
+    /** Czy strona jest niedostępna, bo moduł jej typu jest wyłączony w witrynie. */
+    public function isHiddenByDisabledModule(?SiteSetting $site = null): bool
+    {
+        $module = self::TYPE_MODULES[$this->type] ?? null;
+
+        return $module !== null && ! ($site ?? SiteSetting::current())->isModuleEnabled($module);
+    }
+
     /** Tryby „Skrótu”: dokąd przenosi strona. */
     public const SHORTCUT_MODES = [
         'first_child' => 'Do pierwszej podstrony',

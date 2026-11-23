@@ -19,14 +19,21 @@ use Spatie\Sitemap\Tags\Url;
  */
 class SitemapController extends Controller
 {
-    /** Generuje XML sitemap z opublikowanych treści z uwzględnieniem włączonych modułów. */
+    /**
+     * Generuje XML sitemap z opublikowanych treści bieżącej witryny z uwzględnieniem włączonych modułów.
+     * Podaje tylko adresy, które odpowiadają treścią (200): bez przekierowań, stron wyłączonych,
+     * chronionych i zarchiwizowanych oraz stron, których typ wymaga wyłączonego modułu.
+     */
     public function index()
     {
         $settings = SiteSetting::current();
         $sitemap = Sitemap::create();
 
         $sitemap->add(Url::create(route('home'))->setPriority(1.0));
-        $sitemap->add(Url::create(route('contact.show')));
+        // /kontakt przekierowuje na stronę typu „Kontakt”, gdy redakcja ją ma — wtedy w mapie jest tylko ta strona.
+        if (! ContactController::contactPageTarget()) {
+            $sitemap->add(Url::create(route('contact.show')));
+        }
         if ($settings->isModuleEnabled('newsletter') && \Illuminate\Support\Facades\Route::has('newsletter.show')) {
             $sitemap->add(Url::create(route('newsletter.show')));
         }
@@ -42,7 +49,7 @@ class SitemapController extends Controller
         if ($settings->isModuleEnabled('news')) {
             $sitemap->add(Url::create(route('news.index')));
 
-            News::query()->where('is_published', true)->where('published_at', '<=', now())->get()
+            News::query()->forCurrentSite()->where('is_published', true)->where('published_at', '<=', now())->get()
                 ->each(fn (News $news) => $sitemap->add(
                     Url::create(route('news.show', $news))->setLastModificationDate($news->updated_at)
                 ));
@@ -64,19 +71,26 @@ class SitemapController extends Controller
         if ($settings->isModuleEnabled('projects')) {
             $sitemap->add(Url::create(route('projects.index')));
 
-            Project::query()->where('is_published', true)->get()
+            Project::query()->forCurrentSite()->where('is_published', true)->get()
                 ->each(fn (Project $project) => $sitemap->add(
                     Url::create(route('projects.show', $project))->setLastModificationDate($project->updated_at)
                 ));
 
-            Category::query()->whereHas('projects', fn ($query) => $query->where('is_published', true))->get()
+            Category::query()->whereHas('projects', fn ($query) => $query->forCurrentSite()->where('is_published', true))->get()
                 ->each(fn (Category $category) => $sitemap->add(Url::create(route('categories.show', $category))));
         }
 
         if ($settings->isModuleEnabled('pages')) {
             // Bez skrótów, linków, nagłówków menu i folderów systemowych — to przekierowania albo adresy bez strony (Page::NON_CONTENT_TYPES).
-            Page::query()->where('is_published', true)->where(fn ($q) => $q->whereNull('hide_in_sitemap')->orWhere('hide_in_sitemap', false))
+            // Filtry jak na stronie „Mapa strony” (page()): bez zaplanowanych, zarchiwizowanych, wyłączonych (też przez przodka)
+            // i chronionych, a także bez stron typu zależnego od wyłączonego modułu (Page::TYPE_MODULES — dają 404).
+            $disabledByAncestor = Page::inheritedDisabledMap(Page::query()->forCurrentSite()->get(['id', 'parent_id', 'is_disabled']));
+            Page::query()->forCurrentSite()->live()
+                ->where(fn ($q) => $q->whereNull('hide_in_sitemap')->orWhere('hide_in_sitemap', false))
+                ->where(fn ($q) => $q->whereNull('is_archived')->orWhere('is_archived', false))
                 ->whereNotIn('type', Page::NON_CONTENT_TYPES)->get()
+                ->reject(fn (Page $page) => $page->is_disabled || isset($disabledByAncestor[$page->id])
+                    || $page->requiresAccess() || $page->isHiddenByDisabledModule($settings))
                 ->each(fn (Page $page) => $sitemap->add(
                     Url::create(route('page.show', $page))->setLastModificationDate($page->updated_at)
                 ));
@@ -124,7 +138,7 @@ class SitemapController extends Controller
                 ->get();
             $disabledByAncestor = Page::inheritedDisabledMap(Page::query()->forCurrentSite()->get(['id', 'parent_id', 'is_disabled']));
             // Folder systemowy nie ma strony publicznej — na mapie go nie ma (jego podstrony trafiają poziom wyżej).
-            $visible = $all->reject(fn (Page $p) => $p->hide_in_sitemap || $p->isSysFolder() || $p->is_disabled || isset($disabledByAncestor[$p->id]) || $p->requiresAccess());
+            $visible = $all->reject(fn (Page $p) => $p->hide_in_sitemap || $p->isSysFolder() || $p->is_disabled || isset($disabledByAncestor[$p->id]) || $p->requiresAccess() || $p->isHiddenByDisabledModule($settings));
 
             [$people, $pages] = $visible->partition(fn (Page $p) => $p->isAboutPerson());
             $people = $people->sortBy('title', SORT_NATURAL | SORT_FLAG_CASE)->values();

@@ -28,7 +28,7 @@ class ContactController extends Controller
     {
         // Gdy redakcja utworzyła stronę typu „Kontakt” (albo stronę o adresie „kontakt-2”),
         // adres /kontakt kieruje na nią; sama ta strona renderuje widok przez show().
-        if ($target = $this->contactPageTarget()) {
+        if ($target = self::contactPageTarget()) {
             // Zachowujemy parametry adresu (np. ?do=… z przycisku „Zadaj pytanie” na działaniu).
             $query = request()->getQueryString();
 
@@ -38,8 +38,11 @@ class ContactController extends Controller
         return $this->render();
     }
 
-    /** Opublikowana strona, na którą ma kierować /kontakt (typ „contact”, a w drugiej kolejności slug „kontakt-2”). */
-    private function contactPageTarget(): ?\App\Models\Page
+    /**
+     * Opublikowana strona, na którą ma kierować /kontakt (typ „contact”, a w drugiej kolejności slug „kontakt-2”).
+     * Mapa strony pomija wtedy /kontakt — w sitemap.xml jest sama ta strona.
+     */
+    public static function contactPageTarget(): ?\App\Models\Page
     {
         $live = fn ($q) => $q->where('is_published', true)->where(fn ($w) => $w->whereNull('publish_at')->orWhere('publish_at', '<=', now()));
 
@@ -71,7 +74,7 @@ class ContactController extends Controller
     public function section(string $section)
     {
         $settings = SiteSetting::current();
-        $data = $this->viewData($settings, $this->contactPageTarget());
+        $data = $this->viewData($settings, self::contactPageTarget());
         $sections = \Modules\Contact\Support\ContactSections::available($settings, $data['showMeetings'], $data['showShipping']);
         abort_unless(isset($sections[$section]), 404);
 
