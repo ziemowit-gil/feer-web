@@ -129,7 +129,8 @@ class KreatywniWorkshopsTest extends TestCase
     public function test_strona_kalendarza_pokazuje_nadchodzace_w_miesiacach_bez_ukrytych_i_minionych(): void
     {
         $this->useTemplate();
-        $this->calendarPage(['lead' => 'Zapraszamy na warsztaty otwarte.']);
+        // Widok „sama lista” — siatka miesiąca ma osobny test.
+        $this->calendarPage(['lead' => 'Zapraszamy na warsztaty otwarte.', 'view' => 'list']);
         $with = $this->workshop('Świece sojowe', '2026-12-12 10:00', '2026-12-12 13:00', ['place' => 'Dom Kultury', 'participants' => 'do 20 osób', 'description' => 'Pierwszy.', 'image_alt' => 'Świece na stole']);
         $with->addMedia(UploadedFile::fake()->image('swiece.jpg', 800, 400))->toMediaCollection('image');
         $this->workshop('Wianki wielkanocne', '2027-03-28 11:00');
@@ -155,7 +156,7 @@ class KreatywniWorkshopsTest extends TestCase
         $this->assertStringNotContainsString('Miniony', $html);
         $this->assertStringNotContainsString('Minione warsztaty', $html);
 
-        Page::query()->where('slug', 'kalendarz-warsztatow')->sole()->update(['type_data' => ['show_past' => true]]);
+        Page::query()->where('slug', 'kalendarz-warsztatow')->sole()->update(['type_data' => ['show_past' => true, 'view' => 'list']]);
         $html = $this->get('/kalendarz-warsztatow')->assertOk()->getContent();
         $this->assertStringContainsString('Minione warsztaty', $html);
         $this->assertStringContainsString('<strong>Miniony</strong>', $html);
@@ -236,5 +237,78 @@ class KreatywniWorkshopsTest extends TestCase
         $this->actingAs($coordinator)->get(route('admin.kreatywni-warsztaty.index'))->assertOk();
         $this->actingAs($pagesEditor)->get(route('admin.kreatywni-warsztaty.index'))->assertForbidden();
         $this->actingAs($this->admin())->get(route('admin.grupy.create'))->assertOk()->assertSee('value="workshops"', false);
+    }
+
+    public function test_widok_kalendarza_siatka_miesiaca_z_nawigacja_i_lista(): void
+    {
+        $this->useTemplate();
+        $this->calendarPage();
+        $today = $this->workshop('Dzisiejszy', '2026-11-23 15:00', '2026-11-23 17:00');
+        $past = $this->workshop('Miniony', '2026-11-10 10:00', '2026-11-10 12:00');
+        $dec = $this->workshop('Świece sojowe', '2026-12-12 10:00', '2026-12-12 13:00');
+
+        // Domyślnie miesiąc najbliższego terminu (listopad), tabela z dniami, dzisiaj oznaczone, linki do kart.
+        $html = $this->get('/kalendarz-warsztatow')->assertOk()->getContent();
+        $this->assertStringContainsString('<table class="kc-cal" aria-labelledby="kc-cal-title">', $html);
+        $this->assertStringContainsString('<h2 id="kc-cal-title">Listopad 2026</h2>', $html);
+        $this->assertStringContainsString('<span class="kc-sr">poniedziałek</span>', $html);
+        $this->assertStringContainsString('<td class="is-today" aria-current="date"><span class="kc-cal-day"><span aria-hidden="true">23</span><span class="kc-sr">23 listopada, dziś</span></span>', $html);
+        $this->assertStringContainsString('<a href="#warsztat-'.$today->id.'" class="kc-cal-ev"><span class="kc-cal-time">15:00</span><span class="kc-cal-name">Dzisiejszy</span></a>', $html);
+        $this->assertStringContainsString('<span class="kc-sr"> (odbył się)</span>', $html, 'miniony termin w siatce bez linku');
+        $this->assertStringContainsString('id="warsztat-'.$today->id.'"', $html);
+        $this->assertStringContainsString('href="#lista-terminow"', $html);
+        $this->assertStringContainsString('<h2 class="kc-ws-month">Najbliższe terminy</h2>', $html);
+        $this->assertStringContainsString('class="kc-ws-month">Grudzień 2026</h3>', $html, 'w widoku kalendarz + lista miesiące listy to H3');
+        $this->assertStringContainsString('?miesiac=2026-10#kalendarz" rel="prev"', $html);
+        $this->assertStringContainsString('?miesiac=2026-12#kalendarz" rel="next"', $html);
+
+        // Inny miesiąc z adresu; zły parametr = domyślny miesiąc.
+        $html = $this->get('/kalendarz-warsztatow?miesiac=2026-12')->assertOk()->getContent();
+        $this->assertStringContainsString('<h2 id="kc-cal-title">Grudzień 2026</h2>', $html);
+        $this->assertStringContainsString('<a href="#warsztat-'.$dec->id.'" class="kc-cal-ev">', $html);
+        $this->get('/kalendarz-warsztatow?miesiac=abc')->assertOk()->assertSee('<h2 id="kc-cal-title">Listopad 2026</h2>', false);
+        $this->get('/kalendarz-warsztatow?miesiac=2027-02')->assertOk()->assertSee('W tym miesiącu nie ma zaplanowanych warsztatów.');
+
+        // Sam kalendarz: karty tylko wybranego miesiąca, bez listy najbliższych.
+        Page::query()->where('slug', 'kalendarz-warsztatow')->sole()->update(['type_data' => ['view' => 'calendar']]);
+        $html = $this->get('/kalendarz-warsztatow?miesiac=2026-12')->assertOk()->getContent();
+        $this->assertStringContainsString('id="warsztat-'.$dec->id.'"', $html);
+        $this->assertStringNotContainsString('id="warsztat-'.$today->id.'"', $html);
+        $this->assertStringNotContainsString('Najbliższe terminy', $html);
+
+        // Sama lista: bez siatki.
+        Page::query()->where('slug', 'kalendarz-warsztatow')->sole()->update(['type_data' => ['view' => 'list']]);
+        $this->get('/kalendarz-warsztatow')->assertOk()->assertDontSee('class="kc-cal"', false);
+        $this->assertNotNull($past);
+    }
+
+    public function test_najblizsze_warsztaty_na_stronie_glownej(): void
+    {
+        $site = $this->useTemplate();
+        $this->workshop('Pierwszy', '2026-11-28 10:00');
+        $this->workshop('Drugi', '2026-12-05 10:00');
+        $this->workshop('Trzeci', '2026-12-12 10:00');
+        $fourth = $this->workshop('Czwarty', '2026-12-19 10:00');
+
+        // Bez strony z kalendarzem sekcji nie ma (przycisk nie miałby dokąd prowadzić).
+        $this->get('/')->assertOk()->assertDontSee('kc-ws-home-title', false);
+
+        $calendar = $this->calendarPage();
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('<h2 id="kc-ws-home-title" class="kc-h2">Najbliższe warsztaty</h2>', $html);
+        $this->assertSame(3, substr_count($html, 'class="kc-ws-card'), 'trzy najbliższe');
+        $this->assertStringNotContainsString('Czwarty', $html);
+        $this->assertStringContainsString('<a href="'.$calendar->publicUrl().'#warsztat-', $html);
+        $this->assertStringContainsString('Zobacz kalendarz warsztatów', $html);
+        $this->assertLessThan(strpos($html, 'kc-ws-home-title'), strpos($html, 'id="oferta"'), 'po ofercie warsztatów');
+        $this->assertNotNull($fourth);
+
+        // Przełącznik w Ustawienia → Szablon i wyłączony moduł chowają sekcję.
+        $site->forceFill(['kreatywni_texts' => ['_hidden' => ['team', 'workshops']]])->save();
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $this->get('/')->assertOk()->assertDontSee('kc-ws-home-title', false);
+        $site->forceFill(['kreatywni_texts' => null, 'disabled_modules' => ['workshops']])->save();
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        $this->get('/')->assertOk()->assertDontSee('kc-ws-home-title', false);
     }
 }

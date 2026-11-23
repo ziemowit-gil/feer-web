@@ -23,6 +23,7 @@ final class KreatywniTexts
         'mission' => ['Obszary działania', 'Krótki wstęp i cztery obszary działania.'],
         'social' => ['Social media', 'Duże karty z profilami z Ustawienia → Media i BIP. Bez ustawionych profili sekcja się nie pokazuje.'],
         'offer' => ['Oferta warsztatów', 'Lista warsztatów z ceną i przyciskiem do zapytania o termin.'],
+        'workshops' => ['Najbliższe warsztaty', 'Trzy najbliższe terminy z modułu „Warsztaty – Kreatywni” i przycisk do strony „Kalendarz warsztatów”. Bez terminów, bez opublikowanej strony z kalendarzem albo przy wyłączonym module sekcja się nie pokazuje.'],
         'why' => ['Dlaczego my', 'Wyróżniki i opis, jak pracujemy.'],
         'projects' => ['Działania', 'Działania z modułu Działania: zaznaczone „Pokaż na stronie głównej” (do 6), a gdy żadne nie jest zaznaczone — trzy ostatnio dodane trwające. Bez działań sekcja się nie pokazuje.'],
         'gallery' => ['Galeria', 'Zdjęcia z modułu Galeria (do 8). Bez zdjęć sekcja się nie pokazuje.'],
@@ -92,6 +93,12 @@ final class KreatywniTexts
         'offer_items' => ['offer', 'Warsztaty (Tytuł | grupa, np. Boże Narodzenie; opisy są na stronie Oferta)', 'list', "Laleczki zapachowe | Przez cały rok\nBiżuteria z filcu | Przez cały rok\nKolaż botaniczny | Przez cały rok\nLaleczki ze sznurka | Przez cały rok\nJęzyk migowy | Przez cały rok\nŚwiece sojowe | Przez cały rok\nMiody smakowe | Przez cały rok\nLaleczki motanki | Przez cały rok\nPerfumy | Przez cały rok\nKule musujące | Przez cały rok\nMydełka glicerynowe | Przez cały rok\nChoinkowe bonsai | Boże Narodzenie\nDekorowanie bombek | Boże Narodzenie\nWianki wielkanocne | Wielkanoc\nKompozycje kwiatowe | Wielkanoc\nDekorowanie jajek gipsowych | Wielkanoc"],
         'offer_button' => ['offer', 'Przycisk — napis', 'line', 'Zamów warsztaty'],
         'offer_button_url' => ['offer', 'Przycisk — adres (puste = strona kontaktu)', 'url', ''],
+
+        // Najbliższe warsztaty (moduł „Warsztaty – Kreatywni”)
+        'workshops_kicker' => ['workshops', 'Napis odręczny nad nagłówkiem', 'line', 'Zapraszamy'],
+        'workshops_title' => ['workshops', 'Nagłówek (H2)', 'line', 'Najbliższe warsztaty'],
+        'workshops_text' => ['workshops', 'Tekst wstępu', 'text', 'Warsztaty otwarte w Krakowie i okolicach. Liczba miejsc jest ograniczona — zapytaj o wolne miejsca.'],
+        'workshops_button' => ['workshops', 'Przycisk do kalendarza — napis', 'line', 'Zobacz kalendarz warsztatów'],
 
         // Dlaczego my
         'why_title' => ['why', 'Nagłówek (H2)', 'line', 'Co nas wyróżnia?'],

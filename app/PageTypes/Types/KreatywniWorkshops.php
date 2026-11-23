@@ -55,6 +55,8 @@ class KreatywniWorkshops extends PageType
     {
         return self::sharedRules('lead') + [
             'type_data.show_past' => ['nullable', 'boolean'],
+            // Widok: kalendarz miesiąca + lista (domyślnie), sam kalendarz albo sama lista.
+            'type_data.view' => ['nullable', 'in:both,calendar,list'],
         ];
     }
 
