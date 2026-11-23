@@ -121,6 +121,27 @@
                 <p class="mt-1 text-xs text-muted">Baner z równorzędnymi przyciskami „Akceptuję" i „Odrzucam" oraz linkiem do polityki prywatności. Decyzję można zmienić linkiem „Ustawienia cookies" w stopce. Puste = tekst domyślny.</p>
                 @error('cookie_banner_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
+            @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'cookie_info_text'))
+                <div>
+                    <label for="cookie_info_text" class="mb-1 block text-sm font-bold">Wstęp strony „Informacja o plikach cookies” <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <textarea id="cookie_info_text" name="cookie_info_text" rows="4" aria-describedby="cookie_info_hint"
+                        placeholder="{{ \App\Models\SiteSetting::DEFAULT_COOKIE_INFO_TEXT }}"
+                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">{{ old('cookie_info_text', $settings->cookie_info_text) }}</textarea>
+                    <p id="cookie_info_hint" class="mt-1 text-xs text-muted">
+                        Strona <a href="{{ route('cookies.info') }}" target="_blank" rel="noopener" class="font-bold text-brand-dark underline">{{ preg_replace('#^https?://#', '', route('cookies.info')) }}<span class="sr-only"> (otwiera się w nowej karcie)</span></a>
+                        sama wylicza, jakie pliki cookies zapisuje strona (sesja, formularze, pasek dostępności, a statystyki tylko wtedy, gdy są ustawione). Tu wpisujesz tylko wstęp; pusta linia = nowy akapit, puste pole = tekst domyślny.
+                    </p>
+                    @error('cookie_info_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="privacy_policy_url" class="mb-1 block text-sm font-bold">Adres polityki prywatności <span class="font-normal text-muted">(opcjonalnie)</span></label>
+                    <input id="privacy_policy_url" name="privacy_policy_url" type="text" maxlength="500" aria-describedby="privacy_policy_hint"
+                        value="{{ old('privacy_policy_url', $settings->privacy_policy_url) }}" placeholder="/polityka-prywatnosci"
+                        class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
+                    <p id="privacy_policy_hint" class="mt-1 text-xs text-muted">Ścieżka w witrynie (np. /polityka-prywatnosci) albo pełny adres https://… Link pokazuje się w banerze i na stronie o cookies. Puste pole = strona /polityka-prywatnosci, jeśli jest opublikowana; bez niej link się nie pokazuje.</p>
+                    @error('privacy_policy_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+            @endif
             @php
                 $consentStats = \App\Models\CookieConsent::forCurrentSite()
                     ->where('created_at', '>=', now()->subDays(30))

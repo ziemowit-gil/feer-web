@@ -9,9 +9,15 @@
         role="region" aria-label="Ustawienia plików cookies" tabindex="-1">
         <div class="mx-auto flex max-w-5xl flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="text-sm text-ink">
+                @php $cbPrivacy = $siteSettings->privacyPolicyUrl(); @endphp
                 <p>
                     {{ $siteSettings->cookieBannerText() }}
-                    <a href="{{ url('/polityka-prywatnosci') }}" class="font-bold text-brand underline hover:text-brand-dark">Polityka prywatności</a>.
+                    @if (\Illuminate\Support\Facades\Route::has('cookies.info'))
+                        <a href="{{ route('cookies.info') }}" class="font-bold text-brand-dark underline hover:text-ink">Więcej o plikach cookies</a>@if ($cbPrivacy) ·@else.@endif
+                    @endif
+                    @if ($cbPrivacy)
+                        <a href="{{ $cbPrivacy }}" class="font-bold text-brand-dark underline hover:text-ink">Polityka prywatności</a>.
+                    @endif
                 </p>
                 <p data-cookie-status hidden class="mt-1 font-bold"></p>
             </div>

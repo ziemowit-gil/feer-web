@@ -556,7 +556,7 @@ class SiteSetting extends Model implements HasMedia
         'google_login_enabled', 'google_client_id', 'google_client_secret',
         'member_login_enabled', 'member_allowed_domains', 'metka_mode', 'metka_types', 'metka_entity', 'metka_show_entity', 'metka_shared_accounts', 'sso_enabled', 'sso_only_login', 'passkey_login_enabled', 'sso_name', 'sso_issuer', 'sso_client_id', 'sso_client_secret', 'sso_scopes', 'ai_enabled', 'ai_api_key', 'ai_model', 'menu_highlight_color', 'szo_api_url', 'szo_enabled', 'szo_token', 'szo_default_form', 'szo_donation_form', 'szo_timeout', 'cleantalk_enabled', 'cleantalk_access_key', 'yubico_client_id', 'yubico_secret_key', 'two_factor_required_admins',
         'przelewy24_sandbox', 'przelewy24_merchant_id', 'przelewy24_pos_id', 'przelewy24_crc', 'przelewy24_api_key',
-        'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'show_cms_credit',
+        'unsplash_access_key', 'cookie_banner_enabled', 'cookie_banner_text', 'cookie_info_text', 'privacy_policy_url', 'show_cms_credit',
         'mail_transport', 'mail_from_address', 'mail_from_name', 'mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption',
         'msgraph_tenant_id', 'msgraph_client_id', 'msgraph_client_secret', 'msgraph_sender', 'msgraph_save_to_sent', 'forms_mail_via_msgraph',
         'show_coordinators', 'ngo_color', 'sub_brands',
@@ -1919,6 +1919,37 @@ class SiteSetting extends Model implements HasMedia
     public function cookieBannerText(): string
     {
         return trim((string) $this->cookie_banner_text) ?: self::DEFAULT_COOKIE_BANNER_TEXT;
+    }
+
+    public const DEFAULT_COOKIE_INFO_TEXT = "Pliki cookies to małe pliki zapisywane w Twojej przeglądarce. Część z nich jest niezbędna, żeby strona działała — te zapisujemy zawsze. Pozostałe, np. statystyczne, tylko za Twoją zgodą.\n\nPoniżej opisujemy wszystkie pliki cookies i dane, które ta strona zapisuje w przeglądarce, kto je zapisuje i jak długo są przechowywane. Swoją decyzję możesz zmienić w każdej chwili.";
+
+    /**
+     * Wstęp strony /informacja-o-cookies (Ustawienia → Ogólne → Pliki cookies) jako akapity; pusty = tekst domyślny.
+     *
+     * @return list<string>
+     */
+    public function cookieInfoText(): array
+    {
+        $text = trim((string) ($this->getAttribute('cookie_info_text') ?? '')) ?: self::DEFAULT_COOKIE_INFO_TEXT;
+
+        return array_values(array_filter(array_map('trim', preg_split('/\R\s*\R/u', $text) ?: []), 'strlen'));
+    }
+
+    /**
+     * Adres polityki prywatności dla banera cookies i strony o cookies: z ustawień (ścieżka w witrynie albo pełny adres),
+     * a bez niego /polityka-prywatnosci, gdy taka opublikowana strona istnieje w tej witrynie; inaczej null (bez linku).
+     */
+    public function privacyPolicyUrl(): ?string
+    {
+        $own = trim((string) ($this->getAttribute('privacy_policy_url') ?? ''));
+        if ($own !== '') {
+            return preg_match('#^https?://#i', $own) ? $own : site_href('/'.ltrim($own, '/'));
+        }
+
+        $exists = once(fn () => \App\Models\Page::withoutGlobalScopes()->where('site_id', $this->getKey())
+            ->where('slug', 'polityka-prywatnosci')->where('is_published', true)->exists());
+
+        return $exists ? site_href('/polityka-prywatnosci') : null;
     }
 
     /** Klucz Unsplash: z panelu, a gdy pusty — z konfiguracji (.env). */

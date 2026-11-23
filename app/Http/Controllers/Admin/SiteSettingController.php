@@ -187,6 +187,8 @@ class SiteSettingController extends Controller
             'unsplash_access_key' => ['nullable', 'string', 'max:1000'],
             'cookie_banner_enabled' => ['sometimes', 'boolean'],
             'cookie_banner_text' => ['nullable', 'string', 'max:1000'],
+            'cookie_info_text' => ['nullable', 'string', 'max:5000'],
+            'privacy_policy_url' => ['nullable', 'string', 'max:500', 'regex:~^(https?://\S+|/\S*)$~i'],
             'show_cms_credit' => ['sometimes', 'boolean'],
             'footer_options' => ['nullable', 'array'],
             'footer_options.copyright' => ['nullable', 'string', 'max:200'],
@@ -548,6 +550,14 @@ class SiteSettingController extends Controller
             }
             if (blank($data['ai_api_key'] ?? null)) {
                 unset($data['ai_api_key']);
+            }
+        }
+        // Informacja o cookies (migracja 2026_11_23_170000): bez kolumn pola pomijamy, puste pole = wartość domyślna.
+        foreach (['cookie_info_text', 'privacy_policy_url'] as $cookieColumn) {
+            if (! Schema::hasColumn('site_settings', $cookieColumn)) {
+                unset($data[$cookieColumn]);
+            } elseif (array_key_exists($cookieColumn, $data)) {
+                $data[$cookieColumn] = filled($data[$cookieColumn]) ? trim((string) $data[$cookieColumn]) : null;
             }
         }
         if (! Schema::hasColumn('site_settings', 'hero_single')) {

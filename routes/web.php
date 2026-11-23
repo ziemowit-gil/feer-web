@@ -298,6 +298,8 @@ Route::get('/linkedin', [ShortcutController::class, 'linkedin'])->name('shortcut
 
 // Deklaracja dostępności (ustawa o dostępności cyfrowej) + formularz zgłaszania barier.
 Route::get('/deklaracja-dostepnosci', [AccessibilityController::class, 'show'])->name('accessibility.show');
+// Informacja o plikach cookies: lista tego, co strona zapisuje (App\Support\CookieInventory), i zmiana decyzji.
+Route::get('/informacja-o-cookies', [\App\Http\Controllers\CookieInfoController::class, 'show'])->name('cookies.info');
 Route::get('/wylaczenia', [\App\Http\Controllers\ExclusionsController::class, 'index'])->name('exclusions.index');
 Route::post('/deklaracja-dostepnosci/zglos', [AccessibilityReportController::class, 'store'])->name('accessibility.report')->middleware('throttle:5,1');
 

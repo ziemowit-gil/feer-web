@@ -87,6 +87,9 @@
             @if ($fo['show_cookies'] && ($siteSettings->cookie_banner_enabled ?? true))
                 <li><button type="button" data-cookie-settings>Ustawienia cookies</button></li>
             @endif
+            @if ($fo['show_cookies'] && \Illuminate\Support\Facades\Route::has('cookies.info'))
+                <li><a href="{{ route('cookies.info') }}">Informacja o cookies</a></li>
+            @endif
             @if ($fo['staff_link'] && $fo['staff_url'] !== '')
                 <li><a href="{{ str_starts_with($fo['staff_url'], 'http') ? $fo['staff_url'] : url($fo['staff_url']) }}">{{ $fo['staff_label'] }}</a></li>
             @endif
