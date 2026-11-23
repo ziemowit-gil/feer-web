@@ -41,6 +41,8 @@ class PageTypeRegistryTest extends TestCase
             'standard' => 'Standardowa',
             'event' => 'Wydarzenie',
             'schedule' => 'Harmonogram zajęć / spotkań',
+            // Szablon „kreatywni”: kalendarz z modułu „Warsztaty – Kreatywni” (w wyborze tylko w tym szablonie — poniżej go nie ma).
+            'kreatywni_workshops' => 'Kalendarz warsztatów (terminy z modułu „Warsztaty – Kreatywni”: miejsce, data, uczestnicy, opis, grafika)',
             'about' => 'O organizacji',
             'faq' => 'FAQ (pytania i odpowiedzi)',
             'training_institution' => 'Instytucja szkoleniowa',
@@ -104,12 +106,13 @@ class PageTypeRegistryTest extends TestCase
             'about' => 'fa-building', 'contact' => 'fa-envelope', 'wspolpraca' => 'fa-handshake', 'brand_assets' => 'fa-palette', 'legacy' => 'fa-clock-rotate-left',
             'training_institution' => 'fa-graduation-cap', 'form_page' => 'fa-pen-to-square', 'phone_book' => 'fa-address-book', 'contact_book' => 'fa-address-book',
             'training_offer' => 'fa-chalkboard-user', 'training_catalog' => 'fa-graduation-cap', 'trainer_profile' => 'fa-user-tie', 'training_accreditations' => 'fa-award',
+            'kreatywni_workshops' => 'fa-calendar-check',
         ];
         ksort($expected);
         $this->assertSame($expected, $icons);
 
         $this->assertSame(
-            ['contact_book', 'form_page', 'phone_book', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'training_offer', 'training_catalog', 'trainer_profile', 'training_accreditations', 'team', 'documents', 'regulation', 'shortcut', 'redirect', 'menu_link', 'reports', 'partners', 'recruitment', 'tender', 'tyflo_consultations', 'tyflo_trainings'],
+            ['kreatywni_workshops', 'contact_book', 'form_page', 'phone_book', 'service', 'guide', 'glossary', 'case_study', 'pricing', 'training_offer', 'training_catalog', 'trainer_profile', 'training_accreditations', 'team', 'documents', 'regulation', 'shortcut', 'redirect', 'menu_link', 'reports', 'partners', 'recruitment', 'tender', 'tyflo_consultations', 'tyflo_trainings'],
             Page::typeDataTypes(),
         );
 

@@ -19,6 +19,13 @@ class KreatywniOffersTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        // Pamięć podręczna witryny trzyma szablon „kreatywni” — następne testy mają zaczynać od czystej.
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        parent::tearDown();
+    }
+
     private function useTemplate(string $template = 'kreatywni', array $extra = []): SiteSetting
     {
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();

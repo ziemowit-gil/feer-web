@@ -574,6 +574,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('kreatywni-dokumenty/import', [\App\Http\Controllers\Admin\KreatywniDocumentController::class, 'import'])->name('kreatywni-dokumenty.import');
         Route::post('kreatywni-dokumenty/{document}/przesun', [\App\Http\Controllers\Admin\KreatywniDocumentController::class, 'move'])->name('kreatywni-dokumenty.przesun');
         Route::resource('kreatywni-dokumenty', \App\Http\Controllers\Admin\KreatywniDocumentController::class)->parameters(['kreatywni-dokumenty' => 'document'])->except('show');
+        // Mikro moduł „Warsztaty – Kreatywni” (terminy do strony typu „Kalendarz warsztatów”).
+        Route::resource('kreatywni-warsztaty', \App\Http\Controllers\Admin\KreatywniWorkshopController::class)->parameters(['kreatywni-warsztaty' => 'workshop'])->except('show');
     });
 
     Route::middleware(['module:materials', 'module-access:materials'])->group(function () {

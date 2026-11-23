@@ -22,6 +22,13 @@ class KreatywniDocumentsTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        // Pamięć podręczna witryny trzyma szablon „kreatywni” — następne testy mają zaczynać od czystej.
+        \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
+        parent::tearDown();
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
