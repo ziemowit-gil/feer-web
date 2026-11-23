@@ -3802,8 +3802,9 @@
 
         {{-- Pasek zapisu przyklejony do dołu okna: zawsze pod ręką, z informacją o niezapisanych zmianach. --}}
         <div class="sticky bottom-0 z-20 -mx-6 -mb-6 mt-10 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-b-md bg-white px-6 py-4 shadow-[0_-6px_16px_-8px_rgba(0,0,0,0.18)] sm:-mx-8 sm:-mb-8 sm:px-8">
-            <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-6 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
-                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Zapisz zmiany</button>
+            <button type="submit" data-settings-save class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-6 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 aria-disabled:cursor-wait">
+                <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> <span data-settings-save-label>Zapisz zmiany</span></button>
+            <p class="sr-only" role="status" data-settings-save-status></p>
             <p class="text-sm text-ink" aria-live="polite">
                 <span x-show="dirty" x-cloak class="font-bold"><i class="fa-solid fa-circle-exclamation mr-1" aria-hidden="true"></i>Masz niezapisane zmiany.</span>
                 <span x-show="! dirty">Zapisujesz całą tę sekcję (wszystkie jej karty) — pozostałe sekcje zostają bez zmian.</span>
@@ -3866,7 +3867,25 @@
             // a serwer waliduje i zapisuje tylko je. Bez JS formularz zapisuje wszystko jak dawniej.
             const form = document.getElementById('settings-form');
             if (!form) return;
-            form.addEventListener('submit', function () {
+            // Zapis trwa kilka sekund (duży formularz): kolejne kliknięcie „Zapisz” przerywało poprzedni zapis
+            // (w logach serwera 499), więc w trakcie zapisu przycisk jest zablokowany i pokazuje „Zapisywanie…”.
+            const saveBtn = form.querySelector('[data-settings-save]');
+            const saveLabel = form.querySelector('[data-settings-save-label]');
+            const saveStatus = form.querySelector('[data-settings-save-status]');
+            let saving = false;
+            function setSaving(on) {
+                saving = on;
+                if (!saveBtn) return;
+                saveBtn.setAttribute('aria-disabled', on ? 'true' : 'false');
+                if (saveLabel) saveLabel.textContent = on ? 'Zapisywanie…' : 'Zapisz zmiany';
+                if (saveStatus) saveStatus.textContent = on ? 'Zapisywanie zmian, poczekaj.' : '';
+            }
+            window.addEventListener('pageshow', function () { setSaving(false); });
+            form.addEventListener('submit', function (e) {
+                if (saving) { e.preventDefault(); return; }
+                setSaving(true);
+                // Gdy inny skrypt anulował wysyłkę (np. potwierdzenie), odblokuj przycisk.
+                setTimeout(function () { if (e.defaultPrevented) setSaving(false); }, 0);
                 form.querySelectorAll('input[data-section-field]').forEach(function (el) { el.remove(); });
                 const tab = (form.querySelector('input[name="_redirect_tab"]') || {}).value;
                 const container = Array.from(form.querySelectorAll('[x-show]'))
