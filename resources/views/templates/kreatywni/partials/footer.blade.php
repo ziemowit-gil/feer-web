@@ -33,7 +33,7 @@
     <div class="kc-wrap kc-foot{{ $kcPhone === '' && $kcEmail === '' && $kcAddress === '' ? ' kc-foot-2' : '' }}">
         <div>
             <a class="kc-foot-brand" href="{{ site_home_url() }}">
-                @if ($kcLogo)<img src="{{ $kcLogo }}" alt="" width="72" height="72" loading="lazy">@endif
+                @if ($kcLogo)<img src="{{ $kcLogo }}" alt="" width="52" height="52" loading="lazy">@endif
                 <span class="kc-foot-name">{{ $siteSettings->site_name }}<span class="kc-sr"> — strona główna</span></span>
             </a>
             @if (filled($siteSettings->tagline))

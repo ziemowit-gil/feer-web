@@ -339,22 +339,23 @@
     .kc-dark .kc-lead { color: #fff; }
 
     /* ── Stopka ───────────────────────────────────────────────── */
-    .kc-footer { background: #143805; color: #fff; }
-    .kc-foot { display: grid; gap: 2rem; padding-top: 3.5rem; padding-bottom: 2.5rem; }
+    .kc-footer { background: #143805; color: #fff; font-size: .95rem; }
+    /* Zwarta stopka: mniejsze odstępy, logo i nagłówki; cele dotykowe nadal ≥ 36 px. */
+    .kc-foot { display: grid; gap: 1.25rem 2rem; padding-top: 2rem; padding-bottom: 1.25rem; }
     @media (min-width: 768px) { .kc-foot { grid-template-columns: 1.4fr 1fr 1fr; } .kc-foot.kc-foot-2 { grid-template-columns: 1.4fr 1fr; } }
     .kc-foot-brand { display: flex; gap: 1rem; align-items: center; color: #fff; text-decoration: none; }
-    .kc-foot-brand img { width: 4.5rem; height: 4.5rem; flex: none; border-radius: 50%; background: #fff; object-fit: contain; }
-    .kc-foot-name { font-size: 1.25rem; font-weight: 800; line-height: 1.2; }
-    .kc-foot p { margin: .75rem 0 0; line-height: 1.6; }
-    .kc-foot h2 { margin: 0 0 .75rem; font-size: 1rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--kc-sun); }
+    .kc-foot-brand img { width: 3.25rem; height: 3.25rem; flex: none; border-radius: 50%; background: #fff; object-fit: contain; }
+    .kc-foot-name { font-size: 1.1rem; font-weight: 800; line-height: 1.2; }
+    .kc-foot p { margin: .5rem 0 0; line-height: 1.5; }
+    .kc-foot h2 { margin: 0 0 .35rem; font-size: .85rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--kc-sun); }
     .kc-footer ul { margin: 0; padding: 0; list-style: none; }
-    .kc-foot-addr { display: inline-flex; align-items: center; gap: .6rem; min-height: 2.75rem; }
-    .kc-footer li a, .kc-footer li button { display: inline-flex; align-items: center; gap: .6rem; min-height: 2.75rem; padding: 0; border: 0; background: none; color: #fff; font: inherit; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, .45); text-underline-offset: 4px; cursor: pointer; overflow-wrap: anywhere; }
+    .kc-foot-addr { display: inline-flex; align-items: center; gap: .6rem; min-height: 2.25rem; }
+    .kc-footer li a, .kc-footer li button { display: inline-flex; align-items: center; gap: .6rem; min-height: 2.25rem; padding: 0; border: 0; background: none; color: #fff; font: inherit; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, .45); text-underline-offset: 4px; cursor: pointer; overflow-wrap: anywhere; }
     .kc-footer li a:hover, .kc-footer li button:hover { text-decoration-color: var(--kc-sun); }
-    .kc-foot-social { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem !important; }
-    .kc-footer .kc-foot-social a { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: rgba(255, 255, 255, .12); color: #fff; font-size: 1.15rem; text-decoration: none; }
+    .kc-foot-social { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem !important; }
+    .kc-footer .kc-foot-social a { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: rgba(255, 255, 255, .12); color: #fff; font-size: 1.05rem; text-decoration: none; }
     .kc-footer .kc-foot-social a:hover { background: var(--kc-sun); color: var(--kc-forest); }
-    .kc-foot-bottom { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; align-items: center; justify-content: space-between; padding-top: 1.25rem; padding-bottom: 1.25rem; border-top: 1px solid rgba(255, 255, 255, .2); font-size: .92rem; }
+    .kc-foot-bottom { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; align-items: center; justify-content: space-between; padding-top: .6rem; padding-bottom: .6rem; border-top: 1px solid rgba(255, 255, 255, .2); font-size: .875rem; }
     .kc-foot-bottom p { margin: 0; }
     .kc-foot-bottom ul { display: flex; flex-wrap: wrap; gap: 0 1.25rem; }
     /* Podpis wykonawcy z ikonką weCMS (partials/wecms-mark) — w prawym dolnym rogu, na telefonie pod linkami. */
@@ -362,7 +363,7 @@
     .kc-foot-credit .wecms-mark { display: inline-flex; align-items: center; gap: .45rem; font-weight: 600; }
     .kc-foot-credit .wecms-mark svg { flex: none; }
     .kc-foot-credit .wecms-mark-name b { font-weight: 800; }
-    .kc-foot-credit a { display: inline-flex; align-items: center; min-height: 2.75rem; color: #fff; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, .45); text-underline-offset: 4px; }
+    .kc-foot-credit a { display: inline-flex; align-items: center; min-height: 2.25rem; color: #fff; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, .45); text-underline-offset: 4px; }
     .kc-foot-credit a:hover { text-decoration-color: var(--kc-sun); }
     .kc-foot-credit a:focus-visible { outline: 3px solid var(--kc-sun); outline-offset: 2px; }
     /* Od tabletu jeden rząd: © po lewej, podpis po prawej (przy długiej nazwie łamie się tekst, nie cały blok). */
