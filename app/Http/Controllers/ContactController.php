@@ -128,6 +128,11 @@ class ContactController extends Controller
     /** Waliduje wiadomość kontaktową, zapisuje do bazy i wysyła e-mail. */
     public function store(Request $request)
     {
+        // Formularz wyłączony w Komunikacja → Kontakt (albo w Ustawienia → Szablon kreatywni) — nie przyjmujemy wiadomości.
+        if (! \Modules\Contact\Support\ContactOptions::for()->formEnabled()) {
+            return back()->withErrors(['form' => 'Formularz kontaktowy jest teraz wyłączony. Napisz do nas e-mailem albo zadzwoń.']);
+        }
+
         $coordinators = $this->loadCoordinators();
 
         // Zbuduj listę dozwolonych e-maili koordynatorów do walidacji.

@@ -157,6 +157,18 @@ class KreatywniOffer extends Model
      */
     public static function forDisplay(KreatywniTexts $texts): array
     {
+        $offers = self::offersToDisplay($texts);
+        if ($texts->ordersOnline()) {
+            return $offers;
+        }
+
+        // Zamówienia online wyłączone: przycisk prowadzi do kontaktu (button_url null) z napisem z ustawień.
+        return array_map(fn (array $o) => ['button' => $texts->get('orders_off_button'), 'button_url' => null] + $o, $offers);
+    }
+
+    /** @return list<array<string, mixed>> */
+    private static function offersToDisplay(KreatywniTexts $texts): array
+    {
         if (self::supported() && self::forCurrentSite()->exists()) {
             return self::forCurrentSite()->where('is_active', true)->orderBy('order')->orderBy('id')->get()
                 ->map(fn (self $o) => [

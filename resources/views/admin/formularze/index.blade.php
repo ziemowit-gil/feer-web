@@ -66,7 +66,7 @@
                         <td class="px-4 py-3 text-center">
                             @php $itemAvail = $item->is_active ? $item->availability() : null; @endphp
                             @if ($itemAvail && ! $itemAvail['open'])
-                                <span class="text-xs font-bold text-red-700"><i class="fa-solid fa-lock mr-1" aria-hidden="true"></i>{{ ['not_yet' => 'Jeszcze nie otwarty', 'ended' => 'Po terminie', 'full' => 'Limit wyczerpany'][$itemAvail['reason']] ?? 'Zamknięty' }}</span>
+                                <span class="text-xs font-bold text-red-700"><i class="fa-solid fa-lock mr-1" aria-hidden="true"></i>{{ ['not_yet' => 'Jeszcze nie otwarty', 'ended' => 'Po terminie', 'full' => 'Limit wyczerpany', 'orders_off' => 'Zamówienia online wyłączone', 'contact_off' => 'Formularz kontaktowy wyłączony'][$itemAvail['reason']] ?? 'Zamknięty' }}</span>
                             @elseif ($item->is_active)
                                 <span class="text-xs font-bold text-ink"><i class="fa-solid fa-circle-check mr-1 text-brand-dark" aria-hidden="true"></i>Aktywny</span>
                             @else

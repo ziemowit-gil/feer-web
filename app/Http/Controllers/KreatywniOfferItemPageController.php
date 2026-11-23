@@ -30,7 +30,8 @@ class KreatywniOfferItemPageController extends Controller
         $offerPage = Page::forCurrentSite()->where('is_published', true)->where('slug', 'like', 'oferta%')->orderBy('id')->get()
             ->first(fn (Page $p) => (bool) preg_match('/^oferta(-\d+)?$/', (string) $p->slug) && $p->isLiveNow());
         $contactUrl = $site->isModuleEnabled('contact') && \Illuminate\Support\Facades\Route::has('contact.show') ? site_route('contact.show') : null;
-        $orderUrl = KreatywniTexts::href((string) $offer->button_url) ?? $contactUrl;
+        $texts = KreatywniTexts::for($site);
+        $orderUrl = $texts->ordersOnline() ? (KreatywniTexts::href((string) $offer->button_url) ?? $contactUrl) : $contactUrl;
         $calendarUrl = null;
         if ($site->isModuleEnabled('workshops') && KreatywniWorkshop::supported()) {
             $calendarUrl = Page::forCurrentSite()->where('type', 'kreatywni_workshops')->where('is_published', true)->orderBy('id')->get()
@@ -44,7 +45,7 @@ class KreatywniOfferItemPageController extends Controller
             'offer' => $offer,
             'offerPage' => $offerPage,
             'orderUrl' => $orderUrl,
-            'orderLabel' => trim((string) $offer->button_label) ?: 'Zamów warsztaty',
+            'orderLabel' => $texts->ordersOnline() ? (trim((string) $offer->button_label) ?: 'Zamów warsztaty') : $texts->get('orders_off_button'),
             'calendarUrl' => $calendarUrl,
             'related' => $related,
             'price' => trim((string) $item->price) !== '' ? trim((string) $item->price) : trim(trim((string) $offer->price).' '.trim((string) $offer->price_unit)),

@@ -124,6 +124,39 @@
         $kcOfferAdmin = \App\Models\KreatywniOffer::supported() && \Illuminate\Support\Facades\Route::has('admin.kreatywni-oferty.index')
             ? route('admin.kreatywni-oferty.index') : null;
     @endphp
+    {{-- Zamówienia online: wyłączone kierują przyciski zamówienia do kontaktu i zamykają formularz zamówienia warsztatów. --}}
+    @php $kcOrdersOn = (bool) old('kreatywni_texts._orders', old('kreatywni_texts._orders_form') ? false : $kcTexts->ordersOnline()); @endphp
+    <fieldset id="kreatywni-zamowienia" class="scroll-mt-24">
+        <legend class="mb-1 text-sm font-bold">Zamówienia online</legend>
+        <input type="hidden" name="kreatywni_texts[_orders_form]" value="1">
+        <label class="flex cursor-pointer items-start gap-2 rounded border border-gray-300 bg-white p-2">
+            <input type="checkbox" name="kreatywni_texts[_orders]" value="1" class="mt-1" aria-describedby="kc-orders-help" @checked($kcOrdersOn)>
+            <span>
+                <span class="block text-sm font-bold text-ink">Przyjmuj zamówienia warsztatów przez stronę</span>
+                <span id="kc-orders-help" class="block text-xs text-muted">Odznacz, żeby wyłączyć zamówienia online: przyciski „Zamów” w ofercie, w menu „Oferta” i na podstronach warsztatów poprowadzą do strony kontaktu (napis ustawisz w „Teksty: Oferta warsztatów”), a formularz „Zamówienie warsztatów” pokaże komunikat zamiast pól. Zmiana działa po „Zapisz”.</span>
+            </span>
+        </label>
+        @unless ($kcTexts->ordersOnline())
+            <p class="mt-1 text-xs font-bold text-ink"><i class="fa-solid fa-lock mr-1" aria-hidden="true"></i> Zamówienia online są teraz wyłączone.</p>
+        @endunless
+    </fieldset>
+
+    {{-- Formularz kontaktowy: to samo co Komunikacja → Kontakt → „Pokazuj formularz” (zapis w SiteSettingController). --}}
+    @if (\Modules\Contact\Support\ContactSections::moduleActive() && \Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'contact_options'))
+        @php $kcContactFormOn = (bool) old('kreatywni_contact_form', old('kreatywni_contact_form_toggle') ? false : \Modules\Contact\Support\ContactOptions::for($settings)->formEnabled()); @endphp
+        <fieldset id="kreatywni-formularz-kontaktowy" class="scroll-mt-24">
+            <legend class="mb-1 text-sm font-bold">Formularz kontaktowy</legend>
+            <input type="hidden" name="kreatywni_contact_form_toggle" value="1">
+            <label class="flex cursor-pointer items-start gap-2 rounded border border-gray-300 bg-white p-2">
+                <input type="checkbox" name="kreatywni_contact_form" value="1" class="mt-1" aria-describedby="kc-contact-form-help" @checked($kcContactFormOn)>
+                <span>
+                    <span class="block text-sm font-bold text-ink">Pokazuj formularz na stronie kontaktu</span>
+                    <span id="kc-contact-form-help" class="block text-xs text-muted">Odznacz, żeby wyłączyć formularz: na stronie kontaktu zostaną e-mail i telefon z informacją, jak się z nami skontaktować, a wysłanie wiadomości przez formularz nie będzie możliwe. To samo ustawienie jest w Komunikacja → Kontakt. Zmiana działa po „Zapisz”.</span>
+                </span>
+            </label>
+        </fieldset>
+    @endif
+
     @if ($kcOfferAdmin)
         <p id="kc-offer-source" class="rounded-md bg-brand-light px-3 py-2 text-xs text-ink">
             <i class="fa-solid fa-tags mr-1" aria-hidden="true"></i>

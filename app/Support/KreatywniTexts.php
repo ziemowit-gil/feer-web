@@ -54,6 +54,9 @@ final class KreatywniTexts
         'cards' => ['Karty z opisami', 'Każdy warsztat w białej karcie: nazwa i krótki opis, po dwie–trzy w rzędzie.'],
     ];
 
+    /** Formularz zamówienia warsztatów (KreatywniWorkshopOrderFormSeeder) — zamykany przełącznikiem „Zamówienia online”. */
+    public const ORDER_FORM_SLUG = 'zamowienie-warsztatow';
+
     /**
      * Klucz => [sekcja, etykieta w panelu, typ pola, wartość domyślna].
      */
@@ -94,6 +97,8 @@ final class KreatywniTexts
         'offer_items' => ['offer', 'Warsztaty (jeden w wierszu: Tytuł | grupa | opis — np. „Dekorowanie bombek | Boże Narodzenie | Magiczne zajęcia…”; grupa i opis opcjonalne)', 'list', "Laleczki zapachowe | Przez cały rok | Inspirujące warsztaty projektowania pachnących laleczek z naturalnym suszem.\nBiżuteria z filcu | Przez cały rok | Interaktywny kurs tworzenia unikatowej biżuterii z wełny czesankowej.\nKolaż botaniczny | Przez cały rok | Obrazy wprost z natury. Nie musisz mieć zdolności plastycznych, wystarczy rozbudzić wyobraźnię.\nLaleczki ze sznurka | Przez cały rok | Co potrafią makramowe supełki, czyli całkowicie zaplątane zajęcia ze sznurkiem w roli głównej.\nJęzyk migowy | Przez cały rok | Wprowadzenie do języka migowego, nauka podstawowych zwrotów oraz alfabetu.\nŚwiece sojowe | Przez cały rok | Relaksujące sesje tworzenia dekoracyjnych świec z ekologicznych materiałów.\nMiody smakowe | Przez cały rok | Nauka poprzez doświadczanie produktów pszczelich. Stwórz miód z ulubionymi dodatkami.\nLaleczki motanki | Przez cały rok | Zajmujące warsztaty tworzenia tradycyjnych lalek słowiańskich w duchu zero waste.\nPerfumy | Przez cały rok | Pachnące zajęcia komponowania personalizowanych perfum z olejkami eterycznymi.\nKule musujące | Przez cały rok | Sensoryczna zabawa polegająca na przygotowaniu magicznych, buzujących w wodzie kul.\nMydełka glicerynowe | Przez cały rok | Kreatywne warsztaty tworzenia dekoracyjnych mydełek z naturalnych składników.\nChoinkowe bonsai | Boże Narodzenie | Świąteczne warsztaty sadzenia oraz dekorowania bożonarodzeniowego mini drzewka.\nDekorowanie bombek | Boże Narodzenie | Magiczne zajęcia ozdabiania bombek różnymi metodami oraz technikami.\nWianki wielkanocne | Wielkanoc | Wiosenne zajęcia rozwijające zainteresowania z wykorzystaniem wielkanocnych dodatków.\nKompozycje kwiatowe | Wielkanoc | Wielkanocne tworzenie kompozycji z żywych kwiatów, przepełnione kolorami oraz wiosenną atmosferą.\nDekorowanie jajek gipsowych | Wielkanoc | Wiosenne zajęcia ozdabiania jajek metodą decoupage z wykorzystaniem suszonych kwiatów."],
         'offer_button' => ['offer', 'Przycisk — napis', 'line', 'Zamów warsztaty'],
         'offer_button_url' => ['offer', 'Przycisk — adres (puste = strona kontaktu)', 'url', ''],
+        'orders_off_button' => ['offer', 'Zamówienia online wyłączone — napis przycisku (prowadzi do kontaktu)', 'line', 'Zapytaj o warsztaty'],
+        'orders_off_message' => ['offer', 'Zamówienia online wyłączone — komunikat w formularzu zamówienia', 'text', 'Zamówienia online są chwilowo wyłączone. Zadzwoń albo napisz do nas — chętnie ustalimy termin warsztatów.'],
 
         // Najbliższe warsztaty (moduł „Warsztaty – Kreatywni”)
         'workshops_kicker' => ['workshops', 'Napis odręczny nad nagłówkiem', 'line', 'Zapraszamy'],
@@ -236,6 +241,16 @@ final class KreatywniTexts
         return is_string($style) && array_key_exists($style, self::OFFER_STYLES) ? $style : array_key_first(self::OFFER_STYLES);
     }
 
+    /**
+     * Czy przyjmujemy zamówienia online (Ustawienia → Szablon → „Zamówienia online”, klucz `_orders_off`). Wyłączone:
+     * przyciski zamówienia prowadzą do kontaktu z napisem `orders_off_button`, a formularz zamówienia warsztatów
+     * (ORDER_FORM_SLUG) jest zamknięty z komunikatem `orders_off_message`.
+     */
+    public function ordersOnline(): bool
+    {
+        return empty($this->own['_orders_off']);
+    }
+
     /** Wartość zapisana w panelu (do formularza), bez domyślnej. */
     public function ownValue(string $key): string
     {
@@ -298,6 +313,9 @@ final class KreatywniTexts
             $prefix.'._hidden' => ['nullable', 'array'], $prefix.'._hidden.*' => ['string', $sections],
             $prefix.'._shown' => ['nullable', 'array'], $prefix.'._shown.*' => ['string', $sections],
             $prefix.'._offer_style' => ['nullable', 'string', 'in:'.implode(',', array_keys(self::OFFER_STYLES))],
+            $prefix.'._orders_form' => ['nullable', 'boolean'],
+            $prefix.'._orders' => ['nullable', 'boolean'],
+            $prefix.'._orders_off' => ['nullable', 'boolean'],
         ];
         foreach (self::DEFS as $key => [, , $type]) {
             $rules[$prefix.'.'.$key] = match ($type) {
@@ -350,6 +368,11 @@ final class KreatywniTexts
         $style = $texts['_offer_style'] ?? null;
         if (is_string($style) && array_key_exists($style, self::OFFER_STYLES) && $style !== array_key_first(self::OFFER_STYLES)) {
             $out['_offer_style'] = $style;
+        }
+        // Zamówienia online: formularz wysyła znacznik `_orders_form` i pole `_orders` (zaznaczone = przyjmujemy).
+        $ordersOff = ! empty($texts['_orders_form']) ? empty($texts['_orders']) : ! empty($texts['_orders_off']);
+        if ($ordersOff) {
+            $out['_orders_off'] = true;
         }
 
         return $out === [] ? null : $out;

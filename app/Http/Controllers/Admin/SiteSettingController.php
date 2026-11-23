@@ -829,6 +829,16 @@ class SiteSettingController extends Controller
 
         $settings->update($data);
 
+        // Szablon „kreatywni”: przełącznik formularza kontaktowego w Ustawienia → Szablon — to samo pole co
+        // Komunikacja → Kontakt → „Pokazuj formularz” (contact_options.form_enabled); pozostałe opcje Kontaktu zostają.
+        if ($request->boolean('kreatywni_contact_form_toggle')
+            && \Modules\Contact\Support\ContactSections::moduleActive()
+            && Schema::hasColumn('site_settings', 'contact_options')) {
+            $contactOptions = \Modules\Contact\Support\ContactOptions::for($settings)->toArray();
+            $contactOptions['form_enabled'] = $request->boolean('kreatywni_contact_form');
+            $settings->forceFill(['contact_options' => \Modules\Contact\Support\ContactOptions::normalize($contactOptions)])->save();
+        }
+
         activity('cms')
             ->causedBy(auth()->user())
             ->performedOn($settings)

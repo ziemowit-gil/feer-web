@@ -285,6 +285,20 @@ class FormDefinition extends Model
         $custom = trim((string) ($s['closed_message'] ?? ''));
         $fmt = fn ($d) => $d->locale('pl')->translatedFormat('j F Y, H:i');
 
+        // Formularz kontaktowy wyłączony w Komunikacja → Kontakt (albo w Ustawienia → Szablon kreatywni) nie przyjmuje zgłoszeń.
+        if ($this->slug === \App\Support\ContactForm::SLUG && ! \Modules\Contact\Support\ContactOptions::for()->formEnabled()) {
+            return ['open' => false, 'reason' => 'contact_off', 'message' => 'Formularz kontaktowy jest teraz wyłączony.', 'remaining' => null, 'until' => null];
+        }
+
+        // Szablon „kreatywni”: wyłączone zamówienia online zamykają formularz zamówienia warsztatów.
+        if ($this->slug === \App\Support\KreatywniTexts::ORDER_FORM_SLUG) {
+            $site = SiteSetting::current();
+            $texts = $site->site_template === 'kreatywni' ? \App\Support\KreatywniTexts::for($site) : null;
+            if ($texts && ! $texts->ordersOnline()) {
+                return ['open' => false, 'reason' => 'orders_off', 'message' => $texts->get('orders_off_message'), 'remaining' => null, 'until' => null];
+            }
+        }
+
         [$reason, $default] = match (true) {
             $from && now()->lt($from) => ['not_yet', 'Zgłoszenia ruszają '.$fmt($from).'. Zapraszamy!'],
             $until && now()->gt($until) => ['ended', 'Zbieranie zgłoszeń zakończyło się '.$fmt($until).'.'],
