@@ -63,14 +63,13 @@ class KreatywniOffersTest extends TestCase
             ->assertSee('name="items_style" value="chips"', false)
             ->assertSee('value="Zamów warsztaty"', false);
 
-        $this->post(route('admin.kreatywni-oferty.store'), $this->payload())
-            ->assertRedirect(route('admin.kreatywni-oferty.index'))->assertSessionHasNoErrors();
+        $created = $this->post(route('admin.kreatywni-oferty.store'), $this->payload())->assertSessionHasNoErrors();
         $offer = KreatywniOffer::query()->firstOrFail();
-        $this->assertSame([
-            'Przez cały rok' => [['title' => 'Ceramika', 'desc' => '']],
-            'Wielkanoc' => [['title' => 'Pisanki', 'desc' => '']],
-            'Warsztaty' => [['title' => 'Origami', 'desc' => '']],
-        ], $offer->itemGroups());
+        // Z kartami warsztatów panel od razu przechodzi do edycji oferty (grafiki i opisy kart).
+        $created->assertRedirect(route('admin.kreatywni-oferty.edit', $offer).'#warsztaty');
+        $titles = fn (array $groups) => array_map(fn ($items) => array_column($items, 'title'), $groups);
+        $this->assertSame(['Przez cały rok' => ['Ceramika'], 'Wielkanoc' => ['Pisanki'], 'Warsztaty' => ['Origami']], $titles($offer->itemGroups()));
+        $this->assertSame(3, $offer->cards()->count(), 'lista z formularza to karty');
 
         foreach (['/', '/oferta'] as $url) {
             $html = $this->get($url)->assertOk()->getContent();
@@ -209,20 +208,23 @@ class KreatywniOffersTest extends TestCase
 
         $this->post(route('admin.kreatywni-oferty.store'), $this->payload(['items' => $items, 'items_style' => 'cards']))->assertSessionHasNoErrors();
         $offer = KreatywniOffer::query()->sole();
-        $this->assertSame(['title' => 'Dekorowanie bombek', 'desc' => 'Magiczne zajęcia ozdabiania bombek.'], $offer->itemGroups()['Boże Narodzenie'][0]);
-        $this->assertSame(['title' => 'Origami', 'desc' => 'Składanie papieru.'], $offer->itemGroups()['Warsztaty'][0], 'pusta grupa = „Warsztaty”');
+        $first = $offer->itemGroups()['Boże Narodzenie'][0];
+        $this->assertSame(['Dekorowanie bombek', 'Magiczne zajęcia ozdabiania bombek.'], [$first['title'], $first['desc']]);
+        $this->assertSame('Składanie papieru.', $offer->itemGroups()['Warsztaty'][0]['desc'], 'pusta grupa = „Warsztaty”');
+        $url = $first['url'];
+        $this->assertStringEndsWith('/warsztat/dekorowanie-bombek', $url);
 
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertStringContainsString('<ul class="kc-offer-cards">', $html);
-        $this->assertStringContainsString('<li><span class="kc-offer-name">Dekorowanie bombek</span> <span class="kc-offer-desc">Magiczne zajęcia ozdabiania bombek.</span></li>', $html);
-        $this->assertStringContainsString('<li><span class="kc-offer-name">Bez opisu</span></li>', $html);
+        $this->assertStringContainsString('<h4 class="kc-offer-name"><a href="'.$url.'">Dekorowanie bombek</a></h4>', $html);
+        $this->assertStringContainsString('<p class="kc-offer-desc">Magiczne zajęcia ozdabiania bombek.</p>', $html);
 
         $offer->update(['items_style' => 'list']);
-        $this->assertStringContainsString('<ul class="kc-plain-list"><li><span class="kc-offer-name">Dekorowanie bombek</span> <span class="kc-offer-desc">', str_replace(["\n", '  '], '', $this->get('/')->getContent()));
+        $this->assertStringContainsString('<ul class="kc-plain-list"><li><span class="kc-offer-name"><a href="'.$url.'">Dekorowanie bombek</a></span> <span class="kc-offer-desc">', str_replace(["\n", '  '], '', $this->get('/')->getContent()));
 
         $offer->update(['items_style' => 'chips']);
         $html = $this->get('/')->getContent();
-        $this->assertStringContainsString('<li>Dekorowanie bombek</li>', $html);
+        $this->assertStringContainsString('<li><a href="'.$url.'">Dekorowanie bombek</a></li>', $html);
         $this->assertStringNotContainsString('Magiczne zajęcia ozdabiania bombek.', $html, 'pigułki bez opisów');
 
         // Domyślne warsztaty z tekstów szablonu mają opisy; wygląd do wyboru w formularzu.

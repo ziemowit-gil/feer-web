@@ -23,11 +23,24 @@
             .kc-plain-list li { padding: .3rem 0; font-size: 1.05rem; line-height: 1.45; color: var(--kc-forest); break-inside: avoid; }
             .kc-plain-list .kc-offer-name { font-weight: 700; }
             .kc-plain-list .kc-offer-desc { display: block; margin-top: .1rem; font-size: .95rem; color: var(--kc-ink); }
-            .kc-offer-cards { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
-            @media (min-width: 640px) { .kc-offer-cards { grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); } }
-            .kc-offer-cards li { display: flex; flex-direction: column; gap: .3rem; padding: 1rem 1.15rem; border-radius: 1rem; background: #fff; line-height: 1.45; }
-            .kc-offer-cards .kc-offer-name { font-size: 1.02rem; font-weight: 800; color: var(--kc-forest); }
-            .kc-offer-cards .kc-offer-desc { font-size: .95rem; color: var(--kc-ink); }
+            .kc-offer-cards { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+            @media (min-width: 640px) { .kc-offer-cards { grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); } }
+            .kc-offer-cards li { position: relative; display: flex; flex-direction: column; overflow: hidden; border-radius: 1rem; background: #fff; line-height: 1.45; }
+            .kc-offer-cards li:hover { background: var(--kc-sun); }
+            .kc-offer-cards li:focus-within { outline: 3px solid var(--kc-forest); outline-offset: 3px; }
+            .kc-offer-img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; background: var(--kc-mint); }
+            .kc-offer-body { display: flex; flex: 1; flex-direction: column; gap: .35rem; padding: .95rem 1.15rem 1.1rem; }
+            .kc-offer-cards .kc-offer-name { margin: 0; font-size: 1.05rem; font-weight: 800; line-height: 1.3; color: var(--kc-forest); }
+            .kc-offer-cards .kc-offer-name a { color: inherit; text-decoration: none; }
+            .kc-offer-cards .kc-offer-name a::after { content: ''; position: absolute; inset: 0; }
+            .kc-offer-cards .kc-offer-name a:focus-visible { outline: none; }
+            .kc-offer-cards li:hover .kc-offer-name a { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+            .kc-offer-price { margin: 0; font-weight: 800; color: var(--kc-green); }
+            .kc-offer-cards li:hover .kc-offer-price { color: var(--kc-forest); } /* zielony na żółtym ma < 4,5:1 */
+            .kc-offer-cards .kc-offer-desc { margin: 0; font-size: .95rem; color: var(--kc-ink); }
+            .kc-offer-more { margin-top: auto; padding-top: .35rem; font-size: .9rem; font-weight: 700; color: var(--kc-forest); }
+            .kc-chips a, .kc-plain-list a { color: inherit; text-decoration: underline; text-decoration-color: var(--kc-lime); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+            .kc-chips a:hover, .kc-plain-list a:hover { text-decoration-color: var(--kc-forest); }
             @media (min-width: 640px) { .kc-collection.is-main .kc-plain-list { columns: 2; column-gap: 2.5rem; } }
             @media (min-width: 1280px) { .kc-collection.is-main .kc-plain-list { columns: 3; } }
         </style>
@@ -36,7 +49,10 @@
 @foreach ($kcOffers as $kcOffer)
     @php
         $kcOfferUrl = $kcOffer['button_url'] ?? $kcContact;
-        $kcListClass = match ($kcOffer['style']) { 'list' => 'kc-plain-list', 'cards' => 'kc-offer-cards', default => 'kc-chips' };
+        // Grafiki są tylko w kartach: gdy któryś warsztat ma grafikę, blok pokazuje karty niezależnie od wybranego wyglądu.
+        $kcListClass = \App\Models\KreatywniOffer::groupsHaveImages($kcOffer['groups']) ? 'kc-offer-cards'
+            : match ($kcOffer['style']) { 'list' => 'kc-plain-list', 'cards' => 'kc-offer-cards', default => 'kc-chips' };
+        $kcCardH = min(6, $kcHeadingLevel + 1);
     @endphp
     <div class="kc-sales">
         <div class="kc-price-card kc-dark">
@@ -67,10 +83,23 @@
                         <{{ $kcH }} class="kc-collection-head">{{ $group }}</{{ $kcH }}>
                         <ul class="{{ $kcListClass }}">
                             @foreach ($titles as $kcItem)
-                                @if ($kcListClass === 'kc-chips' || $kcItem['desc'] === '')
-                                    <li>@if ($kcListClass === 'kc-chips'){{ $kcItem['title'] }}@else<span class="kc-offer-name">{{ $kcItem['title'] }}</span>@endif</li>
+                                @php $kcUrl = $kcItem['url'] ?? null; @endphp
+                                @if ($kcListClass === 'kc-offer-cards')
+                                    <li>
+                                        @if (! empty($kcItem['image']))
+                                            <img class="kc-offer-img" src="{{ $kcItem['image'] }}" alt="{{ $kcItem['alt'] ?? '' }}" loading="lazy">
+                                        @endif
+                                        <div class="kc-offer-body">
+                                            <h{{ $kcCardH }} class="kc-offer-name">@if ($kcUrl)<a href="{{ $kcUrl }}">{{ $kcItem['title'] }}</a>@else{{ $kcItem['title'] }}@endif</h{{ $kcCardH }}>
+                                            @if (($kcItem['price'] ?? '') !== '')<p class="kc-offer-price">{{ $kcItem['price'] }}</p>@endif
+                                            @if ($kcItem['desc'] !== '')<p class="kc-offer-desc">{{ $kcItem['desc'] }}</p>@endif
+                                            @if ($kcUrl)<span class="kc-offer-more" aria-hidden="true">Więcej o warsztacie →</span>@endif
+                                        </div>
+                                    </li>
+                                @elseif ($kcListClass === 'kc-chips')
+                                    <li>@if ($kcUrl)<a href="{{ $kcUrl }}">{{ $kcItem['title'] }}</a>@else{{ $kcItem['title'] }}@endif</li>
                                 @else
-                                    <li><span class="kc-offer-name">{{ $kcItem['title'] }}</span> <span class="kc-offer-desc">{{ $kcItem['desc'] }}</span></li>
+                                    <li><span class="kc-offer-name">@if ($kcUrl)<a href="{{ $kcUrl }}">{{ $kcItem['title'] }}</a>@else{{ $kcItem['title'] }}@endif</span>@if ($kcItem['desc'] !== '') <span class="kc-offer-desc">{{ $kcItem['desc'] }}</span>@endif</li>
                                 @endif
                             @endforeach
                         </ul>

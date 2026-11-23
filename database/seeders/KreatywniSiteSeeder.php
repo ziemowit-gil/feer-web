@@ -108,9 +108,13 @@ class KreatywniSiteSeeder extends Seeder
         if ($texts->rows('offer_items') === [] && $texts->get('offer_price') === '') {
             return;
         }
-        \App\Models\KreatywniOffer::withoutGlobalScopes()->create(
+        $offer = \App\Models\KreatywniOffer::withoutGlobalScopes()->create(
             \App\Http\Controllers\Admin\KreatywniOfferController::fromTexts($texts) + ['site_id' => $this->site->id, 'order' => 1, 'is_active' => true]
         );
+        // Warsztaty oferty jako karty (grafiki i opisy dodaje redakcja w panelu).
+        if (\App\Models\KreatywniOfferItem::supported()) {
+            $offer->addItemsFromText((string) $offer->items);
+        }
     }
 
     /** Osoby z tekstów szablonu („O nas” → zespół) do modułu „Osoby – Kreatywni”, gdy moduł jest pusty. */
@@ -207,31 +211,11 @@ class KreatywniSiteSeeder extends Seeder
 
     private function offerHtml(): string
     {
-        $items = [
-            ['Laleczki zapachowe', 'Inspirujące warsztaty projektowania pachnących laleczek z naturalnym suszem.'],
-            ['Biżuteria z filcu', 'Interaktywny kurs tworzenia unikatowej biżuterii z wełny czesankowej.'],
-            ['Kolaż botaniczny', 'Obrazy wprost z natury. Nie musisz mieć zdolności plastycznych, wystarczy rozbudzić wyobraźnię.'],
-            ['Laleczki ze sznurka', 'Co potrafią makramowe supełki, czyli całkowicie zaplątane zajęcia ze sznurkiem w roli głównej.'],
-            ['Choinkowe bonsai', 'Świąteczne warsztaty sadzenia oraz dekorowania bożonarodzeniowego mini drzewka.'],
-            ['Dekorowanie bombek', 'Magiczne zajęcia ozdabiania bombek różnymi metodami oraz technikami.'],
-            ['Wianki wielkanocne', 'Wiosenne zajęcia rozwijające zainteresowania z wykorzystaniem wielkanocnych dodatków.'],
-            ['Kompozycje kwiatowe', 'Wielkanocne tworzenie kompozycji z żywych kwiatów, przepełnione kolorami oraz wiosenną atmosferą.'],
-            ['Dekorowanie jajek gipsowych', 'Wiosenne zajęcia ozdabiania jajek metodą decoupage z wykorzystaniem suszonych kwiatów.'],
-            ['Język migowy', 'Wprowadzenie do języka migowego, nauka podstawowych zwrotów oraz alfabetu.'],
-            ['Świece sojowe', 'Relaksujące sesje tworzenia dekoracyjnych świec z ekologicznych materiałów.'],
-            ['Komponowanie miodów smakowych', 'Nauka poprzez doświadczanie produktów pszczelich. Stwórz miód z ulubionymi dodatkami.'],
-            ['Laleczki motanki', 'Zajmujące warsztaty tworzenia tradycyjnych lalek słowiańskich w duchu zero waste.'],
-            ['Perfumy', 'Pachnące zajęcia komponowania personalizowanych perfum z olejkami eterycznymi.'],
-            ['Kule musujące', 'Sensoryczna zabawa polegająca na przygotowaniu magicznych, buzujących w wodzie kul.'],
-            ['Mydełka glicerynowe', 'Kreatywne warsztaty tworzenia dekoracyjnych mydełek z naturalnych składników.'],
-        ];
-        $list = implode("\n", array_map(fn ($i) => '<h3>'.e($i[0]).'</h3>'."\n".'<p>'.e($i[1]).'</p>', $items));
-
-        return <<<HTML
+        // Warsztaty z opisami są w bloku oferty nad treścią (moduł „Mikrooferta – Kreatywni”, karty z podstronami),
+        // więc treść strony nie powtarza ich listy.
+        return <<<'HTML'
 <p>Naszą misję realizujemy m.in. dzięki odpłatnym, mobilnym warsztatom w szkołach, przedszkolach, domach kultury, świetlicach, na festiwalach i wszędzie tam, gdzie są ludzie gotowi na inspirujące spotkanie. Dojeżdżamy do placówek w Krakowie i okolicach.</p>
 <p><strong>Cena od 30 zł za osobę</strong> — zależna od liczby osób oraz lokalizacji. Wszystkie materiały i narzędzia są w cenie.</p>
-<h2>Warsztaty tematyczne</h2>
-{$list}
 <h2>Zamów warsztaty</h2>
 <p>Napisz albo zadzwoń — ustalimy temat, termin i miejsce zajęć. Z odpłatnych warsztatów finansujemy bezpłatne zajęcia w szpitalach i Domach Pomocy Społecznej.</p>
 HTML;

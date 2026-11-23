@@ -12,6 +12,8 @@
         $label = 'mb-1 block text-sm font-bold text-ink';
         $hint = 'mt-1 text-xs text-muted';
         $style = old('items_style', $offer->itemsStyle());
+        // Karty warsztatów (tabela kreatywni_offer_items); bez migracji — dawne pole tekstowe.
+        $kcCards = \App\Models\KreatywniOfferItem::supported();
         $invalid = fn (string $name) => $errors->has($name) ? 'aria-invalid=true' : '';
     @endphp
 
@@ -84,14 +86,25 @@
             <fieldset class="space-y-4">
                 <legend class="text-base font-bold text-ink">Warsztaty</legend>
 
-                <div>
-                    <label for="ko-items" class="{{ $label }}">Lista warsztatów</label>
-                    <textarea id="ko-items" name="items" rows="{{ min(18, max(6, substr_count((string) old('items', $offer->items), "\n") + 2)) }}" maxlength="8000" class="{{ $field }}" aria-describedby="ko-items-hint" {{ $invalid('items') }}>{{ old('items', $offer->items) }}</textarea>
-                    <p id="ko-items-hint" class="{{ $hint }}">Jeden warsztat w wierszu: „Tytuł | grupa | opis”, np. „Dekorowanie bombek | Boże Narodzenie | Magiczne zajęcia ozdabiania bombek”. Warsztaty z tą samą grupą pokazują się razem pod jej nazwą, w kolejności z listy; bez grupy trafiają do grupy „Warsztaty”. Opis jest opcjonalny — widać go w wyglądzie „Karty z opisami” i „Zwykła lista”, pigułki pokazują same nazwy.</p>
-                </div>
+                @if ($kcCards)
+                    {{-- Karty warsztatów (grafika, opis, cena, podstrona) edytuje się w sekcji „Warsztaty w tej ofercie” pod formularzem;
+                         to pole dodaje kilka warsztatów naraz na końcu listy. --}}
+                    <div>
+                        <label for="ko-items" class="{{ $label }}">{{ $offer->exists ? 'Dodaj kilka warsztatów naraz' : 'Warsztaty (opcjonalnie)' }}</label>
+                        <textarea id="ko-items" name="items" rows="4" maxlength="8000" class="{{ $field }}" aria-describedby="ko-items-hint" {{ $invalid('items') }}>{{ old('items') }}</textarea>
+                        <p id="ko-items-hint" class="{{ $hint }}">Jeden warsztat w wierszu: „Tytuł | grupa | opis”, np. „Dekorowanie bombek | Boże Narodzenie | Magiczne zajęcia ozdabiania bombek”. Trafią na koniec listy jako karty — grafikę, opis na podstronę i cenę dodasz potem w karcie warsztatu.</p>
+                    </div>
+                @else
+                    <div>
+                        <label for="ko-items" class="{{ $label }}">Lista warsztatów</label>
+                        <textarea id="ko-items" name="items" rows="{{ min(18, max(6, substr_count((string) old('items', $offer->items), "\n") + 2)) }}" maxlength="8000" class="{{ $field }}" aria-describedby="ko-items-hint" {{ $invalid('items') }}>{{ old('items', $offer->items) }}</textarea>
+                        <p id="ko-items-hint" class="{{ $hint }}">Jeden warsztat w wierszu: „Tytuł | grupa | opis”, np. „Dekorowanie bombek | Boże Narodzenie | Magiczne zajęcia ozdabiania bombek”. Warsztaty z tą samą grupą pokazują się razem pod jej nazwą, w kolejności z listy; bez grupy trafiają do grupy „Warsztaty”. Opis jest opcjonalny — widać go w wyglądzie „Karty z opisami” i „Zwykła lista”, pigułki pokazują same nazwy.</p>
+                    </div>
+                @endif
 
-                <fieldset>
+                <fieldset aria-describedby="ko-style-hint">
                     <legend class="{{ $label }}">Wygląd warsztatów</legend>
+                    <p id="ko-style-hint" class="mb-2 text-xs text-muted">Gdy któryś warsztat ma grafikę, blok zawsze pokazuje karty — pigułki i lista są widokiem kompaktowym dla oferty bez grafik.</p>
                     <div class="grid gap-2 sm:grid-cols-2">
                         @foreach (\App\Support\KreatywniTexts::OFFER_STYLES as $key => [$name, $desc])
                             <label class="flex min-h-11 cursor-pointer items-start gap-2 rounded border border-gray-300 bg-white p-2">
@@ -119,5 +132,9 @@
                 <a href="{{ route('admin.kreatywni-oferty.index') }}" class="inline-flex min-h-11 items-center rounded bg-gray-100 px-5 text-sm font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">Anuluj</a>
             </div>
         </form>
+
+        @if ($kcCards)
+            @include('admin.kreatywni-offers.partials.items', ['offer' => $offer])
+        @endif
     </div>
 @endsection

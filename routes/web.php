@@ -137,6 +137,9 @@ Route::get('/etr', [EtrController::class, 'about'])->name('etr.about');
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/mapa-strony', [SitemapController::class, 'page'])->name('sitemap.page');
 
+// Szablon „kreatywni”: podstrona warsztatu z oferty (Mikrooferta – Kreatywni) — zdjęcie, opis, cena, zamówienie.
+Route::get('/warsztat/{slug}', [\App\Http\Controllers\KreatywniOfferItemPageController::class, 'show'])->name('kreatywni.offer-item')->where('slug', '[A-Za-z0-9\-]+');
+
 Route::middleware('module:projects')->group(function () {
     Route::get('/dzialania', [ProjectController::class, 'index'])->name('projects.index');
     Route::get('/dzialania/archiwum', [ProjectController::class, 'archive'])->name('projects.archive');
@@ -578,6 +581,9 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site'])->prefix(config('app
         Route::post('kreatywni-oferty/import', [\App\Http\Controllers\Admin\KreatywniOfferController::class, 'import'])->name('kreatywni-oferty.import');
         Route::post('kreatywni-oferty/{offer}/przesun', [\App\Http\Controllers\Admin\KreatywniOfferController::class, 'move'])->name('kreatywni-oferty.przesun');
         Route::resource('kreatywni-oferty', \App\Http\Controllers\Admin\KreatywniOfferController::class)->parameters(['kreatywni-oferty' => 'offer'])->except('show');
+        // Warsztaty (karty) oferty: grafika, opis, cena, podstrona /warsztat/{slug}, kolejność i widoczność.
+        Route::post('kreatywni-oferty/{offer}/warsztaty/{item}/przesun', [\App\Http\Controllers\Admin\KreatywniOfferItemController::class, 'move'])->name('kreatywni-oferty.warsztaty.przesun');
+        Route::resource('kreatywni-oferty.warsztaty', \App\Http\Controllers\Admin\KreatywniOfferItemController::class)->parameters(['kreatywni-oferty' => 'offer', 'warsztaty' => 'item'])->except(['index', 'show']);
         // Mikro moduł „Dokumenty – Kreatywni” (sekcja „Dokumenty” na stronie „O nas”).
         Route::post('kreatywni-dokumenty/import', [\App\Http\Controllers\Admin\KreatywniDocumentController::class, 'import'])->name('kreatywni-dokumenty.import');
         Route::post('kreatywni-dokumenty/{document}/przesun', [\App\Http\Controllers\Admin\KreatywniDocumentController::class, 'move'])->name('kreatywni-dokumenty.przesun');

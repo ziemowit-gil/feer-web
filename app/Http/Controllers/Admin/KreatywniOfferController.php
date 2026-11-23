@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KreatywniOffer;
+use App\Models\KreatywniOfferItem;
 use App\Models\SiteSetting;
 use App\Support\KreatywniTexts;
 use Illuminate\Http\RedirectResponse;
@@ -40,7 +41,17 @@ class KreatywniOfferController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $this->site();
-        $offer = KreatywniOffer::create($this->validated($request) + ['order' => (int) KreatywniOffer::forCurrentSite()->max('order') + 1]);
+        $data = $this->validated($request);
+        if (KreatywniOfferItem::supported()) {
+            // Z kartami warsztatów pole listy służy do dodania wielu warsztatów naraz; grafiki i opisy — w edycji oferty.
+            $bulk = (string) ($data['items'] ?? '');
+            unset($data['items']);
+            $offer = KreatywniOffer::create($data + ['order' => (int) KreatywniOffer::forCurrentSite()->max('order') + 1]);
+            $offer->addItemsFromText($bulk);
+
+            return redirect()->to(route('admin.kreatywni-oferty.edit', $offer).'#warsztaty')->with('status', 'Dodano ofertę „'.$offer->name.'”. Dodaj grafiki i opisy warsztatów poniżej.');
+        }
+        $offer = KreatywniOffer::create($data + ['order' => (int) KreatywniOffer::forCurrentSite()->max('order') + 1]);
 
         return redirect()->route('admin.kreatywni-oferty.index')->with('status', 'Dodano ofertę „'.$offer->name.'”.');
     }
@@ -55,7 +66,17 @@ class KreatywniOfferController extends Controller
     public function update(Request $request, KreatywniOffer $offer): RedirectResponse
     {
         $this->guard($offer);
-        $offer->update($this->validated($request));
+        $data = $this->validated($request);
+        if (KreatywniOfferItem::supported()) {
+            // Karty warsztatów edytuje się osobno; pole listy dopisuje nowe warsztaty na końcu oferty.
+            $bulk = (string) ($data['items'] ?? '');
+            unset($data['items']);
+            $offer->update($data);
+            $added = $offer->addItemsFromText($bulk);
+
+            return redirect()->route('admin.kreatywni-oferty.index')->with('status', 'Zapisano ofertę „'.$offer->name.'”.'.($added > 0 ? ' Dodano warsztatów: '.$added.'.' : ''));
+        }
+        $offer->update($data);
 
         return redirect()->route('admin.kreatywni-oferty.index')->with('status', 'Zapisano ofertę „'.$offer->name.'”.');
     }
@@ -103,6 +124,9 @@ class KreatywniOfferController extends Controller
         }
 
         $offer = KreatywniOffer::create(self::fromTexts($texts) + ['order' => 1, 'is_active' => true]);
+        if (KreatywniOfferItem::supported()) {
+            $offer->addItemsFromText((string) $offer->items);
+        }
 
         return redirect()->route('admin.kreatywni-oferty.index')->with('status', 'Przeniesiono ofertę „'.$offer->name.'” z tekstów szablonu. Teraz edytujesz ją tutaj.');
     }
