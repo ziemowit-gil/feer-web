@@ -4,7 +4,8 @@
        „Więcej ustawień” (otwiera wspólny panel ułatwień partials/a11y-panel), telefon i e-mail;
        przyciski data-a11y-* obsługuje resources/js/app.js tak samo jak w panelu;
     2) przyklejona belka: logo i nazwa, mega menu z Menu nawigacji (App\Support\KreatywniMegaMenu: pozycja z
-       podmenu — podstrony i sekcje strony, czyli dawny spis „Na tej stronie” — otwiera panel na całą szerokość po
+       podmenu — podstrony i sekcje strony, czyli dawny spis „Na tej stronie”; „O nas” z blokiem dokumentów, „Oferta”
+       z warsztatami z Mikrooferty i kartą ceny (partials/mega-offer) — otwiera panel na całą szerokość po
        kliknięciu, Enter albo najechaniu; Esc zamyka i wraca na przycisk, klik obok i wyjście fokusem zamykają) wyśrodkowane,
        bez tła (bieżąca/otwarta pozycja — pogrubienie i limonkowa kropka pod napisem), po prawej wyróżnione profile
        (Facebook, Instagram — przyciski z nazwą i znakiem w kolorach serwisu; na węższym ekranie sam znak) i „Kontakt”; na wąskim ekranie „Menu” rozwija listę pozycji z podstronami
@@ -102,7 +103,7 @@
                                     {{ $item->label }}<span class="kc-chev" aria-hidden="true"></span>
                                 </button>
                                 <div id="kc-mega-{{ $i }}" class="kc-mega" x-show="drop === {{ $i }}" x-cloak>
-                                    <div @class(['kc-wrap', 'kc-mega-in', 'has-docs' => ! empty($item->documents)])>
+                                    <div @class(['kc-wrap', 'kc-mega-in', 'has-docs' => ! empty($item->documents), 'has-offer' => ! empty($item->offerCard)])>
                                         <div class="kc-mega-intro">
                                             <p class="kc-mega-title">{{ $item->label }}</p>
                                             @if ($item->description !== '')<p>{{ $item->description }}</p>@endif
@@ -111,7 +112,8 @@
                                             @endif
                                         </div>
                                         <div class="kc-mega-groups">
-                                            @foreach ($item->groups as $group)
+                                            {{-- „Oferta”: najpierw warsztaty z Mikrooferty (grupy jak w bloku oferty), potem sekcje strony. --}}
+                                            @foreach (array_merge($item->offerGroups ?? [], $item->groups) as $group)
                                                 <div @class(['kc-mega-group', 'is-long' => count($group['links']) > 6])>
                                                     @if ($group['heading'] && $group['heading']['url'])
                                                         <a href="{{ $group['heading']['url'] }}" class="kc-mega-head">{{ $group['heading']['label'] }}</a>
@@ -131,6 +133,10 @@
                                         @if (! empty($item->documents))
                                             {{-- „O nas”: blok z dokumentami z modułu „Dokumenty – Kreatywni”. --}}
                                             @include('templates.kreatywni.partials.mega-documents', ['kcMegaIndex' => $i])
+                                        @endif
+                                        @if (! empty($item->offerCard))
+                                            {{-- „Oferta”: cena i przycisk zamówienia z modułu „Mikrooferta – Kreatywni”. --}}
+                                            @include('templates.kreatywni.partials.mega-offer', ['kcMegaIndex' => $i])
                                         @endif
                                     </div>
                                 </div>
@@ -176,10 +182,14 @@
                         @endif
                         @php
                             // Na telefonie: nagłówek grupy z adresem zamiast jej linków, nagłówek bez adresu — same linki.
-                            $kcMobileLinks = collect($item->groups)->flatMap(fn ($g) => ($g['heading']['url'] ?? null) ? [$g['heading']] : $g['links'])->values();
+                            $kcMobileLinks = collect(array_merge($item->offerGroups ?? [], $item->groups))->flatMap(fn ($g) => ($g['heading']['url'] ?? null) ? [$g['heading']] : $g['links'])->values();
                             // „O nas”: dokumenty z modułu jako jeden link do sekcji #dokumenty.
                             if (! empty($item->documents)) {
                                 $kcMobileLinks->push(['label' => 'Dokumenty', 'url' => $item->documentsUrl, 'current' => false]);
+                            }
+                            // „Oferta”: warsztaty z podstronami (wyżej) i przycisk zamówienia.
+                            if (! empty($item->offerCard['buttonUrl'])) {
+                                $kcMobileLinks->push(['label' => $item->offerCard['button'], 'url' => $item->offerCard['buttonUrl'], 'current' => false]);
                             }
                         @endphp
                         @if ($kcMobileLinks->isNotEmpty())

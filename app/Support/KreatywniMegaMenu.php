@@ -48,7 +48,7 @@ final class KreatywniMegaMenu
                 $item->groups = $groups;
                 $item->hasPanel = $groups !== [];
 
-                return self::withDocuments($item, $page, $base);
+                return self::withDocuments(self::withOffer($item, $page, $base), $page, $base);
             }
 
             $children = collect($item->flat)->filter(fn ($l) => filled($l['url']))
@@ -93,8 +93,92 @@ final class KreatywniMegaMenu
             $item->groups = $groups;
             $item->hasPanel = $groups !== [];
 
-            return self::withDocuments($item, $page, $base);
+            return self::withDocuments(self::withOffer($item, $page, $base), $page, $base);
         });
+    }
+
+    /** Ile warsztatów pokazuje menu „Oferta” (reszta pod „Cała oferta warsztatów” w karcie). */
+    public const MENU_OFFER_ITEMS = 24;
+
+    /**
+     * Pozycja prowadząca do strony „Oferta” (oferta, oferta-2…) dostaje w panelu warsztaty z „Mikrooferty – Kreatywni”
+     * (offerGroups: grupy jak w bloku oferty — „Przez cały rok”, „Boże Narodzenie”… — z linkami do podstron
+     * /warsztat/{slug}; warsztaty bez podstrony, np. z samego tekstu, pomija) oraz kartę z ceną i przyciskiem
+     * zamówienia (offerCard, partials/mega-offer). Osobno od groups, żeby „Odwzoruj w panelu 1:1” (KreatywniMenuSync)
+     * nie zamroził listy warsztatów w Menu nawigacji. Na podstronie warsztatu pozycja „Oferta” jest bieżąca.
+     */
+    private static function withOffer(object $item, ?\App\Models\Page $page, ?string $base): object
+    {
+        $item->offerGroups = [];
+        $item->offerCard = null;
+        if (! $page || ! $base || ! self::isOfferSlug((string) $page->slug)) {
+            return $item;
+        }
+        $texts = KreatywniTexts::for();
+        $offers = \App\Models\KreatywniOffer::forDisplay($texts);
+        if ($offers === []) {
+            return $item;
+        }
+
+        $here = url()->current();
+        $merged = [];
+        $shown = 0;
+        $total = 0;
+        foreach ($offers as $offer) {
+            foreach ($offer['groups'] as $name => $rows) {
+                foreach ($rows as $row) {
+                    if (blank($row['url'] ?? null)) {
+                        continue;
+                    }
+                    $total++;
+                    if ($shown >= self::MENU_OFFER_ITEMS) {
+                        continue;
+                    }
+                    $merged[(string) $name][] = ['label' => $row['title'], 'url' => $row['url'], 'current' => $row['url'] === $here];
+                    $shown++;
+                }
+            }
+        }
+        $single = count($merged) === 1;
+        foreach ($merged as $name => $links) {
+            $item->offerGroups[] = [
+                'heading' => $single && $name === \App\Models\KreatywniOffer::DEFAULT_GROUP ? null : ['label' => $name, 'url' => null, 'current' => false],
+                'links' => $links,
+            ];
+        }
+        if (collect($item->offerGroups)->flatMap(fn ($g) => $g['links'])->contains('current', true)) {
+            $item->current = true;
+        }
+
+        $buttonOffer = collect($offers)->first(fn ($o) => filled($o['button_url'])) ?? $offers[0];
+        $site = \App\Models\SiteSetting::current();
+        $buttonUrl = $buttonOffer['button_url']
+            ?: ($site->isModuleEnabled('contact') && \Illuminate\Support\Facades\Route::has('contact.show') ? site_route('contact.show') : null);
+        $prices = array_values(array_map(
+            fn ($o) => ['name' => $o['name'], 'price' => trim($o['price']), 'unit' => trim($o['unit'])],
+            array_filter($offers, fn ($o) => trim((string) $o['price']) !== ''),
+        ));
+        if ($prices !== [] || $buttonUrl) {
+            $item->offerCard = [
+                'prices' => array_slice($prices, 0, 3),
+                'button' => $buttonOffer['button'] !== '' ? $buttonOffer['button'] : 'Zamów warsztaty',
+                'buttonUrl' => $buttonUrl,
+                'allUrl' => $base,
+                'more' => max(0, $total - $shown),
+            ];
+        }
+        if ($item->description === '') {
+            $item->description = \Illuminate\Support\Str::limit($texts->get('offer_text'), 180);
+        }
+        $item->hasPanel = $item->hasPanel || $item->offerGroups !== [] || $item->offerCard !== null;
+
+        return $item;
+    }
+
+    /** Adres strony „Oferta” (oferta, oferta-2… — UniqueSlug dopisuje numer w sieci witryn). */
+    public static function isOfferSlug(string $slug): bool
+    {
+        return (bool) preg_match('/^oferta(-\d+)?$/', $slug);
     }
 
     /** Ile dokumentów pokazuje blok „Dokumenty” w menu (reszta pod „Wszystkie dokumenty”). */

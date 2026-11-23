@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\KreatywniOffer;
 use App\Models\KreatywniOfferItem;
+use App\Models\NavItem;
 use App\Models\Page;
 use App\Models\SiteSetting;
 use App\Models\User;
+use App\Support\KreatywniMegaMenu;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
@@ -152,6 +154,39 @@ class KreatywniOfferItemsTest extends TestCase
         $offer->update(['is_active' => true]);
         $this->useTemplate('default');
         $this->get('/warsztat/swiece-sojowe')->assertNotFound();
+    }
+
+    public function test_oferta_w_rozwijanym_menu_warsztaty_z_podstronami_i_karta_ceny(): void
+    {
+        $this->useTemplate();
+        Page::create(['title' => 'Oferta', 'slug' => 'oferta', 'type' => 'standard', 'is_published' => true, 'content' => '<h2>Zamów warsztaty</h2><p>Napisz.</p>']);
+        NavItem::create(['label' => 'Oferta', 'url' => '/oferta', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1]);
+        $offer = $this->offer("Świece sojowe | Przez cały rok | Relaks z woskiem.\nBombki | Boże Narodzenie\nWianki | Wielkanoc");
+        $offer->update(['button_label' => 'Zamów warsztaty', 'button_url' => '/formularz/zamowienie-warsztatow']);
+        $offer->cards()->where('title', 'Wianki')->update(['is_active' => false]);
+        $swiece = $offer->cards()->where('title', 'Świece sojowe')->sole();
+
+        $home = $this->get('/')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('#<div class="kc-wrap kc-mega-in has-offer">#', $home);
+        $this->assertStringContainsString('<span class="kc-mega-head">Przez cały rok</span>', $home);
+        $this->assertStringContainsString('<span class="kc-mega-head">Boże Narodzenie</span>', $home);
+        $this->assertStringContainsString('<li><a href="'.$swiece->publicUrl().'" >Świece sojowe</a></li>', preg_replace('/\s+/', ' ', $home));
+        $this->assertStringNotContainsString('>Wianki<', $home, 'ukryty warsztat nie trafia do menu');
+        $this->assertStringContainsString('class="kc-mega-head">Zamów warsztaty</a>', $home, 'sekcje strony zostają pod warsztatami');
+        $this->assertStringContainsString('<div class="kc-mega-offer kc-dark">', $home);
+        $this->assertStringContainsString('<span class="kc-mega-offer-price">od 30 zł</span>', $home);
+        $this->assertStringContainsString('href="/formularz/zamowienie-warsztatow" class="kc-btn kc-btn-sun">Zamów warsztaty', $home);
+        $this->assertStringNotContainsString('Cała oferta warsztatów', $home);
+
+        // Podstrona warsztatu: link bieżący, a „Oferta” zaznaczona w menu.
+        $page = preg_replace('/\s+/', ' ', $this->get('/warsztat/swiece-sojowe')->assertOk()->getContent());
+        $this->assertStringContainsString('<li><a href="'.$swiece->publicUrl().'" aria-current="page" >Świece sojowe</a></li>', $page);
+        $this->assertStringContainsString('class="kc-nav-link is-here "', $page);
+
+        // Warsztaty nie są w groups — „Odwzoruj w panelu 1:1” ich nie zamrozi w Menu nawigacji.
+        $item = KreatywniMegaMenu::items(NavItem::query()->where('location', 'main')->whereNull('parent_id')->with('children')->get())->first();
+        $this->assertNotContains('Świece sojowe', collect($item->groups)->flatMap(fn ($g) => array_column($g['links'], 'label'))->all());
+        $this->assertCount(2, $item->offerGroups);
     }
 
     public function test_bez_tabeli_kart_dziala_tekst_jak_dotad(): void
