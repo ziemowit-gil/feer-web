@@ -104,7 +104,7 @@ class KreatywniDocumentController extends Controller
         $count = KreatywniDocument::importFromPages($site);
 
         return redirect()->route('admin.kreatywni-dokumenty.index')->with('status', $count > 0
-            ? 'Przeniesiono ze stron: '.$count.' '.trans_choice('dokument|dokumenty|dokumentów', $count).'. Dokument bez pliku pokaże się na stronie „O nas”, gdy dodasz plik albo opublikujesz jego stronę.'
+            ? 'Przeniesiono ze stron: '.$count.' '.trans_choice('dokument|dokumenty|dokumentów', $count).'. Dokument bez pliku jest na stronie „O nas” jako „w przygotowaniu”, dopóki nie dodasz pliku albo nie opublikujesz jego strony.'
             : 'Nie znaleziono stron dokumentów (podstron strony „Fundacja”) do przeniesienia.');
     }
 

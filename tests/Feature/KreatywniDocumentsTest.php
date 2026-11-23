@@ -101,16 +101,18 @@ class KreatywniDocumentsTest extends TestCase
         $this->post(route('admin.kreatywni-dokumenty.import'));
         $this->assertSame(3, KreatywniDocument::query()->count(), 'Drugi import nic nie dubluje.');
 
-        // Statut: plik z załącznika szkicu strony; polityka prywatności: opublikowana strona; cookies: szkic bez pliku — ukryty.
+        // Statut: plik z załącznika szkicu strony; polityka prywatności: opublikowana strona; cookies: szkic bez pliku —
+        // na liście jako „w przygotowaniu”, bez linku.
         $html = $this->get('/o-nas')->assertOk()->getContent();
         $this->assertMatchesRegularExpression('#statut\.pdf"\s*>Statut Fundacji <span class="kc-doc-meta">\(PDF#', $html);
         $this->assertStringContainsString('href="'.$docs['privacy']->publicUrl().'"', $html);
-        $this->assertStringNotContainsString('Polityka cookies', $html);
-        $this->get(route('admin.kreatywni-dokumenty.index'))->assertSee('Strona „Polityka cookies” jest szkicem');
+        $this->assertStringContainsString('<span class="kc-doc-name">Polityka cookies</span> <span class="kc-doc-pending">— w przygotowaniu</span>', $html);
+        $this->assertStringNotContainsString('href="'.$docs['cookies']->publicUrl().'"', $html);
+        $this->get(route('admin.kreatywni-dokumenty.index'))->assertSee('Strona „Polityka cookies” jest szkicem')->assertSee('„W przygotowaniu”, bez linku', false);
 
-        // Po opublikowaniu strony dokument pojawia się sam.
+        // Po opublikowaniu strony dokument dostaje link sam.
         $docs['cookies']->update(['is_published' => true]);
-        $this->get('/o-nas')->assertSee('Polityka cookies');
+        $this->get('/o-nas')->assertSee('href="'.$docs['cookies']->publicUrl().'"', false)->assertDontSee('— w przygotowaniu');
     }
 
     public function test_kolejnosc_ukrywanie_usuwanie_i_mega_menu(): void
@@ -123,7 +125,13 @@ class KreatywniDocumentsTest extends TestCase
         $this->assertStringNotContainsString('href="/o-nas#dokumenty"', $this->get('/')->getContent(), 'Bez dokumentów nie ma kotwicy.');
         $this->post(route('admin.kreatywni-dokumenty.store'), ['title' => 'Regulamin darowizn', 'url' => 'https://example.org/regulamin.pdf', 'is_active' => '1'])->assertSessionHasNoErrors();
         $this->post(route('admin.kreatywni-dokumenty.store'), ['title' => 'Sprawozdanie', 'url' => '/sprawozdanie', 'is_active' => '1'])->assertSessionHasNoErrors();
-        $this->assertStringContainsString('href="/o-nas#dokumenty"', $this->get('/')->getContent());
+        $home = $this->get('/')->getContent();
+        // Blok „Dokumenty” w rozwijanym menu „O nas”: dokumenty, „Wszystkie dokumenty” i link na telefonie.
+        $this->assertStringContainsString('class="kc-mega-docs"', $home);
+        $this->assertStringContainsString('has-docs', $home);
+        $this->assertStringContainsString('href="https://example.org/regulamin.pdf" target="_blank" rel="noopener"', $home);
+        $this->assertStringContainsString('href="/o-nas#dokumenty" class="kc-mega-docs-all">Wszystkie dokumenty', $home);
+        $this->assertStringContainsString('<li><a href="/o-nas#dokumenty" >Dokumenty</a></li>', str_replace('  ', ' ', $home));
 
         $second = KreatywniDocument::query()->where('title', 'Sprawozdanie')->sole();
         $this->post(route('admin.kreatywni-dokumenty.przesun', $second), ['direction' => 'up'])->assertRedirect();
@@ -188,5 +196,22 @@ class KreatywniDocumentsTest extends TestCase
         $other = KreatywniDocument::withoutGlobalScopes()->create(['site_id' => 9999, 'title' => 'Obcy', 'order' => 1, 'is_active' => true]);
 
         $this->actingAs($this->admin())->get(route('admin.kreatywni-dokumenty.edit', $other))->assertNotFound();
+    }
+
+    public function test_blok_dokumentow_w_menu_o_nas_takze_przy_podpozycjach_z_panelu(): void
+    {
+        $this->useTemplate();
+        $this->aboutPage();
+        $about = NavItem::create(['label' => 'O nas', 'url' => '/o-nas', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1]);
+        NavItem::create(['label' => 'Zespół', 'url' => '/o-nas#zespol', 'type' => 'link', 'location' => 'main', 'is_active' => true, 'order' => 1, 'parent_id' => $about->id]);
+        KreatywniDocument::create(['title' => 'Statut Fundacji', 'order' => 1, 'is_active' => true]);
+        KreatywniDocument::create(['title' => 'Ukryty dokument', 'order' => 2, 'is_active' => false]);
+
+        $home = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('class="kc-mega-docs"', $home);
+        $this->assertStringContainsString('<span class="kc-mega-docs-name">Statut Fundacji</span>', $home);
+        $this->assertStringContainsString('<span class="kc-mega-docs-meta">w przygotowaniu</span>', $home, 'Dokument bez pliku prowadzi do sekcji.');
+        $this->assertStringNotContainsString('Ukryty dokument', $home);
+        $this->assertStringContainsString('/o-nas#zespol', $home, 'Podpozycje z panelu zostają.');
     }
 }

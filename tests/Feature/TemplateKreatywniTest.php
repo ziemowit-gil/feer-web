@@ -503,7 +503,8 @@ class TemplateKreatywniTest extends TestCase
         $this->assertFalse($fresh->footerOptions()['staff_link'], 'Bez linku do strefy współpracownika FEER.');
         $this->assertFalse($fresh->isModuleEnabled('podcasts'));
         $this->assertContains('persons', $fresh->disabled_modules);
-        $this->assertSame(['Oferta', 'Działania', 'O nas', 'Galeria', 'Fundacja'],
+        // „Fundacji” nie ma w menu — dokumenty są na stronie „O nas” (moduł „Dokumenty – Kreatywni”).
+        $this->assertSame(['Oferta', 'Działania', 'O nas', 'Galeria'],
             NavItem::withoutGlobalScopes()->where('site_id', $site->id)->where('location', 'main')->orderBy('order')->pluck('label')->all());
     }
 

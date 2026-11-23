@@ -13,7 +13,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * Dokument z mikro modułu „Dokumenty – Kreatywni” (panel: Treści → Strona główna → Dokumenty – Kreatywni).
  * Lista w sekcji #dokumenty na stronie „O nas” szablonu „kreatywni”. Dokument prowadzi do pliku (kolekcja mediów
  * „file”), a bez pliku — do wskazanej strony serwisu (gdy jest opublikowana) albo do podanego adresu. Dokument
- * bez żadnego z nich (np. szkic strony) nie pokazuje się na stronie, dopóki redakcja go nie uzupełni.
+ * bez żadnego z nich (np. szkic strony) jest na liście jako sam tytuł z dopiskiem „w przygotowaniu”, bez linku,
+ * dopóki redakcja go nie uzupełni. Ukryty w panelu dokument nie pokazuje się wcale.
  */
 class KreatywniDocument extends Model implements HasMedia
 {
@@ -98,10 +99,11 @@ class KreatywniDocument extends Model implements HasMedia
     }
 
     /**
-     * Dokumenty do sekcji na stronie „O nas”: widoczne dokumenty bieżącej witryny, które mają plik, opublikowaną stronę
-     * albo adres, w kolejności z panelu.
+     * Dokumenty do sekcji na stronie „O nas” i bloku „Dokumenty” w menu: widoczne dokumenty bieżącej witryny w kolejności
+     * z panelu. Dokument z plikiem, opublikowaną stroną albo adresem ma `url`; bez nich — `url` null i rodzaj `pending`
+     * („w przygotowaniu”).
      *
-     * @return list<array{title: string, description: string, url: string, kind: string, meta: ?string}>
+     * @return list<array{title: string, description: string, url: ?string, kind: string, meta: ?string}>
      */
     public static function forDisplay(): array
     {
@@ -110,8 +112,9 @@ class KreatywniDocument extends Model implements HasMedia
         }
 
         return self::forCurrentSite()->where('is_active', true)->orderBy('order')->orderBy('id')->with('media', 'page')->get()
-            ->map(fn (self $d) => ($t = $d->target()) ? ['title' => $d->title, 'description' => (string) $d->description] + $t : null)
-            ->filter()->values()->all();
+            ->map(fn (self $d) => ['title' => $d->title, 'description' => (string) $d->description]
+                + ($d->target() ?? ['url' => null, 'kind' => 'pending', 'meta' => null]))
+            ->values()->all();
     }
 
     /**

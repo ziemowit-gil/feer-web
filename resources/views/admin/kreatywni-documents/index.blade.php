@@ -18,8 +18,8 @@
             Dokumenty fundacji (statut, regulaminy, polityki) do pobrania albo przeczytania. Pokazują się w sekcji
             „Dokumenty” na stronie
             @if ($aboutUrl)<a href="{{ $aboutUrl }}#dokumenty" class="font-bold text-brand-dark underline underline-offset-2">„O nas”</a>@else „O nas”@endif.
-            Każdy dokument prowadzi do pliku, a bez pliku — do strony serwisu (gdy jest opublikowana) albo podanego adresu.
-            Kolejność tutaj = kolejność na stronie.
+            Każdy dokument prowadzi do pliku, a bez pliku — do strony serwisu (gdy jest opublikowana) albo podanego adresu;
+            dokument bez nich jest na liście jako „w przygotowaniu”. Dokumenty są też w menu „O nas”. Kolejność tutaj = kolejność na stronie.
         </p>
         <a href="{{ route('admin.kreatywni-dokumenty.create') }}" class="{{ $btn }} bg-brand-dark text-white hover:bg-ink">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj dokument
@@ -84,7 +84,7 @@
                                 @elseif ($target)
                                     <i class="fa-solid fa-eye mr-1 text-muted" aria-hidden="true"></i>Widoczny
                                 @else
-                                    <i class="fa-solid fa-eye-slash mr-1 text-muted" aria-hidden="true"></i>Jeszcze nie
+                                    <i class="fa-solid fa-hourglass-half mr-1 text-muted" aria-hidden="true"></i>„W przygotowaniu”, bez linku
                                 @endif
                             </td>
                             <td class="px-4 py-3">

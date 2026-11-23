@@ -1,13 +1,15 @@
 {{--
     Sekcja #dokumenty na stronie „O nas” szablonu „kreatywni”: dokumenty fundacji z mikro modułu „Dokumenty – Kreatywni”
-    (KreatywniDocument::forDisplay — tylko widoczne, z plikiem, opublikowaną stroną albo adresem). Płaska lista po dwie
-    w rzędzie na szerokim ekranie: ikona typu, nazwa jako link z typem i rozmiarem pliku w tym samym linku (WCAG 2.4.4),
-    krótki opis. Bez dokumentów sekcji nie ma. Kotwica jest w mega menu (KreatywniMegaMenu).
+    (KreatywniDocument::forDisplay — widoczne dokumenty). Płaska lista po dwie w rzędzie na szerokim ekranie: ikona typu,
+    nazwa jako link z typem i rozmiarem pliku w tym samym linku (WCAG 2.4.4), krótki opis; dokument bez pliku, strony
+    i adresu — sama nazwa z dopiskiem „w przygotowaniu”. Bez dokumentów sekcji nie ma. W menu „O nas” jest blok
+    „Dokumenty” (partials/mega-documents).
     Zmienne: opcjonalnie $kcDocuments (już policzone dokumenty).
 --}}
 @php
     $kcDocuments ??= \App\Models\KreatywniDocument::forDisplay();
     $kcDocIcon = fn (array $d) => match (true) {
+        $d['kind'] === 'pending' => 'fa-hourglass-half',
         $d['kind'] === 'page' => 'fa-file-lines',
         $d['kind'] === 'link' => 'fa-arrow-up-right-from-square',
         str_starts_with((string) $d['meta'], 'PDF') => 'fa-file-pdf',
@@ -28,6 +30,8 @@
             .kc-doc a:focus-visible { outline: 3px solid var(--kc-forest); outline-offset: 3px; }
             .kc-doc-meta { font-weight: 600; white-space: nowrap; }
             .kc-doc p { margin: .3rem 0 0; line-height: 1.55; }
+            .kc-doc-name { font-size: 1.1rem; font-weight: 700; line-height: 1.4; color: var(--kc-forest); }
+            .kc-doc-pending { font-weight: 600; color: var(--kc-muted); }
         </style>
     @endonce
     <section id="dokumenty" class="kc-sec" aria-labelledby="kc-about-docs">
@@ -38,7 +42,11 @@
                     <li class="kc-doc">
                         <i class="fa-solid {{ $kcDocIcon($doc) }} kc-doc-icon" aria-hidden="true"></i>
                         <div>
+                            @if ($doc['url'] === null)
+                                <span class="kc-doc-name">{{ $doc['title'] }}</span> <span class="kc-doc-pending">— w przygotowaniu</span>
+                            @else
                             <a href="{{ $doc['url'] }}"@if ($doc['kind'] === 'link' && preg_match('#^https?://#i', $doc['url'])) target="_blank" rel="noopener"@endif>{{ $doc['title'] }}@if ($doc['meta']) <span class="kc-doc-meta">({{ $doc['meta'] }})</span>@endif @if ($doc['kind'] === 'link' && preg_match('#^https?://#i', $doc['url']))<span class="kc-sr"> (otwiera się w nowej karcie)</span>@endif</a>
+                            @endif
                             @if ($doc['description'] !== '')<p>{{ $doc['description'] }}</p>@endif
                         </div>
                     </li>

@@ -102,7 +102,7 @@
                                     {{ $item->label }}<span class="kc-chev" aria-hidden="true"></span>
                                 </button>
                                 <div id="kc-mega-{{ $i }}" class="kc-mega" x-show="drop === {{ $i }}" x-cloak>
-                                    <div class="kc-wrap kc-mega-in">
+                                    <div @class(['kc-wrap', 'kc-mega-in', 'has-docs' => ! empty($item->documents)])>
                                         <div class="kc-mega-intro">
                                             <p class="kc-mega-title">{{ $item->label }}</p>
                                             @if ($item->description !== '')<p>{{ $item->description }}</p>@endif
@@ -128,6 +128,10 @@
                                                 </div>
                                             @endforeach
                                         </div>
+                                        @if (! empty($item->documents))
+                                            {{-- „O nas”: blok z dokumentami z modułu „Dokumenty – Kreatywni”. --}}
+                                            @include('templates.kreatywni.partials.mega-documents', ['kcMegaIndex' => $i])
+                                        @endif
                                     </div>
                                 </div>
                             @elseif ($item->hasUrl)
@@ -173,6 +177,10 @@
                         @php
                             // Na telefonie: nagłówek grupy z adresem zamiast jej linków, nagłówek bez adresu — same linki.
                             $kcMobileLinks = collect($item->groups)->flatMap(fn ($g) => ($g['heading']['url'] ?? null) ? [$g['heading']] : $g['links'])->values();
+                            // „O nas”: dokumenty z modułu jako jeden link do sekcji #dokumenty.
+                            if (! empty($item->documents)) {
+                                $kcMobileLinks->push(['label' => 'Dokumenty', 'url' => $item->documentsUrl, 'current' => false]);
+                            }
                         @endphp
                         @if ($kcMobileLinks->isNotEmpty())
                             <ul>

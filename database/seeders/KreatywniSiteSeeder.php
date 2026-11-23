@@ -172,8 +172,9 @@ class KreatywniSiteSeeder extends Seeder
             return;
         }
         $order = 1;
-        // „Działania” prowadzi do listy z modułu Działania (/dzialania), reszta do stron założonych wyżej.
-        foreach (['offer' => 'Oferta', 'projects' => 'Działania', 'about' => 'O nas', 'gallery' => 'Galeria', 'foundation' => 'Fundacja'] as $key => $label) {
+        // „Działania” prowadzi do listy z modułu Działania (/dzialania), reszta do stron założonych wyżej. „Fundacji” nie ma
+        // w menu: dokumenty są w module „Dokumenty – Kreatywni” na stronie „O nas” (i w jej menu), strona zostaje pod adresem.
+        foreach (['offer' => 'Oferta', 'projects' => 'Działania', 'about' => 'O nas', 'gallery' => 'Galeria'] as $key => $label) {
             NavItem::withoutGlobalScopes()->create([
                 'site_id' => $this->site->id, 'label' => $label, 'url' => $key === 'projects' ? '/dzialania' : '/'.$pages[$key]->slug, 'type' => 'link',
                 'location' => 'main', 'is_active' => true, 'order' => $order++,
