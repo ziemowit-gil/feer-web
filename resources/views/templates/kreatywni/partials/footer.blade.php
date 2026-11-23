@@ -17,13 +17,20 @@
     $kcPhone = trim((string) $siteSettings->contact_phone);
     $kcEmail = trim((string) $siteSettings->contact_email);
     $kcAddress = trim(implode(', ', array_filter([trim((string) $siteSettings->contact_address), trim((string) $siteSettings->contact_city)])));
+    // Na stronie głównej tuż nad stopką jest sekcja „Kontakt” z telefonem i e-mailem — stopka ich nie powtarza
+    // (zostaje sam adres, a bez niego cała kolumna „Kontakt” znika).
+    if (request()->routeIs('home') && $siteSettings->site_template === 'kreatywni'
+        && \App\Support\KreatywniTexts::for($siteSettings)->shows('contact')) {
+        $kcPhone = '';
+        $kcEmail = '';
+    }
     $kcLogo = $siteSettings->logoUrl();
     // Domyślny tekst praw to „© {rok} Wszystkie prawa zastrzeżone” — „© rok” jest już przed nazwą organizacji.
     $kcCopyright = trim((string) preg_replace('/^(©|\(c\)|&copy;)\s*(\d{4}\s*)?[·\-–—,]?\s*/iu', '', $fo['copyright_text']));
 @endphp
 @include('templates.kreatywni.partials.base-css')
 <footer class="kc kc-dark kc-footer">
-    <div class="kc-wrap kc-foot">
+    <div class="kc-wrap kc-foot{{ $kcPhone === '' && $kcEmail === '' && $kcAddress === '' ? ' kc-foot-2' : '' }}">
         <div>
             <a class="kc-foot-brand" href="{{ site_home_url() }}">
                 @if ($kcLogo)<img src="{{ $kcLogo }}" alt="" width="72" height="72" loading="lazy">@endif
@@ -77,6 +84,13 @@
 
     <div class="kc-wrap kc-foot-bottom">
         <p>© {{ now()->year }} {{ $siteSettings->site_name }}@if ($kcCopyright !== '') · {{ $kcCopyright }}@endif</p>
+        @php
+            // Bez żadnego linku (wszystkie wyłączone w Ogólne → Stopka) nie wstawiamy pustej listy do rzędu.
+            $kcFootLinks = ($fo['show_sitemap'] && \Illuminate\Support\Facades\Route::has('sitemap.page'))
+                || ($fo['show_accessibility'] && \Illuminate\Support\Facades\Route::has('accessibility.show'))
+                || $fo['show_cookies'] || ($fo['staff_link'] && $fo['staff_url'] !== '') || $fo['show_admin_link'];
+        @endphp
+        @if ($kcFootLinks)
         <ul>
             @if ($fo['show_sitemap'] && \Illuminate\Support\Facades\Route::has('sitemap.page'))
                 <li><a href="{{ route('sitemap.page') }}">Mapa serwisu</a></li>
@@ -97,6 +111,7 @@
                 <li><a href="{{ route('admin.dashboard') }}">Panel administracyjny</a></li>
             @endif
         </ul>
+        @endif
         @if ($siteSettings->show_cms_credit ?? true)
             <p class="kc-foot-credit">
                 @include('partials.wecms-mark')

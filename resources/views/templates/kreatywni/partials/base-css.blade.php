@@ -341,7 +341,7 @@
     /* ── Stopka ───────────────────────────────────────────────── */
     .kc-footer { background: #143805; color: #fff; }
     .kc-foot { display: grid; gap: 2rem; padding-top: 3.5rem; padding-bottom: 2.5rem; }
-    @media (min-width: 768px) { .kc-foot { grid-template-columns: 1.4fr 1fr 1fr; } }
+    @media (min-width: 768px) { .kc-foot { grid-template-columns: 1.4fr 1fr 1fr; } .kc-foot.kc-foot-2 { grid-template-columns: 1.4fr 1fr; } }
     .kc-foot-brand { display: flex; gap: 1rem; align-items: center; color: #fff; text-decoration: none; }
     .kc-foot-brand img { width: 4.5rem; height: 4.5rem; flex: none; border-radius: 50%; background: #fff; object-fit: contain; }
     .kc-foot-name { font-size: 1.25rem; font-weight: 800; line-height: 1.2; }
@@ -365,6 +365,14 @@
     .kc-foot-credit a { display: inline-flex; align-items: center; min-height: 2.75rem; color: #fff; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, .45); text-underline-offset: 4px; }
     .kc-foot-credit a:hover { text-decoration-color: var(--kc-sun); }
     .kc-foot-credit a:focus-visible { outline: 3px solid var(--kc-sun); outline-offset: 2px; }
+    /* Od tabletu jeden rząd: © po lewej, podpis po prawej (przy długiej nazwie łamie się tekst, nie cały blok). */
+    @media (min-width: 768px) {
+        .kc-foot-bottom { flex-wrap: nowrap; }
+        .kc-foot-bottom > p:first-child { flex: 1 1 auto; min-width: 0; }
+        .kc-foot-bottom > ul { flex: 0 1 auto; }
+        .kc-foot-credit { flex: 0 1 auto; flex-wrap: nowrap; justify-content: flex-end; text-align: right; }
+        .kc-foot-credit .wecms-mark { white-space: nowrap; }
+    }
 
     /* ── Podstrona „O nas” (partials/about) ──────────────────── */
     .kc-about-mission-sec { padding: 3.5rem 0; }
