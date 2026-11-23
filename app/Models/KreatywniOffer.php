@@ -48,10 +48,10 @@ class KreatywniOffer extends Model
         return self::lines((string) $this->features);
     }
 
-    /** @return array<string, list<string>> warsztaty pogrupowane: grupa => tytuły */
+    /** @return array<string, list<array{title: string, desc: string}>> warsztaty pogrupowane: grupa => [tytuł, opis] */
     public function itemGroups(): array
     {
-        return self::groupItems(array_map(fn (string $line) => array_map('trim', explode('|', $line, 2)) + [1 => ''], self::lines((string) $this->items)));
+        return self::groupItems(array_map(fn (string $line) => array_map('trim', explode('|', $line, 3)) + [1 => '', 2 => ''], self::lines((string) $this->items)));
     }
 
     public function itemCount(): int
@@ -64,7 +64,7 @@ class KreatywniOffer extends Model
      * jest pusty — jedna oferta z tekstów szablonu (z wyglądem warsztatów z Ustawienia → Szablon). Pusta lista, gdy
      * w tekstach nie ma ani warsztatów, ani ceny.
      *
-     * @return list<array{name: string, price: string, unit: string, note: string, features: list<string>, groups: array<string, list<string>>, style: string, button: string, button_url: ?string}>
+     * @return list<array{name: string, price: string, unit: string, note: string, features: list<string>, groups: array<string, list<array{title: string, desc: string}>>, style: string, button: string, button_url: ?string}>
      */
     public static function forDisplay(KreatywniTexts $texts): array
     {
@@ -93,7 +93,7 @@ class KreatywniOffer extends Model
             'unit' => $texts->get('offer_price_unit'),
             'note' => $texts->get('offer_price_note'),
             'features' => array_column($texts->rows('offer_features'), 0),
-            'groups' => self::groupItems($texts->rows('offer_items', 2)),
+            'groups' => self::groupItems($texts->rows('offer_items', 3)),
             'style' => $texts->offerStyle(),
             'button' => $texts->get('offer_button'),
             'button_url' => $texts->url('offer_button_url'),
@@ -101,17 +101,21 @@ class KreatywniOffer extends Model
     }
 
     /**
-     * @param  list<array{0: string, 1: string}>  $rows  [tytuł, grupa]
-     * @return array<string, list<string>>
+     * Wiersze „Tytuł | grupa | opis” (grupa i opis opcjonalne) pogrupowane w kolejności z listy.
+     *
+     * @param  list<array<int, string>>  $rows  [tytuł, grupa, opis]
+     * @return array<string, list<array{title: string, desc: string}>>
      */
     public static function groupItems(array $rows): array
     {
         $groups = [];
-        foreach ($rows as [$title, $group]) {
-            if (trim($title) === '') {
+        foreach ($rows as $row) {
+            $title = trim((string) ($row[0] ?? ''));
+            if ($title === '') {
                 continue;
             }
-            $groups[trim($group) !== '' ? trim($group) : self::DEFAULT_GROUP][] = trim($title);
+            $group = trim((string) ($row[1] ?? ''));
+            $groups[$group !== '' ? $group : self::DEFAULT_GROUP][] = ['title' => $title, 'desc' => trim((string) ($row[2] ?? ''))];
         }
 
         return $groups;

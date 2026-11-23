@@ -6,6 +6,7 @@ use App\Models\KreatywniOffer;
 use App\Models\Page;
 use App\Models\SiteSetting;
 use App\Models\User;
+use App\Support\KreatywniTexts;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -65,7 +66,11 @@ class KreatywniOffersTest extends TestCase
         $this->post(route('admin.kreatywni-oferty.store'), $this->payload())
             ->assertRedirect(route('admin.kreatywni-oferty.index'))->assertSessionHasNoErrors();
         $offer = KreatywniOffer::query()->firstOrFail();
-        $this->assertSame(['Przez cały rok' => ['Ceramika'], 'Wielkanoc' => ['Pisanki'], 'Warsztaty' => ['Origami']], $offer->itemGroups());
+        $this->assertSame([
+            'Przez cały rok' => [['title' => 'Ceramika', 'desc' => '']],
+            'Wielkanoc' => [['title' => 'Pisanki', 'desc' => '']],
+            'Warsztaty' => [['title' => 'Origami', 'desc' => '']],
+        ], $offer->itemGroups());
 
         foreach (['/', '/oferta'] as $url) {
             $html = $this->get($url)->assertOk()->getContent();
@@ -194,5 +199,34 @@ class KreatywniOffersTest extends TestCase
         $this->get(route('admin.ustawienia.edit'))->assertOk()
             ->assertSee('Kartę cenową i warsztaty w sekcji „Oferta warsztatów” (strona główna i góra strony „Oferta”) bierzemy z')
             ->assertSee('Oferty z Mikrooferty mają własny wygląd warsztatów');
+    }
+
+    public function test_opisy_warsztatow_w_kartach_i_liscie_a_pigulki_same_nazwy(): void
+    {
+        $this->useTemplate();
+        $this->actingAs($this->admin());
+        $items = "Dekorowanie bombek | Boże Narodzenie | Magiczne zajęcia ozdabiania bombek.\nOrigami | | Składanie papieru.\nBez opisu | Przez cały rok";
+
+        $this->post(route('admin.kreatywni-oferty.store'), $this->payload(['items' => $items, 'items_style' => 'cards']))->assertSessionHasNoErrors();
+        $offer = KreatywniOffer::query()->sole();
+        $this->assertSame(['title' => 'Dekorowanie bombek', 'desc' => 'Magiczne zajęcia ozdabiania bombek.'], $offer->itemGroups()['Boże Narodzenie'][0]);
+        $this->assertSame(['title' => 'Origami', 'desc' => 'Składanie papieru.'], $offer->itemGroups()['Warsztaty'][0], 'pusta grupa = „Warsztaty”');
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('<ul class="kc-offer-cards">', $html);
+        $this->assertStringContainsString('<li><span class="kc-offer-name">Dekorowanie bombek</span> <span class="kc-offer-desc">Magiczne zajęcia ozdabiania bombek.</span></li>', $html);
+        $this->assertStringContainsString('<li><span class="kc-offer-name">Bez opisu</span></li>', $html);
+
+        $offer->update(['items_style' => 'list']);
+        $this->assertStringContainsString('<ul class="kc-plain-list"><li><span class="kc-offer-name">Dekorowanie bombek</span> <span class="kc-offer-desc">', str_replace(["\n", '  '], '', $this->get('/')->getContent()));
+
+        $offer->update(['items_style' => 'chips']);
+        $html = $this->get('/')->getContent();
+        $this->assertStringContainsString('<li>Dekorowanie bombek</li>', $html);
+        $this->assertStringNotContainsString('Magiczne zajęcia ozdabiania bombek.', $html, 'pigułki bez opisów');
+
+        // Domyślne warsztaty z tekstów szablonu mają opisy; wygląd do wyboru w formularzu.
+        $this->get(route('admin.kreatywni-oferty.create'))->assertSee('name="items_style" value="cards"', false)->assertSee('Karty z opisami');
+        $this->assertStringContainsString('Dekorowanie bombek | Boże Narodzenie | Magiczne zajęcia', KreatywniTexts::DEFS['offer_items'][3]);
     }
 }

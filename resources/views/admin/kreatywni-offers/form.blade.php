@@ -87,7 +87,7 @@
                 <div>
                     <label for="ko-items" class="{{ $label }}">Lista warsztatów</label>
                     <textarea id="ko-items" name="items" rows="{{ min(18, max(6, substr_count((string) old('items', $offer->items), "\n") + 2)) }}" maxlength="8000" class="{{ $field }}" aria-describedby="ko-items-hint" {{ $invalid('items') }}>{{ old('items', $offer->items) }}</textarea>
-                    <p id="ko-items-hint" class="{{ $hint }}">Jeden warsztat w wierszu: „Tytuł | grupa”, np. „Dekorowanie bombek | Boże Narodzenie”. Warsztaty z tą samą grupą pokazują się razem pod jej nazwą, w kolejności z listy; bez grupy trafiają do grupy „Warsztaty”.</p>
+                    <p id="ko-items-hint" class="{{ $hint }}">Jeden warsztat w wierszu: „Tytuł | grupa | opis”, np. „Dekorowanie bombek | Boże Narodzenie | Magiczne zajęcia ozdabiania bombek”. Warsztaty z tą samą grupą pokazują się razem pod jej nazwą, w kolejności z listy; bez grupy trafiają do grupy „Warsztaty”. Opis jest opcjonalny — widać go w wyglądzie „Karty z opisami” i „Zwykła lista”, pigułki pokazują same nazwy.</p>
                 </div>
 
                 <fieldset>
