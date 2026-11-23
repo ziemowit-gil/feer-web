@@ -3861,6 +3861,17 @@
 
     @include('admin.partials.section-cards')
 
+    {{-- Okienko na czas zapisu ustawień (zapis trwa kilka sekund): zasłania stronę, żeby nikt nie klikał dalej.
+         Style inline, bo nowe klasy wymagałyby przebudowy CSS panelu. --}}
+    <div id="settings-saving" role="dialog" aria-modal="true" aria-labelledby="settings-saving-title" aria-describedby="settings-saving-text"
+        style="position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem;background:rgba(17,24,39,.6)">
+        <div tabindex="-1" data-settings-saving-box style="max-width:26rem;width:100%;border-radius:.5rem;background:#fff;color:#1d1d1a;padding:1.5rem;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.3);outline:none">
+            <i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true" style="font-size:2rem;color:#1d1d1a"></i>
+            <p id="settings-saving-title" style="margin:.75rem 0 .25rem;font-size:1.125rem;font-weight:700">Zmieniam ustawienia, czekaj…</p>
+            <p id="settings-saving-text" style="margin:0;font-size:.875rem">To może potrwać kilka sekund. Nie zamykaj strony i nie klikaj ponownie „Zapisz”.</p>
+        </div>
+    </div>
+
     <script>
         (function () {
             // Zapis jednej sekcji: dołączamy nazwy pól z widocznej zakładki (_section_fields[]),
@@ -3879,6 +3890,11 @@
                 saveBtn.setAttribute('aria-disabled', on ? 'true' : 'false');
                 if (saveLabel) saveLabel.textContent = on ? 'Zapisywanie…' : 'Zapisz zmiany';
                 if (saveStatus) saveStatus.textContent = on ? 'Zapisywanie zmian, poczekaj.' : '';
+                const overlay = document.getElementById('settings-saving');
+                if (overlay) {
+                    overlay.style.display = on ? 'flex' : 'none';
+                    if (on) { const box = overlay.querySelector('[data-settings-saving-box]'); if (box) box.focus(); }
+                }
             }
             window.addEventListener('pageshow', function () { setSaving(false); });
             form.addEventListener('submit', function (e) {
