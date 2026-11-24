@@ -89,7 +89,7 @@
                     @if (filled($td['fp_help'] ?? null))
                         <section class="rounded-md bg-brand-light p-6" aria-labelledby="fp-help">
                             <h2 id="fp-help" class="flex items-center gap-2 text-lg font-bold text-ink">
-                                <i class="fa-solid fa-universal-access text-brand-dark" aria-hidden="true"></i> Pomoc w wypełnieniu
+                                <span class="picto-icon picto-dostepnosc text-brand-dark" aria-hidden="true"></span> Pomoc w wypełnieniu
                             </h2>
                             <p class="mt-2 whitespace-pre-line text-ink">{{ $td['fp_help'] }}</p>
                         </section>

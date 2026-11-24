@@ -63,7 +63,7 @@
                     class="flex h-8 w-8 items-center justify-center rounded-full text-sm text-white/90 transition hover:bg-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
                     :class="open ? 'bg-white/25 text-white' : ''"
                     aria-label="Ułatwienia dostępu">
-                    <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
+                    <span class="picto-icon picto-dostepnosc" aria-hidden="true"></span>
                 </button>
             </div>
         </div>

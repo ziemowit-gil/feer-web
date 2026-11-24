@@ -225,7 +225,7 @@ function start(config) {
         cta: { title: 'Wezwanie do działania', icon: 'bullhorn', cat: 'design', desc: 'Nagłówek, krótki tekst i jeden wyraźny przycisk na jasnym tle (np. zapisy, apel o darowiznę).', keywords: ['cta', 'apel', 'zapisy', 'wezwanie', 'darowizna', 'przycisk'], create: () => ({ title: '', level: 2, text: '', label: '', url: '', newTab: false, tone: 'light' }) },
         people: { title: 'Zespół / osoby do kontaktu', icon: 'users', cat: 'design', desc: 'Karty osób: zdjęcie, imię i nazwisko, funkcja, krótki opis, e-mail i telefon.', keywords: ['zespół', 'osoby', 'kontakt', 'pracownicy', 'koordynator'], create: () => ({ level: 3, columns: 3, items: [{ name: '', role: '', photo: '', email: '', phone: '', bio: '' }] }) },
         cards: { title: 'Siatka kart', icon: 'table-cells', cat: 'design', desc: 'Karty z grafiką, tytułem, krótkim opisem i linkiem — np. oferta, programy, obszary działania.', keywords: ['karty', 'siatka', 'kafelki', 'oferta', 'grid'], create: () => ({ level: 3, columns: 3, items: [1, 2, 3].map(() => ({ title: '', text: '', image: '', alt: '', url: '' })) }) },
-        pictograms: { title: 'Piktogramy dostępności', icon: 'universal-access', cat: 'design', desc: 'Ikony udogodnień: audiodeskrypcja, napisy, pętla indukcyjna, PJM, ETR, miejsce wyciszenia… Z nazwami i podpisem autora.', keywords: ['piktogramy', 'ikony', 'dostępność', 'udogodnienia', 'pjm', 'audiodeskrypcja', 'napisy', 'pętla', 'etr', 'deklaracja'], create: () => ({ title: '', level: 2, labels: true, size: 'medium', items: [] }) },
+        pictograms: { title: 'Piktogramy dostępności', icon: 'universal-access', cat: 'design', desc: 'Ikony udogodnień: audiodeskrypcja, napisy, pętla indukcyjna, PJM, ETR, miejsce wyciszenia… Z nazwami czytelnymi dla czytników ekranu.', keywords: ['piktogramy', 'ikony', 'dostępność', 'udogodnienia', 'pjm', 'audiodeskrypcja', 'napisy', 'pętla', 'etr', 'deklaracja'], create: () => ({ title: '', level: 2, labels: true, size: 'medium', items: [] }) },
         // Blok wspólny = wstawka [blok:ID]: jedna treść na wielu stronach, poprawka w jednym miejscu działa wszędzie.
         sharedblock: { as: 'shortcode', title: 'Blok wspólny', icon: 'link', cat: 'design', desc: 'Ta sama treść na wielu stronach (np. kontakt, numer konta, apel) — poprawka bloku wspólnego zmienia go wszędzie.', keywords: ['wspólny', 'powtarzalny', 'globalny', 'kontakt', 'numer konta', 'reużywalny'], hidden: !(CI.sharedBlocks || []).length || !!config.shared, create: () => ({ code: firstCode(CI.sharedBlocks, (v) => '[blok:' + v + ']') }) },
         shortcode: { title: 'Shortcode', icon: 'code', cat: 'widgets', desc: 'Osadzenie modułu: formularz, kafelki, blok z kreatora.', keywords: ['formularz', 'kafelki', 'blok', 'moduł'], create: () => ({ code: '' }) },
@@ -2266,8 +2266,7 @@ function start(config) {
             a.title.trim() ? h('h' + a.level, { class: 'content-pictograms-title' }, a.title) : null,
             h('ul', { class: 'content-pictograms-list', role: 'list' }, ...items.map((it) => h('li', { class: 'content-pictogram' },
                 h('img', { class: 'content-pictogram-image', src: (PICTOGRAMS.find((p) => p.key === it.key) || {}).url, alt: a.labels ? '' : pictogramName(it), width: px, height: px }),
-                a.labels ? h('span', { class: 'content-pictogram-label' }, pictogramName(it)) : null))),
-            h('p', { class: 'content-pictograms-credit' }, 'Piktogramy: Tomasz Grabowski, prawa autorskie: Fundacja Kultury Bez Barier, licencja CC BY-SA 4.0.'));
+                a.labels ? h('span', { class: 'content-pictogram-label' }, pictogramName(it)) : null))));
     }
     function cardsPreview(b) {
         const a = b.attrs;
@@ -3776,7 +3775,7 @@ function start(config) {
                     a.title.trim() ? field('Poziom nagłówka', select(a.level, HEADING_LEVELS, (v) => set({ level: Number(v) })), 'Nie pomijaj poziomów.') : null,
                     field('Rozmiar', select(a.size, [['small', 'Mały (32 px)'], ['medium', 'Średni (48 px)'], ['large', 'Duży (64 px)']], (v) => set({ size: v }))),
                     checkbox('Pokaż nazwy pod piktogramami', a.labels, (v) => set({ labels: v }), 'Zalecane: nazwa widoczna dla wszystkich. Bez nazw czytnik ekranu odczyta je z tekstu alternatywnego.'),
-                    h('p', { class: 'be-help' }, 'Pod piktogramami pojawi się podpis autora i licencji (CC BY-SA 4.0) — wymaga go licencja.')),
+                    h('p', { class: 'be-help' }, 'Podpis autora i licencji (CC BY-SA 4.0) stoi pod stopką każdej strony — wymaga go licencja.')),
                 ...a.items.map(item));
                 break;
             }

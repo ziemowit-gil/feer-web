@@ -12,7 +12,7 @@
             @click="pjmOpen = !pjmOpen; if (pjmOpen) $nextTick(() => $refs.pjmPanel.focus())"
             :aria-expanded="pjmOpen.toString()" aria-controls="pjm-panel"
             class="inline-flex min-h-11 items-center gap-2 rounded-md bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
-            <i class="fa-solid fa-hands-asl-interpreting" aria-hidden="true"></i>
+            <span class="picto-icon picto-tlumaczenie-na-pjm" aria-hidden="true"></span>
             <span x-text="pjmOpen ? 'Ukryj tłumaczenie na PJM' : 'Tłumaczenie na PJM'">Tłumaczenie na PJM</span>
         </button>
 

@@ -41,7 +41,7 @@
                 :aria-expanded="open.toString()" aria-controls="a11y-panel"
                 class="inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
                 :class="open ? 'border-brand-dark bg-brand-dark text-white hover:bg-ink' : 'border-gray-300 bg-white text-ink hover:border-brand-dark hover:text-brand-dark'">
-            <i class="fa-solid fa-universal-access text-base" aria-hidden="true"></i>
+            <span class="picto-icon picto-dostepnosc text-base" aria-hidden="true"></span>
             <span class="hidden sm:inline">Dostępność</span>
             <span class="sr-only sm:hidden">Ułatwienia dostępu</span>
         </button>

@@ -101,7 +101,7 @@
                 <button type="button" x-ref="a11yToggle" @click="open = ! open"
                         :aria-expanded="open.toString()" aria-controls="a11y-panel"
                         class="{{ $instIconBtn }}" :class="open ? 'bg-brand-dark text-white' : 'hover:bg-brand-light'">
-                    <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
+                    <span class="picto-icon picto-dostepnosc" aria-hidden="true"></span>
                     <span class="sr-only">Ułatwienia dostępu</span>
                 </button>
 

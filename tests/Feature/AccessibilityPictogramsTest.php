@@ -50,8 +50,8 @@ class AccessibilityPictogramsTest extends TestCase
         $this->assertStringContainsString('<span class="content-pictogram-label">PJM w sobotę</span>', $html);
         // Bez powtórzeń i nieznanych kluczy.
         $this->assertSame(2, substr_count($html, '<li class="content-pictogram">'));
-        $this->assertStringContainsString('Tomasz Grabowski', $html);
-        $this->assertStringContainsString('href="https://creativecommons.org/licenses/by-sa/4.0/legalcode.pl"', $html);
+        // Podpis licencji jest pod stopką strony, nie przy każdym zestawie.
+        $this->assertStringNotContainsString('Tomasz Grabowski', $html);
     }
 
     public function test_blok_bez_nazw_ma_tekst_alternatywny(): void
@@ -107,5 +107,30 @@ class AccessibilityPictogramsTest extends TestCase
         $html = $this->get('/dostepnosc-wydarzenia')->assertOk()->getContent();
         $this->assertStringContainsString('/img/piktogramy-dostepnosci/miejsce-wyciszenia.svg', $html);
         $this->assertStringContainsString('<span class="content-pictogram-label">Miejsce wyciszenia</span>', $html);
+        // Podpis autora i licencji (CC BY-SA 4.0) pod stopką, z linkami.
+        $this->assertStringContainsString('<div class="pictograms-credit">', $html);
+        $this->assertStringContainsString('Piktogramy: Tomasz Grabowski, prawa autorskie: <a href="https://kulturabezbarier.org/">Fundacja Kultury Bez Barier</a>', $html);
+        $this->assertStringContainsString('<a href="https://creativecommons.org/licenses/by-sa/4.0/legalcode.pl">CC BY-SA 4.0</a>', $html);
+        $this->assertGreaterThan(strrpos($html, '</footer>'), strpos($html, 'pictograms-credit'));
+    }
+
+    public function test_moduly_dostepnosci_maja_piktogram_zamiast_ikony_font_awesome(): void
+    {
+        foreach (['partials/topbar', 'partials/topbar-info', 'partials/header-institutional', 'partials/pjm-video', 'accessibility/show',
+            'page/partials/a11y-activate-button', 'templates/kreatywni/partials/header', 'templates/ngo/partials/header',
+            'templates/federation/partials/header', 'templates/wrzos/partials/topbar', 'templates/test3/partials/header'] as $view) {
+            $path = resource_path('views/'.$view.'.blade.php');
+            if (! is_file($path)) {
+                continue; // szablonu nie ma na tej gałęzi (np. kreatywni na main)
+            }
+            $src = file_get_contents($path);
+            $this->assertStringNotContainsString('fa-universal-access', $src, $view);
+            $this->assertStringNotContainsString('fa-hands-asl-interpreting', $src, $view);
+            $this->assertMatchesRegularExpression('~<span class="picto-icon picto-(dostepnosc|tlumaczenie-na-pjm)[^"]*"[^>]*aria-hidden="true"></span>~', $src, $view);
+        }
+        $css = file_get_contents(resource_path('css/app.css'));
+        foreach (array_keys(AccessibilityPictograms::ALL) as $key) {
+            $this->assertStringContainsString(".picto-{$key} { --picto: url('/img/piktogramy-dostepnosci/{$key}.svg'); }", $css);
+        }
     }
 }

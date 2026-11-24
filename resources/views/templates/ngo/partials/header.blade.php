@@ -35,7 +35,7 @@
                     class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gray-300 text-sm text-ink transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1"
                     :class="open ? 'bg-brand border-brand text-white' : ''"
                     aria-label="Ułatwienia dostępu">
-                    <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
+                    <span class="picto-icon picto-dostepnosc" aria-hidden="true"></span>
                 </button>
 
                 {{-- Wyszukiwarka --}}

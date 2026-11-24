@@ -116,7 +116,7 @@
     @if (filled($td['audit_summary'] ?? null))
         <section class="not-prose mt-6 rounded-md bg-gray-50 p-5" aria-labelledby="audit-heading">
             <h2 id="audit-heading" class="flex items-center gap-2 text-lg font-bold text-ink">
-                <i class="fa-solid fa-universal-access text-brand-dark" aria-hidden="true"></i> Podsumowanie audytu dostępności
+                <span class="picto-icon picto-dostepnosc text-brand-dark" aria-hidden="true"></span> Podsumowanie audytu dostępności
             </h2>
             <p class="mt-2 whitespace-pre-line text-ink">{{ $td['audit_summary'] }}</p>
         </section>

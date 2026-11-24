@@ -146,7 +146,7 @@
         </dl>
 
         <div class="ad-actions">
-            <a href="#zglos-bariere" class="ad-btn"><i class="fa-solid fa-universal-access" aria-hidden="true"></i>Zgłoś problem z dostępnością</a>
+            <a href="#zglos-bariere" class="ad-btn"><span class="picto-icon picto-dostepnosc" aria-hidden="true"></span>Zgłoś problem z dostępnością</a>
             <a href="#kontakt" class="ad-link">Kontakt w sprawie dostępności</a>
         </div>
     </header>

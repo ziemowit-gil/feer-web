@@ -6,8 +6,9 @@ namespace App\Support;
  * Piktogramy dostępności (audiodeskrypcja, napisy, pętla indukcyjna, PJM, ETR…) z public/img/piktogramy-dostepnosci.
  *
  * Autor: Tomasz Grabowski, prawa autorskie: Fundacja Kultury Bez Barier, licencja CC BY-SA 4.0
- * (źródło: github.com/JacZad/piktogramy-dostepnosci). Licencja wymaga podpisu przy publikacji, więc każdy zestaw
- * na stronie kończy się podpisem {@see attribution()}.
+ * (źródło: github.com/JacZad/piktogramy-dostepnosci). Licencja wymaga podpisu przy publikacji: stoi on pod stopką
+ * każdego szablonu (partials/pictograms-credit, {@see attribution()}), bo piktogramy są też w ikonach modułów
+ * dostępności (klasy .picto-icon .picto-{klucz} w app.css, kolor z currentColor przez maskę CSS).
  *
  * Używają ich blok edytora „Piktogramy dostępności” (BlockRenderer, typ `pictograms`) i wstawka klasycznego
  * edytora `[piktogramy:etr,audiodeskrypcja]` (ShortcodeParser).
@@ -115,11 +116,10 @@ class AccessibilityPictograms
         $heading = trim($title) !== '' ? "<h{$level} class=\"content-pictograms-title\">".e(trim($title))."</h{$level}>" : '';
 
         return '<div class="content-pictograms content-pictograms--'.$size.($labels ? '' : ' content-pictograms--icons').'">'
-            .$heading.'<ul class="content-pictograms-list" role="list">'.$list.'</ul>'
-            .'<p class="content-pictograms-credit">'.self::attribution().'</p></div>';
+            .$heading.'<ul class="content-pictograms-list" role="list">'.$list.'</ul></div>';
     }
 
-    /** Podpis wymagany przez licencję CC BY-SA 4.0. */
+    /** Podpis wymagany przez licencję CC BY-SA 4.0 (pod stopką: partials/pictograms-credit). */
     public static function attribution(): string
     {
         return 'Piktogramy: Tomasz Grabowski, prawa autorskie: <a href="https://kulturabezbarier.org/">Fundacja Kultury Bez Barier</a>,'

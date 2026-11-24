@@ -57,7 +57,7 @@
                     <a class="z3-tool" href="{{ $z3Bip }}" @if ($siteSettings->bipIsExternal()) target="_blank" rel="noopener" @endif><span>BIP</span><span class="sr-only"> — biuletyn informacji publicznej{{ $siteSettings->bipIsExternal() ? ' (otwiera się w nowej karcie)' : '' }}</span></a>
                 @endif
                 @if (\Illuminate\Support\Facades\Route::has('accessibility.show'))
-                    <a class="z3-tool" href="{{ route('accessibility.show') }}" aria-label="Deklaracja dostępności"><i class="fa-solid fa-universal-access" aria-hidden="true"></i></a>
+                    <a class="z3-tool" href="{{ route('accessibility.show') }}" aria-label="Deklaracja dostępności"><span class="picto-icon picto-dostepnosc" aria-hidden="true"></span></a>
                 @endif
                 <button type="button" class="z3-tool" x-ref="a11yToggle" @click="open = ! open" :aria-expanded="open.toString()" aria-controls="a11y-panel"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Dostępność</span></button>
             </div>
