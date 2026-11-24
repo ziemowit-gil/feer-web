@@ -225,6 +225,7 @@ function start(config) {
         cta: { title: 'Wezwanie do działania', icon: 'bullhorn', cat: 'design', desc: 'Nagłówek, krótki tekst i jeden wyraźny przycisk na jasnym tle (np. zapisy, apel o darowiznę).', keywords: ['cta', 'apel', 'zapisy', 'wezwanie', 'darowizna', 'przycisk'], create: () => ({ title: '', level: 2, text: '', label: '', url: '', newTab: false, tone: 'light' }) },
         people: { title: 'Zespół / osoby do kontaktu', icon: 'users', cat: 'design', desc: 'Karty osób: zdjęcie, imię i nazwisko, funkcja, krótki opis, e-mail i telefon.', keywords: ['zespół', 'osoby', 'kontakt', 'pracownicy', 'koordynator'], create: () => ({ level: 3, columns: 3, items: [{ name: '', role: '', photo: '', email: '', phone: '', bio: '' }] }) },
         cards: { title: 'Siatka kart', icon: 'table-cells', cat: 'design', desc: 'Karty z grafiką, tytułem, krótkim opisem i linkiem — np. oferta, programy, obszary działania.', keywords: ['karty', 'siatka', 'kafelki', 'oferta', 'grid'], create: () => ({ level: 3, columns: 3, items: [1, 2, 3].map(() => ({ title: '', text: '', image: '', alt: '', url: '' })) }) },
+        pictograms: { title: 'Piktogramy dostępności', icon: 'universal-access', cat: 'design', desc: 'Ikony udogodnień: audiodeskrypcja, napisy, pętla indukcyjna, PJM, ETR, miejsce wyciszenia… Z nazwami i podpisem autora.', keywords: ['piktogramy', 'ikony', 'dostępność', 'udogodnienia', 'pjm', 'audiodeskrypcja', 'napisy', 'pętla', 'etr', 'deklaracja'], create: () => ({ title: '', level: 2, labels: true, size: 'medium', items: [] }) },
         // Blok wspólny = wstawka [blok:ID]: jedna treść na wielu stronach, poprawka w jednym miejscu działa wszędzie.
         sharedblock: { as: 'shortcode', title: 'Blok wspólny', icon: 'link', cat: 'design', desc: 'Ta sama treść na wielu stronach (np. kontakt, numer konta, apel) — poprawka bloku wspólnego zmienia go wszędzie.', keywords: ['wspólny', 'powtarzalny', 'globalny', 'kontakt', 'numer konta', 'reużywalny'], hidden: !(CI.sharedBlocks || []).length || !!config.shared, create: () => ({ code: firstCode(CI.sharedBlocks, (v) => '[blok:' + v + ']') }) },
         shortcode: { title: 'Shortcode', icon: 'code', cat: 'widgets', desc: 'Osadzenie modułu: formularz, kafelki, blok z kreatora.', keywords: ['formularz', 'kafelki', 'blok', 'moduł'], create: () => ({ code: '' }) },
@@ -1587,6 +1588,10 @@ function start(config) {
                         if (c.alt && /^(zdjęcie|obraz|grafika|img|image|foto)[\s_-]*\d*(\.\w+)?$/i.test(c.alt.trim())) w.push(`Opis grafiki karty ${i + 1} nic nie mówi — opisz ją albo zostaw puste (grafika dekoracyjna).`);
                     });
                     break;
+                case 'pictograms':
+                    if (a.title.trim()) headingCheck(a.level);
+                    if (!a.items.length) w.push('Zaznacz co najmniej jeden piktogram — pusty blok nie pojawi się na stronie.');
+                    break;
                 case 'phone':
                     if (!a.number.replace(/\D/g, '')) w.push('Wpisz numer telefonu — bez niego klocek nie pokaże się na stronie.');
                     break;
@@ -1999,6 +2004,7 @@ function start(config) {
         cta: (b) => ctaEditor(b),
         people: (b) => peoplePreview(b),
         cards: (b) => cardsPreview(b),
+        pictograms: (b) => pictogramsPreview(b),
         table: (b) => tableEditor(b),
         separator: () => h('hr', {}),
         embed: (b) => embedEditor(b),
@@ -2246,6 +2252,22 @@ function start(config) {
                 p.role ? h('p', { class: 'content-person-role' }, p.role) : null,
                 p.bio ? h('p', { class: 'content-person-bio' }, p.bio) : null,
                 p.email || p.phone ? h('p', { class: 'content-person-contact' }, p.email || null, p.email && p.phone ? h('br', {}) : null, p.phone || null) : null))));
+    }
+    // Piktogramy dostępności: katalog z serwera (App\Support\AccessibilityPictograms::catalog()).
+    const PICTOGRAMS = config.pictograms || [];
+    const pictogramName = (it) => (it.label || '').trim() || (PICTOGRAMS.find((p) => p.key === it.key) || {}).name || it.key;
+    const PICTOGRAM_PX = { small: 32, medium: 48, large: 64 };
+    function pictogramsPreview(b) {
+        const a = b.attrs;
+        const items = a.items.filter((it) => PICTOGRAMS.some((p) => p.key === it.key));
+        if (!items.length) return emptyTyped(b, 'universal-access', BLOCKS.pictograms.title, 'Zaznacz piktogramy w panelu po prawej. Każdy ma nazwę, którą odczyta czytnik ekranu.');
+        const px = PICTOGRAM_PX[a.size] || 48;
+        return h('div', { class: `content-pictograms content-pictograms--${a.size}` + (a.labels ? '' : ' content-pictograms--icons') },
+            a.title.trim() ? h('h' + a.level, { class: 'content-pictograms-title' }, a.title) : null,
+            h('ul', { class: 'content-pictograms-list', role: 'list' }, ...items.map((it) => h('li', { class: 'content-pictogram' },
+                h('img', { class: 'content-pictogram-image', src: (PICTOGRAMS.find((p) => p.key === it.key) || {}).url, alt: a.labels ? '' : pictogramName(it), width: px, height: px }),
+                a.labels ? h('span', { class: 'content-pictogram-label' }, pictogramName(it)) : null))),
+            h('p', { class: 'content-pictograms-credit' }, 'Piktogramy: Tomasz Grabowski, prawa autorskie: Fundacja Kultury Bez Barier, licencja CC BY-SA 4.0.'));
     }
     function cardsPreview(b) {
         const a = b.attrs;
@@ -3729,6 +3751,33 @@ function start(config) {
                     pushHistory(); a.items.push({ title: '', text: '', image: '', alt: '', url: '' }); markDirty(); rerenderBlock(b.id);
                     renderSidebar({ focusKey: 'section:Karta ' + a.items.length }); announce('Dodano kartę ' + a.items.length);
                 } }, icon('plus'), ' Dodaj kartę')) : null);
+                break;
+            }
+            case 'pictograms': {
+                const chosen = (key) => a.items.findIndex((it) => it.key === key);
+                const toggle = (p, on) => {
+                    pushHistory();
+                    const at = chosen(p.key);
+                    if (on && at < 0) a.items.push({ key: p.key, label: '' });
+                    if (!on && at >= 0) a.items.splice(at, 1);
+                    markDirty(); rerenderBlock(b.id); scheduleWarnings();
+                    announce((on ? 'Dodano: ' : 'Usunięto: ') + p.name);
+                };
+                const item = (it, i) => panelSection('Piktogram ' + (i + 1),
+                    h('p', { class: 'be-help' }, h('img', { src: (PICTOGRAMS.find((p) => p.key === it.key) || {}).url, alt: '', width: 32, height: 32 }), ' ' + ((PICTOGRAMS.find((p) => p.key === it.key) || {}).name || it.key)),
+                    field('Własna nazwa (opcjonalnie)', textInput(it.label, (v) => { typingHistory(); it.label = v; markDirty(); rerenderBlock(b.id); }, { maxlength: 160 }), 'Np. „Tłumaczenie na PJM w sobotę”. Puste = nazwa piktogramu. To także tekst alternatywny.'),
+                    itemButtons(b, a.items, i, 'Piktogram', { min: 0, afterRemove: 'section:Piktogramy' }));
+                parts.push(panelSection('Piktogramy',
+                    h('p', { class: 'be-help' }, 'Zaznacz udogodnienia, które oferujesz. Kolejność zmienisz niżej.'),
+                    h('fieldset', { class: 'be-fieldset' }, h('legend', { class: 'be-sr-only' }, 'Piktogramy do pokazania'),
+                        ...PICTOGRAMS.map((p) => checkbox(p.name, chosen(p.key) >= 0, (on) => { toggle(p, on); renderSidebar(); })))),
+                panelSection('Wygląd',
+                    field('Nagłówek nad piktogramami (opcjonalnie)', textInput(a.title, (v) => updateAttrs(b, { title: v }, { typing: true })), 'Np. „Udogodnienia podczas wydarzenia”.'),
+                    a.title.trim() ? field('Poziom nagłówka', select(a.level, HEADING_LEVELS, (v) => set({ level: Number(v) })), 'Nie pomijaj poziomów.') : null,
+                    field('Rozmiar', select(a.size, [['small', 'Mały (32 px)'], ['medium', 'Średni (48 px)'], ['large', 'Duży (64 px)']], (v) => set({ size: v }))),
+                    checkbox('Pokaż nazwy pod piktogramami', a.labels, (v) => set({ labels: v }), 'Zalecane: nazwa widoczna dla wszystkich. Bez nazw czytnik ekranu odczyta je z tekstu alternatywnego.'),
+                    h('p', { class: 'be-help' }, 'Pod piktogramami pojawi się podpis autora i licencji (CC BY-SA 4.0) — wymaga go licencja.')),
+                ...a.items.map(item));
                 break;
             }
             case 'table': {

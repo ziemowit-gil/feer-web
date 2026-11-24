@@ -934,6 +934,21 @@ html.no-animations .nav-mega-panel { transition: none !important; }
 .prose .content-person-bio { margin: 0.5rem 0 0; font-size: 0.95em; }
 .prose .content-person-contact { margin: 0.5rem 0 0; overflow-wrap: anywhere; }
 
+/* Piktogramy dostępności (blok „Piktogramy dostępności” i wstawka [piktogramy:…]): lista ikon z nazwami, zawijana;
+   ikona na białym polu, żeby czarny piktogram był widoczny także na ciemnym tle sekcji. Podpis licencji bez opacity. */
+.prose .content-pictograms { margin: 1.5rem 0; color: var(--color-ink); }
+.prose .content-pictograms-title { margin: 0 0 0.75rem; }
+.prose ul.content-pictograms-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 1rem 1.25rem; }
+.prose ul.content-pictograms-list > li { margin: 0; padding: 0; }
+.prose .content-pictogram { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 7.5rem; text-align: center; }
+.prose .content-pictograms--icons .content-pictogram { width: auto; }
+.prose .content-pictogram-image { display: block; margin: 0; padding: 0.35rem; box-sizing: content-box; background: #fff; border-radius: 0.5rem; }
+.prose .content-pictograms--small .content-pictogram-image { width: 2rem; height: 2rem; }
+.prose .content-pictograms--medium .content-pictogram-image { width: 3rem; height: 3rem; }
+.prose .content-pictograms--large .content-pictogram-image { width: 4rem; height: 4rem; }
+.prose .content-pictogram-label { font-size: 0.9375rem; line-height: 1.3; font-weight: 600; overflow-wrap: anywhere; }
+.prose .content-pictograms-credit { margin: 0.75rem 0 0; font-size: 0.8125rem; line-height: 1.4; }
+
 .prose .content-card { position: relative; display: flex; flex-direction: column; overflow: hidden; border-radius: 0.75rem; background: #f9fafb; color: var(--color-ink); }
 .prose .content-card-image { order: -1; width: 100%; aspect-ratio: 16 / 9; margin: 0; object-fit: cover; }
 .prose .content-card-body { padding: 1rem 1.125rem 1.25rem; }

@@ -445,6 +445,8 @@ class BlockEditorController extends Controller
                     'locked' => auth()->user()->lockedFields(),
                     'modulesOff' => (object) EditorPermissions::moduleDisabledTypes(),
                 ],
+                // Blok „Piktogramy dostępności": zestaw ikon do wyboru (klucz, nazwa = tekst alternatywny, adres SVG).
+                'pictograms' => \App\Support\AccessibilityPictograms::catalog(),
                 // Blok „Lista aktualności": kategorie do wyboru.
                 'newsCategories' => NewsList::categoryOptions(),
                 'materialGroups' => \App\Models\EducationalMaterial::TARGET_GROUPS,
