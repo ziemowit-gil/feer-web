@@ -50,7 +50,7 @@ class BlockRenderer
     public const TYPES = [
         'paragraph', 'heading', 'list', 'quote', 'image', 'gallery', 'buttons', 'callout', 'partnerevent',
         'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist', 'banner', 'imagebanner', 'materials', 'phone',
-        'tabs', 'tab', 'faq', 'cta', 'people', 'cards',
+        'tabs', 'tab', 'faq', 'cta', 'people', 'cards', 'pictograms',
     ];
 
     private const INLINE_TAGS = ['strong', 'b', 'em', 'i', 'a', 'br', 'code', 's', 'sub', 'sup', 'mark'];
@@ -325,6 +325,13 @@ class BlockRenderer
                     'url' => self::url(mb_substr((string) ($it['url'] ?? ''), 0, 2000)),
                 ], 'title'),
             ],
+            'pictograms' => [
+                'title' => $line('title', 200),
+                'level' => max(2, min(4, (int) ($a['level'] ?? 2))),
+                'labels' => (bool) ($a['labels'] ?? true),
+                'size' => $pick('size', array_keys(AccessibilityPictograms::SIZES), 'medium'),
+                'items' => AccessibilityPictograms::normalizeItems($a['items'] ?? []),
+            ],
             'shortcode' => ['code' => preg_match('/^\[[a-z0-9_-]+(?::[^\]\r\n]{1,200})?\]$/i', $str('code', 220)) ? $str('code', 220) : ''],
             default => [],
         };
@@ -529,6 +536,9 @@ class BlockRenderer
 
             case 'cards':
                 return $this->renderCards($a);
+
+            case 'pictograms':
+                return AccessibilityPictograms::render($a['items'], $a['labels'], $a['size'], $a['title'], $a['level']);
 
             case 'details':
                 if ($a['summary'] === '') {

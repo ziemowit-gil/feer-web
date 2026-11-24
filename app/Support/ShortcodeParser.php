@@ -123,6 +123,13 @@ class ShortcodeParser
             $content,
         );
 
+        // Piktogramy dostępności: [piktogramy:etr,audiodeskrypcja] (klucze plików z public/img/piktogramy-dostepnosci).
+        $content = preg_replace_callback(
+            '~(?:<p\b[^>]*>\s*)?\[piktogramy:([a-z0-9,\s\-]{1,1000})\](?:\s*</p>)?~i',
+            fn ($matches) => AccessibilityPictograms::renderShortcode($matches[1]),
+            $content,
+        );
+
         return $content;
     }
 
@@ -142,7 +149,7 @@ class ShortcodeParser
     }
 
     /** Wzorzec wszystkich shortcodów — do wykrywania (np. wyłączenie edycji inline). */
-    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|ksiazka-telefoniczna|banery:[a-z0-9_\-]+|baner:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]{0,200})?)\]/i';
+    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|ksiazka-telefoniczna|banery:[a-z0-9_\-]+|baner:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|piktogramy:[a-z0-9,\s\-]{1,1000}|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]{0,200})?)\]/i';
 
     public static function has(?string $content): bool
     {

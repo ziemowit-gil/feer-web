@@ -39,6 +39,7 @@ class BlockSummary
         'cta' => ['Wezwanie do działania', 'fa-bullhorn'],
         'people' => ['Zespół / osoby', 'fa-users'],
         'cards' => ['Siatka kart', 'fa-table-cells-large'],
+        'pictograms' => ['Piktogramy dostępności', 'fa-universal-access'],
     ];
 
     /** Znaczniki, które szybka edycja zachowuje bez utraty informacji (zwykły tekst z podziałem wierszy). */
@@ -72,6 +73,7 @@ class BlockSummary
             'cta' => trim(($a['title'] ?? '').(($a['label'] ?? '') !== '' ? ' → '.$a['label'] : '')),
             'people' => implode(' · ', array_map(fn ($p) => (string) ($p['name'] ?? ''), array_slice($a['items'] ?? [], 0, 4))).(count($a['items'] ?? []) > 4 ? ' …' : ''),
             'cards' => implode(' · ', array_map(fn ($c) => (string) ($c['title'] ?? ''), array_slice($a['items'] ?? [], 0, 4))).(count($a['items'] ?? []) > 4 ? ' …' : ''),
+            'pictograms' => implode(' · ', array_map(fn ($it) => (string) (($it['label'] ?? '') ?: (AccessibilityPictograms::ALL[$it['key'] ?? ''] ?? '')), array_slice($a['items'] ?? [], 0, 4))).(count($a['items'] ?? []) > 4 ? ' …' : ''),
             'columns', 'callout' => count($inner).' '.self::plural(count($inner), 'element', 'elementy', 'elementów').': '
                 .implode(' · ', array_map(fn ($b) => self::describe($b)['label'], array_slice(self::flatten($inner), 0, 4))),
             default => '',
