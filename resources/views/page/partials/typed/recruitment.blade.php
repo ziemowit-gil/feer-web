@@ -255,7 +255,7 @@
             @if (filled($td['rec_accessibility'] ?? null))
                 <section class="mt-10 rounded-md bg-brand-light p-5" aria-labelledby="rec-a11y">
                     <h2 id="rec-a11y" class="mb-2 flex items-center gap-2 text-lg font-bold text-ink">
-                        <i class="fa-solid fa-universal-access text-brand-dark" aria-hidden="true"></i> Dostępność rekrutacji
+                        <span class="picto-icon picto-dostepnosc text-brand-dark" aria-hidden="true"></span> Dostępność rekrutacji
                     </h2>
                     <p class="whitespace-pre-line text-ink">{{ $td['rec_accessibility'] }}</p>
                 </section>

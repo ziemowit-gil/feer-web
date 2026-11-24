@@ -6,7 +6,7 @@
 <div x-data x-cloak class="mt-6">
     <button type="button" @click="window.dispatchEvent(new CustomEvent('a11y-open'))"
         class="inline-flex min-h-12 items-center gap-2 rounded-md bg-brand px-6 text-base font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-        <i class="fa-solid fa-universal-access" aria-hidden="true"></i>
+        <span class="picto-icon picto-dostepnosc" aria-hidden="true"></span>
         Włącz ułatwienia dostępności
     </button>
 </div>

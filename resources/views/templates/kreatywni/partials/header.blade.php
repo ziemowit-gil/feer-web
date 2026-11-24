@@ -52,7 +52,7 @@
         </button>
         <button type="button" class="kc-top-btn kc-top-btn-wide" x-ref="a11yToggle" @click="open = ! open"
                 aria-expanded="false" :aria-expanded="open.toString()" aria-controls="a11y-panel">
-            <i class="fa-solid fa-universal-access" aria-hidden="true"></i><span class="kc-lbl-long">Więcej ustawień<span class="kc-sr"> dostępności</span></span><span class="kc-lbl-short">Dostępność</span>
+            <span class="picto-icon picto-dostepnosc" aria-hidden="true"></span><span class="kc-lbl-long">Więcej ustawień<span class="kc-sr"> dostępności</span></span><span class="kc-lbl-short">Dostępność</span>
         </button>
 
         @if ($kcPhone !== '' || $kcEmail !== '')

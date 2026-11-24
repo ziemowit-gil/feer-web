@@ -20,7 +20,7 @@
     .z3-util-tools { display: flex; align-items: center; gap: .1rem; flex-wrap: wrap; justify-content: flex-end; }
     .z3-tool { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-width: 2.5rem; min-height: 2.5rem; padding: 0 .5rem; border: 0; background: transparent; color: #1d1d1a; font-size: .8rem; font-weight: 700; text-decoration: none; cursor: pointer; }
     .z3-tool:hover { color: var(--color-brand-dark); }
-    .z3-tool i { font-size: 1.05rem; }
+    .z3-tool i, .z3-tool .picto-icon { font-size: 1.05rem; }
     .z3-tool[aria-pressed="true"], .z3-tool[aria-expanded="true"] { background: #1d1d1a; color: #fff; }
     .z3-util-sep { width: 1px; height: 1.25rem; margin: 0 .35rem; background: #9ca3af; }
 

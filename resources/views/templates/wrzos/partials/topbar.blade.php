@@ -5,7 +5,7 @@
     <div class="mx-auto flex max-w-[1400px] px-4 py-1">
         <button type="button" x-ref="a11yShow" @click="hidden = false" aria-label="Pokaż pasek dostępności"
             class="flex min-h-6 items-center gap-1 rounded px-1 font-bold text-ink hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
-            <i class="fa-solid fa-universal-access" aria-hidden="true"></i> Dostępność
+            <span class="picto-icon picto-dostepnosc" aria-hidden="true"></span> Dostępność
         </button>
     </div>
 </div>

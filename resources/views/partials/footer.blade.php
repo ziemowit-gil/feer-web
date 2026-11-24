@@ -141,3 +141,5 @@
 </footer>
 
 @endif
+
+@include('partials.pictograms-credit')
