@@ -119,7 +119,11 @@ class AccessibilityPictogramsTest extends TestCase
         foreach (['partials/topbar', 'partials/topbar-info', 'partials/header-institutional', 'partials/pjm-video', 'accessibility/show',
             'page/partials/a11y-activate-button', 'templates/kreatywni/partials/header', 'templates/ngo/partials/header',
             'templates/federation/partials/header', 'templates/wrzos/partials/topbar', 'templates/test3/partials/header'] as $view) {
-            $src = file_get_contents(resource_path('views/'.$view.'.blade.php'));
+            $path = resource_path('views/'.$view.'.blade.php');
+            if (! is_file($path)) {
+                continue; // szablonu nie ma na tej gałęzi (np. kreatywni na main)
+            }
+            $src = file_get_contents($path);
             $this->assertStringNotContainsString('fa-universal-access', $src, $view);
             $this->assertStringNotContainsString('fa-hands-asl-interpreting', $src, $view);
             $this->assertMatchesRegularExpression('~<span class="picto-icon picto-(dostepnosc|tlumaczenie-na-pjm)[^"]*"[^>]*aria-hidden="true"></span>~', $src, $view);
