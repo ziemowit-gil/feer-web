@@ -64,4 +64,26 @@ class FaqSectionTest extends TestCase
             ->assertSee('[faq: Szkolenia]')
             ->assertSee('[faq: Wsparcie]');
     }
+
+    public function test_blok_faq_z_modulu_zamienia_sie_na_wstawke(): void
+    {
+        $this->assertSame('[faq]', FaqSection::shortcode([]));
+        $this->assertSame('[faq: ; tytul=Pytania; limit=3]', FaqSection::shortcode(['title' => 'Pytania', 'limit' => 3]));
+        $code = FaqSection::shortcode(['categories' => ['Szkolenia'], 'title' => 'O szkoleniach; ]x', 'level' => 3]);
+        $this->assertSame('[faq: Szkolenia; tytul=O szkoleniach   x; poziom=3]', $code);
+
+        $opts = FaqSection::parse(substr($code, 5, -1));
+        $this->assertSame(['Szkolenia'], $opts['categories']);
+        $this->assertSame(3, $opts['level']);
+
+        $html = \App\Support\BlockRenderer::render([
+            ['type' => 'faqmodule', 'attrs' => ['categories' => ['Wsparcie'], 'title' => 'Wsparcie & pytania']],
+        ]);
+        $this->assertStringContainsString('[faq: Wsparcie; tytul=Wsparcie &amp; pytania]', $html);
+
+        $section = ShortcodeParser::render($html);
+        $this->assertStringContainsString('Wsparcie &amp; pytania</h2>', $section);
+        $this->assertStringContainsString('Jak przekazać 1,5%?', $section);
+        $this->assertStringNotContainsString('Jak zapisać się', $section);
+    }
 }

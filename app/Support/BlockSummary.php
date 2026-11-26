@@ -40,6 +40,7 @@ class BlockSummary
         'people' => ['Zespół / osoby', 'fa-users'],
         'cards' => ['Siatka kart', 'fa-table-cells-large'],
         'pictograms' => ['Piktogramy dostępności', 'fa-universal-access'],
+        'faqmodule' => ['FAQ z modułu', 'fa-circle-question'],
     ];
 
     /** Znaczniki, które szybka edycja zachowuje bez utraty informacji (zwykły tekst z podziałem wierszy). */
@@ -68,6 +69,7 @@ class BlockSummary
             'imagebanner' => (string) ($a['alt'] ?? ''),
             'phone' => trim(($a['label'] ?? '').' '.($a['number'] ?? '')),
             'shortcode' => (string) ($a['code'] ?? ''),
+            'faqmodule' => ($a['categories'] ?? []) !== [] ? implode(', ', (array) $a['categories']) : 'wszystkie pytania',
             'tabs' => implode(' · ', array_map(fn ($t) => (string) ($t['attrs']['label'] ?? ''), $inner)),
             'faq' => trim(($a['title'] ?? '').' · '.count($a['items'] ?? []).' '.self::plural(count($a['items'] ?? []), 'pytanie', 'pytania', 'pytań'), ' ·'),
             'cta' => trim(($a['title'] ?? '').(($a['label'] ?? '') !== '' ? ' → '.$a['label'] : '')),

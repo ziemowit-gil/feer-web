@@ -43,6 +43,52 @@ class FaqSection
         return $opts;
     }
 
+    /**
+     * Atrybuty bloku „FAQ z modułu” (edytor blokowy) — te same pola co opcje wstawki.
+     *
+     * @param  array<string, mixed>  $a
+     * @return array{categories: array<int, string>, title: string, intro: string, limit: int|null, level: int}
+     */
+    public static function normalize(array $a): array
+    {
+        $clean = fn ($v, int $max) => mb_substr(trim(str_replace([';', ']', '[', "\r", "\n"], ' ', (string) $v)), 0, $max);
+        $cats = array_values(array_unique(array_filter(array_map(fn ($c) => $clean(str_replace(',', ' ', (string) $c), 120), (array) ($a['categories'] ?? [])), fn ($c) => $c !== '')));
+        $limit = (int) ($a['limit'] ?? 0);
+
+        return [
+            'categories' => array_slice($cats, 0, 20),
+            'title' => $clean($a['title'] ?? '', 120),
+            'intro' => $clean($a['intro'] ?? '', 400),
+            'limit' => $limit > 0 ? min(50, $limit) : null,
+            'level' => in_array((int) ($a['level'] ?? 2), [2, 3, 4], true) ? (int) ($a['level'] ?? 2) : 2,
+        ];
+    }
+
+    /** Wstawka [faq…] z atrybutów bloku (odwrotność parse()). */
+    public static function shortcode(array $a): string
+    {
+        $a = self::normalize($a);
+        $opts = array_filter([
+            $a['title'] !== '' ? 'tytul='.$a['title'] : null,
+            $a['intro'] !== '' ? 'wstep='.$a['intro'] : null,
+            $a['limit'] !== null ? 'limit='.$a['limit'] : null,
+            $a['level'] !== 2 ? 'poziom='.$a['level'] : null,
+        ]);
+        $cats = implode(', ', $a['categories']);
+        if ($cats === '' && $opts === []) {
+            return '[faq]';
+        }
+
+        // Bez kategorii pierwszy człon zostaje pusty („[faq: ; tytul=…]”), bo parse() czyta kategorie tylko z pierwszego.
+        return '[faq: '.$cats.($opts !== [] ? '; '.implode('; ', $opts) : '').']';
+    }
+
+    /** Kategorie istniejących pytań (do wyboru w edytorze blokowym). @return array<int, string> */
+    public static function categoryOptions(): array
+    {
+        return Faq::query()->whereNotNull('category')->where('category', '!=', '')->distinct()->orderBy('category')->pluck('category')->all();
+    }
+
     /** @param array{categories: array<int, string>, title: string, intro: string, limit: int|null, level: int} $opts */
     public static function render(array $opts): string
     {

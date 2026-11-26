@@ -40,6 +40,7 @@ class EditorPermissions
     public const BLOCK_MODULES = [
         'newslist' => 'news',
         'materials' => 'materials',
+        'faqmodule' => 'faq',
     ];
 
     /**

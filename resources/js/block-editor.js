@@ -62,7 +62,7 @@ function start(config) {
     const debounce = (fn, ms) => { let t = null; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; };
     const SHORTCODE_RE = /^\[[a-z0-9_-]+(?::[^\]\r\n]{1,200})?\]$/i;
     // Jak App\Support\ShortcodeParser::DETECT_PATTERN — czy HTML zawiera shortcode do wyrenderowania.
-    const SHORTCODE_DETECT = /\[(?:(?:formularz|kafelki):[a-z0-9_-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|banery:[a-z0-9_-]+|baner:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]{0,200})?)\]/i;
+    const SHORTCODE_DETECT = /\[(?:(?:formularz|kafelki):[a-z0-9_-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|banery:[a-z0-9_-]+|baner:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]{0,200})?|faq(?::[^\]\r\n<]{0,400})?)\]/i;
 
     // Shortcode'y list linków — jak App\Support\SubpageList::shortcode() i NewsList::shortcode().
     const LIST_LAYOUTS = [['lista', 'Prosta lista linków'], ['zajawki', 'Lista z zajawką'], ['kafle', 'Kafle w 2 kolumnach']];
@@ -91,10 +91,39 @@ function start(config) {
         if (Number(a.limit) && Number(a.limit) !== 6) parts.push('liczba=' + Number(a.limit));
         return '[materialy' + (parts.length ? ':' + parts.join(';') : '') + ']';
     }
+    // Jak App\Support\FaqSection::shortcode() — sekcja FAQ z modułu FAQ.
+    function faqCode(a) {
+        const clean = (v) => String(v || '').replace(/[;\[\]\r\n]/g, ' ').trim();
+        const opts = [];
+        if (clean(a.title)) opts.push('tytul=' + clean(a.title));
+        if (clean(a.intro)) opts.push('wstep=' + clean(a.intro));
+        if (Number(a.limit) > 0) opts.push('limit=' + Number(a.limit));
+        if ([3, 4].includes(Number(a.level))) opts.push('poziom=' + Number(a.level));
+        const cats = (a.categories || []).map((c) => clean(c).replace(/,/g, ' ')).filter(Boolean).join(', ');
+        if (!cats && !opts.length) return '[faq]';
+        return '[faq: ' + cats + (opts.length ? '; ' + opts.join('; ') : '') + ']';
+    }
+    function faqBlockFromCode(code) {
+        const m = code.match(/^\[faq(?::([^\]]*))?\]$/i);
+        if (!m) return null;
+        const a = { categories: [], title: '', intro: '', limit: null, level: 2 };
+        (m[1] || '').split(';').forEach((p, i) => {
+            p = p.trim();
+            const kv = p.match(/^(tytu[lł]|wst[eę]p|limit|poziom)\s*=\s*(.*)$/i);
+            if (kv) {
+                const k = kv[1].toLowerCase().replace('ł', 'l').replace('ę', 'e');
+                if (k === 'tytul') a.title = kv[2].trim();
+                else if (k === 'wstep') a.intro = kv[2].trim();
+                else if (k === 'limit') a.limit = Math.min(50, Number(kv[2]) || 0) || null;
+                else if (k === 'poziom') a.level = [3, 4].includes(Number(kv[2])) ? Number(kv[2]) : 2;
+            } else if (i === 0 && p) a.categories = p.split(',').map((c) => c.trim()).filter(Boolean);
+        });
+        return block('faqmodule', a);
+    }
     // Shortcode listy z treści (klasyczny edytor, wklejanie) → atrybuty bloku.
     function listBlockFromCode(code) {
         const m = code.match(/^\[(podstrony|aktualnosci|materialy)(?::([^\]]*))?\]$/i);
-        if (!m) return null;
+        if (!m) return faqBlockFromCode(code);
         const o = {};
         (m[2] || '').split(/[;|]/).forEach((p) => { const i = p.indexOf('='); if (i > 0) o[p.slice(0, i).trim().toLowerCase()] = p.slice(i + 1).trim(); });
         if (m[1].toLowerCase() === 'materialy') {
@@ -234,6 +263,7 @@ function start(config) {
         bannerzone: { as: 'shortcode', title: 'Zestaw banerów', icon: 'layer-group', cat: 'design', desc: 'Banery ze strefy modułu Banery — kolejność, harmonogram i statystyki ustawiasz w panelu „Bannery”.', keywords: ['baner', 'banery', 'strefa', 'zestaw', 'na skróty', 'reklama'], hidden: !(CI.bannerZones || []).length, create: () => ({ code: firstCode(CI.bannerZones, (v) => '[banery:' + v + ']') }) },
         modbanner: { as: 'shortcode', title: 'Baner z modułu', icon: 'rectangle-ad', cat: 'design', desc: 'Jeden baner z modułu Banery — z harmonogramem wyświetlania i licznikiem kliknięć.', keywords: ['baner', 'banner', 'moduł', 'statystyki'], hidden: !(CI.banners || []).length, create: () => ({ code: firstCode(CI.banners, (v) => '[baner:' + v + ']') }) },
         newslist: { title: 'Lista aktualności', icon: 'newspaper', cat: 'widgets', desc: 'Linki do najnowszych aktualności (wszystkich lub z kategorii). Aktualizuje się sama.', keywords: ['aktualności', 'wpisy', 'newsy', 'blog', 'linki'], create: () => ({ category: null, limit: 5, sort: 'najnowsze', layout: 'lista' }) },
+        faqmodule: { title: 'FAQ z modułu', icon: 'circle-question', cat: 'widgets', desc: 'Pytania z modułu FAQ (wszystkie albo z wybranych kategorii): nagłówek po lewej, rozwijane pytania po prawej. Aktualizuje się sama.', keywords: ['faq', 'pytania', 'odpowiedzi', 'moduł', 'akordeon'], create: () => ({ categories: [], title: '', intro: '', limit: null, level: 2 }) },
         form: { as: 'shortcode', title: 'Formularz', icon: 'rectangle-list', cat: 'modules', desc: 'Formularz z modułu Formularze.', keywords: ['formularz', 'zapisy', 'zgłoszenie'], hidden: !(CI.forms || []).length, create: () => ({ code: firstCode(CI.forms, (v) => '[formularz:' + v + ']') }) },
         tileset: { as: 'shortcode', title: 'Zestaw kafelków', icon: 'table-cells-large', cat: 'modules', desc: 'Kafelki z kreatora — wybierz istniejący zestaw albo utwórz nowy.', keywords: ['kafelki', 'kafle', 'zestaw'], create: () => ({ code: firstCode(CI.tileSets, (v) => '[kafelki-zestaw:' + v + ']') }) },
         contentblock: { as: 'shortcode', title: 'Blok z kreatora', icon: 'cubes', cat: 'modules', hidden: true, desc: 'Przyciski CTA, akordeon, ramka informacyjna albo cennik z kreatora bloków.', keywords: ['cta', 'akordeon', 'ramka', 'cennik', 'blok'], create: () => ({ code: firstCode(CI.contentBlocks, (v) => '[blok:' + v + ']') }) },
@@ -1500,6 +1530,7 @@ function start(config) {
                 case 'heading': if (!textOf(a.text)) { empty.push(b.id); return; } level = a.level; break;
                 case 'tabs': level = a.level; break;
                 case 'faq': case 'cta': case 'pictograms': if (a.title.trim()) level = a.level; break;
+                case 'faqmodule': level = a.level || 2; break; // sekcja zawsze ma nagłówek (domyślnie „Najczęstsze pytania”)
                 case 'people': if (a.items.some((p) => p.name.trim())) level = a.level; break;
                 case 'cards': if (a.items.some((c) => c.title.trim())) level = a.level; break;
             }
@@ -2075,6 +2106,7 @@ function start(config) {
         subpages: (b) => linkListEditor(b, subpagesCode(b.attrs), subpagesSummary(b.attrs)),
         newslist: (b) => linkListEditor(b, newsCode(b.attrs), newsSummary(b.attrs)),
         materials: (b) => linkListEditor(b, materialsCode(b.attrs), materialsSummary(b.attrs)),
+        faqmodule: (b) => linkListEditor(b, faqCode(b.attrs), faqSummary(b.attrs)),
     };
 
     function listEditor(b) {
@@ -2543,6 +2575,7 @@ function start(config) {
         [/^\[banery:/, 'Zestaw banerów (strefa)', 'layer-group', 'module Banery'],
         [/^\[baner:/, 'Baner z modułu', 'rectangle-ad', 'module Banery'],
         [/^\[materialy/, 'Materiały edukacyjne', 'book-open', 'module Materiały edukacyjne'],
+        [/^\[faq/, 'FAQ z modułu', 'circle-question', 'module FAQ'],
         [/^\[klauzule-rodo/, 'Lista', 'list', 'SZO (klauzule RODO)'],
         [/^\[nabory\]/, 'Lista', 'list', 'module Nabory'],
         [/^\[zapytania-ofertowe\]/, 'Lista', 'list', 'module Zapytania ofertowe'],
@@ -2774,6 +2807,12 @@ function start(config) {
         const cat = a.category ? (config.newsCategories || []).find((c) => c.id === Number(a.category))?.name : null;
         return [cat ? 'kategoria „' + cat + '”' : 'wszystkie kategorie', 'do ' + (Number(a.limit) || 5) + ' wpisów', a.sort === 'alfabet' ? 'alfabetycznie' : 'od najnowszych', layoutLabel(a.layout)].join(' · ');
     }
+    const faqPreviewLater = debounce((id) => rerenderBlock(id), 700);
+    function faqSummary(a) {
+        const cats = (a.categories || []).filter(Boolean);
+        return [cats.length ? (cats.length === 1 ? 'kategoria „' + cats[0] + '”' : 'kategorie: ' + cats.join(', ')) : 'wszystkie pytania',
+            Number(a.limit) > 0 ? 'do ' + Number(a.limit) + ' pytań' : 'bez limitu', '„' + (String(a.title || '').trim() || 'Najczęstsze pytania') + '”'].join(' · ');
+    }
     function materialsSummary(a) {
         return [a.group ? 'grupa „' + ((config.materialGroups || {})[a.group] || a.group) + '”' : 'wszystkie grupy', a.type ? ((config.materialTypes || {})[a.type] || a.type).toLowerCase() : 'wszystkie typy', 'do ' + (Number(a.limit) || 6) + ' kart'].join(' · ');
     }
@@ -2789,11 +2828,12 @@ function start(config) {
             if (!frag.textContent.trim()) {
                 status.textContent = b.type === 'subpages'
                     ? 'Na razie nie ma opublikowanych podstron do pokazania — lista pojawi się sama, gdy się pojawią.'
-                    : (b.type === 'materials' ? 'Brak opublikowanych materiałów dla tych ustawień — zmień grupę lub typ w panelu „Blok”.' : 'Na razie nie ma opublikowanych aktualności do pokazania.');
+                    : (b.type === 'materials' ? 'Brak opublikowanych materiałów dla tych ustawień — zmień grupę lub typ w panelu „Blok”.'
+                        : (b.type === 'faqmodule' ? 'Brak opublikowanych pytań dla tych ustawień — dodaj je w Treści → FAQ albo zmień kategorie w panelu „Blok”.' : 'Na razie nie ma opublikowanych aktualności do pokazania.'));
                 return;
             }
             body.replaceChildren(frag);
-            moduleTip(preview, { subpages: 'podstronach (ustawienia listy w panelu „Blok”)', newslist: 'module Aktualności (ustawienia listy w panelu „Blok”)', materials: 'module Materiały edukacyjne (ustawienia listy w panelu „Blok”)' }[b.type] || 'panelu „Blok”');
+            moduleTip(preview, { subpages: 'podstronach (ustawienia listy w panelu „Blok”)', newslist: 'module Aktualności (ustawienia listy w panelu „Blok”)', materials: 'module Materiały edukacyjne (ustawienia listy w panelu „Blok”)', faqmodule: 'module FAQ (pytania w Treści → FAQ, ustawienia w panelu „Blok”)' }[b.type] || 'panelu „Blok”');
             preview.hidden = false;
             status.textContent = 'Podgląd poniżej — lista aktualizuje się sama przy wyświetlaniu strony.';
         }).catch((e) => { status.textContent = 'Nie udało się wczytać podglądu: ' + e.message; status.classList.add('be-error'); });
@@ -3944,6 +3984,24 @@ function start(config) {
                     field('Liczba kart', select(a.limit, [3, 6, 9, 12, 24].map((n) => [n, String(n)]), (v) => set({ limit: Number(v) }))),
                     h('p', { class: 'be-help' }, 'Karty jak na stronie „Materiały edukacyjne” — z linkiem do wszystkich materiałów. Pokazuje tylko opublikowane.')));
                 break;
+            case 'faqmodule': {
+                const cats = config.faqCategories || [];
+                const chosen = a.categories || [];
+                // Podgląd pobiera sekcję z serwera — przy pisaniu tytułu/opisu odświeżamy go z opóźnieniem, nie po każdym znaku.
+                const typed = (patch) => { updateAttrs(b, patch, { typing: true, rerender: false }); faqPreviewLater(b.id); };
+                parts.push(panelSection('Pytania',
+                    cats.length
+                        ? h('fieldset', { class: 'be-fieldset' }, h('legend', null, 'Kategorie (bez zaznaczenia — wszystkie)'),
+                            ...cats.map((c) => checkbox(c, chosen.includes(c), (on) => set({ categories: on ? [...chosen, c] : chosen.filter((x) => x !== c) }))))
+                        : h('p', { class: 'be-help' }, 'Pytania nie mają kategorii — sekcja pokaże wszystkie opublikowane.'),
+                    field('Liczba pytań', select(a.limit || '', [['', 'Wszystkie'], ...[3, 4, 5, 6, 8, 10, 12, 15, 20].map((n) => [n, String(n)])], (v) => set({ limit: Number(v) || null }))),
+                    h('p', { class: 'be-help' }, 'Pytania i kategorie dodajesz w Treści → FAQ. Pokazuje tylko opublikowane.')),
+                panelSection('Nagłówek sekcji',
+                    field('Tytuł', textInput(a.title, (v) => typed({ title: v }), { placeholder: 'Najczęstsze pytania', maxlength: 120 })),
+                    field('Opis pod tytułem', textInput(a.intro, (v) => typed({ intro: v }), { multiline: true, rows: 3, maxlength: 400 })),
+                    field('Poziom nagłówka', select(a.level || 2, [[2, 'H2 — sekcja strony'], [3, 'H3 — podsekcja'], [4, 'H4']], (v) => set({ level: Number(v) })))));
+                break;
+            }
             case 'newslist':
                 parts.push(panelSection('Ustawienia listy',
                     field('Kategoria', select(a.category || '', [['', 'Wszystkie kategorie'], ...(config.newsCategories || []).map((c) => [c.id, c.name])], (v) => set({ category: Number(v) || null }))),

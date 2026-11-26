@@ -451,6 +451,8 @@ class BlockEditorController extends Controller
                 'newsCategories' => NewsList::categoryOptions(),
                 'materialGroups' => \App\Models\EducationalMaterial::TARGET_GROUPS,
                 'materialTypes' => \App\Models\EducationalMaterial::TYPES,
+                // Blok „FAQ z modułu": kategorie istniejących pytań.
+                'faqCategories' => \App\Support\FaqSection::categoryOptions(),
                 'urls' => [
                     'save' => $updateUrl,
                     'view' => $this->publicUrl($type, $record),

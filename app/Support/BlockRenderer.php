@@ -50,7 +50,7 @@ class BlockRenderer
     public const TYPES = [
         'paragraph', 'heading', 'list', 'quote', 'image', 'gallery', 'buttons', 'callout', 'partnerevent',
         'columns', 'column', 'details', 'table', 'separator', 'embed', 'file', 'html', 'shortcode', 'subpages', 'newslist', 'banner', 'imagebanner', 'materials', 'phone',
-        'tabs', 'tab', 'faq', 'cta', 'people', 'cards', 'pictograms',
+        'tabs', 'tab', 'faq', 'cta', 'people', 'cards', 'pictograms', 'faqmodule',
     ];
 
     private const INLINE_TAGS = ['strong', 'b', 'em', 'i', 'a', 'br', 'code', 's', 'sub', 'sup', 'mark'];
@@ -283,6 +283,7 @@ class BlockRenderer
             'subpages' => self::subpagesAttrs($a),
             'newslist' => NewsList::normalize($a),
             'materials' => MaterialList::normalize($a),
+            'faqmodule' => FaqSection::normalize($a),
             'tabs' => ['level' => max(2, min(4, (int) ($a['level'] ?? 2)))],
             'tab' => ['label' => $line('label', 120)],
             'faq' => [
@@ -633,6 +634,9 @@ class BlockRenderer
 
             case 'materials':
                 return '<p>'.MaterialList::shortcode($a).'</p>';
+
+            case 'faqmodule':
+                return '<p>'.e(FaqSection::shortcode($a)).'</p>';
         }
 
         return '';
