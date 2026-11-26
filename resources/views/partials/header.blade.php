@@ -336,6 +336,6 @@
         </nav>
     @endif
 
-    @include('partials.mobile-nav-panel', ['panelId' => 'main-nav-panel', 'hideAt' => 'lg', 'showSupport' => true, 'socials' => $siteSettings->socialLinks(), 'cta' => $headerCta])
+    @include('partials.mobile-nav-panel', ['panelId' => 'main-nav-panel', 'hideAt' => 'lg', 'showSupport' => true, 'socials' => $siteSettings->templateSocials(), 'cta' => $headerCta])
 </div>
 @endif

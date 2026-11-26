@@ -122,7 +122,10 @@ class HeaderOptionsTest extends TestCase
 
         $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'header']))->assertOk()
             ->assertSee('id="header-right"', false)
-            ->assertSee('Prawa strona nagłówka: ikony i przycisk')
+            ->assertSee('Ikony mediów społecznościowych i przycisk')
+            ->assertSee('name="header_options[social_icons][facebook]"', false)
+            ->assertSee('name="header_options[footer_social][]" value="instagram"', false)
+            ->assertSee('Inne ikony')
             ->assertSee('name="header_options[social][]" value="instagram"', false)
             ->assertSee('name="header_options[cta_label]"', false)
             ->assertSee('(brak adresu)');
@@ -130,5 +133,99 @@ class HeaderOptionsTest extends TestCase
         $this->actingAs($admin)->get('/')->assertOk()
             ->assertSee('<span>Edytuj nagłówek</span>', false)
             ->assertSee('tab=header#header-right', false);
+    }
+
+    /** Stopka FEER: blok ikon social w ciemnym pasie. */
+    private function footerSocial(string $html): string
+    {
+        $start = strpos($html, 'aria-label="Media społecznościowe i skróty"');
+
+        return $start === false ? '' : substr($html, $start, 6000);
+    }
+
+    public function test_ikona_podpis_i_miejsce_profilu_sa_edytowalne(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->put(route('admin.ustawienia.update'), [
+            '_section_fields' => ['header_options[show_social]', 'header_options[social][]', 'header_options[footer_social][]', 'header_options[social_icons][facebook]'],
+            'header_options' => [
+                'show_social' => '1',
+                'social' => ['facebook'],
+                'footer_social_set' => '1',
+                'footer_social' => ['instagram'],
+                'social_icons' => ['facebook' => 'bi bi-messenger', 'instagram' => 'bi bi-instagram'],
+                'social_labels' => ['facebook' => 'Fundacja na Facebooku', 'instagram' => ''],
+            ],
+        ])->assertSessionHasNoErrors();
+        $this->reset();
+        auth()->logout();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $header = $this->headerRight($html);
+        $this->assertStringContainsString('bi bi-messenger', $header);
+        $this->assertStringContainsString('aria-label="Fundacja na Facebooku — otwiera się w nowej karcie"', $header);
+        $this->assertStringNotContainsString('Instagram — otwiera', $header);
+
+        $footer = $this->footerSocial($html);
+        $this->assertStringContainsString('aria-label="Instagram — otwiera się w nowej karcie"', $footer);
+        $this->assertStringNotContainsString('Facebook', $footer);
+
+        // Zapisujemy tylko zmiany względem domyślnych ikon i podpisów.
+        $o = SiteSetting::current()->headerOptions();
+        $this->assertSame(['facebook' => 'bi bi-messenger'], $o['social_icons']);
+        $this->assertSame(['facebook' => 'Fundacja na Facebooku'], $o['social_labels']);
+    }
+
+    public function test_bez_wyboru_stopka_pokazuje_wszystkie_profile_jak_dotad(): void
+    {
+        $footer = $this->footerSocial($this->get('/')->assertOk()->getContent());
+
+        $this->assertStringContainsString('aria-label="Facebook — otwiera się w nowej karcie"', $footer);
+        $this->assertStringContainsString('aria-label="Grupa na Facebooku — otwiera się w nowej karcie"', $footer);
+        $this->assertStringContainsString('aria-label="Instagram — otwiera się w nowej karcie"', $footer);
+    }
+
+    public function test_inne_ikony_z_wlasnym_adresem_w_wybranych_miejscach(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->put(route('admin.ustawienia.update'), [
+            '_section_fields' => ['header_options[icons][0][url]'],
+            'header_options' => [
+                'show_social' => '1',
+                'social' => ['instagram'],
+                'footer_social_set' => '1',
+                'icons' => [
+                    ['icon' => 'bi bi-tiktok', 'label' => '', 'url' => 'https://tiktok.com/@feer', 'header' => '1', 'footer' => '0'],
+                    ['icon' => 'bi bi-envelope', 'label' => 'Napisz do nas', 'url' => 'mailto:biuro@example.org', 'header' => '0', 'footer' => '1'],
+                ],
+            ],
+        ])->assertSessionHasNoErrors();
+        $this->reset();
+        auth()->logout();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $header = $this->headerRight($html);
+        $this->assertStringContainsString('aria-label="TikTok — otwiera się w nowej karcie"', $header);
+        $this->assertStringNotContainsString('Napisz do nas', $header);
+        $this->assertLessThan(strpos($header, 'bi bi-tiktok'), strpos($header, 'bi bi-instagram'));
+
+        $footer = $this->footerSocial($html);
+        $this->assertStringContainsString('href="mailto:biuro@example.org"', $footer);
+        $this->assertStringContainsString('aria-label="Napisz do nas"', $footer);
+        $this->assertStringNotContainsString('TikTok', $footer);
+    }
+
+    public function test_inna_ikona_z_blednym_adresem_jest_odrzucana(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->put(route('admin.ustawienia.update'), [
+            '_section_fields' => ['header_options[icons][0][url]'],
+            'header_options' => ['icons' => [['icon' => 'bi bi-skull', 'url' => 'javascript:alert(1)']]],
+        ])->assertSessionHasErrors(['header_options.icons.0.url', 'header_options.icons.0.icon']);
+
+        $this->assertSame([], SiteSetting::normalizeFeerIcons([['icon' => 'bi bi-tiktok', 'url' => '//obca.pl'], ['icon' => 'x', 'url' => 'https://a.pl']]));
     }
 }

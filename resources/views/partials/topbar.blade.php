@@ -16,7 +16,7 @@
     $bipIsExternal = $siteSettings->bipIsExternal();
     $bipHref       = $siteSettings->bipHref();
     $showBip       = $siteSettings->show_topbar_bip && filled($bipHref);
-    $topSocials    = $siteSettings->show_topbar_social ? $siteSettings->socialLinks() : [];
+    $topSocials    = $siteSettings->show_topbar_social ? $siteSettings->templateSocials() : [];
     $searchInNav   = $siteSettings->headerLayoutValue() === 'wide_mission' && ($siteSettings->wide_mission_search_in_nav ?? false);
 
     // Szablon FEER: „Wesprzyj” i numer konta w jednym, niezawijanym wierszu. Numer (długi) pokazujemy od xl, gdzie mieści się

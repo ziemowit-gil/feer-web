@@ -202,9 +202,29 @@
                 @php
                     $ho = $settings->normalizeHeaderOptions((array) old('header_options', $settings->headerOptions()));
                     $hoIs = $settings->themeVariant() === 'feer_is';
+                    // Inne ikony: po błędzie walidacji surowe wiersze z formularza (normalizacja usunęłaby błędne), inaczej zapisane.
+                    $hoIconRows = collect(old('header_options') !== null ? (array) old('header_options.icons', []) : $ho['icons'])
+                        ->filter(fn ($r) => is_array($r))
+                        ->map(fn ($r) => [
+                            'icon' => array_key_exists((string) ($r['icon'] ?? ''), \App\Models\SiteSetting::FEER_ICON_CHOICES) ? (string) $r['icon'] : 'bi bi-link-45deg',
+                            'label' => (string) ($r['label'] ?? ''), 'url' => (string) ($r['url'] ?? ''),
+                            'header' => filter_var($r['header'] ?? false, FILTER_VALIDATE_BOOLEAN), 'footer' => filter_var($r['footer'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                        ])->values()->all();
+                    // Profile z Media i BIP: ikona, podpis i miejsce. Bez zapisanego wyboru zaznaczamy to, co strona pokazuje teraz.
+                    $hoHeaderKeys = $ho['social'] !== [] || $ho['icons'] !== []
+                        ? $ho['social']
+                        : collect(\App\Models\SiteSetting::SOCIAL_KEYS)->keys()->filter(fn ($k) => filled($settings->{$k.'_url'} ?? null))->take(\App\Models\SiteSetting::HEADER_SOCIAL_MAX)->values()->all();
+                    $hoProfiles = collect(\App\Models\SiteSetting::SOCIAL_KEYS)->map(fn ($m, $k) => [
+                        'url' => trim((string) ($settings->{$k.'_url'} ?? '')),
+                        'icon' => $ho['social_icons'][$k] ?? $m['icon'],
+                        'label' => $ho['social_labels'][$k] ?? '',
+                        'header' => in_array($k, $hoHeaderKeys, true),
+                        'footer' => $ho['footer_social'] === null || in_array($k, $ho['footer_social'], true),
+                    ])->all();
+                    $hoIconErrors = collect($errors->getMessages())->filter(fn ($m, $k) => str_starts_with($k, 'header_options.icons') || str_starts_with($k, 'header_options.social'))->map(fn ($m) => $m[0])->all();
                 @endphp
-                <details open id="header-right" class="scroll-mt-24 rounded-md bg-gray-50" x-data="{ hoSocial: @js($ho['show_social']), hoCta: @js($ho['show_cta']), hoLabel: @js($ho['cta_label']), hoIcon: @js($ho['cta_icon']) }">
-                    <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Prawa strona nagłówka: ikony i przycisk</summary>
+                <details open id="header-right" class="scroll-mt-24 rounded-md bg-gray-50" x-data="feerSocialIcons({ hoSocial: @js($ho['show_social']), hoCta: @js($ho['show_cta']), hoLabel: @js($ho['cta_label']), hoIcon: @js($ho['cta_icon']), rows: @js($hoIconRows), profiles: @js($hoProfiles), choices: @js(\App\Models\SiteSetting::FEER_ICON_CHOICES), max: {{ \App\Models\SiteSetting::FEER_ICONS_MAX }}, headerMax: {{ \App\Models\SiteSetting::HEADER_SOCIAL_MAX }}, errors: @js((object) $hoIconErrors) })">
+                    <summary class="cursor-pointer rounded-lg px-5 py-3 text-sm font-bold text-ink hover:bg-gray-100">Ikony mediów społecznościowych i przycisk</summary>
                     <div class="space-y-6 border-t border-gray-200 p-5">
                         <fieldset class="space-y-3">
                             <legend class="text-sm font-bold text-ink">Ikony mediów społecznościowych</legend>
@@ -214,26 +234,119 @@
                                        class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                                 Pokazuj ikony w nagłówku
                             </label>
-                            <div x-show="hoSocial" class="space-y-2">
-                                <p id="ho-social-hint" class="text-sm text-muted">
-                                    Zaznacz, które ikony pokazać (najwyżej {{ \App\Models\SiteSetting::HEADER_SOCIAL_MAX }}). Bez zaznaczenia: pierwsze {{ \App\Models\SiteSetting::HEADER_SOCIAL_MAX }} ustawionych profili.
-                                    Adresy profili zmieniasz w <a href="{{ route('admin.ustawienia.edit', ['tab' => 'social']) }}" class="font-bold text-brand-dark underline underline-offset-4">Media i BIP</a>.
-                                </p>
-                                <ul class="grid gap-2 sm:grid-cols-2" role="list" aria-describedby="ho-social-hint">
-                                    @foreach (\App\Models\SiteSetting::SOCIAL_KEYS as $hoKey => $hoMeta)
-                                        @php $hoUrl = trim((string) ($settings->{$hoKey.'_url'} ?? '')); @endphp
-                                        <li>
-                                            <label class="flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm {{ $hoUrl === '' ? 'text-muted' : 'text-ink' }}">
-                                                <input type="checkbox" name="header_options[social][]" value="{{ $hoKey }}" @checked(in_array($hoKey, $ho['social'], true)) @disabled($hoUrl === '')
-                                                       class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
-                                                <i class="{{ $hoMeta['icon'] }}" aria-hidden="true"></i>
-                                                <span>{{ $hoMeta['label'] }}@if ($hoUrl === '') <span class="text-xs">(brak adresu)</span>@endif</span>
+                            <p id="ho-social-hint" class="text-sm text-muted">
+                                Przy każdym profilu wybierz ikonę, podpis (czytany przez czytniki ekranu i widoczny po najechaniu) i miejsce: nagłówek, stopka albo oba.
+                                W nagłówku mieści się najwyżej {{ \App\Models\SiteSetting::HEADER_SOCIAL_MAX }} ikon. Adresy profili zmieniasz w <a href="{{ route('admin.ustawienia.edit', ['tab' => 'social']) }}" class="font-bold text-brand-dark underline underline-offset-4">Media i BIP</a>.
+                            </p>
+                            <ul x-show="Object.keys(errors).length" x-cloak class="list-disc space-y-1 rounded-md bg-red-50 py-2 pl-8 pr-3 text-sm text-red-800" role="alert">
+                                <template x-for="(msg, key) in errors" :key="key"><li x-text="msg"></li></template>
+                            </ul>
+                            <input type="hidden" name="header_options[footer_social_set]" value="1">
+                            <ul class="space-y-2" role="list" aria-describedby="ho-social-hint">
+                                @foreach (\App\Models\SiteSetting::SOCIAL_KEYS as $hoKey => $hoMeta)
+                                    @php $hoP = $hoProfiles[$hoKey]; $hoOff = $hoP['url'] === ''; @endphp
+                                    <li class="rounded-md bg-white px-3 py-2">
+                                        <fieldset class="flex flex-wrap items-center gap-x-4 gap-y-2" @disabled($hoOff)>
+                                            <legend class="sr-only">{{ $hoMeta['label'] }}</legend>
+                                            <span class="flex min-w-[11rem] flex-1 items-center gap-2 text-sm {{ $hoOff ? 'text-muted' : 'font-bold text-ink' }}" aria-hidden="true">
+                                                <span class="flex h-8 w-8 flex-none items-center justify-center rounded-md {{ $hoOff ? 'bg-gray-100' : 'bg-ink text-white' }}"><i :class="profiles.{{ $hoKey }}.icon"></i></span>
+                                                <span>{{ $hoMeta['label'] }}@if ($hoOff) <span class="text-xs font-normal">(brak adresu)</span>@endif</span>
+                                            </span>
+                                            <label class="flex items-center gap-2 text-sm">
+                                                <span class="sr-only">Ikona: {{ $hoMeta['label'] }}</span>
+                                                <span aria-hidden="true">Ikona</span>
+                                                <select name="header_options[social_icons][{{ $hoKey }}]" x-model="profiles.{{ $hoKey }}.icon" class="rounded-md border-gray-400 py-1 text-sm">
+                                                    @foreach (\App\Models\SiteSetting::FEER_ICON_CHOICES as $hoCls => $hoName)
+                                                        <option value="{{ $hoCls }}" @selected($hoP['icon'] === $hoCls)>{{ $hoName }}</option>
+                                                    @endforeach
+                                                </select>
                                             </label>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                                @error('header_options.social') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+                                            <label class="flex items-center gap-2 text-sm">
+                                                <span class="sr-only">Podpis: {{ $hoMeta['label'] }}</span>
+                                                <span aria-hidden="true">Podpis</span>
+                                                <input type="text" name="header_options[social_labels][{{ $hoKey }}]" value="{{ $hoP['label'] }}" maxlength="60" placeholder="{{ $hoMeta['label'] }}" class="w-40 rounded-md border-gray-400 py-1 text-sm">
+                                            </label>
+                                            <label class="flex items-center gap-2 text-sm">
+                                                <input type="checkbox" name="header_options[social][]" value="{{ $hoKey }}" x-model="profiles.{{ $hoKey }}.header" @checked($hoP['header'] && ! $hoOff)
+                                                       class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" aria-label="{{ $hoMeta['label'] }} w nagłówku">
+                                                <span aria-hidden="true">W nagłówku</span>
+                                            </label>
+                                            <label class="flex items-center gap-2 text-sm">
+                                                <input type="checkbox" name="header_options[footer_social][]" value="{{ $hoKey }}" x-model="profiles.{{ $hoKey }}.footer" @checked($hoP['footer'] && ! $hoOff)
+                                                       class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" aria-label="{{ $hoMeta['label'] }} w stopce">
+                                                <span aria-hidden="true">W stopce</span>
+                                            </label>
+                                        </fieldset>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </fieldset>
+
+                        {{-- Inne ikony (własny adres, np. TikTok, Bluesky, e-mail): ikona, podpis, adres, miejsce, kolejność. --}}
+                        <fieldset class="space-y-3" id="ho-icons">
+                            <legend class="text-sm font-bold text-ink">Inne ikony</legend>
+                            <p id="ho-icons-hint" class="text-sm text-muted">
+                                Serwis spoza listy wyżej (np. TikTok, Bluesky, podcast, e-mail)? Dodaj ikonę z własnym adresem. Pokazuje się po profilach, w kolejności ustawionej strzałkami.
+                            </p>
+                            <input type="hidden" name="header_options[icons]" value="" x-bind:disabled="rows.length > 0">
+                            <ol class="space-y-3" role="list" aria-describedby="ho-icons-hint">
+                                <template x-for="(row, i) in rows" :key="row.key">
+                                    <li class="rounded-md bg-white p-4">
+                                        <fieldset>
+                                            <legend class="mb-3 flex items-center gap-3 text-sm font-bold text-ink">
+                                                <span class="flex h-10 w-10 flex-none items-center justify-center rounded-md bg-ink text-lg text-white"><i :class="row.icon" aria-hidden="true"></i></span>
+                                                <span x-text="'Ikona ' + (i + 1) + ': ' + (row.label.trim() || choices[row.icon])"></span>
+                                            </legend>
+                                            <div class="grid gap-3 sm:grid-cols-3">
+                                                <div>
+                                                    <label :for="'hoi-icon-' + row.key" class="mb-1 block text-sm font-bold">Ikona</label>
+                                                    <select :id="'hoi-icon-' + row.key" :name="'header_options[icons][' + i + '][icon]'" x-model="row.icon" class="w-full rounded-md border-gray-400 text-sm">
+                                                        <template x-for="(name, cls) in choices" :key="cls"><option :value="cls" x-text="name" :selected="cls === row.icon"></option></template>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label :for="'hoi-label-' + row.key" class="mb-1 block text-sm font-bold">Podpis</label>
+                                                    <input type="text" :id="'hoi-label-' + row.key" :name="'header_options[icons][' + i + '][label]'" x-model="row.label" maxlength="60" :placeholder="choices[row.icon]" class="w-full rounded-md border-gray-400 text-sm">
+                                                </div>
+                                                <div>
+                                                    <label :for="'hoi-url-' + row.key" class="mb-1 block text-sm font-bold">Adres</label>
+                                                    <input type="text" :id="'hoi-url-' + row.key" :name="'header_options[icons][' + i + '][url]'" x-model="row.url" maxlength="500" required placeholder="https://…"
+                                                           :aria-invalid="errors['header_options.icons.' + i + '.url'] ? 'true' : null" class="w-full rounded-md border-gray-400 text-sm">
+                                                    <p x-show="errors['header_options.icons.' + i + '.url']" x-text="errors['header_options.icons.' + i + '.url']" class="mt-1 text-sm text-red-600"></p>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+                                                <input type="hidden" :name="'header_options[icons][' + i + '][header]'" value="0">
+                                                <label class="flex items-center gap-2 text-sm">
+                                                    <input type="checkbox" :name="'header_options[icons][' + i + '][header]'" value="1" x-model="row.header" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                                    W nagłówku
+                                                </label>
+                                                <input type="hidden" :name="'header_options[icons][' + i + '][footer]'" value="0">
+                                                <label class="flex items-center gap-2 text-sm">
+                                                    <input type="checkbox" :name="'header_options[icons][' + i + '][footer]'" value="1" x-model="row.footer" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                                                    W stopce
+                                                </label>
+                                                <span class="ml-auto flex items-center gap-1">
+                                                    <button type="button" @click="move(i, -1, $event)" :disabled="i === 0" data-move="-1" :aria-label="'Przesuń wyżej: ' + (row.label.trim() || choices[row.icon])"
+                                                            class="flex h-9 w-9 items-center justify-center rounded-md text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark disabled:text-gray-400"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                                    <button type="button" @click="move(i, 1, $event)" :disabled="i === rows.length - 1" data-move="1" :aria-label="'Przesuń niżej: ' + (row.label.trim() || choices[row.icon])"
+                                                            class="flex h-9 w-9 items-center justify-center rounded-md text-ink hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark disabled:text-gray-400"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+                                                    <button type="button" @click="remove(i)" :aria-label="'Usuń ikonę: ' + (row.label.trim() || choices[row.icon])"
+                                                            class="flex h-9 items-center gap-1.5 rounded-md px-2 text-sm font-semibold text-red-700 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700"><i class="fa-solid fa-trash-can" aria-hidden="true"></i> Usuń</button>
+                                                </span>
+                                            </div>
+                                        </fieldset>
+                                    </li>
+                                </template>
+                            </ol>
+                            <p x-show="headerCount() > headerMax" x-cloak class="text-sm text-amber-900" role="status">Zaznaczono w nagłówku <span x-text="headerCount()"></span> ikon (profile i inne) — pokaże się pierwszych {{ \App\Models\SiteSetting::HEADER_SOCIAL_MAX }}.</p>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" @click="add()" :disabled="rows.length >= max"
+                                        class="inline-flex min-h-10 items-center gap-2 rounded-md bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2 disabled:bg-gray-400">
+                                    <i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj ikonę
+                                </button>
                             </div>
+                            <p class="sr-only" role="status" aria-live="polite" x-text="announce"></p>
                         </fieldset>
 
                         <fieldset class="space-y-3">
@@ -3856,6 +3969,50 @@
     </div>
 
     @include('admin.partials.section-cards')
+
+    <script>
+        // Własne ikony social szablonu FEER (Ustawienia → Nagłówek → Prawa strona nagłówka).
+        window.feerSocialIcons = function (init) {
+            let seq = 0;
+            const withKey = (r) => Object.assign({ icon: 'bi bi-link-45deg', label: '', url: '', header: true, footer: true }, r, { key: ++seq });
+            return Object.assign({}, init, {
+                rows: (init.rows || []).map(withKey),
+                announce: '',
+                headerCount() {
+                    return Object.values(this.profiles).filter((p) => p.url && p.header).length + this.rows.filter((r) => r.header).length;
+                },
+                add() {
+                    if (this.rows.length >= this.max) return;
+                    const row = withKey({ header: this.headerCount() < this.headerMax });
+                    this.rows.push(row);
+                    this.$nextTick(() => document.getElementById('hoi-icon-' + row.key)?.focus());
+                },
+                remove(i) {
+                    const name = this.rows[i].label.trim() || this.choices[this.rows[i].icon];
+                    this.rows.splice(i, 1);
+                    this.errors = {};
+                    this.announce = 'Usunięto ikonę: ' + name + '.';
+                    this.$nextTick(() => {
+                        const next = this.rows[Math.min(i, this.rows.length - 1)];
+                        document.getElementById(next ? 'hoi-icon-' + next.key : 'ho-icons')?.focus?.();
+                    });
+                },
+                move(i, dir, ev) {
+                    const j = i + dir;
+                    if (j < 0 || j >= this.rows.length) return;
+                    const row = this.rows.splice(i, 1)[0];
+                    this.rows.splice(j, 0, row);
+                    this.errors = {};
+                    this.announce = (row.label.trim() || this.choices[row.icon]) + ': pozycja ' + (j + 1) + ' z ' + this.rows.length + '.';
+                    this.$nextTick(() => {
+                        const li = document.getElementById('hoi-icon-' + row.key)?.closest('li');
+                        const btn = li?.querySelector('[data-move="' + dir + '"]');
+                        (btn && ! btn.disabled ? btn : li?.querySelector('[data-move="' + -dir + '"]'))?.focus();
+                    });
+                },
+            });
+        };
+    </script>
 
     <script>
         (function () {

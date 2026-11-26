@@ -6,15 +6,7 @@
 @php
     $partners ??= collect();
     $footerNavItems ??= collect();
-    $footerSocials = [
-        [$siteSettings->substack_url, 'fa-solid fa-pen-nib', 'Substack'],
-        [$siteSettings->facebook_url, 'bi bi-facebook', 'Facebook'],
-        [$siteSettings->facebook_group_url, 'bi bi-people-fill', 'Grupa na Facebooku'],
-        [$siteSettings->twitter_url, 'bi bi-twitter-x', 'X (Twitter)'],
-        [$siteSettings->instagram_url, 'bi bi-instagram', 'Instagram'],
-        [$siteSettings->linkedin_url, 'bi bi-linkedin', 'LinkedIn'],
-        [$siteSettings->youtube_url, 'bi bi-youtube', 'YouTube'],
-    ];
+    $footerSocials = $siteSettings->footerSocials(); // własne ikony (Ustawienia → Nagłówek) albo profile z Media i BIP
     $fo = $siteSettings->footerOptions(); // Ustawienia → Ogólne → Stopka
     $footLink = 'rounded-sm font-semibold underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink';
 @endphp
@@ -87,7 +79,7 @@
                     @foreach ($footerSocials as [$sUrl, $sIcon, $sLabel])
                         @if (filled($sUrl))
                             <li>
-                                <a href="{{ $sUrl }}" target="_blank" rel="noopener" aria-label="{{ $sLabel }} — otwiera się w nowej karcie"
+                                <a href="{{ $sUrl }}" @if (! str_starts_with($sUrl, 'mailto:') && ! str_starts_with($sUrl, '/')) target="_blank" rel="noopener" @endif aria-label="{{ $sLabel }}{{ str_starts_with($sUrl, 'mailto:') || str_starts_with($sUrl, '/') ? '' : ' — otwiera się w nowej karcie' }}"
                                    class="flex h-9 w-9 items-center justify-center rounded-md border border-white text-white transition hover:bg-white hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
                                     <i class="{{ $sIcon }}" aria-hidden="true"></i>
                                 </a>
