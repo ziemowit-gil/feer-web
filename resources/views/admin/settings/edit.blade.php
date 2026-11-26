@@ -1921,6 +1921,15 @@
                 </div>
 
                 <fieldset class="border-t border-gray-100 pt-6">
+                    <legend class="mb-1 text-sm font-bold">Menu boczne na podstronach</legend>
+                    <label class="flex items-start gap-3">
+                        <input type="hidden" name="force_panel_nav" value="0">
+                        <input type="checkbox" name="force_panel_nav" value="1" {{ old('force_panel_nav', $settings->force_panel_nav ?? false) ? 'checked' : '' }} class="mt-0.5 rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
+                        <span><span class="block text-sm font-bold">Wymuś boczne menu FEER na wszystkich podstronach z podmenu</span><span class="block text-xs text-muted">Każda strona, która ma podstrony albo strony obok w tym samym dziale, pokaże panel boczny jak w działaniach — niezależnie od stylu nawigacji i „Pokaż menu boczne” ustawionych na stronie. Nie dotyczy stron działań (projektów) ani strony „Dostępność” z kafelkami.</span></span>
+                    </label>
+                </fieldset>
+
+                <fieldset class="border-t border-gray-100 pt-6">
                     <legend class="mb-1 text-sm font-bold">Drukowanie</legend>
                     <label class="flex items-start gap-3">
                         <input type="hidden" name="show_print_button" value="0">

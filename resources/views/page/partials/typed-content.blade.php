@@ -1133,7 +1133,7 @@
         $tilesBelow = $page->tiles_content_position === 'below';
         // Boczne menu (lista rodzeństwa albo drzewo działu) — jak na stronach standardowych.
         $tgSiblings = $page->menuSiblings();
-        $tgSideNav = ($page->show_side_nav ?? true) && $tgSiblings->isNotEmpty() && $page->sideNavStyle() !== 'tiles' && $page->sideNavStyle() !== 'tabs';
+        $tgSideNav = (($page->show_side_nav ?? true) || $page->forcesPanelNav()) && $tgSiblings->isNotEmpty() && $page->sideNavStyle() !== 'tiles' && $page->sideNavStyle() !== 'tabs';
         $tgTabs = ($page->show_side_nav ?? true) && $tgSiblings->isNotEmpty() && $page->sideNavStyle() === 'tabs';
         $tgTree = $tgSideNav && $page->sideNavStyle() === 'tree';
     @endphp

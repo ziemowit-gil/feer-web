@@ -1342,6 +1342,10 @@ class Page extends Model
      */
     public function sideNavStyle(): string
     {
+        if ($this->forcesPanelNav()) {
+            return 'panel';
+        }
+
         $style = $this->parent_id ? $this->sectionRoot()->side_nav_style : $this->side_nav_style;
 
         // Strona „Dostępność" (dział podstron o dostępności) zawsze pokazuje podstrony jako kafelki.
@@ -1351,6 +1355,21 @@ class Page extends Model
         }
 
         return array_key_exists((string) $style, self::SIDE_NAV_STYLES) ? $style : 'sidebar';
+    }
+
+    /**
+     * Ustawienia → Treści → „Wymuś boczne menu FEER”: każda zwykła podstrona z podmenu dostaje panel boczny w stylu działań
+     * (styl „panel”, wyświetlany nawet przy wyłączonym „Pokaż menu boczne”). Pomijamy strony działań (podpięte do projektu
+     * albo w dziale takiej strony) i stronę „Dostępność”, która ma własne kafelki.
+     */
+    public function forcesPanelNav(): bool
+    {
+        if (! (SiteSetting::current()->force_panel_nav ?? false) || $this->project_id) {
+            return false;
+        }
+        $root = $this->parent_id ? $this->sectionRoot() : $this;
+
+        return ! $root->project_id && ! ($root->slug === 'dostepnosc' && ! $root->parent_id);
     }
 
     /**

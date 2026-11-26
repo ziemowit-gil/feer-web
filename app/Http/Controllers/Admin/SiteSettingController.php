@@ -339,6 +339,7 @@ class SiteSettingController extends Controller
             'paid_activity_info' => ['nullable', 'string', 'max:3000'],
             'paid_info_page_id' => ['nullable', 'integer', 'exists:pages,id'],
             'show_print_button' => ['sometimes', 'boolean'],
+            'force_panel_nav' => ['sometimes', 'boolean'],
             'bip_show_reports' => ['sometimes', 'boolean'],
             'join_us_texts' => ['nullable', 'array'],
             'join_us_texts.*' => ['nullable', 'string', 'max:600'],
@@ -805,6 +806,13 @@ class SiteSettingController extends Controller
 
         if (Schema::hasColumn('site_settings', 'show_print_button')) {
             $data['show_print_button'] = $request->boolean('show_print_button');
+        }
+
+        // Boczne menu FEER na podstronach (Ustawienia → Treści): tylko gdy pole przyszło (kolumna z migracji 2026_11_26_120000).
+        if (Schema::hasColumn('site_settings', 'force_panel_nav') && $request->has('force_panel_nav')) {
+            $data['force_panel_nav'] = $request->boolean('force_panel_nav');
+        } else {
+            unset($data['force_panel_nav']);
         }
 
         if (Schema::hasColumn('site_settings', 'projects_terms_enabled')) {

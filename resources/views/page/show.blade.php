@@ -56,7 +56,7 @@
             $tilesNav     = $page->sideNavStyle() === 'tiles' && $page->menuChildren->isNotEmpty();
             // „Akordeon": podstrony działu jako rozwijane sekcje pod treścią strony działu (lista boczna byłaby duplikatem).
             $accordionNav = $page->sideNavStyle() === 'accordion' && $page->menuChildren->isNotEmpty();
-            $showLocalNav = ($page->show_side_nav ?? true) && $menuSiblings->isNotEmpty() && ! $tilesNav && ! $accordionNav;
+            $showLocalNav = (($page->show_side_nav ?? true) || $page->forcesPanelNav()) && $menuSiblings->isNotEmpty() && ! $tilesNav && ! $accordionNav;
             $showTabsNav  = $showLocalNav && $page->sideNavStyle() === 'tabs';
             $showSideNav  = $showLocalNav && ! $showTabsNav;
             // Drzewo działu (TYPO3): szersza kolumna nawigacji po lewej stronie treści.
