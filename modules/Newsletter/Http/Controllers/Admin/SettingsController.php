@@ -18,7 +18,12 @@ use Modules\Newsletter\Mail\CampaignMail;
 /** Panel: ustawienia newslettera (dostawcy, limity, DOI, retencja, SZO/CRM, kod osadzenia). */
 class SettingsController extends Controller
 {
-    public const MAILERS = ['' => 'Domyślny mailer aplikacji (MAIL_MAILER)', 'msgraph' => 'Microsoft Graph', 'ses' => 'Amazon SES', 'mailgun' => 'Mailgun', 'postmark' => 'Postmark', 'smtp' => 'SMTP'];
+    public const MAILERS = ['' => 'Domyślny mailer aplikacji (MAIL_MAILER)', 'msgraph' => 'Microsoft Graph', 'ses' => 'Amazon SES', 'mailgun' => 'Mailgun', 'postmark' => 'Postmark', 'smtp' => 'SMTP', 'dpoczta' => 'dPoczta (skrzynka w dhosting.pl)'];
+
+    /** Serwer dPoczty (jak w SZO: userSmtp, DhostingConfig): STARTTLS, login = pełny adres skrzynki. */
+    public const DPOCZTA_HOST = 'smtp.dpoczta.pl';
+
+    public const DPOCZTA_PORT = 587;
 
     public function edit(Request $request, ChannelRegistry $channels, Deliverability $deliverability)
     {
@@ -77,6 +82,22 @@ class SettingsController extends Controller
             'send_window.from' => ['nullable', 'date_format:H:i'],
             'send_window.to' => ['nullable', 'date_format:H:i'],
         ]);
+        // dPoczta: login to adres skrzynki, a hasło musi być zapisane (puste pole = zostaw poprzednie).
+        if (($data['newsletter_mailer'] ?? '') === 'dpoczta') {
+            $box = trim((string) ($data['newsletter_smtp_username'] ?? ''));
+            $errors = [];
+            if (! filter_var($box, FILTER_VALIDATE_EMAIL)) {
+                $errors['newsletter_smtp_username'] = 'Podaj pełny adres skrzynki w dPoczcie, np. newsletter@feer.org.pl.';
+            }
+            if (blank($data['newsletter_smtp_password'] ?? null) && blank($site->newsletter_smtp_password)) {
+                $errors['newsletter_smtp_password'] = 'Podaj hasło skrzynki w dPoczcie.';
+            }
+            if ($errors) {
+                return back()->withErrors($errors)->withInput();
+            }
+            $data['newsletter_smtp_username'] = $box;
+        }
+
         // Okno wysyłki: JSON bez rzutowania w modelu (forceFill — kolumna spoza $fillable SiteSetting).
         $window = SendWindow::normalize(['enabled' => $request->boolean('send_window.enabled')] + (array) ($data['send_window'] ?? []));
         unset($data['send_window']);

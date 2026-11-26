@@ -31,6 +31,15 @@ class CampaignMail extends Mailable
         $name = $this->campaign?->from_name ?: $site->newsletter_from_name ?: config('mail.from.name');
         $reply = $this->campaign?->reply_to ?: $site->newsletter_reply_to;
 
+        // dPoczta wysyła tylko ze skrzynki, na którą jest zalogowany — inny nadawca kampanii trafia do „Odpowiedzi do”.
+        if (($site->newsletter_mailer ?? '') === 'dpoczta') {
+            $box = (string) ($site->newsletter_smtp_username ?: $site->newsletter_from_address);
+            if ($box !== '' && strcasecmp((string) $from, $box) !== 0) {
+                $reply = $reply ?: (string) $from;
+                $from = $box;
+            }
+        }
+
         return new Envelope(
             from: new Address((string) $from, (string) $name),
             replyTo: $reply ? [new Address($reply)] : [],

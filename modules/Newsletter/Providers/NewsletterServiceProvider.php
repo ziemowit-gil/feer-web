@@ -137,6 +137,19 @@ final class NewsletterServiceProvider extends ServiceProvider
                     ]);
                 }
                 break;
+            case 'dpoczta':
+                // Skrzynka w dPoczcie (dhosting.pl): stały serwer, login = adres skrzynki (CampaignMail wysyła z niego).
+                $mailer = [
+                    'transport'  => 'smtp',
+                    'host'       => \Modules\Newsletter\Http\Controllers\Admin\SettingsController::DPOCZTA_HOST,
+                    'port'       => \Modules\Newsletter\Http\Controllers\Admin\SettingsController::DPOCZTA_PORT,
+                    'username'   => $site->newsletter_smtp_username ?: $site->newsletter_from_address,
+                    'password'   => $site->newsletter_smtp_password,
+                    'encryption' => 'tls',
+                    'scheme'     => null,
+                    'timeout'    => 30,
+                ];
+                break;
         }
 
         config(['mail.mailers.newsletter' => $mailer]);
