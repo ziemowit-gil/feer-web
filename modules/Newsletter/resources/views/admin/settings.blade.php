@@ -122,8 +122,20 @@
 
         <div class="flex flex-wrap items-center gap-3">
             <button type="submit" class="rounded bg-brand-dark px-5 py-2 text-sm font-bold text-white hover:bg-ink">Zapisz ustawienia</button>
-            <span class="text-xs text-muted">Pola sekretów: puste = bez zmian.</span>
+            <button type="submit" formaction="{{ route('admin.newsletter.ustawienia.polaczenie') }}" formnovalidate aria-describedby="polaczenie-help"
+                class="rounded border border-brand-dark bg-white px-5 py-2 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
+                <i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> Testuj połączenie
+            </button>
+            <span id="polaczenie-help" class="text-xs text-muted">Pola sekretów: puste = bez zmian. Test sprawdza serwer SMTP (dPoczta, SMTP, domyślny) na wpisanych danych, bez zapisywania i bez wysyłki.</span>
         </div>
+        @if ($conn = session('connection_test'))
+            <div id="polaczenie-wynik" tabindex="-1" role="{{ $conn['ok'] ? 'status' : 'alert' }}"
+                class="rounded-md px-4 py-3 text-sm {{ $conn['ok'] ? 'bg-green-50 text-green-900' : 'bg-red-50 text-red-900' }}">
+                <p class="font-bold">{{ $conn['ok'] ? '✔ Połączenie działa' : '✘ Test połączenia nie powiódł się' }}</p>
+                <p class="mt-1 break-words">{{ $conn['message'] }}</p>
+            </div>
+            <script>document.addEventListener('DOMContentLoaded', function () { var el = document.getElementById('polaczenie-wynik'); if (el) { el.scrollIntoView({ block: 'center' }); el.focus({ preventScroll: true }); } });</script>
+        @endif
     </form>
     <form method="POST" action="{{ route('admin.newsletter.ustawienia.test') }}" class="mt-4 flex flex-wrap items-end gap-3 p-4 rounded-md bg-white">
         @csrf

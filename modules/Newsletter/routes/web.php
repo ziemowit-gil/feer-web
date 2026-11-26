@@ -149,6 +149,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
             Route::get('ustawienia', [AdminSettingsController::class, 'edit'])->name('ustawienia.edit');
             Route::put('ustawienia', [AdminSettingsController::class, 'update'])->name('ustawienia.update');
             Route::post('ustawienia/test', [AdminSettingsController::class, 'testMail'])->name('ustawienia.test');
+            // Przycisk w formularzu ustawień (formaction) — formularz ma @method('PUT').
+            Route::put('ustawienia/testuj-polaczenie', [AdminSettingsController::class, 'testConnection'])->name('ustawienia.polaczenie');
         });
 
         // Zasoby edytora Mosaico (obrazy, treści ze strony) — dla kampanii albo szablonów.

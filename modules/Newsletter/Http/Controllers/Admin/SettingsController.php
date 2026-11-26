@@ -121,6 +121,69 @@ class SettingsController extends Controller
         return redirect()->route('admin.newsletter.ustawienia.edit')->with('status', 'Ustawienia newslettera zapisane.');
     }
 
+    /**
+     * „Testuj połączenie”: łączy się z serwerem SMTP (także dPoczta i domyślny mailer, jeśli to SMTP) na danych
+     * z formularza — przed zapisem — włącza szyfrowanie, loguje się i rozłącza, nic nie wysyłając.
+     * Puste hasło = zapisane. Wynik wraca jako flash `connection_test` przy przycisku.
+     */
+    public function testConnection(Request $request)
+    {
+        $site = SiteSetting::current();
+        $mailer = (string) $request->input('newsletter_mailer', (string) $site->newsletter_mailer);
+        $input = fn (string $key) => trim((string) ($request->input($key) ?? ''));
+        $password = $input('newsletter_smtp_password') !== '' ? (string) $request->input('newsletter_smtp_password') : (string) $site->newsletter_smtp_password;
+
+        $config = match ($mailer) {
+            'dpoczta' => ['transport' => 'smtp', 'host' => self::DPOCZTA_HOST, 'port' => self::DPOCZTA_PORT, 'scheme' => 'smtp',
+                'username' => $input('newsletter_smtp_username') ?: (string) $site->newsletter_smtp_username, 'password' => $password],
+            'smtp' => ['transport' => 'smtp', 'host' => $input('newsletter_smtp_host') ?: (string) $site->newsletter_smtp_host,
+                'port' => (int) ($input('newsletter_smtp_port') ?: ($site->newsletter_smtp_port ?: 587)),
+                'scheme' => ($input('newsletter_smtp_encryption') ?: $site->newsletter_smtp_encryption) === 'ssl' ? 'smtps' : 'smtp',
+                'username' => $input('newsletter_smtp_username') ?: (string) $site->newsletter_smtp_username, 'password' => $password],
+            '' => config('mail.mailers.' . config('mail.default'), []),
+            default => null,
+        };
+        $back = fn (bool $ok, string $message) => back()
+            ->withInput($request->except(['newsletter_smtp_password', 'newsletter_ses_secret', 'newsletter_mailgun_secret', 'newsletter_postmark_token', 'newsletter_ses_key', 'newsletter_webhook_secret', 'newsletter_sms_token', 'newsletter_turnstile_secret', 'newsletter_crm_webhook_secret', '_token', '_method']))
+            ->with('connection_test', ['ok' => $ok, 'message' => $message]);
+
+        if (! is_array($config) || ($config['transport'] ?? null) !== 'smtp') {
+            $label = self::MAILERS[$mailer] ?? $mailer;
+
+            return $back(false, "Dla dostawcy „{$label}” nie ma testu połączenia — wyślij wiadomość testową (formularz poniżej, po zapisaniu ustawień).");
+        }
+        if (blank($config['host'] ?? null)) {
+            return $back(false, 'Podaj adres serwera SMTP.');
+        }
+        if ($mailer === 'dpoczta' && ! filter_var($config['username'], FILTER_VALIDATE_EMAIL)) {
+            return $back(false, 'Podaj pełny adres skrzynki w dPoczcie, np. newsletter@feer.org.pl.');
+        }
+
+        $where = $config['host'] . ':' . ($config['port'] ?? 25);
+        try {
+            /** @var \Symfony\Component\Mailer\Transport\Smtp\SmtpTransport $transport */
+            $transport = Mail::createSymfonyTransport($config + ['timeout' => 15]);
+            $transport->start();
+            $tls = $transport->getStream() instanceof \Symfony\Component\Mailer\Transport\Smtp\Stream\SocketStream
+                && ($transport->getStream()->isTLS() || ($config['scheme'] ?? '') === 'smtps');
+            $transport->stop();
+        } catch (\Throwable $e) {
+            $msg = $e->getMessage();
+            $why = match (true) {
+                (bool) preg_match('/\b(535|534|530)\b|authenticat|credentials/i', $msg) => 'serwer odrzucił login lub hasło',
+                (bool) preg_match('/Connection (could not be established|refused|timed out)|getaddrinfo|timed out/i', $msg) => 'nie udało się połączyć z serwerem (adres, port albo zapora)',
+                (bool) preg_match('/TLS|SSL|certificate|crypto/i', $msg) => 'błąd szyfrowania TLS/SSL',
+                default => 'błąd serwera',
+            };
+
+            return $back(false, "Połączenie z {$where} nie działa: {$why}. Szczegóły: " . mb_strimwidth($msg, 0, 300, '…'));
+        }
+
+        $login = filled($config['username'] ?? null) ? ', zalogowano jako ' . $config['username'] : ', bez logowania';
+
+        return $back(true, "Połączenie działa: {$where}" . ($tls ? ', szyfrowane' : ', BEZ szyfrowania') . $login . '. Nic nie zostało wysłane.' . ($request->has('newsletter_mailer') && $mailer !== (string) $site->newsletter_mailer ? ' Pamiętaj, żeby zapisać ustawienia.' : ''));
+    }
+
     /** Wysyła wiadomość testową wybranym mailerem. */
     public function testMail(Request $request)
     {

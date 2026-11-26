@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\SiteSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 use Modules\Newsletter\Channels\OutboundMessage;
 use Modules\Newsletter\Mail\CampaignMail;
 use Modules\Newsletter\Providers\NewsletterServiceProvider;
@@ -83,5 +85,60 @@ class NewsletterDpocztaTest extends TestCase
         $this->assertSame('newsletter@feer.org.pl', $env->from->address);
         $this->assertSame('Fundacja FEER', $env->from->name);
         $this->assertSame('biuro@feer.org.pl', $env->replyTo[0]->address);
+    }
+    private function testConnection(array $form)
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        return $this->actingAs($admin)->from(route('admin.newsletter.ustawienia.edit'))
+            ->put(route('admin.newsletter.ustawienia.polaczenie'), $form + ['newsletter_rate_per_minute' => 10])
+            ->assertRedirect(route('admin.newsletter.ustawienia.edit'));
+    }
+
+    public function test_przycisk_testuj_polaczenie_jest_w_ustawieniach(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->actingAs($admin)->get(route('admin.newsletter.ustawienia.edit'))->assertOk()
+            ->assertSee('formaction="'.route('admin.newsletter.ustawienia.polaczenie').'"', false)
+            ->assertSee('Testuj połączenie');
+    }
+
+    public function test_polaczenie_dpoczta_udane_na_danych_z_formularza_bez_zapisu(): void
+    {
+        $seen = null;
+        Mail::shouldReceive('createSymfonyTransport')->once()->andReturnUsing(function (array $config) use (&$seen) {
+            $seen = $config;
+
+            return new class('localhost') extends EsmtpTransport {
+                public function start(): void {}
+                public function stop(): void {}
+            };
+        });
+
+        $res = $this->testConnection(['newsletter_mailer' => 'dpoczta', 'newsletter_smtp_username' => 'newsletter@feer.org.pl', 'newsletter_smtp_password' => 'tajne']);
+        $conn = session('connection_test');
+        $this->assertTrue($conn['ok'], $conn['message']);
+        $this->assertStringContainsString('smtp.dpoczta.pl:587', $conn['message']);
+        $this->assertStringContainsString('zalogowano jako newsletter@feer.org.pl', $conn['message']);
+        $this->assertSame(['smtp.dpoczta.pl', 587, 'tajne', 15], [$seen['host'], $seen['port'], $seen['password'], $seen['timeout']]);
+        // Nic nie zapisane, a hasło nie wraca do formularza.
+        $this->forgetSettings();
+        $this->assertNull(SiteSetting::current()->newsletter_mailer ?: null);
+        $res->assertSessionHasInput('newsletter_smtp_username', 'newsletter@feer.org.pl');
+        $this->assertNull(session()->getOldInput('newsletter_smtp_password'));
+    }
+
+    public function test_polaczenie_nieudane_i_przypadki_bez_testu(): void
+    {
+        // Zamknięty port na localhost — prawdziwa próba połączenia.
+        $this->testConnection(['newsletter_mailer' => 'smtp', 'newsletter_smtp_host' => '127.0.0.1', 'newsletter_smtp_port' => 1, 'newsletter_smtp_encryption' => 'tls']);
+        $this->assertFalse(session('connection_test')['ok']);
+        $this->assertStringContainsString('Połączenie z 127.0.0.1:1 nie działa', session('connection_test')['message']);
+
+        $this->testConnection(['newsletter_mailer' => 'dpoczta', 'newsletter_smtp_username' => 'newsletter']);
+        $this->assertStringContainsString('pełny adres skrzynki', session('connection_test')['message']);
+
+        $this->testConnection(['newsletter_mailer' => 'mailgun']);
+        $this->assertStringContainsString('nie ma testu połączenia', session('connection_test')['message']);
     }
 }
