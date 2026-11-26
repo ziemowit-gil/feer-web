@@ -192,13 +192,9 @@
                     <div id="media-sizes" x-show="open" x-cloak class="px-2 pb-1 pt-2">
                         <p class="mb-3 text-xs text-muted">Zdjęcia są przycinane, więc inne proporcje też zadziałają — poniższe dają najostrzejszy wygląd.</p>
                         <ul role="list" class="space-y-2 text-sm">
-                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Logo</span><span class="text-right text-muted">400×400 px, PNG/SVG</span></li>
-                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Slajder hero</span><span class="text-right text-muted">1600×600 px</span></li>
-                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">OG / udostępnianie</span><span class="text-right text-muted">1200×630 px</span></li>
-                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Miniatury</span><span class="text-right text-muted">800×600 px</span></li>
-                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Zdjęcie działania</span><span class="text-right text-muted">1200×500 px</span></li>
-                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Galeria</span><span class="text-right text-muted">min. 600×450 px</span></li>
-                            <li class="flex justify-between gap-2"><span class="font-medium text-ink">Logo partnera</span><span class="text-right text-muted">do 300 px, PNG</span></li>
+                            @foreach (\App\Support\ImageSizes::LIST as [$isWhere, $isSize])
+                                <li class="flex justify-between gap-2"><span class="font-medium text-ink">{{ $isWhere }}</span><span class="text-right text-muted">{{ $isSize }}</span></li>
+                            @endforeach
                         </ul>
                     </div>
                 </section>

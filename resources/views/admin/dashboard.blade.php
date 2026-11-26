@@ -164,4 +164,58 @@
             @endif
         </div>
     @endif
+
+    {{-- Wymiary grafik: ściągawka zalecanych rozmiarów (App\Support\ImageSizes — to samo źródło co w Multimediach). --}}
+    <section aria-labelledby="dash-image-sizes" class="mt-6 rounded-md bg-white">
+        <h2 id="dash-image-sizes" class="j-panel-head border-b border-gray-100 px-5 py-4 text-base font-bold text-ink">
+            <i class="fa-regular fa-image mr-2 text-brand-dark" aria-hidden="true"></i>Wymiary grafik
+        </h2>
+        <div class="overflow-x-auto px-5 py-3">
+            <table class="w-full text-left text-sm">
+                <caption class="sr-only">Zalecane wymiary grafik w serwisie</caption>
+                <thead>
+                    <tr class="text-xs font-bold uppercase tracking-wide text-muted">
+                        <th scope="col" class="py-2 pr-4">Gdzie</th>
+                        <th scope="col" class="whitespace-nowrap py-2 pr-4">Wymiar</th>
+                        <th scope="col" class="py-2">Uwagi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach (\App\Support\ImageSizes::LIST as [$isWhere, $isSize, $isNote])
+                        <tr>
+                            <th scope="row" class="py-2 pr-4 font-bold text-ink">{{ $isWhere }}</th>
+                            <td class="whitespace-nowrap py-2 pr-4 font-mono text-ink">{{ $isSize }}</td>
+                            <td class="py-2 text-muted">{{ $isNote }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <p class="border-t border-gray-100 px-5 py-3 text-xs text-muted">{{ \App\Support\ImageSizes::FORMATS_NOTE }}</p>
+
+        <h3 id="dash-banner-sizes" class="border-t border-gray-100 px-5 pb-1 pt-4 text-sm font-bold text-ink">
+            <i class="fa-solid fa-rectangle-ad mr-2 text-brand-dark" aria-hidden="true"></i>Banery
+        </h3>
+        <div class="overflow-x-auto px-5 pb-3">
+            <table class="w-full text-left text-sm" aria-labelledby="dash-banner-sizes">
+                <thead>
+                    <tr class="text-xs font-bold uppercase tracking-wide text-muted">
+                        <th scope="col" class="py-2 pr-4">Strefa</th>
+                        <th scope="col" class="whitespace-nowrap py-2 pr-4">Wymiar</th>
+                        <th scope="col" class="py-2">Uwagi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach (\App\Support\ImageSizes::BANNERS as [$isWhere, $isSize, $isNote])
+                        <tr>
+                            <th scope="row" class="py-2 pr-4 font-bold text-ink">{{ $isWhere }}</th>
+                            <td class="whitespace-nowrap py-2 pr-4 font-mono text-ink">{{ $isSize }}</td>
+                            <td class="py-2 text-muted">{{ $isNote }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <p class="border-t border-gray-100 px-5 py-3 text-xs text-muted">{{ \App\Support\ImageSizes::BANNERS_NOTE }}</p>
+    </section>
 @endsection
