@@ -98,9 +98,9 @@
                 <label for="photos" class="mb-1 block text-sm font-bold text-ink">
                     Zdjęcia z działalności ({{ $photos->count() }}/{{ \App\Models\Organization::MAX_PHOTOS }})
                 </label>
-                <p class="mb-2 text-xs text-muted">Format JPG, PNG lub WebP, maks. 5 MB na zdjęcie.</p>
+                <p class="mb-2 text-xs text-muted">Format JPG, PNG, WebP lub AVIF, maks. 5 MB na zdjęcie.</p>
                 @if ($photos->count() < \App\Models\Organization::MAX_PHOTOS)
-                    <input type="file" id="photos" name="photos[]" accept="image/jpeg,image/png,image/webp" multiple
+                    <input type="file" id="photos" name="photos[]" accept="image/jpeg,image/png,image/webp,image/avif" multiple
                         class="block w-full cursor-pointer text-sm text-muted file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-brand file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-brand-dark">
                 @endif
                 @error('photos') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror

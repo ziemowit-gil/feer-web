@@ -38,7 +38,7 @@ class MemberOrganizationController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
             'photos' => ['nullable', 'array', 'max:'.Organization::MAX_PHOTOS],
-            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp,avif', 'max:5120'],
         ]);
 
         $organization->update(collect($data)->except('photos')->all());
