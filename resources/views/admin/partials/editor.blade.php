@@ -935,7 +935,7 @@
                     clientId: @json($msClientId),
                     action: 'download',
                     multiSelect: false,
-                    advanced: { filter: '.jpg,.jpeg,.png,.gif,.webp,.bmp,.avif,.svg' },
+                    advanced: { filter: '.jpg,.jpeg,.png,.gif,.webp,.bmp,.avif,.heic,.heif,.svg' },
                     success: function (files) {
                         var file = files.value[0];
                         var dlUrl = file['@microsoft.graph.downloadUrl'] || file['@content.downloadUrl'];

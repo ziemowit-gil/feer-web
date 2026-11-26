@@ -488,7 +488,7 @@ class MediaLibraryController extends Controller
     public function uploadAjax(Request $request)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:jpg,jpeg,png,gif,webp,bmp,avif,svg,pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,zip', 'max:20480'],
+            'file' => ['required', 'file', 'mimes:jpg,jpeg,png,gif,webp,bmp,avif,heic,heif,svg,pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,zip', 'max:20480'],
         ], [], ['file' => 'plik']);
 
         $media = MediaLibrary::instance()
@@ -555,6 +555,28 @@ class MediaLibraryController extends Controller
 
         $ext = $originalName ? pathinfo($originalName, PATHINFO_EXTENSION) : 'jpg';
         $fileName = Str::random(20).($ext ? '.'.$ext : '');
+
+        // HEIC/HEIF (zdjęcia z iPhone'a) → WebP, jak przy zwykłym wgrywaniu (ConvertHeicUploads).
+        if (in_array(strtolower((string) $ext), \App\Support\HeicConverter::EXTENSIONS, true)) {
+            $tmp = tempnam(sys_get_temp_dir(), 'od_heic_');
+            abort_unless(Http::timeout(60)->sink($tmp)->get($downloadUrl)->successful(), 422, 'Nie udało się pobrać pliku z OneDrive.');
+            $webp = app(\App\Support\HeicConverter::class)->toWebp($tmp);
+            @unlink($tmp);
+            abort_unless($webp !== null, 422, 'Nie udało się przekonwertować zdjęcia HEIC. Zapisz je jako JPG i spróbuj ponownie.');
+            $media = MediaLibrary::instance()
+                ->addMedia($webp)
+                ->usingFileName(Str::random(20).'.webp')
+                ->withCustomProperties(['onedrive_name' => $originalName])
+                ->toMediaCollection('files');
+            $media->update(['uploaded_by_user_id' => auth()->id()]);
+
+            return response()->json([
+                'id' => $media->id,
+                'url' => $media->getUrl(),
+                'file_name' => $media->file_name,
+                'alt' => pathinfo($originalName, PATHINFO_FILENAME),
+            ]);
+        }
 
         $media = MediaLibrary::instance()
             ->addMediaFromUrl($downloadUrl)
