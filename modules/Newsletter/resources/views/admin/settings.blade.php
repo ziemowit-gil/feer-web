@@ -6,7 +6,7 @@
     <form method="POST" action="{{ route('admin.newsletter.ustawienia.update') }}" class="space-y-6" x-data="{ tab: 'wysylka', mailer: '{{ old('newsletter_mailer', $s->newsletter_mailer ?? '') }}' }">
         @csrf @method('PUT')
         <nav class="flex flex-wrap gap-1 border-b border-gray-200" aria-label="Sekcje ustawień">
-            @foreach (['wysylka' => 'Wysyłka e-mail', 'kanaly' => 'Push i SMS', 'zapisy' => 'Zapisy i RODO', 'integracje' => 'SZO i CRM', 'webhooki' => 'Webhooki', 'osadzenie' => 'Kod zewnętrzny'] as $k => $l)
+            @foreach (['wysylka' => 'Wysyłka e-mail', 'kanaly' => 'Push i SMS', 'zapisy' => 'Zapisy i RODO', 'integracje' => 'SZO, CRM i Mautic', 'webhooki' => 'Webhooki', 'osadzenie' => 'Kod zewnętrzny'] as $k => $l)
                 <button type="button" @click="tab = '{{ $k }}'" :class="tab === '{{ $k }}' ? 'border-brand-dark text-brand-dark' : 'border-transparent text-gray-700 hover:text-ink'" class="-mb-px border-b-2 px-4 py-2 text-sm font-bold" :aria-current="tab === '{{ $k }}' ? 'page' : null">{{ $l }}</button>
             @endforeach
         </nav>
