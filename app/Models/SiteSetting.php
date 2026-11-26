@@ -2301,7 +2301,7 @@ class SiteSetting extends Model implements HasMedia
         'cta_label' => '',
         'cta_url' => '',
         'cta_icon' => 'fa-book-open',
-        'icons' => [],
+        'icons' => null,
     ];
 
     /** Ikony do wyboru dla przycisku w nagłówku (klasa Font Awesome => opis w panelu). */
@@ -2366,44 +2366,32 @@ class SiteSetting extends Model implements HasMedia
     {
         $d = self::HEADER_DEFAULTS;
         $bool = fn (string $k) => array_key_exists($k, $in) ? filter_var($in[$k], FILTER_VALIDATE_BOOLEAN) : $d[$k];
-        $keys = fn (string $k) => array_values(array_intersect(array_keys(self::SOCIAL_KEYS), array_map('strval', array_filter((array) ($in[$k] ?? []), 'is_scalar'))));
+        $chosen = array_map('strval', array_filter((array) ($in['social'] ?? []), 'is_scalar'));
+        $social = array_slice(array_values(array_filter(array_keys(self::SOCIAL_KEYS), fn ($k) => in_array($k, $chosen, true))), 0, self::HEADER_SOCIAL_MAX);
         $url = mb_substr(trim((string) ($in['cta_url'] ?? '')), 0, 500);
         if ($url !== '' && preg_match('~^(https?://\S+|/(?!/)\S*)$~i', $url) !== 1) {
             $url = '';
         }
         $icon = (string) ($in['cta_icon'] ?? $d['cta_icon']);
-        // Ikona i podpis profilu: zapisujemy tylko zmiany względem domyślnych.
-        $socialIcons = [];
-        $socialLabels = [];
-        foreach (self::SOCIAL_KEYS as $key => $meta) {
-            $ic = (string) (((array) ($in['social_icons'] ?? []))[$key] ?? '');
-            if ($ic !== '' && $ic !== $meta['icon'] && array_key_exists($ic, self::FEER_ICON_CHOICES)) {
-                $socialIcons[$key] = $ic;
-            }
-            $lb = mb_substr(trim((string) (((array) ($in['social_labels'] ?? []))[$key] ?? '')), 0, 60);
-            if ($lb !== '' && $lb !== $meta['label']) {
-                $socialLabels[$key] = $lb;
-            }
-        }
 
         return [
             'show_social' => $bool('show_social'),
-            'social' => array_slice($keys('social'), 0, self::HEADER_SOCIAL_MAX),
-            // Profile w stopce: null = wszystkie ustawione (jak przed tą opcją); formularz wysyła footer_social_set, więc pusta lista = żadnego.
-            'footer_social' => array_key_exists('footer_social', $in) || filter_var($in['footer_social_set'] ?? false, FILTER_VALIDATE_BOOLEAN) ? $keys('footer_social') : null,
-            'social_icons' => $socialIcons,
-            'social_labels' => $socialLabels,
+            // Stary wybór profili w nagłówku — używany tylko do pierwszego wypełnienia listy ikon (feerIcons()).
+            'social' => $social,
             'show_cta' => $bool('show_cta'),
             'cta_label' => mb_substr(trim((string) ($in['cta_label'] ?? '')), 0, 60),
             'cta_url' => $url,
             'cta_icon' => array_key_exists($icon, self::HEADER_CTA_ICONS) ? $icon : $d['cta_icon'],
-            'icons' => self::normalizeFeerIcons($in['icons'] ?? []),
+            // Lista ikon social FEER: null = jeszcze nie edytowana (formularz wysyła icons_set, więc pusta lista = brak ikon).
+            'icons' => is_array($in['icons'] ?? null) || filter_var($in['icons_set'] ?? false, FILTER_VALIDATE_BOOLEAN)
+                ? self::normalizeFeerIcons($in['icons'] ?? [])
+                : null,
         ];
     }
 
     /**
-     * Inne ikony social szablonu FEER (własny adres): lista {icon, label, url, header, footer} w kolejności z panelu. Wiersz bez
-     * adresu albo z nieobsługiwaną ikoną/adresem jest pomijany; pusty podpis = nazwa ikony (tekst dla czytników ekranu).
+     * Ikony social szablonu FEER: lista {icon, label, url, header, footer} w kolejności z panelu. Wiersz bez adresu
+     * albo z nieobsługiwaną ikoną/adresem jest pomijany; pusty podpis = nazwa ikony (tekst dla czytników ekranu).
      *
      * @return array<int, array{icon: string, label: string, url: string, header: bool, footer: bool}>
      */
@@ -2435,34 +2423,40 @@ class SiteSetting extends Model implements HasMedia
         return $out;
     }
 
-    /** Kolejność profili w stopce FEER (jak przed edycją ikon). */
-    private const FEER_FOOTER_ORDER = ['substack', 'facebook', 'facebook_group', 'twitter', 'instagram', 'linkedin', 'youtube'];
-
     /**
-     * Profil social jako trójka [adres, ikona, podpis] z ikoną i podpisem z Ustawienia → Nagłówek (szablon FEER);
-     * null, gdy profil nie ma adresu. $defaultIcon zastępuje ikonę domyślną (np. pióro Substacka w stopce).
+     * Ikony social szablonu FEER (Ustawienia → Nagłówek). Dopóki listy nie zapisano, wypełniamy ją profilami z Media i BIP
+     * tak, by strona wyglądała jak dotąd: w nagłówku wybrane profile (bez wyboru pierwsze pięć), w stopce wszystkie.
      *
-     * @return array{0: string, 1: string, 2: string}|null
+     * @return array<int, array{icon: string, label: string, url: string, header: bool, footer: bool}>
      */
-    public function feerProfileLink(string $key, ?string $defaultIcon = null, ?string $defaultLabel = null): ?array
+    public function feerIcons(): array
     {
-        $url = trim((string) ($this->{$key.'_url'} ?? ''));
-        if ($url === '' || ! isset(self::SOCIAL_KEYS[$key])) {
-            return null;
-        }
         $o = $this->headerOptions();
+        if ($o['icons'] !== null) {
+            return $o['icons'];
+        }
 
-        return [
-            $url,
-            $o['social_icons'][$key] ?? $defaultIcon ?? self::SOCIAL_KEYS[$key]['icon'],
-            $o['social_labels'][$key] ?? $defaultLabel ?? self::SOCIAL_KEYS[$key]['label'],
-        ];
+        $rows = [];
+        foreach (self::SOCIAL_KEYS as $key => $meta) {
+            $url = trim((string) ($this->{$key.'_url'} ?? ''));
+            if ($url !== '') {
+                $rows[] = ['icon' => $meta['icon'], 'label' => $meta['label'], 'url' => $url, 'header' => false, 'footer' => true, 'key' => $key];
+            }
+        }
+        $headerKeys = $o['social'] !== [] ? $o['social'] : array_slice(array_column($rows, 'key'), 0, self::HEADER_SOCIAL_MAX);
+
+        return array_map(function (array $r) use ($headerKeys) {
+            $r['header'] = in_array($r['key'], $headerKeys, true);
+            unset($r['key']);
+
+            return $r;
+        }, $rows);
     }
 
     /** @return array<int, array{0: string, 1: string, 2: string}> */
-    private function feerExtraLinks(?string $place = null): array
+    private function feerIconLinks(?string $place = null): array
     {
-        $icons = $this->headerOptions()['icons'];
+        $icons = $this->feerIcons();
         if ($place !== null) {
             $icons = array_filter($icons, fn (array $i) => $i[$place]);
         }
@@ -2471,61 +2465,38 @@ class SiteSetting extends Model implements HasMedia
     }
 
     /**
-     * Wszystkie ikony social witryny do paska górnego i menu mobilnego: w szablonie FEER profile z ikonami/podpisami
-     * z Ustawienia → Nagłówek i inne ikony, w pozostałych szablonach ustawione profile (socialLinks()).
+     * Ikony social do paska górnego i menu mobilnego: w szablonie FEER cała lista ikon z Ustawienia → Nagłówek,
+     * w pozostałych szablonach ustawione profile (socialLinks()).
      *
      * @return array<int, array{0: string, 1: string, 2: string}>
      */
     public function templateSocials(): array
     {
-        if (! $this->hasFixedHeader()) {
-            return $this->socialLinks();
-        }
-
-        return [...array_values(array_filter(array_map(fn ($k) => $this->feerProfileLink($k), array_keys(self::SOCIAL_KEYS)))), ...$this->feerExtraLinks()];
+        return $this->hasFixedHeader() ? $this->feerIconLinks() : $this->socialLinks();
     }
 
     /**
-     * Ikony social stopki FEER: profile zaznaczone „W stopce” (bez wyboru wszystkie ustawione, Substack z ikoną pióra
-     * jak dotąd), a po nich inne ikony z zaznaczoną stopką.
+     * Ikony social stopki FEER: ikony z zaznaczonym „W stopce”.
      *
      * @return array<int, array{0: string, 1: string, 2: string}>
      */
     public function footerSocials(): array
     {
-        $chosen = $this->headerOptions()['footer_social'];
-        $links = [];
-        foreach (self::FEER_FOOTER_ORDER as $key) {
-            if ($chosen !== null && ! in_array($key, $chosen, true)) {
-                continue;
-            }
-            $link = $this->feerProfileLink($key, $key === 'substack' ? 'fa-solid fa-pen-nib' : null, $key === 'twitter' ? 'X (Twitter)' : null);
-            if ($link !== null) {
-                $links[] = $link;
-            }
-        }
-
-        return [...$links, ...$this->feerExtraLinks('footer')];
+        return $this->feerIconLinks('footer');
     }
 
     /**
-     * Ikony social w nagłówku FEER: profile zaznaczone „W nagłówku” (w kolejności SOCIAL_KEYS, tylko z adresem), potem inne
-     * ikony z zaznaczonym nagłówkiem — razem najwyżej HEADER_SOCIAL_MAX. Bez żadnego wyboru: pierwsze pięć ustawionych
-     * profili; wyłączone — brak ikon.
+     * Ikony social w nagłówku FEER: ikony z zaznaczonym „W nagłówku”, najwyżej HEADER_SOCIAL_MAX; wyłączone — brak ikon.
      *
      * @return array<int, array{0: string, 1: string, 2: string}>
      */
     public function headerSocials(): array
     {
-        $o = $this->headerOptions();
-        if (! $o['show_social']) {
+        if (! $this->headerOptions()['show_social']) {
             return [];
         }
-        $extra = $this->feerExtraLinks('header');
-        $keys = $o['social'] === [] && $extra === [] ? array_keys(self::SOCIAL_KEYS) : $o['social'];
-        $links = array_values(array_filter(array_map(fn ($k) => $this->feerProfileLink($k), $keys)));
 
-        return array_slice([...$links, ...$extra], 0, self::HEADER_SOCIAL_MAX);
+        return array_slice($this->feerIconLinks('header'), 0, self::HEADER_SOCIAL_MAX);
     }
 
     public function isModuleEnabled(string $module): bool

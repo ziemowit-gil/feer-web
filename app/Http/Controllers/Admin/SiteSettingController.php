@@ -206,12 +206,6 @@ class SiteSettingController extends Controller
             'header_options.cta_label' => ['nullable', 'string', 'max:60'],
             'header_options.cta_url' => ['nullable', 'string', 'max:500', 'regex:~^(https?://\S+|/(?!/)\S*)$~i'],
             'header_options.cta_icon' => ['nullable', 'string', Rule::in(array_keys(SiteSetting::HEADER_CTA_ICONS))],
-            'header_options.footer_social' => ['nullable', 'array'],
-            'header_options.footer_social.*' => ['string', Rule::in(array_keys(SiteSetting::SOCIAL_KEYS))],
-            'header_options.social_icons' => ['nullable', 'array'],
-            'header_options.social_icons.*' => ['nullable', 'string', Rule::in(array_keys(SiteSetting::FEER_ICON_CHOICES))],
-            'header_options.social_labels' => ['nullable', 'array'],
-            'header_options.social_labels.*' => ['nullable', 'string', 'max:60'],
             'header_options.icons' => ['nullable', 'array', 'max:'.SiteSetting::FEER_ICONS_MAX],
             'header_options.icons.*.icon' => ['required', 'string', Rule::in(array_keys(SiteSetting::FEER_ICON_CHOICES))],
             'header_options.icons.*.label' => ['nullable', 'string', 'max:60'],
@@ -495,8 +489,7 @@ class SiteSettingController extends Controller
         $data = $request->validate($rules, [
             'header_options.icons.*.url.required' => 'Podaj adres ikony albo usuń pusty wiersz.',
             'header_options.icons.*.url.regex' => 'Adres ikony: pełny (https://…), mailto:adres albo ścieżka na tej stronie (/…).',
-            'header_options.icons.max' => 'Najwyżej '.SiteSetting::FEER_ICONS_MAX.' innych ikon.',
-            'header_options.social.max' => 'W nagłówku zaznacz najwyżej '.SiteSetting::HEADER_SOCIAL_MAX.' profili.',
+            'header_options.icons.max' => 'Najwyżej '.SiteSetting::FEER_ICONS_MAX.' ikon.',
         ]);
 
         $data['allow_indexing'] = $request->boolean('allow_indexing');

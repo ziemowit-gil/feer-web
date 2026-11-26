@@ -123,12 +123,10 @@ class HeaderOptionsTest extends TestCase
         $this->actingAs($admin)->get(route('admin.ustawienia.edit', ['tab' => 'header']))->assertOk()
             ->assertSee('id="header-right"', false)
             ->assertSee('Ikony mediów społecznościowych i przycisk')
-            ->assertSee('name="header_options[social_icons][facebook]"', false)
-            ->assertSee('name="header_options[footer_social][]" value="instagram"', false)
-            ->assertSee('Inne ikony')
-            ->assertSee('name="header_options[social][]" value="instagram"', false)
-            ->assertSee('name="header_options[cta_label]"', false)
-            ->assertSee('(brak adresu)');
+            ->assertSee('name="header_options[icons_set]"', false)
+            ->assertSee('instagram.com', false)
+                        ->assertSee('name="header_options[cta_label]"', false)
+            ->assertSee('Dodaj ikonę');
 
         $this->actingAs($admin)->get('/')->assertOk()
             ->assertSee('<span>Edytuj nagłówek</span>', false)
@@ -143,19 +141,19 @@ class HeaderOptionsTest extends TestCase
         return $start === false ? '' : substr($html, $start, 6000);
     }
 
-    public function test_ikona_podpis_i_miejsce_profilu_sa_edytowalne(): void
+    public function test_lista_ikon_z_ustawien_naglowka_zastepuje_profile(): void
     {
         $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
 
         $this->actingAs($admin)->put(route('admin.ustawienia.update'), [
-            '_section_fields' => ['header_options[show_social]', 'header_options[social][]', 'header_options[footer_social][]', 'header_options[social_icons][facebook]'],
+            '_section_fields' => ['header_options[show_social]', 'header_options[icons_set]', 'header_options[icons][0][url]'],
             'header_options' => [
                 'show_social' => '1',
-                'social' => ['facebook'],
-                'footer_social_set' => '1',
-                'footer_social' => ['instagram'],
-                'social_icons' => ['facebook' => 'bi bi-messenger', 'instagram' => 'bi bi-instagram'],
-                'social_labels' => ['facebook' => 'Fundacja na Facebooku', 'instagram' => ''],
+                'icons_set' => '1',
+                'icons' => [
+                    ['icon' => 'bi bi-messenger', 'label' => 'Fundacja na Facebooku', 'url' => 'https://facebook.com/feer', 'header' => '1', 'footer' => '0'],
+                    ['icon' => 'bi bi-instagram', 'label' => '', 'url' => 'https://instagram.com/feer', 'header' => '0', 'footer' => '1'],
+                ],
             ],
         ])->assertSessionHasNoErrors();
         $this->reset();
@@ -166,15 +164,22 @@ class HeaderOptionsTest extends TestCase
         $this->assertStringContainsString('bi bi-messenger', $header);
         $this->assertStringContainsString('aria-label="Fundacja na Facebooku — otwiera się w nowej karcie"', $header);
         $this->assertStringNotContainsString('Instagram — otwiera', $header);
+        // Grupa na Facebooku ma adres w Media i BIP, ale nie ma jej na liście — szablon FEER jej nie pokazuje.
+        $this->assertStringNotContainsString('groups/feer', $header);
 
         $footer = $this->footerSocial($html);
         $this->assertStringContainsString('aria-label="Instagram — otwiera się w nowej karcie"', $footer);
-        $this->assertStringNotContainsString('Facebook', $footer);
+        $this->assertStringNotContainsString('facebook.com', $footer);
+    }
 
-        // Zapisujemy tylko zmiany względem domyślnych ikon i podpisów.
-        $o = SiteSetting::current()->headerOptions();
-        $this->assertSame(['facebook' => 'bi bi-messenger'], $o['social_icons']);
-        $this->assertSame(['facebook' => 'Fundacja na Facebooku'], $o['social_labels']);
+    public function test_pusta_lista_oznacza_brak_ikon(): void
+    {
+        SiteSetting::current()->update(['header_options' => SiteSetting::normalizeHeaderOptions(['icons_set' => '1'])]);
+        $this->reset();
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringNotContainsString('class="feer-social', $this->headerRight($html));
+        $this->assertStringNotContainsString('facebook.com', $this->footerSocial($html));
     }
 
     public function test_bez_wyboru_stopka_pokazuje_wszystkie_profile_jak_dotad(): void
@@ -194,9 +199,8 @@ class HeaderOptionsTest extends TestCase
             '_section_fields' => ['header_options[icons][0][url]'],
             'header_options' => [
                 'show_social' => '1',
-                'social' => ['instagram'],
-                'footer_social_set' => '1',
                 'icons' => [
+                    ['icon' => 'bi bi-instagram', 'label' => '', 'url' => 'https://instagram.com/feer', 'header' => '1', 'footer' => '0'],
                     ['icon' => 'bi bi-tiktok', 'label' => '', 'url' => 'https://tiktok.com/@feer', 'header' => '1', 'footer' => '0'],
                     ['icon' => 'bi bi-envelope', 'label' => 'Napisz do nas', 'url' => 'mailto:biuro@example.org', 'header' => '0', 'footer' => '1'],
                 ],
