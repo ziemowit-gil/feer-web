@@ -69,6 +69,7 @@
 .be-btn[aria-disabled="true"], .be-btn:disabled { color: var(--be-muted); cursor: not-allowed; }
 .be-btn[aria-disabled="true"]:hover, .be-btn:disabled:hover { background: transparent; }
 .be-btn--icon { width: 2.25rem; padding: 0; }
+.be-btn--icon:has(.be-btn-text) { width: auto; padding: 0 0.6rem; gap: 0.4rem; }
 .be-btn[aria-pressed="true"] { background: var(--be-ink); color: #fff; }
 .be-btn--primary { background: var(--be-ui); color: #fff; }
 .be-btn--primary:hover { background: var(--be-ui-dark); color: #fff; }

@@ -1109,7 +1109,7 @@ function start(config) {
                 tbButton('Widok listy', 'bars-staggered', () => togglePanel('list'), { attrs: { 'aria-pressed': String(S.panel === 'list') } }),
                 config.urls.history ? tbButton('Historia wersji', 'clock-rotate-left', openHistoryDialog) : null,
                 config.urls.templates ? tbButton('Dodaj z szablonu / Zarządzaj szablonami', 'layer-group', openTemplatesDialog) : null,
-                tbButton(config.urls.docx ? 'Importuj z pliku (DOCX, TXT)' : 'Importuj z pliku TXT', 'file-import', () => importInput.click()),
+                tbButton(config.urls.docx ? 'Importuj z pliku (DOCX, TXT)' : 'Importuj z pliku TXT', 'file-import', () => importInput.click(), { text: config.urls.docx ? 'Import z Worda' : 'Import TXT' }),
                 h('button', { type: 'button', 'data-key': 'a11y', class: 'be-btn be-a11y-btn' + (count ? ' has-issues' : ''), 'aria-pressed': String(S.panel === 'a11y'), 'aria-label': a11yLabel, title: a11yLabel, onClick: () => togglePanel('a11y') },
                     icon('universal-access'), h('span', {}, a11yLabel), count ? h('span', { class: 'be-a11y-count', 'aria-hidden': 'true' }, String(count)) : null),
             ),
@@ -1147,8 +1147,11 @@ function start(config) {
                 const json = await res.json().catch(() => ({}));
                 if (!res.ok || json.error) throw new Error(json.error || json.message || 'Błąd serwera (' + res.status + ').');
                 blocks = htmlToBlocks(json.html || '');
+                const st = json.stats || {};
+                if (st.images) headingNote += ` Obrazy dodane do biblioteki mediów: ${st.images} — sprawdź ich teksty alternatywne.`;
+                if (st.images_skipped) headingNote += ` Pominięte obrazy: ${st.images_skipped} (format spoza WWW, np. EMF).`;
                 const hd = json.headings || {};
-                if (hd.changed || hd.removed) headingNote = ' Poprawiono strukturę nagłówków z Worda (' + [hd.changed ? `zmieniono poziom ${hd.changed} ${plural(hd.changed, 'nagłówka', 'nagłówków', 'nagłówków')}` : '', hd.removed ? `usunięto ${hd.removed} ${plural(hd.removed, 'pusty nagłówek', 'puste nagłówki', 'pustych nagłówków')}` : ''].filter(Boolean).join(', ') + ').';
+                if (hd.changed || hd.removed) headingNote += ' Poprawiono strukturę nagłówków z Worda (' + [hd.changed ? `zmieniono poziom ${hd.changed} ${plural(hd.changed, 'nagłówka', 'nagłówków', 'nagłówków')}` : '', hd.removed ? `usunięto ${hd.removed} ${plural(hd.removed, 'pusty nagłówek', 'puste nagłówki', 'pustych nagłówków')}` : ''].filter(Boolean).join(', ') + ').';
             } else {
                 const text = await file.text();
                 blocks = text.replace(/\r\n?/g, '\n').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
