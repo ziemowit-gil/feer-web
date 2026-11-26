@@ -130,6 +130,13 @@ class ShortcodeParser
             $content,
         );
 
+        // Sekcja FAQ z modułu FAQ: [faq], [faq: Szkolenia, Edukacja; tytul=…; wstep=…; limit=5; poziom=3] (App\Support\FaqSection).
+        $content = preg_replace_callback(
+            '~(?:<p\b[^>]*>\s*)?\[faq(?::([^\]\r\n<]{0,400}))?\](?:\s*</p>)?~iu',
+            fn ($matches) => FaqSection::render(FaqSection::parse($matches[1] ?? '')),
+            $content,
+        );
+
         return $content;
     }
 
@@ -139,7 +146,7 @@ class ShortcodeParser
      */
     private static function unwrapBlockShortcodes(string $content): string
     {
-        $blocks = '(?:(?:kafelki-zestaw|kafelki|blok|formularz|banery|baner):[a-z0-9_\-]+|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]*)?)';
+        $blocks = '(?:(?:kafelki-zestaw|kafelki|blok|formularz|banery|baner):[a-z0-9_\-]+|nabory|zapytania-ofertowe|(?:podstrony|aktualnosci|materialy|faq)(?::[^\]\r\n<]*)?)';
 
         return preg_replace_callback(
             '~<(blockquote|div class="content-(?:box|note|important)")[^>]*>((?:(?!</?(?:blockquote|div)\b).)*?)</(?:blockquote|div)>~is',
@@ -149,7 +156,7 @@ class ShortcodeParser
     }
 
     /** Wzorzec wszystkich shortcodów — do wykrywania (np. wyłączenie edycji inline). */
-    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|ksiazka-telefoniczna|banery:[a-z0-9_\-]+|baner:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|piktogramy:[a-z0-9,\s\-]{1,1000}|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]{0,200})?)\]/i';
+    public const DETECT_PATTERN = '/\[(?:(?:formularz|kafelki):[a-z0-9_\-]+|kafelki-zestaw:\d+|blok:\d+|pasek:\d+|ksiazka-telefoniczna|banery:[a-z0-9_\-]+|baner:\d+|klauzule-rodo(?::[a-z]{2})?|nabory|zapytania-ofertowe|piktogramy:[a-z0-9,\s\-]{1,1000}|(?:podstrony|aktualnosci|materialy)(?::[^\]\r\n<]{0,200})?|faq(?::[^\]\r\n<]{0,400})?)\]/i';
 
     public static function has(?string $content): bool
     {

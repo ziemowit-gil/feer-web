@@ -10,6 +10,23 @@
         </a>
     </div>
 
+    {{-- Sekcja FAQ na dowolnej podstronie: wstawka [faq] (App\Support\FaqSection, widok partials/faq-section). --}}
+    @php $faqCats = \App\Models\Faq::query()->whereNotNull('category')->where('category', '!=', '')->distinct()->orderBy('category')->pluck('category'); @endphp
+    <section aria-labelledby="faq-embed-title" class="mb-4 rounded-md bg-brand-light p-5 text-sm text-ink">
+        <h2 id="faq-embed-title" class="text-base font-bold">Sekcja FAQ na dowolnej podstronie</h2>
+        <p class="mt-1">Wpisz wstawkę w treści strony (w edytorze blokowym w bloku tekstu albo wstawki). Pokaże opublikowane pytania w nowym układzie: nagłówek po lewej, rozwijane pytania po prawej.</p>
+        <ul class="mt-3 space-y-1.5" role="list">
+            <li><code class="rounded bg-white px-1.5 py-0.5 font-mono">[faq]</code> — wszystkie pytania</li>
+            <li><code class="rounded bg-white px-1.5 py-0.5 font-mono">[faq: Kategoria]</code> — pytania z jednej kategorii (kilka: po przecinku)</li>
+            <li><code class="rounded bg-white px-1.5 py-0.5 font-mono">[faq: Kategoria; tytul=Pytania o szkolenia; wstep=Krótki opis; limit=5; poziom=3]</code> — własny nagłówek, opis, liczba pytań i poziom nagłówka (2–4)</li>
+        </ul>
+        @if ($faqCats->isNotEmpty())
+            <p class="mt-3"><span class="font-bold">Twoje kategorie:</span>
+                @foreach ($faqCats as $cat)<code class="mr-1 rounded bg-white px-1.5 py-0.5 font-mono">[faq: {{ $cat }}]</code>@endforeach
+            </p>
+        @endif
+    </section>
+
     <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">
             <thead class="bg-gray-100 text-xs font-bold uppercase text-muted">
