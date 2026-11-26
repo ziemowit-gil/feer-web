@@ -171,6 +171,20 @@
     .feer-nav > div > ul > li > a[aria-current="page"], .feer-nav > div > ul > li > a.border-brand, .feer-nav > div > ul > li > button.border-brand,
     .feer-nav > div > ul > li > div.border-b-2.border-brand { border-bottom-color: var(--color-brand) !important; }
 
+    /* Odświeżenie rzędu z logo i menu (2026-11-26): logo i menu jako jeden biały blok (bez kreski między nimi), pod menu
+       jasnoszara linia; pozycje menu nieco mniejsze i lżej rozstawione; rozwijane listy i mega menu płaskie (bez cienia),
+       pozycje podmenu po najechaniu w kolorach marki (brand-dark na brand-light). */
+    .site-header .feer-nav { border-top-color: transparent !important; border-bottom-color: #e5e7eb !important; }
+    .site-header .feer-nav > div { padding-top: .125rem; padding-bottom: .125rem; }
+    .site-header nav.feer-nav > div > ul:not(.nav-pills):not(.nav-compact) > li > a, .site-header nav.feer-nav > div > ul:not(.nav-pills):not(.nav-compact) > li > button,
+    .site-header nav.feer-nav > div > ul:not(.nav-pills):not(.nav-compact) > li > div > a, .site-header nav.feer-nav > div > ul:not(.nav-pills):not(.nav-compact) > li > div > button { font-size: clamp(1rem, 1.15vw, 1.1875rem); }
+    .site-header nav.feer-nav > div > ul:not(.nav-compact) { letter-spacing: .03em; }
+    .feer-nav li > ul[role="list"] { box-shadow: 0 0 #0000 !important; border-radius: .5rem; border-color: #e5e7eb; }
+    .feer-nav li > ul[role="list"] a:hover, .feer-nav li > ul[role="list"] a:focus-visible { background: var(--color-brand-light) !important; color: var(--color-brand-dark) !important; }
+    .feer-nav .nav-mega-panel { box-shadow: 0 0 #0000 !important; border-bottom: 1px solid #e5e7eb; }
+    /* Przycisk obok ikon social: ta sama wysokość co kafelki ikon. */
+    .feer-social + a { min-height: 2.5rem !important; }
+
     /* Ikony social w nagłówku: podpis pod ikoną po najechaniu i przy fokusie z klawiatury (biały tekst na #1D1D1A, 16,9:1). */
     .feer-social-tip { position: absolute; top: calc(100% + .375rem); left: 50%; transform: translateX(-50%); z-index: 40; white-space: nowrap;
         border-radius: .375rem; background: #1d1d1a; color: #fff; padding: .25rem .5rem; font-size: .75rem; font-weight: 700; line-height: 1.2; pointer-events: none; opacity: 0; visibility: hidden; }
