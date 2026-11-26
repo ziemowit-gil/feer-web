@@ -171,14 +171,23 @@
     .feer-nav > div > ul > li > a[aria-current="page"], .feer-nav > div > ul > li > a.border-brand, .feer-nav > div > ul > li > button.border-brand,
     .feer-nav > div > ul > li > div.border-b-2.border-brand { border-bottom-color: var(--color-brand) !important; }
 
-    /* Odświeżenie rzędu z logo i menu (2026-11-26): logo i menu jako jeden biały blok (bez kreski między nimi), pod menu
-       jasnoszara linia; pozycje menu nieco mniejsze i lżej rozstawione; rozwijane listy i mega menu płaskie (bez cienia),
-       pozycje podmenu po najechaniu w kolorach marki (brand-dark na brand-light). */
-    .site-header .feer-nav { border-top-color: transparent !important; border-bottom-color: #e5e7eb !important; }
-    .site-header .feer-nav > div { padding-top: .125rem; padding-bottom: .125rem; }
+    /* Menu główne FEER — hybryda (2026-11-26): ze starej wersji większe pozycje, wersaliki i cienka linia nad i pod menu;
+       z nowej płaskie podmenu z paskiem marki. Do podkreślenia 3 px dochodzi jasne tło marki przy najechaniu, fokusie
+       i na bieżącej pozycji (tekst brand-dark na brand-light ≥ 4,5:1). */
+    .site-header .feer-nav { border-top-color: #e5e7eb !important; border-bottom-color: #e5e7eb !important; }
     .site-header nav.feer-nav > div > ul:not(.nav-pills):not(.nav-compact) > li > a, .site-header nav.feer-nav > div > ul:not(.nav-pills):not(.nav-compact) > li > button,
-    .site-header nav.feer-nav > div > ul:not(.nav-pills):not(.nav-compact) > li > div > a, .site-header nav.feer-nav > div > ul:not(.nav-pills):not(.nav-compact) > li > div > button { font-size: clamp(1rem, 1.15vw, 1.1875rem); }
-    .site-header nav.feer-nav > div > ul:not(.nav-compact) { letter-spacing: .03em; }
+    .site-header nav.feer-nav > div > ul:not(.nav-pills):not(.nav-compact) > li > div > a, .site-header nav.feer-nav > div > ul:not(.nav-pills):not(.nav-compact) > li > div > button { font-size: clamp(1.0625rem, 1.25vw, 1.25rem); }
+    .site-header nav.feer-nav > div > ul.flex:not(.nav-compact) { column-gap: .5rem !important; }
+    .feer-nav > div > ul > li > a, .feer-nav > div > ul > li > div.border-b-2 { padding-left: .625rem; padding-right: .625rem; border-radius: .375rem .375rem 0 0; transition: background-color .15s ease, color .15s ease; }
+    .feer-nav > div > ul > li > a:hover, .feer-nav > div > ul > li > div.border-b-2:hover, .feer-nav > div > ul > li > div.border-b-2:focus-within,
+    .feer-nav > div > ul > li > a:focus-visible, .feer-nav > div > ul > li > a[aria-current="page"], .feer-nav > div > ul > li > a.border-brand,
+    .feer-nav > div > ul > li > div.border-b-2.border-brand { background: var(--color-brand-light); color: var(--color-brand-dark) !important; }
+    .feer-nav > div > ul > li > div.border-b-2 a:hover { text-decoration: none; }
+    /* Wysoki kontrast: żółty tekst na czarnym także przy najechaniu i na bieżącej pozycji (menu, podmenu, mega menu). */
+    html.contrast-bw body .feer-nav > div > ul > li > :is(a, div.border-b-2),
+    html.contrast-bw body .feer-nav > div > ul > li > :is(a, div.border-b-2):is(:hover, :focus-visible, :focus-within, [aria-current="page"], .border-brand),
+    html.contrast-bw body .feer-nav li > ul[role="list"] a:is(:hover, :focus-visible),
+    html.contrast-bw body .feer-nav .nav-mega-panel :is(a, a:hover, a:focus-visible) { background: #000 !important; color: #ff0 !important; }
     .feer-nav li > ul[role="list"] { box-shadow: 0 0 #0000 !important; border-radius: .5rem; border-color: #e5e7eb; }
     .feer-nav li > ul[role="list"] a:hover, .feer-nav li > ul[role="list"] a:focus-visible { background: var(--color-brand-light) !important; color: var(--color-brand-dark) !important; }
     .feer-nav .nav-mega-panel { box-shadow: 0 0 #0000 !important; border-bottom: 1px solid #e5e7eb; }
