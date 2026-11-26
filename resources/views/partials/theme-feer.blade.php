@@ -182,6 +182,26 @@
     .feer-nav li > ul[role="list"] { box-shadow: 0 0 #0000 !important; border-radius: .5rem; border-color: #e5e7eb; }
     .feer-nav li > ul[role="list"] a:hover, .feer-nav li > ul[role="list"] a:focus-visible { background: var(--color-brand-light) !important; color: var(--color-brand-dark) !important; }
     .feer-nav .nav-mega-panel { box-shadow: 0 0 #0000 !important; border-bottom: 1px solid #e5e7eb; }
+    /* Menu i mega menu w stylu FEER (2026-11-26, brand book: płasko, kontrastowo, niebieski #1E6DFF jako akcent):
+       otwarte podmenu i mega menu mają u góry pasek 3 px w kolorze marki; nagłówki kategorii — małe kapitaliki
+       z niebieską linią; linki czytelniejsze (14 px zamiast 12 px), po najechaniu niebieskie tło marki
+       z ciemnoniebieskim tekstem (brand-dark na brand-light ≥ 4,5:1) i strzałką. */
+    .feer-nav li > ul[role="list"] { border-width: 0 !important; border-top: 3px solid var(--color-brand) !important; border-radius: 0 0 .5rem .5rem !important;
+        background: #fff; outline: 1px solid #e5e7eb; outline-offset: -1px; padding-top: .375rem; padding-bottom: .375rem; }
+    .feer-nav li > ul[role="list"] a { font-weight: 600 !important; border-left: 3px solid transparent; }
+    .feer-nav li > ul[role="list"] a:hover, .feer-nav li > ul[role="list"] a:focus-visible { border-left-color: var(--color-brand); }
+    .feer-nav .nav-mega-panel { border-top: 3px solid var(--color-brand) !important; background: #fff; }
+    .feer-nav .nav-mega-panel .mega-cat-h { font-size: .8125rem !important; text-transform: uppercase; letter-spacing: .06em; color: #1d1d1a;
+        border-bottom: 2px solid var(--color-brand) !important; border-radius: 0 !important; padding-left: 0 !important; padding-right: 0 !important; }
+    .feer-nav .nav-mega-panel .mega-cat-h:hover { color: var(--color-brand-dark); }
+    .feer-nav .nav-mega-panel .mega-cat-h + ul a { font-size: .875rem !important; line-height: 1.35; font-weight: 500; display: flex !important; align-items: flex-start; gap: .5rem; }
+    .feer-nav .nav-mega-panel .mega-cat-h + ul a::before { content: ""; flex: none; width: .375rem; height: .375rem; margin-top: .45em; border-radius: 9999px; background: #9ca3af; }
+    .feer-nav .nav-mega-panel .mega-cat-h + ul a:hover { background: var(--color-brand-light) !important; color: var(--color-brand-dark) !important; }
+    .feer-nav .nav-mega-panel .mega-cat-h + ul a:hover::before { background: var(--color-brand); }
+    .feer-nav .nav-mega-panel .mega-btns { border-top: 0; }
+    .feer-nav .nav-mega-panel .mega-btns a { border-radius: .5rem !important; }
+    html.contrast-bw body .feer-nav .nav-mega-panel .mega-cat-h + ul a::before { background: #ff0; }
+
     /* Przycisk obok ikon social: ta sama wysokość co kafelki ikon. */
     .feer-social + a { min-height: 2.5rem !important; }
 
