@@ -202,6 +202,11 @@
     .site-topbar-feer .site-search-panel :is(input, button):focus-visible { --tw-ring-color: #fff; --tw-ring-offset-color: #1d1d1a; }
     .site-topbar-feer > div:first-child a:hover { text-decoration: underline; }
     .site-topbar-feer form[role="search"] { border-color: #fff; }
+    /* Układ paska (2026-11-26): po lewej Dostępność, a „Wesprzyj”, numer konta i wyszukiwarka razem po prawej. */
+    @media (min-width: 768px) {
+        .site-topbar-feer .feer-top-support { margin-left: auto; }
+        .site-topbar-feer .feer-top-support ~ .topbar-right { margin-left: 0; }
+    }
 
     /* O organizacji FEER: bez ramek i cieni — karty (statystyki, wartości, zespół, dokumenty) mają jasnoszare tło,
        ikony i znaczniki są kwadratami o małym zaokrągleniu, bez „unoszenia" po najechaniu. */

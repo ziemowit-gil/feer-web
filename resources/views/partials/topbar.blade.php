@@ -48,7 +48,8 @@
 
         @if ($feerBar && ($barSupportUrl || $barAccount !== ''))
             {{-- Jeden wiersz, bez zawijania: link „Wesprzyj” (akcja), obok numer konta (informacja, jasnoszary #D1D5DB na #1D1D1A ≈ 12:1). --}}
-            <div class="hidden min-w-0 items-center gap-x-5 whitespace-nowrap text-sm md:flex">
+            {{-- Układ (2026-11-26): po lewej tylko Dostępność, „Wesprzyj” i numer konta po prawej, obok wyszukiwarki. --}}
+            <div class="hidden min-w-0 items-center gap-x-5 whitespace-nowrap text-sm md:flex feer-top-support">
                 @if ($barSupportUrl)
                     <a href="{{ $barSupportUrl }}"
                        class="inline-flex min-h-9 items-center gap-2 rounded-md px-2 font-bold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
@@ -71,7 +72,7 @@
             </a>
         @endif
 
-        <div class="ml-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-3">
+        <div class="ml-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-3 topbar-right">
 
             {{-- Wyszukiwarka (gdy nie przeniesiona do paska menu): przycisk z lupą rozwija pole pod paskiem (disclosure:
                  aria-expanded, fokus od razu w polu, Esc zamyka i wraca na przycisk). Bez JS pole jest widoczne (x-cloak + noscript). --}}
