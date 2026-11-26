@@ -14,6 +14,11 @@
     $typeLabel = \App\Models\EducationalMaterial::TYPES[$material->type] ?? $material->type;
     $typeKey = in_array($material->type, ['video', 'pdf', 'scenariusz'], true) ? $material->type : 'pdf';
     $isVideo = $material->isVideo();
+    // Format pliku (PDF/DOCX…) i rozmiar z biblioteki mediów — pokazywane w linii typu i przy przycisku „Pobierz”.
+    $media = $isVideo ? null : $material->getFirstMedia('file');
+    $fileExt = $media ? \Illuminate\Support\Str::upper(pathinfo($media->file_name, PATHINFO_EXTENSION)) : null;
+    $fileSize = $media && $media->size ? \Illuminate\Support\Number::fileSize($media->size, 1, 1) : null;
+    $fileSize = $fileSize ? str_replace(['.', ' B', 'KB'], [',', ' B', 'kB'], $fileSize) : null;
     $categoryLabel = $material->category ? (\App\Models\EducationalMaterial::CATEGORIES[$material->category] ?? $material->category) : null;
 
     // Jedno działanie karty: dokąd prowadzi link, co mówi wezwanie i co słyszy czytnik ekranu.
@@ -57,7 +62,7 @@
     <div class="mat-body">
         <p class="mat-type">
             <span class="mat-type-icon"><i class="fa-solid {{ $material->typeIcon() }}" aria-hidden="true"></i></span>
-            {{ $typeLabel }}
+            {{ $typeLabel }}@if ($fileExt && $fileSize)<span class="mat-type-format">{{ $material->type === 'pdf' && $fileExt === 'PDF' ? '' : $fileExt . ', ' }}{{ $fileSize }}</span>@endif
         </p>
 
         <h3 class="mat-title">
@@ -89,7 +94,13 @@
         @endif
 
         @if ($href)
-            <span class="mat-cta" aria-hidden="true">{{ $cta }} <i class="fa-solid fa-arrow-right"></i></span>
+            <div class="mat-actions-row">
+                <span class="mat-cta" aria-hidden="true">{{ $cta }} <i class="fa-solid fa-arrow-right"></i></span>
+                @if (! $locked && $media)
+                    {{-- Osobne bezpośrednie pobranie (nad linkiem rozciągniętym na kartę). --}}
+                    <a href="{{ $material->fileUrl }}" download class="mat-download"><i class="fa-solid fa-download" aria-hidden="true"></i> Pobierz<span class="sr-only"> {{ $material->title }}</span>@if ($fileExt) <span class="mat-download-meta">{{ $fileExt }}{{ $fileSize ? ', ' . $fileSize : '' }}</span>@endif</a>
+                @endif
+            </div>
         @endif
     </div>
 </article>

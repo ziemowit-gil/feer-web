@@ -165,6 +165,25 @@ class MaterialsFeerLayoutTest extends TestCase
         $this->assertStringContainsString('<option value="az" selected>Tytuł A–Z</option>', $html);
     }
 
+    public function test_karta_pliku_ma_format_rozmiar_i_bezposrednie_pobranie(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $material = EducationalMaterial::create(['title' => 'Poradnik dostępności', 'description' => 'PDF', 'type' => 'pdf', 'is_published' => true, 'target_group' => 'ogolny']);
+        $material->addMedia(\Illuminate\Http\UploadedFile::fake()->createWithContent('poradnik.pdf', str_repeat('a', 1536 * 1024)))->toMediaCollection('file');
+        EducationalMaterial::create(['title' => 'Zamknięty PDF', 'description' => 'PDF', 'type' => 'pdf', 'is_published' => true, 'is_premium' => true, 'target_group' => 'ogolny'])
+            ->addMedia(\Illuminate\Http\UploadedFile::fake()->create('premium.pdf', 10, 'application/pdf'))->toMediaCollection('file');
+
+        $html = $this->get('/materialy')->assertOk()->getContent();
+
+        // Format i rozmiar w linii typu.
+        $this->assertMatchesRegularExpression('~Plik PDF<span class="mat-type-format">1,5 MB</span>~u', $html);
+        // Główny link otwiera podgląd, osobny przycisk pobiera plik — z nazwą materiału dla czytników.
+        $this->assertStringContainsString('otwórz podgląd PDF</span></a>', $html);
+        $this->assertMatchesRegularExpression('~<a href="[^"]+poradnik\.pdf" download class="mat-download"><i class="fa-solid fa-download" aria-hidden="true"></i> Pobierz<span class="sr-only"> Poradnik dostępności</span> <span class="mat-download-meta">PDF, 1,5 MB</span></a>~u', $html);
+        // Zablokowany materiał Premium nie ma bezpośredniego pobrania.
+        $this->assertSame(1, substr_count($html, 'class="mat-download"'));
+    }
+
     public function test_komunikat_z_panelu_jako_jedna_linia_bez_bloku(): void
     {
         $this->seedMaterials();
