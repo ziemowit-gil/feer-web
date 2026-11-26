@@ -123,6 +123,9 @@
 .be-muted { color: var(--be-muted); font-size: 0.875rem; }
 .be-small { font-size: 0.8125rem; }
 .be-ok { color: #166534; font-weight: 600; }
+.be-a11y-note { margin: 0 0 0.6rem; color: #3b0764; font-weight: 600; }
+.be-a11y-note:empty { display: none; }
+.be-a11y-note + .be-btn, .be-panel-body > .be-btn { margin-bottom: 0.75rem; }
 
 @media (max-width: 960px) {
     .be-panel {

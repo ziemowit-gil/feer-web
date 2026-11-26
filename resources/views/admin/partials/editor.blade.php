@@ -352,7 +352,14 @@
 
 <div id="{{ $editorId }}-h-panel" class="mt-2 hidden rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm" role="region" aria-label="Struktura nagłówków">
     <div class="flex items-start gap-2">
-        <div id="{{ $editorId }}-h-content" class="flex-1 leading-snug"></div>
+        <div class="flex-1 leading-snug">
+            <div id="{{ $editorId }}-h-content"></div>
+            <button type="button" id="{{ $editorId }}-h-fix" hidden
+                class="mt-2 inline-flex items-center gap-2 rounded-md bg-violet-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-violet-700">
+                <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Popraw strukturę nagłówków
+            </button>
+            <p id="{{ $editorId }}-h-status" role="status" aria-live="polite" class="mt-2 font-bold text-violet-900 empty:hidden"></p>
+        </div>
         <button type="button" id="{{ $editorId }}-h-close" class="flex-none text-muted hover:text-red-600" aria-label="Zamknij strukturę nagłówków"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     </div>
 </div>
@@ -1489,6 +1496,34 @@
     var hPanel  = document.getElementById('{{ $editorId }}-h-panel');
     var hContent = document.getElementById('{{ $editorId }}-h-content');
     var hClose  = document.getElementById('{{ $editorId }}-h-close');
+    var hFix    = document.getElementById('{{ $editorId }}-h-fix');
+    var hStatus = document.getElementById('{{ $editorId }}-h-status');
+
+    // Automatyczna poprawka (ten sam algorytm co App\Support\HeadingStructure): treść od H2 (H1 to tytuł strony),
+    // poziomy według zagnieżdżenia — bez przeskoków i bez spłaszczania, puste nagłówki usunięte.
+    function fixHeadings(html) {
+        var stack = [], changed = 0, removed = 0;
+        var out = html.replace(/<h([0-6])(\s[^>]*)?>([\s\S]*?)<\/h\1\s*>/gi, function (all, lvl, attrs, inner) {
+            var text = inner.replace(/<[^>]*>/g, '').replace(/&nbsp;|&#160;/gi, ' ').replace(/\u00a0/g, ' ').trim();
+            if (!text && !/<img\b/i.test(inner)) { removed++; return ''; }
+            var orig = Math.max(1, parseInt(lvl, 10));
+            while (stack.length && stack[stack.length - 1][0] >= orig) stack.pop();
+            var parent = stack.length ? stack[stack.length - 1][1] : 1;
+            var next = Math.min(6, Math.max(2, parent + 1));
+            stack.push([orig, next]);
+            if (next !== parseInt(lvl, 10)) changed++;
+            return '<h' + next + (attrs || '') + '>' + inner + '</h' + next + '>';
+        });
+        return { html: out, changed: changed, removed: removed };
+    }
+    window['__fixHeadings_{{ $editorId }}'] = fixHeadings;
+
+    function fixSummary(r) {
+        var parts = [];
+        if (r.changed) parts.push('zmieniono poziom ' + r.changed + ' ' + (r.changed === 1 ? 'nagłówka' : 'nagłówków'));
+        if (r.removed) parts.push('usunięto ' + r.removed + ' ' + (r.removed === 1 ? 'pusty nagłówek' : (r.removed < 5 ? 'puste nagłówki' : 'pustych nagłówków')));
+        return parts.join(', ');
+    }
 
     function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
@@ -1534,13 +1569,31 @@
         return summary + '<div style="font-family:monospace;font-size:.8rem">' + rows + '</div>';
     }
 
-    if (hBtn && hPanel && hContent) {
-        hBtn.addEventListener('click', function () {
+    // Pokazuje panel struktury; przycisk „Popraw” tylko, gdy poprawka coś zmieni. note → komunikat w polu stanu.
+    function showHeadings(note) {
+        var getContent = window['__getContent_{{ $editorId }}'];
+        if (!getContent || !hPanel || !hContent) return;
+        var html = getContent();
+        hContent.innerHTML = buildTree(html);
+        var r = fixHeadings(html);
+        if (hFix) hFix.hidden = !(r.changed || r.removed);
+        if (hStatus) hStatus.textContent = note || '';
+        hPanel.classList.remove('hidden');
+        hPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    window['__showHeadings_{{ $editorId }}'] = showHeadings;
+
+    if (hBtn) hBtn.addEventListener('click', function () { showHeadings(''); });
+    if (hFix) {
+        hFix.addEventListener('click', function () {
             var getContent = window['__getContent_{{ $editorId }}'];
-            if (!getContent) return;
-            hContent.innerHTML = buildTree(getContent());
-            hPanel.classList.remove('hidden');
-            hPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            var setContent = window['__setContent_{{ $editorId }}'];
+            if (!getContent || !setContent) return;
+            var r = fixHeadings(getContent());
+            if (!r.changed && !r.removed) { showHeadings('Struktura nagłówków jest już poprawna.'); return; }
+            setContent(r.html);
+            showHeadings('Poprawiono strukturę nagłówków: ' + fixSummary(r) + '.');
+            if (hStatus) { hStatus.tabIndex = -1; hStatus.focus(); }
         });
     }
     if (hClose && hPanel) {
@@ -2587,6 +2640,13 @@
                 if (!setContent) { alert('Edytor nie jest jeszcze gotowy.'); return; }
                 var current = getContent?.() || '';
                 setContent(current ? current + '\n' + data.html : data.html);
+                // Import poprawia nagłówki na serwerze; panel struktury pokazuje wynik (i ewentualne przeskoki względem treści, która już była).
+                var hd = data.headings || {};
+                var parts = [];
+                if (hd.changed) parts.push('zmieniono poziom ' + hd.changed + ' ' + (hd.changed === 1 ? 'nagłówka' : 'nagłówków'));
+                if (hd.removed) parts.push('usunięto ' + hd.removed + ' ' + (hd.removed === 1 ? 'pusty nagłówek' : (hd.removed < 5 ? 'puste nagłówki' : 'pustych nagłówków')));
+                var show = window['__showHeadings_{{ $editorId }}'];
+                if (show) show('Zaimportowano plik ' + file.name + (parts.length ? '. Poprawiono strukturę nagłówków: ' + parts.join(', ') : '') + '.');
             })
             .catch(function () { alert('Nie udało się zaimportować pliku DOCX.'); });
     });

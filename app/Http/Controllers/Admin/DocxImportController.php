@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\HeadingStructure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use PhpOffice\PhpWord\IOFactory;
 
 /**
  * Panel admin: konwersja pliku .docx do oczyszczonego HTML gotowego do wklejenia w edytor.
+ * Domyślnie poprawia też strukturę nagłówków (HeadingStructure: od H2, bez przeskoków, bez pustych);
+ * `fix_headings=0` zostawia poziomy z Worda.
  *
  * Metody: import().
  *
@@ -48,6 +51,15 @@ class DocxImportController extends Controller
         $html = preg_replace('/(<p[^>]*>)\s*(<\/p>)/i', '', $html); // empty paragraphs from Word
         $html = preg_replace('/\n{3,}/', "\n\n", trim($html));
 
-        return response()->json(['html' => $html]);
+        $headings = ['changed' => 0, 'removed' => 0];
+        if ($request->boolean('fix_headings', true)) {
+            $headings = HeadingStructure::fix($html);
+            $html = $headings['html'];
+        }
+
+        return response()->json([
+            'html'     => $html,
+            'headings' => ['changed' => $headings['changed'], 'removed' => $headings['removed']],
+        ]);
     }
 }

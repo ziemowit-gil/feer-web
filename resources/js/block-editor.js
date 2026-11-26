@@ -1137,6 +1137,7 @@ function start(config) {
         if (!file) return;
         try {
             let blocks;
+            let headingNote = '';
             if (/\.docx$/i.test(file.name)) {
                 if (!config.urls.docx) throw new Error('Import DOCX nie jest dostępny w tej wersji.');
                 announce('Importowanie pliku…');
@@ -1146,6 +1147,8 @@ function start(config) {
                 const json = await res.json().catch(() => ({}));
                 if (!res.ok || json.error) throw new Error(json.error || json.message || 'Błąd serwera (' + res.status + ').');
                 blocks = htmlToBlocks(json.html || '');
+                const hd = json.headings || {};
+                if (hd.changed || hd.removed) headingNote = ' Poprawiono strukturę nagłówków z Worda (' + [hd.changed ? `zmieniono poziom ${hd.changed} ${plural(hd.changed, 'nagłówka', 'nagłówków', 'nagłówków')}` : '', hd.removed ? `usunięto ${hd.removed} ${plural(hd.removed, 'pusty nagłówek', 'puste nagłówki', 'pustych nagłówków')}` : ''].filter(Boolean).join(', ') + ').';
             } else {
                 const text = await file.text();
                 blocks = text.replace(/\r\n?/g, '\n').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
@@ -1154,7 +1157,7 @@ function start(config) {
             }
             if (!blocks.length) { announce('Plik nie zawiera treści do zaimportowania.'); return; }
             insertFromPanel(blocks);
-            announce(`Zaimportowano ${blocks.length} ${plural(blocks.length, 'blok', 'bloki', 'bloków')} z pliku ${file.name}`);
+            announce(`Zaimportowano ${blocks.length} ${plural(blocks.length, 'blok', 'bloki', 'bloków')} z pliku ${file.name}.${headingNote}`);
         } catch (e) {
             S.error = 'Nie udało się zaimportować pliku: ' + e.message;
             updateTopbar();
@@ -1480,12 +1483,64 @@ function start(config) {
         return t.length > 40 ? t.slice(0, 40) + '…' : t;
     }
 
+    // Automatyczna poprawka struktury nagłówków (ten sam algorytm co App\Support\HeadingStructure i edytor klasyczny):
+    // treść od H2 (H1 to tytuł strony), poziomy według zagnieżdżenia — bez przeskoków i bez spłaszczania, w edytorze
+    // najwyżej H4. Liczą się nagłówki bloków typowanych, tak jak w computeWarnings(). Puste bloki „Nagłówek” są usuwane.
+    function headingFixPlan() {
+        const stack = [];
+        const changes = [];
+        const empty = [];
+        walk(S.blocks, (b) => {
+            const a = b.attrs;
+            let level = null;
+            switch (b.type) {
+                case 'heading': if (!textOf(a.text)) { empty.push(b.id); return; } level = a.level; break;
+                case 'tabs': level = a.level; break;
+                case 'faq': case 'cta': case 'pictograms': if (a.title.trim()) level = a.level; break;
+                case 'people': if (a.items.some((p) => p.name.trim())) level = a.level; break;
+                case 'cards': if (a.items.some((c) => c.title.trim())) level = a.level; break;
+            }
+            if (level === null) return;
+            while (stack.length && stack[stack.length - 1][0] >= level) stack.pop();
+            const next = Math.min(4, Math.max(2, (stack.length ? stack[stack.length - 1][1] : 1) + 1));
+            stack.push([level, next]);
+            if (next !== level) changes.push({ b, level: next });
+        });
+        return { changes, empty };
+    }
+    function fixHeadingStructure() {
+        const { changes, empty } = headingFixPlan();
+        if (!changes.length && !empty.length) { S.a11yNote = 'Struktura nagłówków jest już poprawna.'; renderPanel(); return; }
+        pushHistory();
+        changes.forEach(({ b, level }) => { b.attrs.level = level; });
+        empty.forEach((id) => { const r = find(id); if (r) r.list.splice(r.index, 1); });
+        if (empty.includes(S.selectedId)) S.selectedId = null;
+        const parts = [];
+        if (changes.length) parts.push(`zmieniono poziom ${changes.length} ${plural(changes.length, 'nagłówka', 'nagłówków', 'nagłówków')}`);
+        if (empty.length) parts.push(`usunięto ${empty.length} ${plural(empty.length, 'pusty nagłówek', 'puste nagłówki', 'pustych nagłówków')}`);
+        S.a11yNote = `Poprawiono strukturę nagłówków: ${parts.join(', ')}. Możesz to cofnąć (${mod}+Z).`;
+        announce(S.a11yNote);
+        markDirty();
+        renderAll();
+        refreshWarnings();
+        renderPanel();
+        leftPanel.querySelector('.be-a11y-note')?.focus();
+    }
+
     function renderA11yPanel(close) {
         const items = [];
         walk(S.blocks, (b) => { (S.warnings.get(b.id) || []).forEach((msg) => items.push({ b, msg })); });
+        const plan = headingFixPlan();
+        const note = S.a11yNote;
+        S.a11yNote = '';
         leftPanel.setAttribute('aria-label', 'Uwagi dostępności');
         leftPanel.replaceChildren(h('div', { class: 'be-panel-head' }, h('h2', {}, 'Dostępność'), close),
             h('div', { class: 'be-panel-body' },
+                h('p', { class: 'be-help be-a11y-note', role: 'status', tabindex: '-1' }, note || ''),
+                plan.changes.length || plan.empty.length
+                    ? h('button', { type: 'button', class: 'be-btn be-btn--primary', onClick: fixHeadingStructure,
+                        title: 'Nagłówki od H2, bez pomijania poziomów; puste nagłówki zostaną usunięte' }, icon('wand-magic-sparkles'), ' Popraw strukturę nagłówków')
+                    : null,
                 items.length
                     ? h('ul', { class: 'be-a11y-list' }, ...items.map(({ b, msg }) => h('li', {}, h('button', {
                         type: 'button', class: 'be-a11y-item',
