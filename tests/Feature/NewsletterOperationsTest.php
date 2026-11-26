@@ -122,7 +122,9 @@ class NewsletterOperationsTest extends TestCase
         NewsletterDelivery::create(['campaign_id' => $campaign->id, 'subscriber_id' => $b->id, 'channel' => 'email', 'status' => 'hard_bounced', 'error_message' => '550 No such user']);
 
         $this->actingAs($admin)->get(route('admin.newsletter.kampanie.show', $campaign))->assertOk()
-            ->assertSee('Błędy wysyłki')->assertSee('Connection timed out')->assertSee('Ponów nieudane (1)');
+            ->assertSee('Błędy wysyłki')->assertSee('Connection timed out')->assertSee('Ponów nieudane (1)')
+            // newsletter_deliveries nie ma updated_at (MySQL: „Unknown column”) — najnowsze dostawy pierwsze po id.
+            ->assertSeeInOrder(['<strong>b@example.com</strong>', '<strong>a@example.com</strong>'], false);
 
         $this->actingAs($admin)->post(route('admin.newsletter.kampanie.retry', $campaign))->assertRedirect();
 

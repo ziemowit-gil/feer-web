@@ -97,7 +97,7 @@ class CampaignController extends Controller
                 ->whereIn('status', [NewsletterDelivery::STATUS_FAILED, NewsletterDelivery::STATUS_HARD_BOUNCED, NewsletterDelivery::STATUS_SKIPPED])
                 ->selectRaw('status, COALESCE(error_message, ?) reason, COUNT(*) c', ['(brak opisu)'])->groupBy('status', 'reason')->orderByDesc('c')->limit(20)->get(),
             'failedDeliveries' => NewsletterDelivery::with('subscriber:id,email')->where('campaign_id', $campaign->id)
-                ->whereIn('status', [NewsletterDelivery::STATUS_FAILED, NewsletterDelivery::STATUS_HARD_BOUNCED])->latest('updated_at')->limit(25)->get(),
+                ->whereIn('status', [NewsletterDelivery::STATUS_FAILED, NewsletterDelivery::STATUS_HARD_BOUNCED])->orderByDesc('id')->limit(25)->get(),
             'queueHealth' => app(QueueHealth::class)->snapshot(),
         ]);
     }
