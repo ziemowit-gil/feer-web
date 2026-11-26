@@ -10,12 +10,18 @@
 @endsection
 
 {{--
-    Materiały edukacyjne w układzie FEER: jasny nagłówek, po lewej nawigacja po grupach docelowych, po prawej materiały
-    jako równe karty (partials/material-card-feer) — cała karta to jeden link. Nad listą wyszukiwarka i filtr typu (ulepszenie
-    progresywne, wynik ogłaszany w role="status"), komunikat z panelu jako jedna linia. Kontrast: ink/muted na bieli, linki brand-dark.
+    Materiały edukacyjne w układzie FEER. Nagłówek na brand-light: H1, wstęp, komunikat z panelu i skróty do typów
+    (liczba materiałów każdego typu, link z filtrem). Pod nim po lewej formularz filtrów (GET: q, typ, dla, temat, sort —
+    adres da się udostępnić, działa bez JavaScriptu), po prawej liczba wyników (role="status") i karty w grupach docelowych.
+    Wszystkie karty są w HTML-u, niepasujące mają `hidden`, więc skrypt filtruje na żywo i aktualizuje adres
+    (history.replaceState); zmiana kolejności wysyła formularz. Style .mat-* w educational-materials/partials/styles.
+    Kontrast: ink/muted na bieli, gray-50 i brand-light, linki brand-dark — ≥ 4,5:1 we wszystkich stanach.
 --}}
 @section('content')
     @php
+        $controller = \App\Http\Controllers\EducationalMaterialController::class;
+        $total = $materials->count();
+        $visibleCount = $visibleIds->count();
         $groups = $materials->groupBy(fn ($m) => $m->target_group ?: '');
         $hasNamedGroups = $groups->keys()->filter(fn ($k) => $k !== '')->isNotEmpty();
         $groupLabel = fn ($key) => $key === ''
@@ -23,22 +29,29 @@
             : (\App\Models\EducationalMaterial::TARGET_GROUPS[$key] ?? $key);
         $plural = fn (int $n) => $n === 1 ? 'materiał'
             : (in_array($n % 10, [2, 3, 4], true) && ! in_array($n % 100, [12, 13, 14], true) ? 'materiały' : 'materiałów');
-        $presentTypes = $materials->pluck('type')->unique()->values();
-        $typeFilters = [
-            'video' => 'Nagrania',
-            'pdf' => 'PDF',
-            'scenariusz' => 'Scenariusze',
+        $typeNames = [
+            'video' => ['Nagrania', 'nagranie', 'nagrania', 'nagrań'],
+            'pdf' => ['PDF', 'plik PDF', 'pliki PDF', 'plików PDF'],
+            'scenariusz' => ['Scenariusze', 'scenariusz', 'scenariusze', 'scenariuszy'],
         ];
+        $typeCount = fn (string $type, int $n) => $n === 1 ? $typeNames[$type][1]
+            : (in_array($n % 10, [2, 3, 4], true) && ! in_array($n % 100, [12, 13, 14], true) ? $typeNames[$type][2] : $typeNames[$type][3]);
+        $typeCounts = collect($typeNames)->map(fn ($_, $t) => $materials->where('type', $t)->count())->filter();
+        $groupCounts = $materials->filter(fn ($m) => $m->target_group)->countBy('target_group');
+        $categoryCounts = $materials->filter(fn ($m) => $m->category)->countBy('category');
+        $countText = $filters['active']
+            ? 'Pasujące: ' . $visibleCount . ' ' . $plural($visibleCount) . ' z ' . $total . '.'
+            : $total . ' ' . $plural($total) . '.';
         $newsletterCta = $siteSettings->isModuleEnabled('newsletter') && \Illuminate\Support\Facades\Route::has('newsletter.show');
         $actionPrimary = 'inline-flex min-h-11 items-center gap-2 rounded-md bg-brand px-4 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
-        $actionGhost = 'inline-flex min-h-11 items-center gap-2 rounded-md bg-gray-100 px-4 text-sm font-bold text-ink transition hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2';
     @endphp
 
-    <section class="bg-gray-50">
-        <div class="mx-auto max-w-6xl px-4 py-12 md:py-16">
-            <h1 class="text-3xl font-extrabold leading-tight tracking-tight text-ink md:text-5xl">Materiały edukacyjne</h1>
+    <section class="mat-hero" aria-labelledby="mat-h1">
+        <div class="mx-auto max-w-6xl px-4">
+            <p class="mat-hero-eyebrow">Baza wiedzy</p>
+            <h1 id="mat-h1" class="mat-hero-title">Materiały edukacyjne</h1>
             @if ($siteSettings->materials_intro)
-                <div class="prose mt-4 max-w-2xl text-lg text-ink">{!! $siteSettings->materials_intro !!}</div>
+                <div class="mat-hero-intro">{!! $siteSettings->materials_intro !!}</div>
             @endif
             @if ($siteSettings->materials_notice)
                 {{-- Komunikat z panelu jako jedna spokojna linia, bez szarego bloku. --}}
@@ -47,69 +60,125 @@
                     <div>{!! $siteSettings->materials_notice !!}</div>
                 </div>
             @endif
+            @if ($total > 0)
+                {{-- Skróty: liczba materiałów każdego typu jako link z filtrem (działa też bez JavaScriptu). --}}
+                <ul class="mat-stats" role="list" aria-label="Rodzaje materiałów">
+                    <li><a href="{{ route('materials.index') }}" class="mat-stat" data-material-shortcut=""><span class="mat-stat-n">{{ $total }}</span> {{ $plural($total) }} w bazie</a></li>
+                    @foreach ($typeCounts as $tKey => $n)
+                        <li><a href="{{ route('materials.index', ['typ' => $tKey]) }}#lista" class="mat-stat mat-stat--{{ $tKey }}" data-material-shortcut="{{ $tKey }}"><span class="mat-type-icon"><i class="fa-solid {{ ['video' => 'fa-video', 'pdf' => 'fa-file-pdf', 'scenariusz' => 'fa-chalkboard-user'][$tKey] }}" aria-hidden="true"></i></span><span class="mat-stat-n">{{ $n }}</span> {{ $typeCount($tKey, $n) }}</a></li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
     </section>
 
-    <div class="mx-auto max-w-6xl px-4 py-12">
+    <div id="lista" class="mx-auto max-w-6xl scroll-mt-24 px-4 py-10 md:py-12">
         @if ($materials->isEmpty())
             <p class="text-muted">Brak materiałów do wyświetlenia.</p>
         @else
-            <div class="grid gap-10 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-14">
-                @if ($groups->count() > 1)
-                    <nav aria-label="Grupy materiałów" class="lg:sticky lg:top-6 lg:self-start">
-                        <p class="mb-3 text-xs font-bold uppercase tracking-widest text-muted">Dla kogo</p>
-                        <ul class="feer-pills-row flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0" role="list">
-                            @foreach ($groups as $gKey => $items)
-                                <li class="shrink-0">
-                                    <a href="#grupa-{{ $loop->index }}"
-                                       class="flex min-h-11 items-center justify-between gap-3 rounded-md bg-gray-50 px-4 py-2 text-sm font-bold text-ink transition hover:bg-gray-100 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:bg-transparent lg:px-3">
-                                        <span>{{ $groupLabel($gKey) }}</span>
-                                        <span class="text-muted">{{ $items->count() }}</span>
-                                    </a>
-                                </li>
-                            @endforeach
-                            <li class="shrink-0"><a href="#zapis" class="flex min-h-11 items-center rounded-md px-4 py-2 text-sm font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand lg:px-3">{{ $newsletterCta ? 'Newsletter' : 'Powiadomienia' }} →</a></li>
-                        </ul>
-                    </nav>
-                @endif
+            <div class="mat-layout">
+                {{-- Filtry — zwykły formularz GET; ze skryptem wyniki zmieniają się od razu, bez przycisku. --}}
+                <aside class="mat-aside" aria-labelledby="mat-filters-h">
+                    <h2 id="mat-filters-h" class="mat-aside-h">Znajdź materiał</h2>
+                    <form method="GET" action="{{ route('materials.index') }}#lista" role="search" aria-label="Filtry materiałów" class="mat-filters" data-material-form>
+                        <div class="mat-field">
+                            <label for="material-search" class="mat-label">Szukaj w tytułach i opisach</label>
+                            <input type="search" id="material-search" name="q" value="{{ $filters['q'] }}" data-material-search autocomplete="off" maxlength="100" class="mat-input">
+                        </div>
 
-                <div class="min-w-0 {{ $groups->count() > 1 ? '' : 'lg:col-span-2' }}">
-                    {{-- Wyszukiwarka i filtr typu — ulepszenie progresywne: bez JavaScriptu widać wszystkie materiały. --}}
-                    <div class="mat-tools" data-material-tools hidden>
-                        <form role="search" class="mat-search" onsubmit="return false">
-                            <label for="material-search" class="mat-label">Szukaj materiału</label>
-                            <input type="search" id="material-search" data-material-search autocomplete="off" class="mat-input">
-                        </form>
-                        @if ($presentTypes->count() > 1)
-                            <div class="mat-filter" role="group" aria-label="Typ materiału">
-                                <button type="button" class="mat-chip" data-material-filter="" aria-pressed="true">Wszystkie</button>
-                                @foreach ($typeFilters as $tKey => $tLabel)
-                                    @if ($presentTypes->contains($tKey))
-                                        <button type="button" class="mat-chip" data-material-filter="{{ $tKey }}" aria-pressed="false">{{ $tLabel }}</button>
-                                    @endif
-                                @endforeach
+                        @if ($typeCounts->count() > 1)
+                            <fieldset class="mat-field mat-fieldset">
+                                <legend class="mat-label">Typ materiału</legend>
+                                <div class="mat-options">
+                                    <label class="mat-option"><input type="radio" name="typ" value="" @checked($filters['typ'] === '') data-material-filter="typ"> <span>Wszystkie</span> <span class="mat-option-n">{{ $total }}</span></label>
+                                    @foreach ($typeCounts as $tKey => $n)
+                                        <label class="mat-option"><input type="radio" name="typ" value="{{ $tKey }}" @checked($filters['typ'] === $tKey) data-material-filter="typ"> <span>{{ $typeNames[$tKey][0] }}</span> <span class="mat-option-n">{{ $n }}</span></label>
+                                    @endforeach
+                                </div>
+                            </fieldset>
+                        @endif
+
+                        @if ($groupCounts->count() > 1)
+                            <div class="mat-field">
+                                <label for="material-group" class="mat-label">Dla kogo</label>
+                                <select id="material-group" name="dla" class="mat-input mat-select" data-material-filter="dla">
+                                    <option value="">Wszystkie grupy</option>
+                                    @foreach (\App\Models\EducationalMaterial::TARGET_GROUPS as $gKey => $gLabel)
+                                        @if ($groupCounts->has($gKey))
+                                            <option value="{{ $gKey }}" @selected($filters['dla'] === $gKey)>{{ $gLabel }} ({{ $groupCounts[$gKey] }})</option>
+                                        @endif
+                                    @endforeach
+                                </select>
                             </div>
                         @endif
-                        <p class="mat-count" role="status" data-material-count></p>
+
+                        @if ($categoryCounts->isNotEmpty())
+                            <div class="mat-field">
+                                <label for="material-topic" class="mat-label">Temat</label>
+                                <select id="material-topic" name="temat" class="mat-input mat-select" data-material-filter="temat">
+                                    <option value="">Wszystkie tematy</option>
+                                    @foreach (\App\Models\EducationalMaterial::CATEGORIES as $cKey => $cLabel)
+                                        @if ($categoryCounts->has($cKey))
+                                            <option value="{{ $cKey }}" @selected($filters['temat'] === $cKey)>{{ $cLabel }} ({{ $categoryCounts[$cKey] }})</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+
+                        @if ($total > 1)
+                            <div class="mat-field">
+                                <label for="material-sort" class="mat-label">Kolejność</label>
+                                <select id="material-sort" name="sort" class="mat-input mat-select" data-material-sort>
+                                    @foreach ($controller::SORTS as $sKey => $sLabel)
+                                        <option value="{{ $sKey }}" @selected($filters['sort'] === $sKey)>{{ $sLabel }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+
+                        <div class="mat-actions">
+                            <button type="submit" class="mat-btn" data-material-submit>Pokaż materiały</button>
+                            <a href="{{ route('materials.index') }}#lista" class="mat-reset" data-material-reset @if (! $filters['active']) hidden @endif>Wyczyść filtry</a>
+                        </div>
+                    </form>
+
+                    <p class="mat-aside-more">
+                        <a href="#zapis">{{ $newsletterCta ? 'Zapisz się na newsletter' : 'Powiadomienia o nowych materiałach' }} <span aria-hidden="true">→</span></a>
+                    </p>
+                </aside>
+
+                <div class="min-w-0">
+                    <div class="mat-results-bar">
+                        @if ($groups->count() < 2)
+                            <h2 class="sr-only">Lista materiałów</h2>
+                        @endif
+                        <p class="mat-count" role="status" data-material-count>{{ $countText }}</p>
                     </div>
 
                     <div class="mat-groups">
                     @foreach ($groups as $gKey => $items)
-                        <section id="grupa-{{ $loop->index }}" class="scroll-mt-24" aria-labelledby="grupa-h-{{ $loop->index }}" data-material-group>
-                            <h2 id="grupa-h-{{ $loop->index }}" class="mat-group-h">
-                                {{ $groupLabel($gKey) }}
-                                <span class="mat-group-count">{{ $items->count() }} {{ $plural($items->count()) }}</span>
-                            </h2>
+                        @php $groupVisible = $items->filter(fn ($m) => $visibleIds->has($m->id))->count(); @endphp
+                        <section id="grupa-{{ $loop->index }}" class="scroll-mt-24" @if ($groups->count() > 1) aria-labelledby="grupa-h-{{ $loop->index }}" @endif data-material-group @if ($groupVisible === 0) hidden @endif>
+                            @if ($groups->count() > 1)
+                                <h2 id="grupa-h-{{ $loop->index }}" class="mat-group-h">
+                                    {{ $groupLabel($gKey) }}
+                                    <span class="mat-group-count" data-material-group-count>{{ $groupVisible }} {{ $plural($groupVisible) }}</span>
+                                </h2>
+                            @endif
 
                             <ul class="mat-grid" role="list">
                                 @foreach ($items as $material)
-                                    <li>@include('partials.material-card-feer', ['material' => $material])</li>
+                                    <li @if (! $visibleIds->has($material->id)) hidden @endif>@include('partials.material-card-feer', ['material' => $material])</li>
                                 @endforeach
                             </ul>
                         </section>
                     @endforeach
                     </div>
-                    <p class="mat-empty" data-material-empty hidden>Nie znaleźliśmy materiałów pasujących do wyszukiwania. Zmień słowa lub wybierz „Wszystkie”.</p>
+                    <div class="mat-empty" data-material-empty @if ($visibleCount > 0) hidden @endif>
+                        <p>Nie znaleźliśmy materiałów pasujących do filtrów. Zmień słowa wyszukiwania albo wybierz inny typ.</p>
+                        <a href="{{ route('materials.index') }}#lista" class="mat-reset">Pokaż wszystkie materiały</a>
+                    </div>
                 </div>
             </div>
         @endif
@@ -161,44 +230,99 @@
 
     <script>
         (function () {
-            const tools = document.querySelector('[data-material-tools]');
-            if (!tools) return;
-            tools.hidden = false;
+            const form = document.querySelector('[data-material-form]');
+            if (!form) return;
 
-            const input = tools.querySelector('[data-material-search]');
-            const chips = tools.querySelectorAll('[data-material-filter]');
-            const count = tools.querySelector('[data-material-count]');
+            const input = form.querySelector('[data-material-search]');
+            const filters = form.querySelectorAll('[data-material-filter]');
+            const sort = form.querySelector('[data-material-sort]');
+            const submit = form.querySelector('[data-material-submit]');
+            const reset = form.querySelector('[data-material-reset]');
+            const count = document.querySelector('[data-material-count]');
             const empty = document.querySelector('[data-material-empty]');
-            const cards = Array.from(document.querySelectorAll('[data-material-card]'));
+            const cards = Array.from(document.querySelectorAll('.mat-groups [data-material-card]'));
             const groups = document.querySelectorAll('[data-material-group]');
-            const norm = (t) => (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l');
+            const norm = (t) => (t || '').toLowerCase().replace(/ł/g, 'l').normalize('NFD').replace(/[̀-ͯ]/g, '');
             const plural = (n) => n === 1 ? 'materiał' : ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? 'materiały' : 'materiałów');
             cards.forEach((c) => { c.dataset.searchNorm = norm(c.dataset.search); });
-            let type = '';
+            if (submit) submit.hidden = true;
             let timer = null;
 
+            function state() {
+                const data = new FormData(form);
+                return { q: (data.get('q') || '').trim(), typ: data.get('typ') || '', dla: data.get('dla') || '', temat: data.get('temat') || '', sort: data.get('sort') || '' };
+            }
+
             function apply(announce) {
-                const q = norm(input.value.trim());
+                const s = state();
+                const q = norm(s.q);
                 let visible = 0;
                 cards.forEach((c) => {
-                    const show = (!type || c.dataset.type === type) && (!q || c.dataset.searchNorm.includes(q));
+                    const show = (!s.typ || c.dataset.type === s.typ)
+                        && (!s.dla || c.dataset.group === s.dla)
+                        && (!s.temat || c.dataset.category === s.temat)
+                        && (!q || c.dataset.searchNorm.includes(q));
                     c.closest('li').hidden = !show;
                     if (show) visible++;
                 });
-                groups.forEach((g) => { g.hidden = !g.querySelector('li:not([hidden])'); });
+                groups.forEach((g) => {
+                    const n = g.querySelectorAll('li:not([hidden])').length;
+                    g.hidden = n === 0;
+                    const label = g.querySelector('[data-material-group-count]');
+                    if (label) label.textContent = n + ' ' + plural(n);
+                });
+                const active = !!(s.q || s.typ || s.dla || s.temat);
                 empty.hidden = visible !== 0;
-                if (announce) count.textContent = visible === cards.length ? '' : 'Widocznych: ' + visible + ' ' + plural(visible) + ' z ' + cards.length + '.';
+                if (reset) reset.hidden = !active;
+                if (announce) {
+                    count.textContent = active
+                        ? 'Pasujące: ' + visible + ' ' + plural(visible) + ' z ' + cards.length + '.'
+                        : cards.length + ' ' + plural(cards.length) + '.';
+                }
+                // Adres odzwierciedla filtry — można go skopiować i wysłać.
+                const params = new URLSearchParams();
+                Object.entries(s).forEach(([k, v]) => { if (v) params.set(k, v); });
+                const qs = params.toString();
+                history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
             }
 
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                apply(true);
+            });
             input.addEventListener('input', function () {
                 clearTimeout(timer);
                 apply(false);
                 timer = setTimeout(() => apply(true), 400);
             });
-            chips.forEach((chip) => chip.addEventListener('click', function () {
-                type = chip.dataset.materialFilter;
-                chips.forEach((c) => c.setAttribute('aria-pressed', c === chip ? 'true' : 'false'));
+            filters.forEach((f) => f.addEventListener('change', () => apply(true)));
+            // Kolejność liczy serwer — zmiana przeładowuje listę z bieżącymi filtrami.
+            if (sort) sort.addEventListener('change', function () {
+                const s = state();
+                const params = new URLSearchParams();
+                Object.entries(s).forEach(([k, v]) => { if (v) params.set(k, v); });
+                location.assign(form.getAttribute('action').split('#')[0] + (params.toString() ? '?' + params : '') + '#lista');
+            });
+            // Skróty typów w nagłówku i „Wyczyść filtry” działają bez przeładowania.
+            document.querySelectorAll('[data-material-shortcut]').forEach((a) => a.addEventListener('click', function (e) {
+                const radio = form.querySelector('input[name="typ"][value="' + a.dataset.materialShortcut + '"]');
+                if (!radio) return;
+                e.preventDefault();
+                input.value = '';
+                form.querySelectorAll('select[data-material-filter]').forEach((sel) => { sel.value = ''; });
+                radio.checked = true;
                 apply(true);
+                document.getElementById('lista').scrollIntoView();
+                radio.focus();
+            }));
+            document.querySelectorAll('.mat-reset').forEach((a) => a.addEventListener('click', function (e) {
+                e.preventDefault();
+                input.value = '';
+                form.querySelectorAll('select[data-material-filter]').forEach((sel) => { sel.value = ''; });
+                const all = form.querySelector('input[name="typ"][value=""]');
+                if (all) all.checked = true;
+                apply(true);
+                input.focus();
             }));
         })();
     </script>

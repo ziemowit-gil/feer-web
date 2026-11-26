@@ -378,15 +378,15 @@ class FeerTemplateTest extends TestCase
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
 
         $html = $this->get('/materialy')->assertOk()->assertSee('Poradnik A')->assertSee('Poradnik B')->getContent();
-        $this->assertStringContainsString('lg:grid-cols-[14rem_minmax(0,1fr)]', $html);
-        $this->assertStringContainsString('Grupy materiałów', $html);
+        $this->assertStringContainsString('class="mat-layout"', $html); // filtry po lewej, karty po prawej
+        $this->assertStringContainsString('<label for="material-group" class="mat-label">Dla kogo</label>', $html);
         $this->assertStringContainsString('id="zapis"', $html);
         $this->assertStringContainsString('data-thumb-wrap', $html);
         $this->assertStringContainsString('mat-thumb', $html);
 
         SiteSetting::current()->update(['site_template' => 'ngo_mix']);
         \Closure::bind(function () { static::$cached = null; }, null, SiteSetting::class)();
-        $this->get('/materialy')->assertOk()->assertDontSee('Grupy materiałów');
+        $this->get('/materialy')->assertOk()->assertDontSee('mat-layout', false);
     }
 
     public function test_strona_wsparcia_i_darowizny_w_szablonie_feer(): void
