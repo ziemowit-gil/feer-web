@@ -175,14 +175,22 @@
     .feer-social-tip { position: absolute; top: calc(100% + .375rem); left: 50%; transform: translateX(-50%); z-index: 40; white-space: nowrap;
         border-radius: .375rem; background: #1d1d1a; color: #fff; padding: .25rem .5rem; font-size: .75rem; font-weight: 700; line-height: 1.2; pointer-events: none; opacity: 0; visibility: hidden; }
     .feer-social a:hover .feer-social-tip, .feer-social a:focus-visible .feer-social-tip { opacity: 1; visibility: visible; }
+    /* Odświeżenie 2026-11-26: ikony social jako jednolite, płaskie kafelki (#1D1D1A na #F3F4F6 ≈ 15,4:1), po najechaniu
+       w kolorach przycisku obok (brand-dark na brand-light); te same zaokrąglenia co przycisk, odstęp przed przyciskiem. */
+    .feer-social { gap: .375rem !important; }
+    .feer-social a { width: 2.5rem !important; height: 2.5rem !important; border-radius: .5rem !important; background: #f3f4f6; font-size: 1.125rem !important; color: #1d1d1a; }
+    .feer-social a:hover { background: var(--color-brand-light) !important; color: var(--color-brand-dark) !important; }
+    .feer-social + a { margin-left: .5rem; border-radius: .5rem !important; }
+    html.contrast-bw body .feer-social a { background: #000 !important; color: #ff0 !important; }
 
     /* Pasek górny (dostępność, konto, wyszukiwarka, BIP, social): jeden smukły, ciemny rząd — biały tekst na #1D1D1A (16,9:1). */
     .site-topbar-feer > div:first-child { padding-top: .125rem; padding-bottom: .125rem; }
     .site-topbar-feer > div:first-child a,
     .site-topbar-feer > div:first-child > button,
     .site-topbar-feer .topbar-pill { color: #fff !important; }
+    /* Odświeżenie 2026-11-26: płaskie przyciski bez białej ramki — ciemnoszare wypełnienie (#33332F, biały tekst ≈ 12,8:1). */
     .site-topbar-feer > div:first-child > button,
-    .site-topbar-feer .topbar-pill { border-color: #fff !important; background: transparent !important; border-radius: .375rem !important; }
+    .site-topbar-feer .topbar-pill { border-color: transparent !important; background: #33332f !important; border-radius: .5rem !important; }
     .site-topbar-feer > div:first-child > button:hover,
     .site-topbar-feer > div:first-child > button[aria-expanded="true"],
     .site-topbar-feer .topbar-pill:hover,
