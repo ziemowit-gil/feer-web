@@ -7,6 +7,7 @@ namespace Modules\Newsletter\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Modules\Newsletter\Channels\ChannelRegistry;
@@ -75,6 +76,10 @@ class SettingsController extends Controller
             'newsletter_szo_form' => ['nullable', 'string', 'max:120'],
             'newsletter_crm_webhook_url' => ['nullable', 'url', 'max:500'],
             'newsletter_crm_webhook_secret' => ['nullable', 'string', 'max:255'],
+            'newsletter_mautic_url' => ['nullable', 'url', 'max:255'],
+            'newsletter_mautic_username' => ['nullable', 'string', 'max:255'],
+            'newsletter_mautic_password' => ['nullable', 'string', 'max:255'],
+            'newsletter_mautic_segment' => ['nullable', 'integer', 'min:1'],
             'newsletter_code' => ['nullable', 'string'],
             'send_window' => ['nullable', 'array'],
             'send_window.days' => ['nullable', 'array'],
@@ -103,17 +108,22 @@ class SettingsController extends Controller
         unset($data['send_window']);
         $site->forceFill(['newsletter_send_window' => json_encode($window)]);
 
-        foreach (['newsletter_track_opens', 'newsletter_track_clicks', 'newsletter_webpush_enabled', 'newsletter_szo_sync', 'newsletter_crm_sync', 'newsletter_require_approval'] as $b) {
+        foreach (['newsletter_track_opens', 'newsletter_track_clicks', 'newsletter_webpush_enabled', 'newsletter_szo_sync', 'newsletter_crm_sync', 'newsletter_require_approval', 'newsletter_mautic_sync'] as $b) {
             $data[$b] = $request->boolean($b);
         }
 
         // Puste pole sekretu = nie nadpisuj zapisanej wartości.
-        foreach (['newsletter_ses_secret', 'newsletter_mailgun_secret', 'newsletter_postmark_token', 'newsletter_smtp_password', 'newsletter_webhook_secret', 'newsletter_sms_token', 'newsletter_turnstile_secret', 'newsletter_crm_webhook_secret', 'newsletter_ses_key'] as $secret) {
+        foreach (['newsletter_ses_secret', 'newsletter_mailgun_secret', 'newsletter_postmark_token', 'newsletter_smtp_password', 'newsletter_webhook_secret', 'newsletter_sms_token', 'newsletter_turnstile_secret', 'newsletter_crm_webhook_secret', 'newsletter_ses_key', 'newsletter_mautic_password'] as $secret) {
             if (blank($data[$secret] ?? null)) {
                 unset($data[$secret]);
             } elseif ($data[$secret] === '__clear__') {
                 $data[$secret] = null;
             }
+        }
+
+        // Kolumny Mautic dochodzą migracją 2026_11_27_010000 — przed nią zapis ustawień nie może paść.
+        if (! Schema::hasColumn('site_settings', 'newsletter_mautic_sync')) {
+            unset($data['newsletter_mautic_sync'], $data['newsletter_mautic_url'], $data['newsletter_mautic_username'], $data['newsletter_mautic_password'], $data['newsletter_mautic_segment']);
         }
 
         $site->update($data);

@@ -105,6 +105,19 @@
                 <div><label for="newsletter_crm_webhook_secret" class="mb-1 block text-sm font-bold">Sekret podpisu (HMAC-SHA256, nagłówek X-Signature)</label><input id="newsletter_crm_webhook_secret" name="newsletter_crm_webhook_secret" type="password" value="" placeholder="{{ $s->newsletter_crm_webhook_secret ? '•••• zapisany' : '' }}" class="{{ $inp }}" autocomplete="new-password"></div>
             </div>
             <p class="text-xs text-muted">Ładunek JSON: <code>{event, occurred_at, subscriber{id,email,name,phone,status,topics,channels,tags,source,…}, consents[]}</code>. HubSpot, Pipedrive czy Zapier przyjmą go przez „Webhook → Create contact”.</p>
+            <h2 class="pt-4 text-sm font-bold uppercase text-muted">Mautic</h2>
+            @if (\Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'newsletter_mautic_sync'))
+            <label class="flex items-center gap-2 text-sm"><input type="hidden" name="newsletter_mautic_sync" value="0"><input type="checkbox" name="newsletter_mautic_sync" value="1" class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark" @checked(old('newsletter_mautic_sync', $s->newsletter_mautic_sync))> Przekazuj potwierdzonych subskrybentów do Mautic (wypisanie = blokada wysyłki, anonimizacja = usunięcie kontaktu)</label>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div><label for="newsletter_mautic_url" class="mb-1 block text-sm font-bold">Adres Mautic</label><input id="newsletter_mautic_url" name="newsletter_mautic_url" type="url" value="{{ old('newsletter_mautic_url', $s->newsletter_mautic_url) }}" placeholder="https://marketing.feer.org.pl" class="{{ $inp }}"></div>
+                <div><label for="newsletter_mautic_segment" class="mb-1 block text-sm font-bold">ID segmentu w Mautic</label><input id="newsletter_mautic_segment" name="newsletter_mautic_segment" type="number" min="1" inputmode="numeric" value="{{ old('newsletter_mautic_segment', $s->newsletter_mautic_segment) }}" aria-describedby="newsletter_mautic_segment_help" class="{{ $inp }}"><p id="newsletter_mautic_segment_help" class="mt-1 text-xs text-muted">Numer z adresu segmentu w Mautic (Kontakty → Segmenty), np. 8 dla „Newsletter: zapis ze strony”.</p></div>
+                <div><label for="newsletter_mautic_username" class="mb-1 block text-sm font-bold">Login konta API w Mautic</label><input id="newsletter_mautic_username" name="newsletter_mautic_username" value="{{ old('newsletter_mautic_username', $s->newsletter_mautic_username) }}" autocomplete="off" class="{{ $inp }}"></div>
+                <div><label for="newsletter_mautic_password" class="mb-1 block text-sm font-bold">Hasło konta API</label><input id="newsletter_mautic_password" name="newsletter_mautic_password" type="password" value="" placeholder="{{ $s->newsletter_mautic_password ? '•••• zapisane' : '' }}" class="{{ $inp }}" autocomplete="new-password"></div>
+            </div>
+            <p class="text-xs text-muted">W Mautic: Konfiguracja → Ustawienia API → API włączone i Basic Auth. Konto API z rolą „API – zapisy ze strony”. Kontakty dostają tagi <code>newsletter</code>, <code>zapis-ze-strony</code> i <code>temat-…</code>. Ponowienia: <code>php84 artisan newsletter:sync-crm</code>.</p>
+            @else
+            <p class="text-sm">Integracja z Mautic wymaga migracji bazy (<code>php84 artisan migrate</code>).</p>
+            @endif
         </section>
 
         <section x-show="tab === 'webhooki'" class="space-y-4 p-6 rounded-md bg-white">

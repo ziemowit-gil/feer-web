@@ -38,6 +38,9 @@ class CrmSync
         if ($site->newsletter_crm_sync && filled($site->newsletter_crm_webhook_url)) {
             $this->pushToWebhook($subscriber, $event, (string) $site->newsletter_crm_webhook_url, (string) $site->newsletter_crm_webhook_secret);
         }
+
+        // Mautic (marketing.feer.org.pl): kontakt + segment, wypis = DNC, anonimizacja = usunięcie.
+        app(MauticSync::class)->sync($subscriber, $event);
     }
 
     public function szoEnabled(): bool

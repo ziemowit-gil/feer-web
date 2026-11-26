@@ -13,20 +13,24 @@ use Modules\Newsletter\Jobs\SyncSubscriberToCrm;
 class SyncSubscribersToCrm extends Command
 {
     protected $signature = 'newsletter:sync-crm {--all : także już zsynchronizowanych}';
-    protected $description = 'Ponawia synchronizację subskrybentów z SZO i CRM';
+    protected $description = 'Ponawia synchronizację subskrybentów z SZO, CRM i Mautic';
 
     public function handle(): int
     {
         $site = SiteSetting::current();
-        if (! $site->newsletter_szo_sync && ! $site->newsletter_crm_sync) {
-            $this->line('Synchronizacja SZO/CRM jest wyłączona w ustawieniach newslettera.');
+        $mautic = app(\Modules\Newsletter\Services\MauticSync::class)->enabled($site);
+        if (! $site->newsletter_szo_sync && ! $site->newsletter_crm_sync && ! $mautic) {
+            $this->line('Synchronizacja SZO/CRM/Mautic jest wyłączona w ustawieniach newslettera.');
 
             return self::SUCCESS;
         }
 
         $q = Subscriber::confirmed()->whereNull('anonymized_at');
         if (! $this->option('all')) {
-            $q->where(function ($w) use ($site) {
+            $q->where(function ($w) use ($site, $mautic) {
+                if ($mautic) {
+                    $w->orWhereNull('mautic_synced_at');
+                }
                 if ($site->newsletter_szo_sync) {
                     $w->orWhereNull('szo_synced_at');
                 }
