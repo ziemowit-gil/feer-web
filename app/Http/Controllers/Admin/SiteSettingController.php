@@ -482,6 +482,13 @@ class SiteSettingController extends Controller
             'vm_knowledge_image' => ['nullable', 'image', 'max:4096'],
         ];
 
+        // Szablon FEER ma stały nagłówek: układu nie wybiera się w panelu, więc go nie walidujemy ani nie zmieniamy
+        // (ukryte pole niosło „classic”, które bywa zablokowane w opcjach instalacji — wtedy zapis sekcji padał).
+        $fixedHeader = SiteSetting::current()->hasFixedHeader();
+        if ($fixedHeader) {
+            unset($rules['header_layout']);
+        }
+
         if ($only !== null) {
             $rules = array_filter($rules, fn ($key) => in_array(Str::before($key, '.'), $only, true), ARRAY_FILTER_USE_KEY);
         }
@@ -491,6 +498,9 @@ class SiteSettingController extends Controller
             'header_options.icons.*.url.regex' => 'Adres ikony: pełny (https://…), mailto:adres albo ścieżka na tej stronie (/…).',
             'header_options.icons.max' => 'Najwyżej '.SiteSetting::FEER_ICONS_MAX.' ikon.',
         ]);
+        if ($fixedHeader) {
+            unset($data['header_layout']);
+        }
 
         $data['allow_indexing'] = $request->boolean('allow_indexing');
         $data['logo_only'] = $request->boolean('logo_only');

@@ -232,4 +232,24 @@ class HeaderOptionsTest extends TestCase
 
         $this->assertSame([], SiteSetting::normalizeFeerIcons([['icon' => 'bi bi-tiktok', 'url' => '//obca.pl'], ['icon' => 'x', 'url' => 'https://a.pl']]));
     }
+
+    /** Produkcja: „classic” zablokowany w opcjach instalacji, zapisany office_bar — zapis sekcji nagłówka FEER nie może padać. */
+    public function test_zablokowany_uklad_nie_blokuje_zapisu_naglowka_feer(): void
+    {
+        SiteSetting::current()->update([
+            'header_layout' => 'office_bar',
+            'blocked_options' => ['header_layouts' => ['classic', 'brand_bar', 'brand_bar_inline', 'wide_mission']],
+        ]);
+        $this->reset();
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+
+        $this->actingAs($admin)->put(route('admin.ustawienia.update'), [
+            '_section_fields' => ['header_layout', 'header_options[show_social]', 'header_options[icons_set]'],
+            'header_layout' => 'classic',
+            'header_options' => ['show_social' => '1', 'icons_set' => '1'],
+        ])->assertSessionHasNoErrors();
+        $this->reset();
+
+        $this->assertSame('office_bar', SiteSetting::current()->header_layout);
+    }
 }
