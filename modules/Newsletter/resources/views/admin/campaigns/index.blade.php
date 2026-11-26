@@ -7,7 +7,9 @@
             <a href="{{ route('admin.newsletter.kampanie.index') }}" class="rounded-full border px-3 py-1 font-bold {{ $status === '' ? 'border-brand-dark bg-brand-dark text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50' }}">Wszystkie</a>
             @foreach ($statuses as $k => $l)<a href="{{ route('admin.newsletter.kampanie.index', ['status' => $k]) }}" class="rounded-full border px-3 py-1 font-bold {{ $status === $k ? 'border-brand-dark bg-brand-dark text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50' }}">{{ $l }}</a>@endforeach
         </div>
+        @if (! \Modules\Newsletter\Services\MauticSync::sendsCampaigns())
         @can('newsletter.campaigns')<a href="{{ route('admin.newsletter.kampanie.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowa kampania</a>@endcan
+        @endif
     </div>
     <div class="overflow-x-auto rounded-md bg-white">
         <table class="w-full text-left text-sm">

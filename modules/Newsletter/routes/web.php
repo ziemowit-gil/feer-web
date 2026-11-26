@@ -19,6 +19,7 @@ use Modules\Newsletter\Http\Controllers\Public\PreferencesController;
 use Modules\Newsletter\Http\Controllers\Public\SignupController;
 use Modules\Newsletter\Http\Controllers\Public\TrackingController;
 use Modules\Newsletter\Http\Controllers\Public\WebhookController;
+use Modules\Newsletter\Http\Middleware\BlockWhenMauticSends;
 
 Route::group(['middleware' => 'web', 'module' => 'newsletter'], function (): void {
 
@@ -46,6 +47,7 @@ Route::prefix('n')->name('newsletter.')->group(function (): void {
     Route::get('c/{uuid}/{hash}', [TrackingController::class, 'click'])->name('click');
     Route::get('w/{uuid}', [TrackingController::class, 'web'])->name('web');
     Route::get('wp/{uuid}', [TrackingController::class, 'webPreview'])->name('web.preview');
+    Route::post('webhook/mautic', [WebhookController::class, 'mautic'])->name('webhook.mautic')->middleware('throttle:60,1');
     Route::post('webhook/{provider}', [WebhookController::class, 'handle'])->name('webhook')
         ;
 });
@@ -106,8 +108,8 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
 
         // Kampanie: tworzenie i edycja (statyczne adresy przed {campaign}).
         Route::middleware('can:newsletter.campaigns')->group(function (): void {
-            Route::get('kampanie/create', [AdminCampaignController::class, 'create'])->name('kampanie.create');
-            Route::post('kampanie', [AdminCampaignController::class, 'store'])->name('kampanie.store');
+            Route::get('kampanie/create', [AdminCampaignController::class, 'create'])->name('kampanie.create')->middleware(BlockWhenMauticSends::class);
+            Route::post('kampanie', [AdminCampaignController::class, 'store'])->name('kampanie.store')->middleware(BlockWhenMauticSends::class);
             Route::get('kampanie/{campaign}/edit', [AdminCampaignController::class, 'edit'])->name('kampanie.edit');
             Route::match(['put', 'patch'], 'kampanie/{campaign}', [AdminCampaignController::class, 'update'])->name('kampanie.update');
             Route::delete('kampanie/{campaign}', [AdminCampaignController::class, 'destroy'])->name('kampanie.destroy');
@@ -115,7 +117,7 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
             Route::patch('kampanie/{campaign}/edytor', [AdminCampaignController::class, 'saveEditor'])->name('kampanie.editor.save');
             Route::post('kampanie/{campaign}/test', [AdminCampaignController::class, 'sendTest'])->name('kampanie.test');
             Route::post('kampanie/{campaign}/odbiorcy', [AdminCampaignController::class, 'audienceCount'])->name('kampanie.audience');
-            Route::post('kampanie/{campaign}/duplikuj', [AdminCampaignController::class, 'duplicate'])->name('kampanie.duplicate');
+            Route::post('kampanie/{campaign}/duplikuj', [AdminCampaignController::class, 'duplicate'])->name('kampanie.duplicate')->middleware(BlockWhenMauticSends::class);
         });
 
         // Kampanie: przeglądanie.
@@ -127,12 +129,12 @@ Route::middleware(['auth', 'verified', '2fa', 'admin-site', 'module:newsletter',
 
         // Kampanie: wysyłka — osobne uprawnienie, bo wysyłki nie da się cofnąć.
         Route::middleware('can:newsletter.send')->group(function (): void {
-            Route::post('kampanie/{campaign}/wyslij', [AdminCampaignController::class, 'send'])->name('kampanie.send');
-            Route::post('kampanie/{campaign}/zaplanuj', [AdminCampaignController::class, 'schedule'])->name('kampanie.schedule');
+            Route::post('kampanie/{campaign}/wyslij', [AdminCampaignController::class, 'send'])->name('kampanie.send')->middleware(BlockWhenMauticSends::class);
+            Route::post('kampanie/{campaign}/zaplanuj', [AdminCampaignController::class, 'schedule'])->name('kampanie.schedule')->middleware(BlockWhenMauticSends::class);
             Route::post('kampanie/{campaign}/wstrzymaj', [AdminCampaignController::class, 'pause'])->name('kampanie.pause');
-            Route::post('kampanie/{campaign}/wznow', [AdminCampaignController::class, 'resume'])->name('kampanie.resume');
+            Route::post('kampanie/{campaign}/wznow', [AdminCampaignController::class, 'resume'])->name('kampanie.resume')->middleware(BlockWhenMauticSends::class);
             Route::post('kampanie/{campaign}/anuluj', [AdminCampaignController::class, 'cancel'])->name('kampanie.cancel');
-            Route::post('kampanie/{campaign}/ponow-nieudane', [AdminCampaignController::class, 'retryFailed'])->name('kampanie.retry');
+            Route::post('kampanie/{campaign}/ponow-nieudane', [AdminCampaignController::class, 'retryFailed'])->name('kampanie.retry')->middleware(BlockWhenMauticSends::class);
         });
 
         // Raporty kampanii (zawierają adresy odbiorców).

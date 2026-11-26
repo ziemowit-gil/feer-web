@@ -3,11 +3,21 @@
 @section('content')
     @include('newsletter::admin.partials.flash')
     @include('newsletter::admin.partials.queue-alert')
+    @php $viaMautic = \Modules\Newsletter\Services\MauticSync::sendsCampaigns(); @endphp
+    @if ($viaMautic)
+        <div class="mb-6 rounded-md bg-brand-light p-4 text-sm text-ink" role="note">
+            <p class="font-bold">Kampanie wysyłasz w Mautic.</p>
+            <p class="mt-1">CMS zbiera zapisy i zgody (formularze, potwierdzenie, wypis), a nowe wydania tworzysz i wysyłasz w Mautic. Archiwum i raporty dawnych kampanii są dalej dostępne.</p>
+            <p class="mt-2"><a href="{{ rtrim((string) \App\Models\SiteSetting::current()->newsletter_mautic_url, '/') }}/s/emails" class="font-bold underline">Otwórz e-maile w Mautic <span class="sr-only">(nowe okno)</span><i class="fa-solid fa-arrow-up-right-from-square ml-1 text-xs" aria-hidden="true"></i></a></p>
+        </div>
+    @endif
     <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <p class="text-sm text-muted">Kampanie e-mail, push i SMS · subskrybenci z double opt-in</p>
+        <p class="text-sm text-muted">{{ $viaMautic ? 'Zapisy, zgody i subskrybenci · wysyłka w Mautic' : 'Kampanie e-mail, push i SMS · subskrybenci z double opt-in' }}</p>
         <div class="flex gap-2">
+            @if (! $viaMautic)
             @can('newsletter.campaigns')<a href="{{ route('admin.newsletter.kampanie.create') }}" class="rounded bg-brand-dark px-4 py-2 text-sm font-bold text-white hover:bg-ink"><i class="fa-solid fa-plus" aria-hidden="true"></i> Nowa kampania</a>@endcan
             @can('newsletter.templates')<a href="{{ route('admin.newsletter.mosaico') }}" class="rounded-md px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-brand-light"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Edytor Mosaico</a>@endcan
+            @endif
             <a href="{{ route('newsletter.show') }}" target="_blank" rel="noopener" class="rounded-md px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-brand-light">Strona /newsletter <span class="sr-only">(nowe okno)</span></a>
         </div>
     </div>
@@ -15,7 +25,7 @@
     <nav aria-label="Sekcje newslettera" class="mb-6">
         <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             @foreach ([
-                ['Kampanie', 'admin.newsletter.kampanie.index', 'fa-paper-plane', 'Wysyłki e-mail, push i SMS', 'newsletter.view'],
+                ['Kampanie', 'admin.newsletter.kampanie.index', 'fa-paper-plane', $viaMautic ? 'Archiwum wysyłek z CMS' : 'Wysyłki e-mail, push i SMS', 'newsletter.view'],
                 ['Subskrybenci', 'admin.newsletter.subskrybenci.index', 'fa-users', 'Lista osób i ich zgody', 'newsletter.subscribers'],
                 ['Listy', 'admin.newsletter.listy.index', 'fa-list', 'Grupy odbiorców do wysyłek', 'newsletter.subscribers'],
                 ['Segmenty', 'admin.newsletter.segmenty.index', 'fa-filter', 'Filtrowane grupy subskrybentów', 'newsletter.subscribers'],
@@ -27,6 +37,8 @@
                 ['Ustawienia', 'admin.newsletter.ustawienia.edit', 'fa-gear', 'Nadawca, zgody i integracje', 'newsletter.settings'],
             ] as [$title, $route, $icon, $desc, $ability])
                 @continue(! auth()->user()->can($ability))
+                {{-- Przy wysyłce w Mautic chowamy narzędzia służące tylko wysyłce z CMS. --}}
+                @continue($viaMautic && in_array($route, ['admin.newsletter.listy.index', 'admin.newsletter.segmenty.index', 'admin.newsletter.szablony.index', 'admin.newsletter.mosaico'], true))
                 <li>
                     <a href="{{ route($route) }}" class="flex h-full items-start gap-3 rounded-md bg-white p-4 hover:bg-gray-50 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-dark">
                         <i class="fa-solid {{ $icon }} mt-1 text-brand-dark" aria-hidden="true"></i>
@@ -97,7 +109,13 @@
         <section class="lg:col-span-2 rounded-md bg-white" aria-labelledby="recent-h">
             <h2 id="recent-h" class="border-b border-gray-200 px-4 py-3 text-sm font-bold uppercase text-muted">Ostatnie kampanie</h2>
             @if ($recent->isEmpty())
-                <p class="px-4 py-6 text-sm text-muted">Jeszcze nic nie wysłano.@can('newsletter.campaigns') <a href="{{ route('admin.newsletter.kampanie.create') }}" class="font-bold text-brand-dark underline">Utwórz pierwszą kampanię</a>.@endcan</p>
+                <p class="px-4 py-6 text-sm text-muted">Jeszcze nic nie wysłano.
+                    @if ($viaMautic)
+                        Wydania tworzysz w Mautic.
+                    @else
+                        @can('newsletter.campaigns') <a href="{{ route('admin.newsletter.kampanie.create') }}" class="font-bold text-brand-dark underline">Utwórz pierwszą kampanię</a>.@endcan
+                    @endif
+                </p>
             @else
             <table class="w-full text-left text-sm">
                 <thead class="bg-gray-100 text-xs font-bold uppercase text-muted"><tr><th class="px-4 py-2">Nazwa</th><th class="px-4 py-2">Wysłano</th><th class="px-4 py-2 text-right">Dost.</th><th class="px-4 py-2 text-right">Otw.</th><th class="px-4 py-2 text-right">Klik.</th><th class="px-4 py-2">Stan</th></tr></thead>

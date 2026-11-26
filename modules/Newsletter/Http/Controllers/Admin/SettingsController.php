@@ -80,6 +80,7 @@ class SettingsController extends Controller
             'newsletter_mautic_username' => ['nullable', 'string', 'max:255'],
             'newsletter_mautic_password' => ['nullable', 'string', 'max:255'],
             'newsletter_mautic_segment' => ['nullable', 'integer', 'min:1'],
+            'newsletter_mautic_confirm_email' => ['nullable', 'integer', 'min:1'],
             'newsletter_code' => ['nullable', 'string'],
             'send_window' => ['nullable', 'array'],
             'send_window.days' => ['nullable', 'array'],
@@ -108,7 +109,7 @@ class SettingsController extends Controller
         unset($data['send_window']);
         $site->forceFill(['newsletter_send_window' => json_encode($window)]);
 
-        foreach (['newsletter_track_opens', 'newsletter_track_clicks', 'newsletter_webpush_enabled', 'newsletter_szo_sync', 'newsletter_crm_sync', 'newsletter_require_approval', 'newsletter_mautic_sync'] as $b) {
+        foreach (['newsletter_track_opens', 'newsletter_track_clicks', 'newsletter_webpush_enabled', 'newsletter_szo_sync', 'newsletter_crm_sync', 'newsletter_require_approval', 'newsletter_mautic_sync', 'newsletter_mautic_campaigns'] as $b) {
             $data[$b] = $request->boolean($b);
         }
 
@@ -124,6 +125,9 @@ class SettingsController extends Controller
         // Kolumny Mautic dochodzą migracją 2026_11_27_010000 — przed nią zapis ustawień nie może paść.
         if (! Schema::hasColumn('site_settings', 'newsletter_mautic_sync')) {
             unset($data['newsletter_mautic_sync'], $data['newsletter_mautic_url'], $data['newsletter_mautic_username'], $data['newsletter_mautic_password'], $data['newsletter_mautic_segment']);
+        }
+        if (! Schema::hasColumn('site_settings', 'newsletter_mautic_campaigns')) {
+            unset($data['newsletter_mautic_campaigns'], $data['newsletter_mautic_confirm_email']);
         }
 
         $site->update($data);

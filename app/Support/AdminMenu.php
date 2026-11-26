@@ -724,19 +724,21 @@ final class AdminMenu
     private function newsletterChildren(): array
     {
         $can = fn (string $ability): bool => $this->user->can($ability);
+        // Wysyłka w Mautic: bez „Nowa kampania”, list, segmentów i szablonów (służą tylko wysyłce z CMS).
+        $cms = ! \Modules\Newsletter\Services\MauticSync::sendsCampaigns();
 
         return [
             $this->child('Pulpit', 'admin.newsletter.dashboard', 'admin.newsletter.dashboard'),
             $can('newsletter.view') ? $this->child('Kampanie', 'admin.newsletter.kampanie.index',
                 fn () => request()->routeIs('admin.newsletter.kampanie.*') && ! request()->routeIs('admin.newsletter.kampanie.create'), group: 'Wysyłki') : null,
-            $can('newsletter.campaigns') ? $this->child('Nowa kampania', 'admin.newsletter.kampanie.create', 'admin.newsletter.kampanie.create', group: 'Wysyłki') : null,
+            $cms && $can('newsletter.campaigns') ? $this->child('Nowa kampania', 'admin.newsletter.kampanie.create', 'admin.newsletter.kampanie.create', group: 'Wysyłki') : null,
             $can('newsletter.reports') ? $this->child('Raporty', 'admin.newsletter.raporty.index', 'admin.newsletter.raporty.*', group: 'Wysyłki') : null,
             $can('newsletter.subscribers') ? $this->child('Subskrybenci', 'admin.newsletter.subskrybenci.index', 'admin.newsletter.subskrybenci.*', group: 'Odbiorcy') : null,
-            $can('newsletter.subscribers') ? $this->child('Listy', 'admin.newsletter.listy.index', 'admin.newsletter.listy.*', group: 'Odbiorcy') : null,
-            $can('newsletter.subscribers') ? $this->child('Segmenty', 'admin.newsletter.segmenty.index', 'admin.newsletter.segmenty.*', group: 'Odbiorcy') : null,
+            $cms && $can('newsletter.subscribers') ? $this->child('Listy', 'admin.newsletter.listy.index', 'admin.newsletter.listy.*', group: 'Odbiorcy') : null,
+            $cms && $can('newsletter.subscribers') ? $this->child('Segmenty', 'admin.newsletter.segmenty.index', 'admin.newsletter.segmenty.*', group: 'Odbiorcy') : null,
             $can('newsletter.subscribers') ? $this->child('Tematy', 'admin.newsletter.tematy.index', 'admin.newsletter.tematy.*', group: 'Odbiorcy') : null,
             $can('newsletter.subscribers') ? $this->child('Formularze zapisu', 'admin.newsletter.formularze.index', 'admin.newsletter.formularze.*', group: 'Odbiorcy') : null,
-            $can('newsletter.templates') ? $this->child('Szablony i maile systemowe', 'admin.newsletter.szablony.index', ['admin.newsletter.szablony.*', 'admin.newsletter.mosaico'], group: 'Wygląd') : null,
+            $cms && $can('newsletter.templates') ? $this->child('Szablony i maile systemowe', 'admin.newsletter.szablony.index', ['admin.newsletter.szablony.*', 'admin.newsletter.mosaico'], group: 'Wygląd') : null,
             $can('newsletter.settings') ? $this->child('Ustawienia', 'admin.newsletter.ustawienia.edit', 'admin.newsletter.ustawienia.*', group: 'Wygląd') : null,
         ];
     }

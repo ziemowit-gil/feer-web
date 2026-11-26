@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Modules\Newsletter\Jobs\ProcessBounceEvent;
+use Modules\Newsletter\Services\MauticSync;
 
 /**
  * Webhooki zwrotne dostawców: ses (SNS), mailgun, postmark, generic.
@@ -17,6 +18,17 @@ use Modules\Newsletter\Jobs\ProcessBounceEvent;
  */
 class WebhookController extends Controller
 {
+    /**
+     * Webhook Mautic (zmiana subskrypcji kanału). Bez sekretu: treść wskazuje tylko ID kontaktów,
+     * a stan (blokada wysyłki, powód) CMS pobiera z API Mautic na własnych danych logowania.
+     */
+    public function mautic(Request $request, MauticSync $mautic)
+    {
+        $changed = $mautic->handleWebhook((array) $request->json()->all());
+
+        return response()->json(['ok' => true, 'changed' => $changed]);
+    }
+
     public function handle(Request $request, string $provider)
     {
         $site = SiteSetting::current();

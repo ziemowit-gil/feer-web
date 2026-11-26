@@ -137,6 +137,7 @@ class DashboardController extends Controller
             ['blog', 'admin.wiem-feer.create', 'Wpis bloga', 'fa-feather-pointed', null],
         ])
             ->filter(fn (array $s) => Route::has($s[1]) && $allowed($s[0]) && ($s[4] === null || $user->can($s[4])))
+            ->reject(fn (array $s) => $s[0] === 'newsletter' && \Modules\Newsletter\Services\MauticSync::sendsCampaigns())
             ->map(fn (array $s) => ['route' => route($s[1]), 'label' => $s[2], 'icon' => $s[3]])
             ->values()
             ->all();
