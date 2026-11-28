@@ -3,7 +3,7 @@
     Zmienne: $q, $formId (unikalny — formularz bywa na stronie dwa razy), opcjonalnie $panel (szare tło).
 --}}
 @php $panel = $panel ?? true; @endphp
-<div role="search" aria-label="Wyszukiwarka Wiem FEER" class="{{ $panel ? 'rounded-md bg-gray-50 p-5' : '' }}">
+<div role="search" aria-label="Wyszukiwarka {{ \App\Support\BlogBrand::publicName() }}" class="{{ $panel ? 'rounded-md bg-gray-50 p-5' : '' }}">
     <form method="GET" action="{{ route('blog.index') }}">
         <label for="{{ $formId }}" class="mb-2 block text-sm font-bold text-ink">Szukaj we wpisach</label>
         <div class="flex gap-2">

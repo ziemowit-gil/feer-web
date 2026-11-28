@@ -11,7 +11,7 @@
 
 @php
     $blogSite = (bool) request()->attributes->get('blog_site');
-    $blogName = $blogSite ? $siteSettings->site_name : 'Wiem FEER';
+    $blogName = \App\Support\BlogBrand::publicName();
     $filterParts = array_filter([
         $q !== '' ? '„' . $q . '”' : null,
         $category ? 'kategoria: ' . $category->name : null,
@@ -30,7 +30,7 @@
 @endphp
 
 @section('title', $blogSite ? $pageTitle : $pageTitle . ' — ' . $siteSettings->site_name)
-@section('meta_description', 'Wiem FEER — blog fundacji ' . $siteSettings->site_name . ': artykuły o dostępności, edukacji i empatii.')
+@section('meta_description', \App\Support\BlogBrand::description())
 @if ($showFeatured && $featured->imageUrl())
     @section('og_image', url($featured->imageUrl()))
 @endif
@@ -48,9 +48,13 @@
         <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
             <div class="min-w-0">
                 <header class="mb-8">
-                    <h1 class="text-5xl text-ink md:text-6xl" style="font-family:'Caveat',cursive;font-weight:700;line-height:1.1">Wiem FEER</h1>
+                    @if (\App\Support\BlogBrand::isDefault())
+                        <h1 class="text-5xl text-ink md:text-6xl" style="font-family:'Caveat',cursive;font-weight:700;line-height:1.1">{{ $blogName }}</h1>
+                    @else
+                        <h1 class="text-4xl font-extrabold text-ink md:text-5xl">{{ $blogName }}</h1>
+                    @endif
                     <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
-                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">Artykuły o dostępności cyfrowej, edukacji i empatii. To miejsce, w którym dzielimy się wiedzą i doświadczeniem.</p>
+                    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-ink">{{ \App\Support\BlogBrand::intro() }}</p>
                 </header>
 
                 {{-- Slider bloga (Slidery → „Blog”) — tylko na pierwszej stronie listy, bez filtrów. --}}

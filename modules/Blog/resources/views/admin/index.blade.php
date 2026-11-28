@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Wiem FEER — artykuły')
+@section('title', \App\Support\BlogBrand::name() . ' — artykuły')
 
 {{--
     Lista artykułów Wiem FEER: wyszukiwarka i filtry (GET — adres do udostępnienia, działa
@@ -30,7 +30,7 @@
 
 <div class="blog-list space-y-5">
     <div class="flex flex-wrap items-center justify-between gap-3">
-        <nav class="flex flex-wrap gap-4 text-sm" aria-label="Wiem FEER — inne sekcje">
+        <nav class="flex flex-wrap gap-4 text-sm" aria-label="{{ \App\Support\BlogBrand::name() }} — inne sekcje">
             <a href="{{ route('admin.komentarze-bloga.index') }}" class="{{ $link }}"><i class="fa-solid fa-comments mr-1" aria-hidden="true"></i>Moderacja komentarzy</a>
             <a href="{{ route('admin.kategorie-bloga.index') }}" class="{{ $link }}"><i class="fa-solid fa-folder mr-1" aria-hidden="true"></i>Kategorie</a>
             <a href="{{ route('admin.autorzy-bloga.index') }}" class="{{ $link }}"><i class="fa-solid fa-user-pen mr-1" aria-hidden="true"></i>Autorzy</a>
@@ -192,7 +192,7 @@
     <div role="region" aria-labelledby="articles-caption" tabindex="0" class="overflow-x-auto rounded-md bg-white">
         <table class="w-full min-w-[64rem] text-left text-sm">
             <caption id="articles-caption" class="sr-only">
-                Artykuły Wiem FEER ({{ $total }}){{ $v['sort'] !== '' ? ', sortowanie: ' . mb_strtolower(F::SORTS[$v['sort']]) . ($v['dir'] === 'asc' ? ' rosnąco' : ' malejąco') : '' }}
+                Artykuły {{ \App\Support\BlogBrand::name() }} ({{ $total }}){{ $v['sort'] !== '' ? ', sortowanie: ' . mb_strtolower(F::SORTS[$v['sort']]) . ($v['dir'] === 'asc' ? ' rosnąco' : ' malejąco') : '' }}
             </caption>
             <thead class="bg-gray-100 text-xs font-bold uppercase tracking-wide text-ink">
                 <tr>

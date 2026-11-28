@@ -1,6 +1,13 @@
 <?php
 
 return [
+    // Nazwa bloga na stronie i w panelu (App\Support\BlogBrand). Puste = „Wiem FEER”.
+    'name' => env('BLOG_NAME', ''),
+
+    // Wstęp pod nagłówkiem listy i opis dla wyszukiwarek (`:site` = nazwa witryny). Puste = teksty domyślne.
+    'intro' => env('BLOG_INTRO', ''),
+    'description' => env('BLOG_DESCRIPTION', ''),
+
     // Prefiks publicznych adresów bloga: /wiem, /wiem/{wpis}, /wiem/autor/{autor}, /wiem/rss.xml.
     'prefix' => env('BLOG_PREFIX', 'wiem'),
 

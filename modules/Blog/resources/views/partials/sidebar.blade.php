@@ -11,7 +11,7 @@
     $currentTag = $tag ?? null;
     $sbLink = 'font-bold text-brand-dark underline underline-offset-4 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
 @endphp
-<aside class="space-y-6 lg:sticky lg:top-24 lg:self-start print:hidden" aria-label="Kolumna boczna Wiem FEER">
+<aside class="space-y-6 lg:sticky lg:top-24 lg:self-start print:hidden" aria-label="Kolumna boczna {{ \App\Support\BlogBrand::publicName() }}">
     @include('blog::partials.search-form', ['formId' => $searchId ?? 'blog-search-sidebar', 'q' => $q ?? ''])
 
     @if ($categories->isNotEmpty())
@@ -71,7 +71,7 @@
     @include('blog::partials.newsletter', ['newsletter' => $newsletter ?? null])
 
     <p class="px-1 text-sm">
-        <a href="{{ route('blog.authors') }}" class="{{ $sbLink }}">Autorzy Wiem FEER</a>
+        <a href="{{ route('blog.authors') }}" class="{{ $sbLink }}">Autorzy {{ \App\Support\BlogBrand::publicName() }}</a>
     </p>
     <p class="px-1 text-sm">
         <a href="{{ route('blog.feed') }}" class="{{ $sbLink }}"><i class="fa-solid fa-rss mr-1" aria-hidden="true"></i>Kanał RSS</a>

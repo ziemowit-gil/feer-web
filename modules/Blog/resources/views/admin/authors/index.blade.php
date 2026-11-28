@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Wiem FEER — autorzy')
+@section('title', \App\Support\BlogBrand::name() . ' — autorzy')
 
 @section('content')
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">

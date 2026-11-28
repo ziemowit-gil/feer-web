@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Pulpit Wiem FEER')
+@section('title', 'Pulpit ' . \App\Support\BlogBrand::name())
 
 @section('content')
     @php
@@ -12,7 +12,7 @@
     {{-- ── Nagłówek i szybkie akcje ─────────────────────────────────── --}}
     <header class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h2 class="text-2xl font-extrabold text-ink sm:text-3xl">Wiem FEER</h2>
+            <h2 class="text-2xl font-extrabold text-ink sm:text-3xl">{{ \App\Support\BlogBrand::name() }}</h2>
             <p class="mt-1 text-sm text-muted">Pulpit bloga — wpisy, moderacja i lista rzeczy do poprawienia.</p>
         </div>
         <nav aria-label="Szybkie akcje bloga" class="flex flex-wrap items-center gap-2">

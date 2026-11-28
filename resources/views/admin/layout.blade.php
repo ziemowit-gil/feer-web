@@ -332,7 +332,7 @@
             </a>
             <a href="{{ route('admin.wiem.dashboard') }}"
                 class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">
-                <i class="fa-solid fa-gauge" aria-hidden="true"></i> Pulpit Wiem FEER
+                <i class="fa-solid fa-gauge" aria-hidden="true"></i> Pulpit {{ \App\Support\BlogBrand::name() }}
             </a>
             <a href="{{ route('admin.komentarze-bloga.index') }}"
                 class="inline-flex min-h-8 items-center gap-1.5 rounded-md bg-gray-100 px-3 py-1 text-xs font-bold text-ink hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark">

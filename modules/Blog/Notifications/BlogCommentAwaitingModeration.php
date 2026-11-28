@@ -29,7 +29,7 @@ class BlogCommentAwaitingModeration extends Notification
         return (new MailMessage)
             ->subject('Nowy komentarz do moderacji: ' . $title)
             ->greeting('Cześć ' . $notifiable->name . ',')
-            ->line('Do artykułu Wiem FEER „' . $title . '" dodano komentarz, który czeka na zatwierdzenie.')
+            ->line('Do artykułu ' . \App\Support\BlogBrand::name() . ' „' . $title . '" dodano komentarz, który czeka na zatwierdzenie.')
             ->line('Autor: ' . $this->comment->author_name)
             ->line('Treść: ' . Str::limit($this->comment->body, 300))
             ->action('Przejdź do moderacji komentarzy', route('admin.komentarze-bloga.index'))

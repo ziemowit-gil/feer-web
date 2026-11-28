@@ -198,7 +198,7 @@ class PageController extends Controller
                     'title' => $a->title, 'url' => route('blog.show', $a), 'excerpt' => $a->excerpt,
                     'date' => $a->published_at ?? $a->created_at, 'image' => null, 'meta' => $a->author_name,
                 ]),
-                'heading' => 'Wiem FEER', 'allUrl' => route('blog.index'), 'allLabel' => 'Wszystkie wpisy Wiem FEER',
+                'heading' => \App\Support\BlogBrand::name(), 'allUrl' => route('blog.index'), 'allLabel' => 'Wszystkie wpisy: '.\App\Support\BlogBrand::name(),
             ];
         }
 

@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Wiem FEER — kategorie')
+@section('title', \App\Support\BlogBrand::name() . ' — kategorie')
 
 @section('content')
     <div class="mb-4">

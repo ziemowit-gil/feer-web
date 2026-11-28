@@ -14,6 +14,10 @@ return [
     // Nie działa na hostach z always_full_hosts.
     'forced' => env('EDITION'),
 
+    // Pojedyncze funkcje płatne (klucze z `features`) włączone wyjątkowo w wersji darmowej, po przecinku,
+    // np. EDITION_FEATURES=docx_import. Puste = żadne.
+    'extra_features' => env('EDITION_FEATURES', ''),
+
     // Instalacje, które ZAWSZE mają pełną wersję (łącznie z subdomenami),
     // niezależnie od klucza licencji — rozpoznawane po hoście z APP_URL.
     'always_full_hosts' => ['feer.org.pl'],

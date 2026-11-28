@@ -20,6 +20,7 @@ final class KreatywniTexts
     public const SECTIONS = [
         'hero' => ['Slider na górze', 'Gdy w panelu w Sliderach (slider „Strona główna”; moduł „Slajder (hero)”) są slajdy, slider składa się tylko z nich — można je dodawać, usuwać, układać i planować. Bez nich slider domyślny z pól poniżej: powitanie (nazwa, hasło, przyciski, obrazek — domyślnie logo), „Naszą misją jest” z punktami misji i zaproszenie na Facebooka i Instagram.'],
         'news' => ['Aktualności', 'Tuż pod sliderem: najnowsza aktualność wyróżniona dużym zdjęciem i datą, obok dwie kolejne, oraz przycisk do pełnej listy. Bez aktualności albo przy wyłączonym module sekcja się nie pokazuje.'],
+        'blog' => ['Blog', 'Cztery najnowsze wpisy z bloga (moduł Blog) i przycisk do wszystkich wpisów. Bez wpisów albo przy wyłączonym module sekcja się nie pokazuje.'],
         'mission' => ['Obszary działania', 'Krótki wstęp i cztery obszary działania.'],
         'social' => ['Social media', 'Duże karty z profilami z Ustawienia → Media i BIP. Bez ustawionych profili sekcja się nie pokazuje.'],
         'offer' => ['Oferta warsztatów', 'Lista warsztatów z ceną i przyciskiem do zapytania o termin.'],
@@ -122,6 +123,12 @@ final class KreatywniTexts
         'news_title' => ['news', 'Nagłówek (H2)', 'line', 'Aktualności'],
         'news_text' => ['news', 'Tekst wstępu', 'text', 'Relacje z warsztatów, zapowiedzi i wieści z Fundacji.'],
         'news_button' => ['news', 'Przycisk do listy aktualności — napis', 'line', 'Wszystkie aktualności'],
+
+        // Blog
+        'blog_kicker' => ['blog', 'Napis odręczny nad nagłówkiem', 'line', 'Z naszego bloga'],
+        'blog_title' => ['blog', 'Nagłówek (H2)', 'line', 'Blog'],
+        'blog_text' => ['blog', 'Tekst wstępu', 'text', 'Porady, inspiracje i opowieści z naszych warsztatów.'],
+        'blog_button' => ['blog', 'Przycisk do bloga — napis', 'line', 'Wszystkie wpisy'],
 
         // Social media
         'social_title' => ['social', 'Nagłówek (H2)', 'line', 'Zobacz, co ostatnio tworzyliśmy'],

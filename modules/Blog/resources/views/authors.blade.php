@@ -4,11 +4,11 @@
 
 @php
     $blogSite = (bool) request()->attributes->get('blog_site');
-    $blogName = $blogSite ? $siteSettings->site_name : 'Wiem FEER';
+    $blogName = \App\Support\BlogBrand::publicName();
 @endphp
 
 @section('title', 'Autorzy — ' . $blogName)
-@section('meta_description', 'Autorki i autorzy bloga Wiem FEER.')
+@section('meta_description', 'Autorki i autorzy bloga ' . $blogName . '.')
 
 @include('blog::partials.feed-link')
 

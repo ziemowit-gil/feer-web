@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Edytuj kategorię — Wiem FEER')
+@section('title', 'Edytuj kategorię — ' . \App\Support\BlogBrand::name())
 
 @section('content')
     <div class="mb-4">

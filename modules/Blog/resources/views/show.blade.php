@@ -12,7 +12,7 @@
 
 @php
     $blogSite = (bool) request()->attributes->get('blog_site');
-    $blogName = $blogSite ? $siteSettings->site_name : 'Wiem FEER';
+    $blogName = \App\Support\BlogBrand::publicName();
     $articleUrl = route('blog.show', $article);
     $image = $article->imageUrl();
     $date = $article->publishedDate();

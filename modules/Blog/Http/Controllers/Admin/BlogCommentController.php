@@ -44,7 +44,7 @@ class BlogCommentController extends Controller
         BlogComment::create([
             'article_id'     => $parent->article_id,
             'parent_id'      => $parent->id,
-            'author_name'    => $request->user()?->name ?: 'Redakcja Wiem FEER',
+            'author_name'    => $request->user()?->name ?: 'Redakcja ' . \App\Support\BlogBrand::name(),
             'email'          => null,
             'body'           => $data['reply_body'],
             'is_approved'    => true,

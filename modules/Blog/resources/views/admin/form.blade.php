@@ -55,6 +55,9 @@
     $err = 'mt-1 text-sm font-bold text-red-700';
     $invalid = fn (string $f) => $errors->has($f) ? 'aria-invalid=true' : '';
     $btnPrimary = 'inline-flex min-h-10 items-center gap-2 rounded bg-brand-dark px-4 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2';
+    // Import z Worda (DOCX → HTML przez DocxImportController; w Markdown dalej HTML → Markdown). Funkcja wersji płatnej.
+    $docxUrl = \Illuminate\Support\Facades\Route::has('admin.editor.docx.import') ? route('admin.editor.docx.import') : null;
+    $docxAllowed = $docxUrl && \App\Support\Edition::allows('docx_import');
     $btnSecondary = 'inline-flex min-h-10 items-center gap-2 rounded border border-gray-400 bg-white px-4 text-sm font-bold text-ink hover:bg-gray-50 hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2';
     $link = 'font-bold text-brand-dark underline underline-offset-2 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark';
 
@@ -210,9 +213,12 @@
                     <div data-format-pane="html" @if ($format !== 'html') hidden @endif>
                         <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                             <label for="editor-body" class="block text-sm font-bold">Treść <span class="font-normal text-muted">(edytor wizualny)</span></label>
-                            <button type="button" data-switch-to-markdown class="{{ $btnSecondary }}">
-                                <i class="fa-brands fa-markdown" aria-hidden="true"></i> Przełącz na Markdown
-                            </button>
+                            <div class="flex flex-wrap items-center gap-2">
+                                @include('blog::admin.partials.docx-button', ['target' => 'html'])
+                                <button type="button" data-switch-to-markdown class="{{ $btnSecondary }}">
+                                    <i class="fa-brands fa-markdown" aria-hidden="true"></i> Przełącz na Markdown
+                                </button>
+                            </div>
                         </div>
                         @include('admin.partials.editor', ['name' => 'body', 'value' => old('body', $article->body)])
                         @error('body') <p id="body-error" class="{{ $err }}">{{ $message }}</p> @enderror
@@ -226,6 +232,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <label for="md-body" id="md-body-label" class="block text-sm font-bold">Treść <span class="font-normal text-muted">(Markdown)</span></label>
                         <div class="flex flex-wrap items-center gap-2">
+                            @include('blog::admin.partials.docx-button', ['target' => 'markdown'])
                             <div role="group" aria-label="Widok edytora" class="inline-flex gap-1 rounded bg-gray-100 p-1">
                                 <button type="button" class="md-view-btn rounded px-3 py-1.5 text-sm font-bold text-ink" data-md-view="write" aria-pressed="true">Pisanie</button>
                                 <button type="button" class="md-view-btn rounded px-3 py-1.5 text-sm font-bold text-ink" data-md-view="preview" aria-pressed="false">Podgląd</button>
@@ -359,7 +366,7 @@
                         <div>
                             <label for="author_name" class="mb-1 block text-sm font-bold">Podpis tekstowy <span class="font-normal text-muted">(gdy brak profilu)</span></label>
                             <input type="text" id="author_name" name="author_name" value="{{ old('author_name', $article->author_name) }}"
-                                placeholder="np. Zespół FEER" {{ $invalid('author_name') }} class="{{ $input }}">
+                                placeholder="np. Zespół {{ $siteSettings->site_name }}" {{ $invalid('author_name') }} class="{{ $input }}">
                             @error('author_name') <p class="{{ $err }}">{{ $message }}</p> @enderror
                         </div>
                         <div>
@@ -443,7 +450,7 @@
                             class="mt-0.5 rounded border-gray-400 text-brand-dark focus:ring-brand-dark">
                         <span>
                             <span class="block text-sm font-bold">Wyróżniony wpis</span>
-                            <span class="block text-xs text-muted">Pokazywany na górze listy Wiem FEER w dużej karcie (gdy wyróżnionych jest kilka — najnowszy).</span>
+                            <span class="block text-xs text-muted">Pokazywany na górze listy wpisów w dużej karcie (gdy wyróżnionych jest kilka — najnowszy).</span>
                         </span>
                     </label>
                 </div>
@@ -1209,4 +1216,5 @@
     })();
 })();
 </script>
+@include('blog::admin.partials.docx-script')
 @endsection

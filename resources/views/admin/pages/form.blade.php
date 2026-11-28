@@ -317,7 +317,7 @@
                                     <label for="ld-source" class="mb-1 block text-xs font-bold text-muted">Wpisy pod sliderem</label>
                                     <select id="ld-source" name="layout_data[source]" class="w-full rounded border-gray-500 text-sm focus:border-brand-dark focus:ring-brand-dark">
                                         <option value="news" @selected(($ld['source'] ?? 'news') === 'news')>Aktualności</option>
-                                        <option value="blog" @selected(($ld['source'] ?? 'news') === 'blog')>Wiem FEER (blog)</option>
+                                        <option value="blog" @selected(($ld['source'] ?? 'news') === 'blog')>{{ \App\Support\BlogBrand::isDefault() ? 'Wiem FEER (blog)' : \App\Support\BlogBrand::name() }}</option>
                                     </select>
                                 </div>
                                 <div>

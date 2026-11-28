@@ -89,7 +89,7 @@ class SearchController extends Controller
             // niedostępna (brak pliku/tabel), pomijamy grupę zamiast przerywać wyszukiwarkę.
             if ($typ === '') {
                 try {
-                    $groups['Wiem FEER'] = BlogArticle::listed()
+                    $groups[\App\Support\BlogBrand::name()] = BlogArticle::listed()
                         ->with(['author', 'coAuthors'])
                         ->where(fn ($w) => $w->whereRaw("title LIKE ? ESCAPE '\\'", [$like])
                             ->orWhereRaw("excerpt LIKE ? ESCAPE '\\'", [$like])

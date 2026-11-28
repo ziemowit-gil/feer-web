@@ -206,8 +206,8 @@ final class AdminMenu
             ], defaultOpen: true) : null,
 
             // Pozycje bloga jako osobna sekcja — używana w menu witryny „Wiem FEER”.
-            $this->can('blog') ? $this->section('blog', 'Wiem FEER', [
-                $this->item('blog-dashboard', 'Pulpit Wiem FEER', 'admin.wiem.dashboard', 'fa-gauge'),
+            $this->can('blog') ? $this->section('blog', BlogBrand::name(), [
+                $this->item('blog-dashboard', 'Pulpit '.BlogBrand::name(), 'admin.wiem.dashboard', 'fa-gauge'),
                 $this->item('blog-articles', 'Wpisy', 'admin.wiem-feer.index', 'fa-feather-pointed', active: 'admin.wiem-feer.*'),
                 $this->item('blog-categories', 'Kategorie', 'admin.kategorie-bloga.index', 'fa-tags', active: 'admin.kategorie-bloga.*'),
                 $this->item('blog-authors', 'Autorzy', 'admin.autorzy-bloga.index', 'fa-user-pen', active: 'admin.autorzy-bloga.*'),
@@ -250,10 +250,10 @@ final class AdminMenu
                         $this->child('Kategorie', 'admin.kategorie-newsow.index', 'admin.kategorie-newsow.*'),
                         $this->child('Tagi', 'admin.tagi.index', 'admin.tagi.*'),
                     ]) : null,
-                $this->can('blog') ? $this->item('blog', 'Wiem FEER (blog)', 'admin.wiem-feer.index', 'fa-feather-pointed',
+                $this->can('blog') ? $this->item('blog', BlogBrand::isDefault() ? 'Wiem FEER (blog)' : BlogBrand::name(), 'admin.wiem-feer.index', 'fa-feather-pointed',
                     active: BlogAdmin::ROUTES,
                     children: [
-                        $this->child('Pulpit Wiem FEER', 'admin.wiem.dashboard', 'admin.wiem.dashboard'),
+                        $this->child('Pulpit '.BlogBrand::name(), 'admin.wiem.dashboard', 'admin.wiem.dashboard'),
                         $this->child('Kategorie', 'admin.kategorie-bloga.index', 'admin.kategorie-bloga.*'),
                         $this->child('Autorzy', 'admin.autorzy-bloga.index', 'admin.autorzy-bloga.*'),
                         $this->child('Komentarze', 'admin.komentarze-bloga.index', 'admin.komentarze-bloga.*'),
@@ -524,7 +524,7 @@ final class AdminMenu
         );
 
         return array_values(array_filter([
-            $this->group($sections, 'start', 'Wiem FEER', 'fa-feather-pointed', [$spec(null, 'blog'), $spec(null, 'start')]),
+            $this->group($sections, 'start', BlogBrand::name(), 'fa-feather-pointed', [$spec(null, 'blog'), $spec(null, 'start')]),
             $this->group($sections, 'pages', 'Witryna', 'fa-sitemap', [$spec('Strony i nawigacja', 'pages')]),
             $this->group($sections, 'content', 'Biblioteka', 'fa-photo-film', [$spec(null, 'library'), $spec('Newsletter', 'newsletter')]),
             $this->group($sections, 'users', 'Użytkownicy', 'fa-users', [$spec(null, 'users')]),

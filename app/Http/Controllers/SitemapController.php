@@ -119,7 +119,7 @@ class SitemapController extends Controller
             $on('events') && $has('events.index') ? ['Wydarzenia', route('events.index'), 'fa-calendar-days', 'Szkolenia, spotkania, webinary'] : null,
             $on('courses') && $has('courses.index') ? ['Szkolenia i zajęcia', route('courses.index'), 'fa-chalkboard-user', 'Oferta szkoleń i zapisy'] : null,
             $on('materials') && $has('materials.index') ? ['Materiały edukacyjne', route('materials.index'), 'fa-book-open', 'Poradniki i materiały do pobrania'] : null,
-            $on('blog') && $has('blog.index') ? ['Wiem FEER', route('blog.index'), 'fa-feather-pointed', 'Blog o dostępności i empatii'] : null,
+            $on('blog') && $has('blog.index') ? [\App\Support\BlogBrand::name(), route('blog.index'), 'fa-feather-pointed', \App\Support\BlogBrand::isDefault() ? 'Blog o dostępności i empatii' : 'Wpisy i relacje'] : null,
             $on('volunteering') && $has('volunteer.index') ? ['Wolontariat', route('volunteer.index'), 'fa-hands-holding-child', 'Oferty wolontariatu'] : null,
             $on('jobs') && $has('praca.index') ? ['Praca', route('praca.index'), 'fa-briefcase', 'Oferty pracy i współpracy'] : null,
             $on('support') && $has('support.show') ? ['Wesprzyj nas', route('support.show'), 'fa-hand-holding-heart', 'Darowizny i 1,5% podatku'] : null,

@@ -45,7 +45,21 @@ final class Edition
     /** Czy funkcja (klucz z editions.features) jest dostępna w tej instalacji. */
     public static function allows(string $feature): bool
     {
-        return ! self::isPaid($feature) || self::isPro();
+        return ! self::isPaid($feature) || self::isPro() || in_array($feature, self::extraFeatures(), true);
+    }
+
+    /**
+     * Pojedyncze funkcje płatne włączone wyjątkowo w tej instalacji (EDITION_FEATURES, po przecinku, np. „docx_import”),
+     * bez przełączania całej instalacji na wersję płatną.
+     *
+     * @return list<string>
+     */
+    public static function extraFeatures(): array
+    {
+        $raw = config('editions.extra_features', []);
+        $list = is_array($raw) ? $raw : explode(',', (string) $raw);
+
+        return array_values(array_filter(array_map(fn ($f) => trim((string) $f), $list)));
     }
 
     public static function isPaid(string $feature): bool

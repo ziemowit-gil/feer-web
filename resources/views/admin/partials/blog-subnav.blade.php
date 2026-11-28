@@ -8,7 +8,7 @@
         ['label' => 'Komentarze', 'route' => 'admin.komentarze-bloga.index', 'active' => 'admin.komentarze-bloga.*'],
     ];
 @endphp
-<nav aria-label="Wiem FEER" class="mb-5 rounded-md bg-gray-50 px-4 py-2" data-blog-subnav>
+<nav aria-label="{{ \App\Support\BlogBrand::name() }}" class="mb-5 rounded-md bg-gray-50 px-4 py-2" data-blog-subnav>
     <ul role="list" class="flex flex-wrap items-center gap-x-1 gap-y-1 text-sm">
         @foreach ($blogSubnav as $i => $entry)
             @continue(! Route::has($entry['route']))

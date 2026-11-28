@@ -212,7 +212,7 @@ class BlogController extends Controller
         $xml = view('blog::feed', [
             'settings' => $settings,
             'items'    => $items,
-            'title'    => request()->attributes->get('blog_site') ? $settings->site_name : 'Wiem FEER — ' . $settings->site_name,
+            'title'    => request()->attributes->get('blog_site') ? $settings->site_name : \App\Support\BlogBrand::name() . ' — ' . $settings->site_name,
         ])->render();
 
         return response($xml, 200, [

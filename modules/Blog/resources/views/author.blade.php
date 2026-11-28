@@ -8,11 +8,11 @@
 
 @php
     $blogSite = (bool) request()->attributes->get('blog_site');
-    $blogName = $blogSite ? $siteSettings->site_name : 'Wiem FEER';
+    $blogName = \App\Support\BlogBrand::publicName();
 @endphp
 
 @section('title', $author->name . ($articles->currentPage() > 1 ? ' (strona ' . $articles->currentPage() . ')' : '') . ' — ' . $blogName)
-@section('meta_description', $author->bio ? \Illuminate\Support\Str::limit($author->bio, 155) : 'Wpisy autora ' . $author->name . ' w blogu Wiem FEER.')
+@section('meta_description', $author->bio ? \Illuminate\Support\Str::limit($author->bio, 155) : 'Wpisy autora ' . $author->name . ' w blogu ' . $blogName . '.')
 @if ($author->photoUrl())
     @section('og_image', url($author->photoUrl()))
 @endif
@@ -50,7 +50,7 @@
         <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
             <div class="min-w-0">
                 <header class="mb-8">
-                    <p class="text-sm font-bold uppercase tracking-widest text-brand-dark">Autor Wiem FEER</p>
+                    <p class="text-sm font-bold uppercase tracking-widest text-brand-dark">Autor {{ $blogName }}</p>
                     <h1 class="mt-2 text-3xl font-bold text-ink md:text-4xl">{{ $author->name }}</h1>
                     <span class="mt-3 block h-1 w-14 bg-brand" aria-hidden="true"></span>
                 </header>

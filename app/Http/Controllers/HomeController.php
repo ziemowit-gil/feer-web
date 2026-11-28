@@ -319,7 +319,24 @@ class HomeController extends Controller
             'newsItems' => $settings->isModuleEnabled('news')
                 ? News::published()->forCurrentSite()->orderByDesc('published_at')->limit(4)->get()
                 : collect(),
+            'blogItems' => $this->kreatywniBlog($settings),
         ]);
+    }
+
+    /** Cztery najnowsze wpisy bloga (moduł Blog, osobna baza) do sekcji „Blog”; bez modułu, tras albo bazy — pusto. */
+    private function kreatywniBlog(SiteSetting $settings): Collection
+    {
+        if (! $settings->isModuleEnabled('blog') || ! \Illuminate\Support\Facades\Route::has('blog.show')
+            || ! class_exists(\Modules\Blog\Models\BlogArticle::class)) {
+            return collect();
+        }
+        try {
+            return \Modules\Blog\Models\BlogArticle::query()->listed()->latestFirst()->limit(4)->get();
+        } catch (\Illuminate\Database\QueryException $e) {
+            report($e);
+
+            return collect();
+        }
     }
 
     /**
