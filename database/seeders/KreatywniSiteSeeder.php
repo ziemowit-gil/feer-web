@@ -66,7 +66,7 @@ class KreatywniSiteSeeder extends Seeder
             'tagline' => 'Warsztaty kreatywne i twórcze z dojazdem — Kraków i okolice',
             'meta_description' => 'Fundacja „Kreatywni na co dzień”: mobilne warsztaty kreatywne i terapeutyczne dla dzieci, dorosłych i seniorów w Krakowie i okolicach. Z dojazdem, materiały w cenie.',
             'contact_phone' => '+48 663 182 816',
-            'contact_email' => 'warsztaty.kreatywninacodzien@gmail.com',
+            'contact_email' => 'fundacja@knc.org.pl',
             'contact_address' => '',
             'contact_city' => 'Kraków i okolice',
             'facebook_url' => 'https://www.facebook.com/profile.php?id=100075973327291',
