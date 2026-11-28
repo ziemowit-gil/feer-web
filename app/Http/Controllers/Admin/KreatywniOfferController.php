@@ -60,13 +60,14 @@ class KreatywniOfferController extends Controller
     {
         $this->guard($offer);
 
-        return view('admin.kreatywni-offers.form', compact('offer'));
+        return view('admin.kreatywni-offers.form', ['offer' => $offer, 'offerPage' => KreatywniOffer::offerPage()]);
     }
 
     public function update(Request $request, KreatywniOffer $offer): RedirectResponse
     {
         $this->guard($offer);
         $data = $this->validated($request);
+        $this->saveOfferPageSeo($request);
         if (KreatywniOfferItem::supported()) {
             // Karty warsztatów edytuje się osobno; pole listy dopisuje nowe warsztaty na końcu oferty.
             $bulk = (string) ($data['items'] ?? '');
@@ -79,6 +80,26 @@ class KreatywniOfferController extends Controller
         $offer->update($data);
 
         return redirect()->route('admin.kreatywni-oferty.index')->with('status', 'Zapisano ofertę „'.$offer->name.'”.');
+    }
+
+    /** SEO strony „Oferta” (tytuł i opis w wynikach wyszukiwania) — pola z panelu SEO w formularzu oferty. */
+    private function saveOfferPageSeo(Request $request): void
+    {
+        $page = KreatywniOffer::offerPage();
+        if (! $page || ! $request->has('meta_title')) {
+            return;
+        }
+        $seo = $request->validate([
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:300'],
+        ], [], ['meta_title' => 'tytuł SEO', 'meta_description' => 'opis SEO']);
+        $page->forceFill([
+            'meta_title' => filled($seo['meta_title'] ?? null) ? trim($seo['meta_title']) : null,
+            'meta_description' => filled($seo['meta_description'] ?? null) ? trim($seo['meta_description']) : null,
+        ]);
+        if ($page->isDirty()) {
+            $page->save();
+        }
     }
 
     public function destroy(KreatywniOffer $offer): RedirectResponse

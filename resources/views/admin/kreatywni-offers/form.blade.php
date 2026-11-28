@@ -125,6 +125,17 @@
                 <span><span class="font-bold">Pokazuj na stronie</span> <span class="text-muted">— odznacz, żeby ukryć ofertę bez usuwania</span></span>
             </label>
 
+            @if ($offer->exists && ($offerPage ?? null))
+                {{-- SEO strony „Oferta”, na której wyświetla się blok oferty (te same pola co w Strony → edycja strony). --}}
+                <div class="-mx-6 border-t border-gray-200">
+                    @include('admin.partials.seo-fields', ['model' => $offerPage])
+                    <p class="px-6 pb-2 text-xs text-muted sm:px-8">
+                        Dotyczy strony <a href="{{ route('admin.podstrony.edit', $offerPage) }}" class="font-bold text-brand-dark underline underline-offset-2">„{{ $offerPage->title }}”</a>.
+                        Każdy warsztat ma własne SEO w swoim formularzu (podstrona /warsztat/…).
+                    </p>
+                </div>
+            @endif
+
             <div class="flex flex-wrap gap-2 pt-2">
                 <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded bg-brand-dark px-5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">
                     <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> {{ $offer->exists ? 'Zapisz' : 'Dodaj ofertę' }}

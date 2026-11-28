@@ -59,6 +59,16 @@ class KreatywniOffer extends Model
         return $this->hasMany(KreatywniOfferItem::class, 'kreatywni_offer_id')->orderBy('order')->orderBy('id');
     }
 
+    /**
+     * Strona „Oferta” bieżącej witryny (adres oferta / oferta-2…), na której wyświetla się blok oferty — jej tytuł i opis
+     * SEO edytuje się też w formularzu oferty. Najpierw opublikowana, potem pierwsza z kolei.
+     */
+    public static function offerPage(): ?Page
+    {
+        return Page::forCurrentSite()->where('slug', 'like', 'oferta%')->orderByDesc('is_published')->orderBy('id')->get()
+            ->first(fn (Page $p) => (bool) preg_match('/^oferta(-\d+)?$/', (string) $p->slug));
+    }
+
     /** Czy oferta ma karty warsztatów w tabeli (inaczej działa tekstowy zapas `items`). */
     public function usesCards(): bool
     {
@@ -78,7 +88,7 @@ class KreatywniOffer extends Model
             foreach ($this->cards()->where('is_active', true)->with('media')->get() as $card) {
                 $group = trim((string) $card->group);
                 $groups[$group !== '' ? $group : self::DEFAULT_GROUP][] = [
-                    'title' => $card->title, 'desc' => trim((string) $card->description), 'price' => trim((string) $card->price),
+                    'title' => $card->title, 'desc' => $card->descriptionText(), 'descHtml' => $card->descriptionHtml(), 'price' => trim((string) $card->price),
                     'image' => $card->imageUrl(), 'alt' => $card->imageAltText(), 'url' => $card->publicUrl(),
                 ];
             }

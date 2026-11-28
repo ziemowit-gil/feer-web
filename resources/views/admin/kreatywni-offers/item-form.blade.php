@@ -64,14 +64,16 @@
 
             <div>
                 <label for="ki-desc" class="{{ $label }}">Krótki opis</label>
-                <textarea id="ki-desc" name="description" rows="3" maxlength="600" class="{{ $field }}" aria-describedby="ki-desc-hint" {{ $invalid('description') }}>{{ old('description', $item->description) }}</textarea>
-                <p id="ki-desc-hint" class="{{ $hint }}">1–2 zdania na karcie w bloku oferty, np. „Relaksujące sesje tworzenia dekoracyjnych świec z ekologicznych materiałów.”</p>
+                <textarea id="ki-desc" name="description" rows="3" maxlength="2000" data-text-max="600" class="{{ $field }}" aria-describedby="ki-desc-hint" {{ $invalid('description') }}>{{ old('description', $item->descriptionForEditor()) }}</textarea>
+                <p id="ki-desc-hint" class="{{ $hint }}">1–2 zdania na karcie w bloku oferty, np. „Relaksujące sesje tworzenia dekoracyjnych świec z ekologicznych materiałów.” Możesz pogrubić lub pochylić słowa (Ctrl+B, Ctrl+I).</p>
+                @include('admin.partials.mini-editor', ['id' => 'ki-desc', 'mode' => 'inline'])
             </div>
 
             <div>
                 <label for="ki-details" class="{{ $label }}">Opis na podstronie warsztatu</label>
-                <textarea id="ki-details" name="details" rows="8" maxlength="8000" class="{{ $field }}" aria-describedby="ki-details-hint" {{ $invalid('details') }}>{{ old('details', $item->details) }}</textarea>
-                <p id="ki-details-hint" class="{{ $hint }}">Dłuższy opis: przebieg zajęć, dla kogo, ile trwają, co uczestnicy zabierają do domu. Pusta linia = nowy akapit. Puste pole — podstrona pokaże krótki opis.</p>
+                <textarea id="ki-details" name="details" rows="8" maxlength="30000" class="{{ $field }}" aria-describedby="ki-details-hint" {{ $invalid('details') }}>{{ old('details', $item->detailsForEditor()) }}</textarea>
+                <p id="ki-details-hint" class="{{ $hint }}">Dłuższy opis: przebieg zajęć, dla kogo, ile trwają, co uczestnicy zabierają do domu. Edytor: pogrubienie, kursywa, śródtytuły, listy i linki. Puste pole — podstrona pokaże krótki opis.</p>
+                @include('admin.partials.mini-editor', ['id' => 'ki-details', 'mode' => 'rich'])
             </div>
 
             <div class="space-y-3">
@@ -98,6 +100,12 @@
                 <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $item->is_active ?? true)) class="rounded border-gray-500 text-brand-dark focus:ring-brand-dark">
                 <span><span class="font-bold">Pokazuj w ofercie</span> <span class="text-muted">— odznacz, żeby ukryć warsztat (i jego podstronę) bez usuwania</span></span>
             </label>
+
+            @if (\App\Models\KreatywniOfferItem::supportsSeo())
+                <div class="-mx-6 border-t border-gray-200">
+                    @include('admin.partials.seo-fields', ['model' => $item])
+                </div>
+            @endif
 
             <div class="flex flex-wrap gap-2 pt-2">
                 <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded bg-brand-dark px-5 text-sm font-bold text-white hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark focus-visible:ring-offset-2">

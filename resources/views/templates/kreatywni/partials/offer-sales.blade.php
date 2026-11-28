@@ -92,14 +92,14 @@
                                         <div class="kc-offer-body">
                                             <h{{ $kcCardH }} class="kc-offer-name">@if ($kcUrl)<a href="{{ $kcUrl }}">{{ $kcItem['title'] }}</a>@else{{ $kcItem['title'] }}@endif</h{{ $kcCardH }}>
                                             @if (($kcItem['price'] ?? '') !== '')<p class="kc-offer-price">{{ $kcItem['price'] }}</p>@endif
-                                            @if ($kcItem['desc'] !== '')<p class="kc-offer-desc">{{ $kcItem['desc'] }}</p>@endif
+                                            @if ($kcItem['desc'] !== '')<p class="kc-offer-desc">{!! $kcItem['descHtml'] ?? e($kcItem['desc']) !!}</p>@endif
                                             @if ($kcUrl)<span class="kc-offer-more" aria-hidden="true">Więcej o warsztacie →</span>@endif
                                         </div>
                                     </li>
                                 @elseif ($kcListClass === 'kc-chips')
                                     <li>@if ($kcUrl)<a href="{{ $kcUrl }}">{{ $kcItem['title'] }}</a>@else{{ $kcItem['title'] }}@endif</li>
                                 @else
-                                    <li><span class="kc-offer-name">@if ($kcUrl)<a href="{{ $kcUrl }}">{{ $kcItem['title'] }}</a>@else{{ $kcItem['title'] }}@endif</span>@if ($kcItem['desc'] !== '') <span class="kc-offer-desc">{{ $kcItem['desc'] }}</span>@endif</li>
+                                    <li><span class="kc-offer-name">@if ($kcUrl)<a href="{{ $kcUrl }}">{{ $kcItem['title'] }}</a>@else{{ $kcItem['title'] }}@endif</span>@if ($kcItem['desc'] !== '') <span class="kc-offer-desc">{!! $kcItem['descHtml'] ?? e($kcItem['desc']) !!}</span>@endif</li>
                                 @endif
                             @endforeach
                         </ul>

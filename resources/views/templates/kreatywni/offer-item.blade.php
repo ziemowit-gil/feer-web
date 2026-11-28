@@ -7,8 +7,29 @@
 --}}
 @extends('layouts.site')
 
-@section('title', $item->title.' — '.$siteSettings->site_name)
-@section('meta_description', \Illuminate\Support\Str::limit(trim((string) ($item->description ?: $item->details)), 160))
+@section('title', $item->seoTitle().' — '.$siteSettings->site_name)
+{{-- HtmlString: @section z drugim argumentem sam escapuje, a layout ({{ }}) robi to drugi raz — „&” wyszłoby jako „&amp;amp;”. --}}
+@section('meta_description', new \Illuminate\Support\HtmlString($item->seoDescription()))
+@if ($item->imageUrl())
+    @section('og_image', url($item->imageUrl()))
+@endif
+
+@push('structured_data')
+    <script type="application/ld+json">
+        {!! json_encode(array_filter([
+            '@@context' => 'https://schema.org',
+            '@type' => 'Service',
+            'name' => $item->title,
+            'serviceType' => $item->group ?: 'Warsztaty',
+            'description' => $item->seoDescription() ?: null,
+            'url' => url()->current(),
+            'image' => $item->imageUrl() ? url($item->imageUrl()) : null,
+            'provider' => ['@type' => 'Organization', 'name' => $siteSettings->site_name, 'url' => url('/')],
+            'areaServed' => trim((string) $siteSettings->contact_city) ?: null,
+            'offers' => $price !== '' ? ['@type' => 'Offer', 'description' => $price] : null,
+        ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => array_values(array_filter([
@@ -19,10 +40,11 @@
 
 @php
     $kcImg = $item->imageUrl();
-    $kcParagraphs = $item->detailParagraphs();
-    $kcLead = trim((string) $item->description);
-    if ($kcParagraphs === [] && $kcLead !== '') {
-        $kcParagraphs = [$kcLead];
+    // Opisy z edytora (bezpieczny HTML: SafeHtml); bez dłuższego opisu krótki trafia do treści zamiast pod tytuł.
+    $kcDetails = $item->detailsHtml();
+    $kcLead = $item->descriptionHtml();
+    if ($kcDetails === '' && $kcLead !== '') {
+        $kcDetails = '<p>'.$kcLead.'</p>';
         $kcLead = '';
     }
 @endphp
@@ -38,7 +60,19 @@
             .kc-oi-price { display: inline-flex; flex-direction: column; margin: 0 0 1.5rem; padding: 1rem 1.35rem; border-radius: 1rem; background: var(--kc-forest); color: #fff; }
             .kc-oi-price span { font-size: .85rem; font-weight: 700; color: var(--kc-sun); }
             .kc-oi-price strong { font-size: 1.6rem; font-weight: 800; line-height: 1.2; }
-            .kc-oi-text p { margin: 0 0 1rem; font-size: 1.08rem; line-height: 1.7; }
+            .kc-oi-text p, .kc-oi-text ul, .kc-oi-text ol, .kc-oi-text blockquote { margin: 0 0 1rem; font-size: 1.08rem; line-height: 1.7; }
+            .kc-oi-text ul, .kc-oi-text ol { padding-left: 1.4rem; }
+            .kc-oi-text ul { list-style: disc; }
+            .kc-oi-text ol { list-style: decimal; }
+            .kc-oi-text li { margin-bottom: .35rem; }
+            .kc-oi-text h2, .kc-oi-text h3 { margin: 1.6rem 0 .6rem; font-weight: 800; line-height: 1.25; color: var(--kc-forest); }
+            .kc-oi-text h2 { font-size: 1.45rem; }
+            .kc-oi-text h3 { font-size: 1.2rem; }
+            .kc-oi-text strong, .kc-lead strong { font-weight: 800; }
+            .kc-oi-text a { font-weight: 700; color: var(--kc-forest); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+            .kc-oi-text a:hover { text-decoration-color: var(--kc-lime); }
+            .kc-oi-text a:focus-visible { outline: 3px solid var(--kc-forest); outline-offset: 2px; }
+            .kc-oi-text blockquote { padding-left: 1rem; border-left: 4px solid var(--kc-lime); }
             .kc-oi-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
             .kc-oi-back { display: inline-flex; align-items: center; gap: .45rem; min-height: 2.75rem; margin-top: 1.25rem; font-weight: 700; color: var(--kc-forest); text-decoration: underline; text-decoration-color: var(--kc-lime); text-decoration-thickness: 2px; text-underline-offset: 4px; }
             .kc-oi-related { display: grid; gap: 1.25rem; margin: 0; padding: 0; list-style: none; }
@@ -56,7 +90,7 @@
             <div class="kc-wrap">
                 <p class="kc-eyebrow kc-hand">{{ $item->group ?: 'Warsztaty' }}</p>
                 <h1 id="kc-page-title">{{ $item->title }}</h1>
-                @if ($kcLead !== '')<p class="kc-lead">{{ $kcLead }}</p>@endif
+                @if ($kcLead !== '')<p class="kc-lead">{!! $kcLead !!}</p>@endif
             </div>
         </section>
 
@@ -70,9 +104,7 @@
                         <p class="kc-oi-price"><span>Cena</span><strong>{{ $price }}</strong></p>
                     @endif
                     <div class="kc-oi-text">
-                        @foreach ($kcParagraphs as $kcP)
-                            <p>{{ $kcP }}</p>
-                        @endforeach
+                        {!! $kcDetails !!}
                     </div>
                     <div class="kc-oi-actions">
                         @if ($orderUrl)
@@ -98,7 +130,7 @@
                             <li>
                                 <a href="{{ $kcR->publicUrl() }}">
                                     @if ($kcR->imageUrl())<img src="{{ $kcR->imageUrl() }}" alt="" loading="lazy">@endif
-                                    <span><strong>{{ $kcR->title }}</strong>@if ($kcR->description) {{ \Illuminate\Support\Str::limit($kcR->description, 110) }}@endif</span>
+                                    <span><strong>{{ $kcR->title }}</strong>@if ($kcR->descriptionText() !== '') {{ \Illuminate\Support\Str::limit($kcR->descriptionText(), 110) }}@endif</span>
                                 </a>
                             </li>
                         @endforeach

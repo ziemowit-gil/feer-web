@@ -114,29 +114,39 @@ class KreatywniOfferItemController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'group' => ['nullable', 'string', 'max:120'],
-            'description' => ['nullable', 'string', 'max:600'],
-            'details' => ['nullable', 'string', 'max:8000'],
+            // Opisy przychodzą z edytora jako HTML (znaczniki wliczają się w długość), stąd zapas ponad limit samego tekstu.
+            'description' => ['nullable', 'string', 'max:2000'],
+            'details' => ['nullable', 'string', 'max:30000'],
             'price' => ['nullable', 'string', 'max:100'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:8192'],
             'image_library_id' => $this->libraryMediaRule(),
             'image_alt' => ['nullable', 'string', 'max:255'],
             'remove_image' => ['nullable', 'boolean'],
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:300'],
         ], [], [
+            'meta_title' => 'tytuł SEO', 'meta_description' => 'opis SEO',
             'title' => 'nazwa warsztatu', 'group' => 'grupa', 'description' => 'krótki opis', 'details' => 'opis na podstronie',
             'price' => 'cena', 'image' => 'grafika', 'image_alt' => 'opis grafiki',
         ]);
 
         $text = fn (?string $v) => filled($v) ? trim(str_replace("\r\n", "\n", $v)) : null;
 
-        return [
+        $values = [
             'title' => trim($data['title']),
             'group' => $text($data['group'] ?? null),
-            'description' => $text($data['description'] ?? null),
-            'details' => $text($data['details'] ?? null),
+            'description' => KreatywniOfferItem::cleanShortHtml($text($data['description'] ?? null)),
+            'details' => KreatywniOfferItem::cleanDetailsHtml($text($data['details'] ?? null)),
             'price' => $text($data['price'] ?? null),
             'image_alt' => $text($data['image_alt'] ?? null),
             'is_active' => $request->boolean('is_active'),
         ];
+        if (KreatywniOfferItem::supportsSeo()) {
+            $values['meta_title'] = $text($data['meta_title'] ?? null);
+            $values['meta_description'] = $text($data['meta_description'] ?? null);
+        }
+
+        return $values;
     }
 
     private function saveImage(Request $request, KreatywniOfferItem $item): void
