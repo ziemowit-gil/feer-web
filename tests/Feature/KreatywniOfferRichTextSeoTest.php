@@ -106,4 +106,36 @@ class KreatywniOfferRichTextSeoTest extends TestCase
         $this->assertSame('Warsztaty kreatywne z dojazdem — oferta', $page->meta_title);
         $this->assertSame('Mobilne warsztaty kreatywne dla dzieci, dorosłych i seniorów.', $page->meta_description);
     }
+
+    public function test_faq_warsztatu_w_panelu_i_na_podstronie(): void
+    {
+        $offer = $this->offer();
+        $this->actingAs(User::factory()->create(['role' => User::ROLE_ADMIN]));
+
+        $this->get(route('admin.kreatywni-oferty.warsztaty.create', $offer))->assertOk()
+            ->assertSee('Najczęstsze pytania (FAQ)')->assertSee('Dodaj pytanie');
+
+        $this->post(route('admin.kreatywni-oferty.warsztaty.store', $offer), [
+            'title' => 'Bombki', 'is_active' => '1',
+            'faq' => [
+                ['q' => 'Ile trwają zajęcia?', 'a' => "Około 2 godzin.\n\nMożna dłużej."],
+                ['q' => 'Pytanie bez odpowiedzi', 'a' => ''],
+                ['q' => 'Co zabrać? <b>', 'a' => 'Nic — materiały są w cenie.'],
+            ],
+        ])->assertSessionHasNoErrors();
+
+        $item = KreatywniOfferItem::firstOrFail();
+        $this->assertCount(2, $item->faqItems(), 'niepełna para pominięta');
+
+        $page = $this->get('/warsztat/bombki')->assertOk()->getContent();
+        $this->assertStringContainsString('Najczęstsze pytania', $page);
+        $this->assertStringContainsString('<summary>Ile trwają zajęcia?</summary>', $page);
+        $this->assertStringContainsString('<p>Około 2 godzin.</p>', $page);
+        $this->assertStringContainsString('Co zabrać? &lt;b&gt;', $page);
+        $this->assertStringContainsString('"@type":"FAQPage"', $page);
+        $this->assertStringNotContainsString('Pytanie bez odpowiedzi', $page);
+
+        $item->update(['faq' => null]);
+        $this->assertStringNotContainsString('FAQPage', $this->get('/warsztat/bombki')->getContent());
+    }
 }

@@ -30,6 +30,22 @@
         ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
     </script>
 @endpush
+@php $kcFaq = $item->faqItems(); @endphp
+@if ($kcFaq !== [])
+    @push('structured_data')
+        <script type="application/ld+json">
+            {!! json_encode([
+                '@@context' => 'https://schema.org',
+                '@type' => 'FAQPage',
+                'mainEntity' => array_map(fn ($f) => [
+                    '@type' => 'Question',
+                    'name' => $f['q'],
+                    'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f['a']],
+                ], $kcFaq),
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
+        </script>
+    @endpush
+@endif
 
 @section('breadcrumbs')
     @include('partials.breadcrumbs', ['items' => array_values(array_filter([
@@ -72,6 +88,18 @@
             .kc-oi-text a { font-weight: 700; color: var(--kc-forest); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
             .kc-oi-text a:hover { text-decoration-color: var(--kc-lime); }
             .kc-oi-text a:focus-visible { outline: 3px solid var(--kc-forest); outline-offset: 2px; }
+            .kc-oi-faq-wrap { max-width: 52rem; }
+            .kc-oi-faq { display: grid; gap: .75rem; }
+            .kc-oi-faq details { border-radius: 1rem; background: var(--kc-mint); }
+            .kc-oi-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 2.75rem; padding: 1rem 1.25rem; font-size: 1.08rem; font-weight: 800; color: var(--kc-forest); cursor: pointer; list-style: none; border-radius: 1rem; }
+            .kc-oi-faq summary::-webkit-details-marker { display: none; }
+            .kc-oi-faq summary::after { content: '+'; flex: none; font-size: 1.5rem; line-height: 1; }
+            .kc-oi-faq details[open] summary::after { content: '−'; }
+            .kc-oi-faq summary:hover { background: var(--kc-sun); color: var(--kc-ink); }
+            .kc-oi-faq summary:focus-visible { outline: 3px solid var(--kc-forest); outline-offset: 2px; }
+            .kc-oi-faq-a { padding: 0 1.25rem 1.1rem; }
+            .kc-oi-faq-a p { margin: 0 0 .75rem; line-height: 1.7; }
+            .kc-oi-faq-a p:last-child { margin-bottom: 0; }
             .kc-oi-text blockquote { padding-left: 1rem; border-left: 4px solid var(--kc-lime); }
             .kc-oi-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
             .kc-oi-back { display: inline-flex; align-items: center; gap: .45rem; min-height: 2.75rem; margin-top: 1.25rem; font-weight: 700; color: var(--kc-forest); text-decoration: underline; text-decoration-color: var(--kc-lime); text-decoration-thickness: 2px; text-underline-offset: 4px; }
@@ -120,6 +148,26 @@
                 </div>
             </div>
         </section>
+
+        @if ($kcFaq !== [])
+            <section class="kc-sec" aria-labelledby="kc-oi-faq">
+                <div class="kc-wrap kc-oi-faq-wrap">
+                    <h2 id="kc-oi-faq" class="kc-h2 kc-head">Najczęstsze pytania</h2>
+                    <div class="kc-oi-faq">
+                        @foreach ($kcFaq as $kcF)
+                            <details>
+                                <summary>{{ $kcF['q'] }}</summary>
+                                <div class="kc-oi-faq-a">
+                                    @foreach (preg_split('/\R\s*\R/u', $kcF['a']) as $kcP)
+                                        <p>{!! nl2br(e(trim($kcP)), false) !!}</p>
+                                    @endforeach
+                                </div>
+                            </details>
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+        @endif
 
         @if ($related->isNotEmpty())
             <section class="kc-sec kc-sec-mint" aria-labelledby="kc-oi-related">

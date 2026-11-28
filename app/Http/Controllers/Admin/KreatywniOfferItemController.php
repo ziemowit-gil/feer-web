@@ -124,7 +124,11 @@ class KreatywniOfferItemController extends Controller
             'remove_image' => ['nullable', 'boolean'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:300'],
+            'faq' => ['nullable', 'array', 'max:'.(KreatywniOfferItem::FAQ_MAX + 5)],
+            'faq.*.q' => ['nullable', 'string', 'max:300'],
+            'faq.*.a' => ['nullable', 'string', 'max:3000'],
         ], [], [
+            'faq.*.q' => 'pytanie', 'faq.*.a' => 'odpowiedź',
             'meta_title' => 'tytuł SEO', 'meta_description' => 'opis SEO',
             'title' => 'nazwa warsztatu', 'group' => 'grupa', 'description' => 'krótki opis', 'details' => 'opis na podstronie',
             'price' => 'cena', 'image' => 'grafika', 'image_alt' => 'opis grafiki',
@@ -141,6 +145,10 @@ class KreatywniOfferItemController extends Controller
             'image_alt' => $text($data['image_alt'] ?? null),
             'is_active' => $request->boolean('is_active'),
         ];
+        if (KreatywniOfferItem::supportsFaq()) {
+            $faq = KreatywniOfferItem::cleanFaq((array) ($data['faq'] ?? []));
+            $values['faq'] = $faq !== [] ? $faq : null;
+        }
         if (KreatywniOfferItem::supportsSeo()) {
             $values['meta_title'] = $text($data['meta_title'] ?? null);
             $values['meta_description'] = $text($data['meta_description'] ?? null);

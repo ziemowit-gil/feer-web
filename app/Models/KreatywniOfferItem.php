@@ -22,7 +22,10 @@ class KreatywniOfferItem extends Model implements HasMedia
 
     protected $table = 'kreatywni_offer_items';
 
-    protected $fillable = ['kreatywni_offer_id', 'title', 'slug', 'group', 'description', 'details', 'price', 'image_alt', 'order', 'is_active', 'meta_title', 'meta_description'];
+    protected $fillable = ['kreatywni_offer_id', 'title', 'slug', 'group', 'description', 'details', 'price', 'image_alt', 'order', 'is_active', 'meta_title', 'meta_description', 'faq'];
+
+    /** Najwięcej pytań w FAQ jednego warsztatu. */
+    public const FAQ_MAX = 15;
 
     /** Znaczniki dozwolone w krótkim opisie (karta): tylko pogrubienie i kursywa. */
     private const SHORT_TAGS = '<strong><b><em><i><br>';
@@ -173,6 +176,42 @@ class KreatywniOfferItem extends Model implements HasMedia
         return $own !== '' ? $own : \Illuminate\Support\Str::limit($this->descriptionText() ?: $this->detailsText(), 160);
     }
 
+    /**
+     * FAQ warsztatu: pary z wypełnionym pytaniem i odpowiedzią. Odpowiedź to zwykły tekst (pusta linia = nowy akapit).
+     *
+     * @return list<array{q: string, a: string}>
+     */
+    public function faqItems(): array
+    {
+        return self::cleanFaq(is_array($this->faq) ? $this->faq : []);
+    }
+
+    /**
+     * Porządkuje FAQ z formularza: przycina, pomija niepełne pary, najwyżej FAQ_MAX.
+     *
+     * @param  array<int, mixed>  $rows
+     * @return list<array{q: string, a: string}>
+     */
+    public static function cleanFaq(array $rows): array
+    {
+        $out = [];
+        foreach ($rows as $row) {
+            $q = trim((string) (is_array($row) ? ($row['q'] ?? '') : ''));
+            $a = trim(str_replace("\r\n", "\n", (string) (is_array($row) ? ($row['a'] ?? '') : '')));
+            if ($q !== '' && $a !== '') {
+                $out[] = ['q' => mb_substr($q, 0, 300), 'a' => mb_substr($a, 0, 3000)];
+            }
+        }
+
+        return array_slice($out, 0, self::FAQ_MAX);
+    }
+
+    /** Czy tabela ma kolumnę FAQ (push wdraża kod przed migracją). */
+    public static function supportsFaq(): bool
+    {
+        return once(fn () => self::supported() && Schema::hasColumn('kreatywni_offer_items', 'faq'));
+    }
+
     /** Czy tabela ma kolumny SEO (push wdraża kod przed migracją). */
     public static function supportsSeo(): bool
     {
@@ -182,6 +221,7 @@ class KreatywniOfferItem extends Model implements HasMedia
     protected $casts = [
         'is_active' => 'boolean',
         'order' => 'integer',
+        'faq' => 'array',
     ];
 
     public function registerMediaCollections(): void

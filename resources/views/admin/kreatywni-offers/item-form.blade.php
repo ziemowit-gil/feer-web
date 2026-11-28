@@ -101,6 +101,10 @@
                 <span><span class="font-bold">Pokazuj w ofercie</span> <span class="text-muted">— odznacz, żeby ukryć warsztat (i jego podstronę) bez usuwania</span></span>
             </label>
 
+            @if (\App\Models\KreatywniOfferItem::supportsFaq())
+                @include('admin.kreatywni-offers.partials.faq-fields')
+            @endif
+
             @if (\App\Models\KreatywniOfferItem::supportsSeo())
                 <div class="-mx-6 border-t border-gray-200">
                     @include('admin.partials.seo-fields', ['model' => $item])
