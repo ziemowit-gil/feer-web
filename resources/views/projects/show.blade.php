@@ -477,8 +477,18 @@
                     </section>
                 @endif
 
-                @php $projFaq = ($extrasOn && ! $project->isFoundationActivity()) ? collect($project->faq ?? []) : collect(); @endphp
+                {{-- FAQ pokazujemy zawsze, gdy jest wypełnione (niezależnie od „Dodatkowych informacji” i rodzaju działania). --}}
+                @php $projFaq = collect($project->faq ?? [])->filter(fn ($f) => filled($f['q'] ?? null) && filled($f['a'] ?? null))->values(); @endphp
                 @if ($projFaq->isNotEmpty())
+                    @push('structured_data')
+                        <script type="application/ld+json">
+                            {!! json_encode([
+                                '@@context' => 'https://schema.org',
+                                '@type' => 'FAQPage',
+                                'mainEntity' => $projFaq->map(fn ($f) => ['@type' => 'Question', 'name' => $f['q'], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f['a']]])->all(),
+                            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
+                        </script>
+                    @endpush
                     <section class="proj-sec" aria-labelledby="proj-faq-h">
                         <h2 id="proj-faq-h" class="proj-frame-h"><i class="fa-solid fa-circle-question" aria-hidden="true"></i> Pytania i odpowiedzi</h2>
                         <div class="proj-faq">

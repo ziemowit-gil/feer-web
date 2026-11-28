@@ -570,8 +570,17 @@
                     <button type="button" @click="tests.push({ text: '', author: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand-dark px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj opinię</button>
                 </div>
 
-                <div class="space-y-4 p-6 rounded-md bg-white" data-participant-only>
-                    <p class="text-sm font-bold uppercase tracking-wide text-muted">Pytania i odpowiedzi (FAQ)</p>
+            </div>
+            </details>
+            @endif
+
+            {{-- ============================ FAQ (zawsze dostępne, niezależnie od „Dodatkowych informacji”) ============================ --}}
+            <details class="pe-section rounded-md bg-white" data-pe-section="faq"
+                x-data="{ faq: @js(array_values((array) old('faq', $project->faq ?? []))),
+                    move(list, i, d) { const j = i + d; if (j < 0 || j >= list.length) return; const [x] = list.splice(i, 1); list.splice(j, 0, x); } }">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 text-base font-bold text-ink [&::-webkit-details-marker]:hidden"><span>Pytania i odpowiedzi (FAQ)</span><i class="fa-solid fa-chevron-down text-sm text-muted transition-transform" aria-hidden="true"></i></summary>
+                <div class="space-y-4 border-t border-gray-100 p-6">
+                    <p class="text-sm text-muted">Pytania i odpowiedzi pokazują się na stronie działania jako rozwijana lista i trafiają do wyników Google (dane FAQPage). Pytanie bez odpowiedzi nie jest zapisywane.</p>
                     <ul class="space-y-3" role="list">
                         <template x-for="(r, i) in faq" :key="i">
                             <li class="space-y-3 p-4 rounded-md bg-gray-50">
@@ -589,9 +598,7 @@
                     </ul>
                     <button type="button" @click="faq.push({ q: '', a: '' })" class="inline-flex min-h-10 items-center gap-2 rounded-lg border-2 border-dashed border-brand-dark px-4 text-sm font-bold text-brand-dark hover:bg-brand-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-dark"><i class="fa-solid fa-plus" aria-hidden="true"></i> Dodaj pytanie</button>
                 </div>
-            </div>
             </details>
-            @endif
 
             {{-- ============================ SEKCJE ============================ --}}
             <details class="pe-section rounded-md bg-white" data-pe-section="sekcje" data-participant-only>
