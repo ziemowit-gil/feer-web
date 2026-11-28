@@ -32,7 +32,9 @@ class AdminNotifications
         self::push($items, 'Moje zadania', TaskController::myPendingCount($user->id),
             route('admin.zadania.index', ['moje' => 1]), 'fa-list-check');
 
-        if ($user->canAccessModule('blog') && app(ModuleManager::class)->isActive('blog')) {
+        // Route::has: moduł bywa już aktywny w bazie, zanim jego trasy się załadują (np. tuż po włączeniu w panelu).
+        if ($user->canAccessModule('blog') && app(ModuleManager::class)->isActive('blog')
+            && \Illuminate\Support\Facades\Route::has('admin.komentarze-bloga.index')) {
             // Baza bloga to osobny plik SQLite — gdy jej brak albo nie ma migracji, panel ma działać dalej.
             try {
                 $pendingComments = BlogComment::pending()->count();
